@@ -1,0 +1,38 @@
+<div class="carousel-section">
+  <p class="section-title">{{ title() }}</p>
+  <div #swiperContainer class="swiper-container">
+    <div class="swiper-wrapper">
+      @for (movie of videoContents(); track movie.id) {
+        <div
+          (mouseenter)="setHoverMovie(movie)"
+          (mouseleave)="clearHoverMovie()"
+          class="swiper-slide"
+        >
+          <div class="movie-card">
+            <img [src]="movie.poster_path | image" alt="" />
+            <div class="quality-badge">HD</div>
+            <div class="play-overlay" (click)="goToMovie(movie)">
+              <button class="play-btn">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M8 5v14l11-7z"/>
+                </svg>
+              </button>
+            </div>
+            <div class="movie-title-overlay">{{ movie.original_title || movie.name }}</div>
+          </div>
+          <div class="movie-info">
+            <h3 class="movie-name">{{ movie.original_title || movie.name }}</h3>
+            <div class="movie-meta">
+              <span class="year">{{ movie.release_date?.substring(0, 4) || '2024' }}</span>
+              <span class="separator">•</span>
+              <span class="duration">{{ movie.runtime || '139' }}m</span>
+              <span class="type">Movie</span>
+            </div>
+          </div>
+        </div>
+      }
+    </div>
+    <div class="swiper-button-prev"></div>
+    <div class="swiper-button-next"></div>
+  </div>
+</div>

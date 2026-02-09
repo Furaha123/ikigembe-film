@@ -1,0 +1,130 @@
+:host {
+  display: block;
+  height: 0;
+}
+
+header {
+  height: 68px;
+  z-index: 10;
+  background-color: transparent;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 2.5rem;
+  transition: background-color 0.3s ease;
+
+  &.scrolled {
+    background-color: #141414;
+  }
+
+  .left {
+    display: flex;
+    gap: 1.25rem;
+    align-items: center;
+
+    > img {
+      width: 230px;
+    }
+
+    .nav-list {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      list-style: none;
+      margin: 0;
+      padding: 0;
+
+      li {
+        color: #e5e5e5;
+        cursor: pointer;
+        font-size: 0.875rem;
+        font-weight: 200;
+        transition: color 0.3s;
+
+        &:hover {
+          color: #9ca3af;
+        }
+      }
+    }
+  }
+
+  .right {
+    display: flex;
+    align-items: center;
+    gap: 1.25rem;
+
+    .icon-btn {
+      background: transparent;
+      border: none;
+      color: #fff;
+      cursor: pointer;
+      padding: 0.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: color 0.3s;
+      position: relative;
+
+      svg {
+        width: 24px;
+        height: 24px;
+      }
+
+      &:hover {
+        color: #9ca3af;
+      }
+    }
+
+    .notification-btn {
+      position: relative;
+
+      .notification-badge {
+        position: absolute;
+        top: 2px;
+        right: 2px;
+        background-color: #ef4444;
+        color: #fff;
+        font-size: 0.65rem;
+        font-weight: 700;
+        padding: 0.1rem 0.35rem;
+        border-radius: 10px;
+        min-width: 18px;
+        text-align: center;
+      }
+    }
+
+    .user-menu {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      cursor: pointer;
+      transition: opacity 0.3s;
+
+      &:hover {
+        opacity: 0.8;
+      }
+
+      img {
+        border-radius: 4px;
+        width: 32px;
+        height: 32px;
+        object-fit: cover;
+      }
+
+      .dropdown-icon {
+        width: 20px;
+        height: 20px;
+        color: #fff;
+        transition: transform 0.3s;
+      }
+
+      &:hover .dropdown-icon {
+        transform: rotate(180deg);
+      }
+    }
+  }
+}
