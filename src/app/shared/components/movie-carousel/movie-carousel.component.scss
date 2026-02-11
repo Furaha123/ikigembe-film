@@ -173,8 +173,12 @@ app-movie-carousel {
           color: #666;
         }
 
-        .duration {
-          color: #b3b3b3;
+        .rating-small {
+          display: flex;
+          align-items: center;
+          gap: 0.2rem;
+          color: #ffc107;
+          font-weight: 600;
         }
 
         .type {

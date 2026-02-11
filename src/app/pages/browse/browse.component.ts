@@ -2,6 +2,7 @@ import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { forkJoin, of, catchError } from 'rxjs';
 import { BannerComponent } from '../../core/components/banner/banner.component';
+import { FooterComponent } from '../../core/components/footer/footer.component';
 import { HeaderComponent } from '../../core/components/header/header.component';
 import { MovieService } from '../../shared/services/movie.service';
 import { MovieCarouselComponent } from "../../shared/components/movie-carousel/movie-carousel.component";
@@ -11,7 +12,7 @@ import { AuthService } from '../../shared/services/auth.service';
 @Component({
   selector: 'app-browse',
   standalone: true,
-  imports: [CommonModule, HeaderComponent, BannerComponent, MovieCarouselComponent],
+  imports: [CommonModule, HeaderComponent, BannerComponent, MovieCarouselComponent, FooterComponent],
   templateUrl: './browse.component.html',
   styleUrls: ['./browse.component.scss']
 })

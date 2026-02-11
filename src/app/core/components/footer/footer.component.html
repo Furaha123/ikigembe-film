@@ -1,0 +1,43 @@
+<footer>
+  <div class="footer-top">
+    <div class="footer-brand">
+      <img src="/assets/ikigembe.png" alt="Ikigembe Film Arts" class="footer-logo" />
+      <p class="footer-tagline">
+        Your gateway to African cinema and beyond. Stream the best movies and shows, handpicked for you.
+      </p>
+      <div class="social-links">
+        @for (social of socials; track social.name) {
+          <a class="social-icon" [attr.aria-label]="social.name">
+            <svg viewBox="0 0 24 24" fill="currentColor">
+              <path [attr.d]="social.icon"/>
+            </svg>
+          </a>
+        }
+      </div>
+    </div>
+
+    <div class="footer-columns">
+      @for (col of footerLinks; track col.title) {
+        <div class="footer-col">
+          <h4>{{ col.title }}</h4>
+          <ul>
+            @for (link of col.links; track link) {
+              <li><a>{{ link }}</a></li>
+            }
+          </ul>
+        </div>
+      }
+    </div>
+  </div>
+
+  <div class="footer-divider"></div>
+
+  <div class="footer-bottom">
+    <p>&copy; {{ currentYear }} Ikigembe Film Arts. All rights reserved.</p>
+    <div class="footer-bottom-links">
+      <a>Privacy</a>
+      <a>Terms</a>
+      <a>Cookies</a>
+    </div>
+  </div>
+</footer>

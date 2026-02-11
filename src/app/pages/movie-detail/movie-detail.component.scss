@@ -5,6 +5,37 @@
   color: #e5e5e5;
 }
 
+// Breadcrumb
+.breadcrumb {
+  padding: 0.85rem 3.5rem;
+  padding-top: 80px;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.9rem;
+  background: rgba(0, 0, 0, 0.3);
+
+  a {
+    color: #9ca3af;
+    cursor: pointer;
+    text-decoration: none;
+    transition: color 0.2s;
+
+    &:hover {
+      color: #fff;
+    }
+  }
+
+  .separator {
+    color: #555;
+  }
+
+  .current {
+    color: #fff;
+    font-weight: 600;
+  }
+}
+
 // Hero Section
 .hero {
   position: relative;

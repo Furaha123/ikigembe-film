@@ -4,6 +4,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { forkJoin } from 'rxjs';
 import { MovieService } from '../../shared/services/movie.service';
+import { FooterComponent } from '../../core/components/footer/footer.component';
 import { HeaderComponent } from '../../core/components/header/header.component';
 import { ImagePipe } from '../../shared/pipes/image.pipe';
 import { IVideoContent } from '../../shared/models/video-content.interface';
@@ -11,7 +12,7 @@ import { IVideoContent } from '../../shared/models/video-content.interface';
 @Component({
   selector: 'app-movie-detail',
   standalone: true,
-  imports: [CommonModule, HeaderComponent, ImagePipe],
+  imports: [CommonModule, HeaderComponent, FooterComponent, ImagePipe],
   templateUrl: './movie-detail.component.html',
   styleUrls: ['./movie-detail.component.scss']
 })

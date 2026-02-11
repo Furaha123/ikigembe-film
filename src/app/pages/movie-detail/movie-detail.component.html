@@ -1,6 +1,15 @@
 @if (movie(); as movie) {
   <app-header [userImg]="''" />
 
+  <!-- Breadcrumb -->
+  <nav class="breadcrumb">
+    <a (click)="goBack()">Home</a>
+    <span class="separator">/</span>
+    <a (click)="goBack()">Movies</a>
+    <span class="separator">/</span>
+    <span class="current">{{ movie.title }}</span>
+  </nav>
+
   <!-- Hero Section -->
   <section class="hero" [style.background-image]="'url(' + getBackdropUrl(movie.backdrop_path) + ')'">
     <div class="hero-overlay">
@@ -92,6 +101,8 @@
       </div>
     </div>
   </section>
+
+  <app-footer />
 
   <!-- Trailer Player Overlay -->
   @if (isPlaying() && trailerUrl()) {
