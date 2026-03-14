@@ -17,7 +17,6 @@ import { AuthService } from '../../shared/services/auth.service';
   styleUrls: ['./browse.component.scss']
 })
 export class BrowseComponent implements OnInit {
-
   auth = inject(AuthService);
   movieService = inject(MovieService);
   userProfileImg = '';
@@ -25,66 +24,55 @@ export class BrowseComponent implements OnInit {
   bannerTitle = '';
   bannerOverview = '';
   bannerTrailerKey = '';
+  bannerBackdropUrl = '';
 
   movies: IVideoContent[] = [];
-  tvShows: IVideoContent[] = [];
-  nowPlayingMovies: IVideoContent[] = [];
   popularMovies: IVideoContent[] = [];
-  topRatedMovies: IVideoContent[] = [];
+  nowPlayingMovies: IVideoContent[] = [];
   upcomingMovies: IVideoContent[] = [];
+  topRatedMovies: IVideoContent[] = [];
+  isLoading = true;
+
+  get isEmpty(): boolean {
+    return !this.isLoading &&
+      !this.movies.length &&
+      !this.popularMovies.length &&
+      !this.nowPlayingMovies.length &&
+      !this.upcomingMovies.length &&
+      !this.topRatedMovies.length;
+  }
 
   sources = [
-    this.movieService.getMovies().pipe(catchError(() => of({results: []}))),
-    this.movieService.getTvShows().pipe(catchError(() => of({results: []}))),
-    this.movieService.getNowPlayingMovies().pipe(catchError(() => of({results: []}))),
-    this.movieService.getUpcomingMovies().pipe(catchError(() => of({results: []}))),
-    this.movieService.getPopularMovies().pipe(catchError(() => of({results: []}))),
-    this.movieService.getTopRated().pipe(catchError(() => of({results: []})))
+    this.movieService.getMovies().pipe(catchError(() => of({ results: [] }))),
+    this.movieService.getPopularMovies().pipe(catchError(() => of({ results: [] }))),
+    this.movieService.getNowPlayingMovies().pipe(catchError(() => of({ results: [] }))),
+    this.movieService.getUpcomingMovies().pipe(catchError(() => of({ results: [] }))),
+    this.movieService.getTopRated().pipe(catchError(() => of({ results: [] })))
   ];
 
   ngOnInit(): void {
     forkJoin(this.sources).subscribe((res: any[]) => {
-      const [movies, tvShows, nowPlaying, upcoming, popular, topRated] = res;
+      const [movies, popular, nowPlaying, upcoming, topRated] = res;
       this.movies = movies.results as IVideoContent[];
-      this.tvShows = tvShows.results as IVideoContent[];
+      this.popularMovies = popular.results as IVideoContent[];
       this.nowPlayingMovies = nowPlaying.results as IVideoContent[];
       this.upcomingMovies = upcoming.results as IVideoContent[];
-      this.popularMovies = popular.results as IVideoContent[];
       this.topRatedMovies = topRated.results as IVideoContent[];
+      this.isLoading = false;
 
       this.pickRandomBanner();
     });
   }
 
   private pickRandomBanner() {
-    const allMovies = [...this.movies, ...this.popularMovies, ...this.topRatedMovies];
-    if (!allMovies.length) return;
+    const source = this.nowPlayingMovies.length ? this.nowPlayingMovies : this.movies;
+    if (!source.length) return;
 
-    // Shuffle and try movies until we find one with a YouTube trailer
-    const shuffled = allMovies.sort(() => Math.random() - 0.5);
-    this.tryMovieTrailer(shuffled, 0);
-  }
-
-  private tryMovieTrailer(movies: IVideoContent[], index: number) {
-    if (index >= movies.length) return;
-
-    const movie = movies[index];
-    forkJoin({
-      details: this.movieService.getMovieDetails(movie.id),
-      videos: this.movieService.getBannerVideo(movie.id)
-    }).subscribe(({ details, videos }) => {
-      const trailer = videos.results?.find((v: any) => v.type === 'Trailer' && v.site === 'YouTube')
-        || videos.results?.find((v: any) => v.site === 'YouTube');
-
-      if (trailer) {
-        this.bannerTitle = details.title || details.original_title;
-        this.bannerOverview = details.overview;
-        this.bannerTrailerKey = trailer.key;
-      } else {
-        // No trailer found, try next movie
-        this.tryMovieTrailer(movies, index + 1);
-      }
-    });
+    const movie = source[Math.floor(Math.random() * source.length)];
+    this.bannerTitle = movie.title || movie.name || '';
+    this.bannerOverview = movie.overview;
+    this.bannerTrailerKey = '';
+    this.bannerBackdropUrl = movie.backdrop_url || movie.thumbnail_url || '';
   }
 
   signOut() {

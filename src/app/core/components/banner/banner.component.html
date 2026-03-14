@@ -1,7 +1,9 @@
 @if (videoUrl()) {
-  <iframe class="video-bg" [src]="videoUrl()" frameborder="0" allow="autoplay"></iframe>
+  <iframe class="video-bg" [src]="videoUrl()" title="Banner video" allow="autoplay" style="border:0"></iframe>
 }
-<div class="banner">
+<div class="banner"
+  [style.background-image]="!videoUrl() && bannerBackdropUrl() ? 'url(' + bannerBackdropUrl() + ')' : null"
+  [class.has-backdrop]="!videoUrl() && bannerBackdropUrl()">
   <div class="banner-content">
     <h1>{{ bannerTitle() }}</h1>
     <p class="overview">{{ bannerOverview() }}</p>

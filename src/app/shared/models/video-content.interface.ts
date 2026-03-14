@@ -1,18 +1,17 @@
 export interface IVideoContent {
-  adult: boolean
-  backdrop_path: string
-  genre_ids: number[]
-  id: number
-  original_language: string
-  original_title: string
-  overview: string
-  popularity: number
-  poster_path: string
-  release_date: string
-  title: string
-  video: boolean
-  vote_average: number
-  vote_count: number
-  name: string
-  runtime?: number
+  id: number;
+  title: string;
+  overview: string;
+  thumbnail_url: string;
+  backdrop_url: string;
+  trailer_url: string | null;
+  video_url: string | null;
+  price: number;
+  rating: number;
+  release_date: string;
+  views: number;
+  duration_minutes: number;
+  has_free_preview: boolean;
+  // legacy compat
+  name?: string;
 }

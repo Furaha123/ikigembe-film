@@ -12,6 +12,7 @@ export class BannerComponent {
   bannerTitle = input<string>('');
   bannerOverview = input<string>('');
   trailerKey = input<string>('');
+  bannerBackdropUrl = input<string>('');
 
   isMuted = signal(true);
 

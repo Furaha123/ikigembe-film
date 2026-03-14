@@ -1,15 +1,29 @@
 <app-header [userImg]="userProfileImg" />
-<app-banner [bannerTitle]="bannerTitle" [bannerOverview]="bannerOverview" [trailerKey]="bannerTrailerKey" />
-<app-movie-carousel [title]="'Popular on Netflix'" [videoContents]="movies" />
 
-<app-movie-carousel [title]="'Trending TV shows'" [videoContents]="tvShows" />
+@if (isLoading) {
+  <div class="state-screen">
+    <div class="loader-ring"></div>
+    <p>Loading movies…</p>
+  </div>
+} @else if (isEmpty) {
+  <div class="state-screen">
+    <div class="empty-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M3.375 19.5h17.25m-17.25 0a1.125 1.125 0 01-1.125-1.125M3.375 19.5h1.5C5.496 19.5 6 18.996 6 18.375m-3.75.125A1.125 1.125 0 012.25 18.375V6.75m0 11.625v-1.5m0-10.125A1.125 1.125 0 013.375 5.25h17.25A1.125 1.125 0 0121.75 6.375v10.5A1.125 1.125 0 0120.625 18H19.5"/>
+        <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75l2.25 2.25 4.5-4.5"/>
+      </svg>
+    </div>
+    <h2>No movies available right now</h2>
+    <p>Our team is working on adding new content.<br/>Check back soon — great African cinema is on the way.</p>
+    <div class="empty-badge">Coming Soon</div>
+  </div>
+} @else {
+  <app-banner [bannerTitle]="bannerTitle" [bannerOverview]="bannerOverview" [trailerKey]="bannerTrailerKey" [bannerBackdropUrl]="bannerBackdropUrl" />
 
-<app-movie-carousel [title]="'Now Playing Movies'" [videoContents]="nowPlayingMovies" />
-
-<app-movie-carousel [title]="'Popular Movies'" [videoContents]="popularMovies" />
-
-<app-movie-carousel [title]="'Top Rated Movies'" [videoContents]="topRatedMovies" />
-
-<app-movie-carousel [title]="'Upcoming Movies'" [videoContents]="upcomingMovies" />
+  <app-movie-carousel [title]="'Now Playing'" [videoContents]="nowPlayingMovies" />
+  <app-movie-carousel [title]="'Popular Movies'" [videoContents]="popularMovies" />
+  <app-movie-carousel [title]="'Upcoming Movies'" [videoContents]="upcomingMovies" />
+  <app-movie-carousel [title]="'Top Rated'" [videoContents]="topRatedMovies" />
+}
 
 <app-footer />

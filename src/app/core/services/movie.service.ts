@@ -1,63 +1,62 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
+import { of } from 'rxjs';
+import {
+  MovieListResponse,
+  MovieDetailResponse,
+  TrailerResponse,
+  MovieCreditsResponse,
+  SimilarMoviesResponse
+} from '../../shared/models/movie-api.interface';
 
-const options = {
-  params: {
-    include_adult: 'false',
-    include_video: 'true',
-    language: 'en-US',
-    page: '1',
-    sort_by: 'popularity.desc'
-  },
-  headers: {
-    accept: 'application/json',
-    Authorization: 'Bearer eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiI5OTliNDgwMDZiNTAwYmJjY2UxNGY2Zjk5MTlkMzRmZCIsIm5iZiI6MTc3MDY0NzY4Ny45NSwic3ViIjoiNjk4OWYwODdmY2VjNjgwYWNlNWNiNDMzIiwic2NvcGVzIjpbImFwaV9yZWFkIl0sInZlcnNpb24iOjF9.Fw6K7BU4Hm92SKkjJPkN5atqhBT_u9O0m0hLY-dn0Nw'
-  }
-}
 @Injectable({
   providedIn: 'root'
 })
 export class MovieService {
-
-  http = inject(HttpClient);
+  private readonly http = inject(HttpClient);
+  private readonly baseUrl = 'https://ikigembe-backend.onrender.com/api/movies';
 
   getMovies() {
-    return this.http.get<any>('https://api.themoviedb.org/3/discover/movie', options)
-  }
-
-  getTvShows() {
-    return this.http.get('https://api.themoviedb.org/3/discover/tv', options)
-  }
-
-  getRatedMovies() {
-    return this.http.get('https://api.themoviedb.org/3/guest_session/guest_session_id/rated/movies', options)
+    return this.http.get<MovieListResponse>(`${this.baseUrl}/discover/`);
   }
 
   getBannerImage(id: number) {
-    return this.http.get(`https://api.themoviedb.org/3/movie/${id}/images`, options)
+    return this.http.get<MovieDetailResponse>(`${this.baseUrl}/${id}/images/`);
   }
 
   getBannerVideo(id: number) {
-    return this.http.get(`https://api.themoviedb.org/3/movie/${id}/videos`, options);
+    return this.http.get<TrailerResponse>(`${this.baseUrl}/${id}/trailer/`);
   }
 
   getBannerDetail(id: number) {
-    return this.http.get(`https://api.themoviedb.org/3/movie/${id}`, options);
-  }
-
-  getNowPlayingMovies() {
-    return this.http.get('https://api.themoviedb.org/3/movie/now_playing', options)
+    return this.http.get<MovieDetailResponse>(`${this.baseUrl}/${id}/`);
   }
 
   getPopularMovies() {
-    return this.http.get('https://api.themoviedb.org/3/movie/popular', options)
+    return this.http.get<MovieListResponse>(`${this.baseUrl}/popular/`);
   }
 
-  getTopRated() {
-    return this.http.get('https://api.themoviedb.org/3/movie/top_rated', options)
+  getNowPlayingMovies() {
+    return this.http.get<MovieListResponse>(`${this.baseUrl}/now-playing/`);
   }
 
   getUpcomingMovies() {
-    return this.http.get('https://api.themoviedb.org/3/movie/upcoming', options)
+    return this.http.get<MovieListResponse>(`${this.baseUrl}/upcoming/`);
+  }
+
+  getTopRated() {
+    return this.http.get<MovieListResponse>(`${this.baseUrl}/top-rated/`);
+  }
+
+  getMovieDetails(id: number) {
+    return this.http.get<MovieDetailResponse>(`${this.baseUrl}/${id}/`);
+  }
+
+  getMovieCredits(_id: number) {
+    return of<MovieCreditsResponse>({ cast: [] });
+  }
+
+  getSimilarMovies(_id: number) {
+    return of<SimilarMoviesResponse>({ results: [] });
   }
 }

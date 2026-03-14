@@ -11,7 +11,7 @@
   </nav>
 
   <!-- Hero Section -->
-  <section class="hero" [style.background-image]="'url(' + getBackdropUrl(movie.backdrop_path) + ')'">
+  <section class="hero" [style.background-image]="movie.backdrop_url ? 'url(' + movie.backdrop_url + ')' : 'none'">
     <div class="hero-overlay">
       <button class="hero-play-btn" (click)="playTrailer()">
         <svg viewBox="0 0 24 24" width="48" height="48" fill="currentColor">
@@ -26,7 +26,7 @@
     <div class="info-layout">
       <!-- Left: Poster -->
       <div class="poster-col">
-        <img [src]="movie.poster_path | image" [alt]="movie.title" class="poster" />
+        <img [src]="movie.thumbnail_url" [alt]="movie.title" class="poster" />
       </div>
 
       <!-- Center: Details -->
@@ -39,34 +39,28 @@
             <svg viewBox="0 0 24 24" width="16" height="16" fill="#ffc107">
               <path d="M12 2l3.09 6.26L22 9.27l-5 4.87L18.18 22 12 18.56 5.82 22 7 14.14l-5-4.87 6.91-1.01z"/>
             </svg>
-            {{ movie.vote_average?.toFixed(1) }}
+            {{ movie.rating?.toFixed(1) ?? 'N/A' }}
           </span>
-          <span class="runtime">{{ movie.runtime }} min</span>
+          <span class="runtime">{{ movie.duration_minutes }} min</span>
         </div>
 
         <p class="overview">{{ movie.overview }}</p>
 
         <div class="detail-rows">
           <div class="detail-row">
-            <span class="label">Country:</span>
-            <span class="value">{{ movie.production_countries?.[0]?.name || 'N/A' }}</span>
-          </div>
-          <div class="detail-row">
-            <span class="label">Genre:</span>
-            <span class="value">
-              @for (genre of movie.genres; track genre.id; let last = $last) {
-                {{ genre.name }}{{ last ? '' : ', ' }}
-              }
-            </span>
-          </div>
-          <div class="detail-row">
             <span class="label">Released:</span>
             <span class="value">{{ movie.release_date || 'N/A' }}</span>
           </div>
           <div class="detail-row">
-            <span class="label">Production:</span>
-            <span class="value">{{ movie.production_companies?.[0]?.name || 'N/A' }}</span>
+            <span class="label">Views:</span>
+            <span class="value">{{ movie.views ?? 0 }}</span>
           </div>
+          @if (movie.price) {
+            <div class="detail-row">
+              <span class="label">Price:</span>
+              <span class="value">${{ movie.price }}</span>
+            </div>
+          }
           @if (cast().length) {
             <div class="detail-row">
               <span class="label">Casts:</span>
@@ -85,9 +79,9 @@
         <h2 class="similar-title">You May Also Like</h2>
         <div class="similar-grid">
           @for (similar of similarMovies(); track similar.id) {
-            <div class="similar-card" (click)="goToMovie(similar.id)">
+            <button class="similar-card" (click)="goToMovie(similar.id)">
               <div class="similar-poster">
-                <img [src]="similar.poster_path | image" [alt]="similar.title || similar.name" />
+                <img [src]="similar.thumbnail_url" [alt]="similar.title || similar.name" />
                 <span class="similar-badge">HD</span>
               </div>
               <p class="similar-name">{{ similar.title || similar.name }}</p>
@@ -95,7 +89,7 @@
                 <span>{{ similar.release_date?.substring(0, 4) }}</span>
                 <span class="similar-type">Movie</span>
               </div>
-            </div>
+            </button>
           }
         </div>
       </div>
@@ -106,8 +100,8 @@
 
   <!-- Trailer Player Overlay -->
   @if (isPlaying() && trailerUrl()) {
-    <div class="player-backdrop" (click)="closePlayer()">
-      <div class="player-container" (click)="$event.stopPropagation()">
+    <div class="player-backdrop" (click)="closePlayer()" (keydown.escape)="closePlayer()">
+      <div class="player-container" (click)="$event.stopPropagation()" (keydown)="$event.stopPropagation()">
         <button class="player-close" (click)="closePlayer()">
           <svg viewBox="0 0 24 24" width="28" height="28" fill="currentColor">
             <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
@@ -115,7 +109,7 @@
         </button>
         <iframe
           [src]="trailerUrl()"
-          frameborder="0"
+          title="Movie trailer"
           allow="autoplay; encrypted-media; fullscreen"
           allowfullscreen
         ></iframe>

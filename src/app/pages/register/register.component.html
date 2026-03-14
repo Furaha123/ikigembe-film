@@ -1,0 +1,148 @@
+<div class="auth-layout">
+
+  <div class="brand-panel">
+    <img src="/assets/auth.bg.jpg" alt="" class="brand-bg" aria-hidden="true" />
+    <div class="brand-overlay"></div>
+    <div class="brand-inner">
+      <img src="/assets/ikigembe.log.png" alt="Ikigembe" class="brand-logo" />
+      <h2 class="brand-headline">Join the<br/>Ikigembe Community</h2>
+      <p class="brand-sub">Stream thousands of African films, series and documentaries. New content added every week.</p>
+      <ul class="feature-list" aria-label="Features">
+        <li>
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+          HD &amp; 4K streaming
+        </li>
+        <li>
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+          Watch on any device
+        </li>
+        <li>
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+          Exclusive African content
+        </li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="form-panel">
+    <div class="form-inner">
+      <div class="form-header">
+        <h1>Create account</h1>
+        <p>Start watching in minutes</p>
+      </div>
+
+      <form [formGroup]="form" (ngSubmit)="onSubmit()" novalidate>
+
+        <!-- Name row -->
+        <div class="field-row">
+          <div class="field" [class.has-error]="first_name?.invalid && first_name?.touched || serverErrors().first_name">
+            <label for="first_name">First name</label>
+            <input id="first_name" type="text" formControlName="first_name" placeholder="John" autocomplete="given-name" />
+            @if (first_name?.touched && first_name?.hasError('required')) {
+              <span class="field-error">Required.</span>
+            } @else if (serverErrors().first_name) {
+              <span class="field-error">{{ serverErrors().first_name![0] }}</span>
+            }
+          </div>
+          <div class="field" [class.has-error]="last_name?.invalid && last_name?.touched || serverErrors().last_name">
+            <label for="last_name">Last name</label>
+            <input id="last_name" type="text" formControlName="last_name" placeholder="Doe" autocomplete="family-name" />
+            @if (last_name?.touched && last_name?.hasError('required')) {
+              <span class="field-error">Required.</span>
+            } @else if (serverErrors().last_name) {
+              <span class="field-error">{{ serverErrors().last_name![0] }}</span>
+            }
+          </div>
+        </div>
+
+        <div class="field" [class.has-error]="email?.invalid && email?.touched || serverErrors().email">
+          <label for="email">Email address</label>
+          <input
+            id="email"
+            type="email"
+            formControlName="email"
+            placeholder="you@example.com"
+            autocomplete="email"
+          />
+          @if (email?.touched && email?.hasError('required')) {
+            <span class="field-error">Email is required.</span>
+          } @else if (email?.touched && email?.hasError('email')) {
+            <span class="field-error">Enter a valid email address.</span>
+          } @else if (serverErrors().email) {
+            <span class="field-error">{{ serverErrors().email![0] }}</span>
+          }
+        </div>
+
+        <div class="field" [class.has-error]="password?.invalid && password?.touched || serverErrors().password">
+          <label for="password">Password</label>
+          <div class="input-wrap">
+            <input
+              id="password"
+              [type]="showPassword() ? 'text' : 'password'"
+              formControlName="password"
+              placeholder="Min. 8 characters"
+              [autocomplete]="showPassword() ? 'off' : 'new-password'"
+            />
+            <button type="button" class="toggle-btn" (click)="showPassword.set(!showPassword())" tabindex="-1">
+              <span class="sr-only">{{ showPassword() ? 'Hide password' : 'Show password' }}</span>
+              @if (showPassword()) {
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+              } @else {
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+              }
+            </button>
+          </div>
+          @if (password?.touched && password?.hasError('required')) {
+            <span class="field-error">Password is required.</span>
+          } @else if (password?.touched && password?.hasError('minlength')) {
+            <span class="field-error">Password must be at least 8 characters.</span>
+          } @else if (serverErrors().password) {
+            <span class="field-error">{{ serverErrors().password![0] }}</span>
+          }
+        </div>
+
+        <div class="field" [class.has-error]="password_confirm?.touched && (form.hasError('passwordMismatch') || password_confirm?.hasError('required')) || serverErrors().password_confirm">
+          <label for="password_confirm">Confirm password</label>
+          <div class="input-wrap">
+            <input
+              id="password_confirm"
+              [type]="showConfirm() ? 'text' : 'password'"
+              formControlName="password_confirm"
+              placeholder="Repeat your password"
+              autocomplete="off"
+            />
+            <button type="button" class="toggle-btn" (click)="showConfirm.set(!showConfirm())" tabindex="-1">
+              <span class="sr-only">{{ showConfirm() ? 'Hide password' : 'Show password' }}</span>
+              @if (showConfirm()) {
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+              } @else {
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+              }
+            </button>
+          </div>
+          @if (password_confirm?.touched && password_confirm?.hasError('required')) {
+            <span class="field-error">Please confirm your password.</span>
+          } @else if (password_confirm?.touched && form.hasError('passwordMismatch')) {
+            <span class="field-error">Passwords do not match.</span>
+          } @else if (serverErrors().password_confirm) {
+            <span class="field-error">{{ serverErrors().password_confirm![0] }}</span>
+          }
+        </div>
+
+        <button type="submit" class="submit-btn" [disabled]="isLoading()">
+          @if (isLoading()) {
+            <span class="spinner"></span>Creating account…
+          } @else {
+            Sign Up
+          }
+        </button>
+
+      </form>
+
+      <p class="alt-link">
+        Already have an account? <a routerLink="/login">Sign in</a>
+      </p>
+    </div>
+  </div>
+
+</div>

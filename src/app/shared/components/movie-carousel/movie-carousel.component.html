@@ -9,27 +9,27 @@
           class="swiper-slide"
         >
           <div class="movie-card">
-            <img [src]="movie.poster_path | image" alt="" />
+            <img [src]="movie.thumbnail_url" [alt]="movie.title" />
             <div class="quality-badge">HD</div>
-            <div class="play-overlay" (click)="goToMovie(movie)">
-              <button class="play-btn">
+            <button class="play-overlay" (click)="goToMovie(movie)">
+              <span class="play-btn">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
                   <path d="M8 5v14l11-7z"/>
                 </svg>
-              </button>
-            </div>
-            <div class="movie-title-overlay">{{ movie.original_title || movie.name }}</div>
+              </span>
+            </button>
+            <div class="movie-title-overlay">{{ movie.title }}</div>
           </div>
           <div class="movie-info">
-            <h3 class="movie-name">{{ movie.original_title || movie.name }}</h3>
+            <h3 class="movie-name">{{ movie.title }}</h3>
             <div class="movie-meta">
-              <span class="year">{{ movie.release_date?.substring(0, 4) || '2024' }}</span>
+              <span class="year">{{ movie.release_date.substring(0, 4) || '2024' }}</span>
               <span class="separator">•</span>
               <span class="rating-small">
                 <svg viewBox="0 0 24 24" width="12" height="12" fill="#ffc107">
                   <path d="M12 2l3.09 6.26L22 9.27l-5 4.87L18.18 22 12 18.56 5.82 22 7 14.14l-5-4.87 6.91-1.01z"/>
                 </svg>
-                {{ movie.vote_average.toFixed(1) }}
+                {{ movie.rating.toFixed(1) }}
               </span>
               <span class="type">Movie</span>
             </div>

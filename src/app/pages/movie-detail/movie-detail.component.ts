@@ -6,21 +6,20 @@ import { forkJoin } from 'rxjs';
 import { MovieService } from '../../shared/services/movie.service';
 import { FooterComponent } from '../../core/components/footer/footer.component';
 import { HeaderComponent } from '../../core/components/header/header.component';
-import { ImagePipe } from '../../shared/pipes/image.pipe';
 import { IVideoContent } from '../../shared/models/video-content.interface';
 
 @Component({
   selector: 'app-movie-detail',
   standalone: true,
-  imports: [CommonModule, HeaderComponent, FooterComponent, ImagePipe],
+  imports: [CommonModule, HeaderComponent, FooterComponent],
   templateUrl: './movie-detail.component.html',
   styleUrls: ['./movie-detail.component.scss']
 })
 export class MovieDetailComponent implements OnInit {
-  private route = inject(ActivatedRoute);
-  private router = inject(Router);
-  private movieService = inject(MovieService);
-  private sanitizer = inject(DomSanitizer);
+  private readonly route = inject(ActivatedRoute);
+  private readonly router = inject(Router);
+  private readonly movieService = inject(MovieService);
+  private readonly sanitizer = inject(DomSanitizer);
 
   movie = signal<any>(null);
   cast = signal<any[]>([]);
@@ -39,20 +38,15 @@ export class MovieDetailComponent implements OnInit {
     forkJoin({
       details: this.movieService.getMovieDetails(id),
       credits: this.movieService.getMovieCredits(id),
-      similar: this.movieService.getSimilarMovies(id),
-      videos: this.movieService.getBannerVideo(id)
-    }).subscribe(({ details, credits, similar, videos }) => {
+      similar: this.movieService.getSimilarMovies(id)
+    }).subscribe(({ details, credits, similar }) => {
       this.movie.set(details);
       this.cast.set(credits.cast?.slice(0, 10) || []);
       this.similarMovies.set(similar.results?.slice(0, 6) || []);
 
-      const trailer = videos.results?.find((v: any) => v.type === 'Trailer' && v.site === 'YouTube')
-        || videos.results?.find((v: any) => v.site === 'YouTube');
-      if (trailer) {
+      if (details.trailer_url) {
         this.trailerUrl.set(
-          this.sanitizer.bypassSecurityTrustResourceUrl(
-            `https://www.youtube.com/embed/${trailer.key}?autoplay=1&rel=0`
-          )
+          this.sanitizer.bypassSecurityTrustResourceUrl(details.trailer_url)
         );
       }
     });
@@ -75,10 +69,6 @@ export class MovieDetailComponent implements OnInit {
 
   goBack() {
     this.router.navigate(['/']);
-  }
-
-  getBackdropUrl(path: string): string {
-    return `https://image.tmdb.org/t/p/original${path}`;
   }
 
   getRatingPercent(vote: number): number {

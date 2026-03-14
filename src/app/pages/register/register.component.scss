@@ -1,0 +1,278 @@
+$gold: #C5A253;
+$gold-dark: #8f7235;
+$bg-dark: #0a0a0a;
+$bg-form: #111;
+$border: rgba(255, 255, 255, 0.1);
+$text-muted: rgba(255, 255, 255, 0.45);
+$text-dim: rgba(255, 255, 255, 0.7);
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.auth-layout {
+  display: flex;
+  min-height: 100vh;
+  background: $bg-dark;
+}
+
+/* ─── Left branding panel ─── */
+.brand-panel {
+  flex: 1 1 55%;
+  position: relative;
+  overflow: hidden;
+  display: none;
+
+  background: #000;
+
+  @media (min-width: 900px) { display: flex; }
+
+  .brand-bg {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center top;
+    filter: brightness(0.55) contrast(1.1);
+    z-index: 1;
+  }
+
+  .brand-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      to bottom,
+      rgba(0, 0, 0, 0.2) 0%,
+      rgba(0, 0, 0, 0.15) 40%,
+      rgba(0, 0, 0, 0.75) 75%,
+      rgba(0, 0, 0, 0.92) 100%
+    );
+    z-index: 2;
+  }
+
+  .brand-inner {
+    position: relative;
+    z-index: 3;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    padding: 4rem 3.5rem;
+    height: 100%;
+  }
+
+  .brand-logo {
+    height: 44px;
+    object-fit: contain;
+    object-position: left;
+    margin-bottom: 1.5rem;
+  }
+
+  .brand-headline {
+    color: #fff;
+    font-size: clamp(1.75rem, 2.5vw, 2.5rem);
+    font-weight: 800;
+    line-height: 1.2;
+    margin: 0 0 0.875rem;
+    letter-spacing: -0.02em;
+    text-shadow: 0 2px 12px rgba(0, 0, 0, 0.6);
+  }
+
+  .brand-sub {
+    color: $text-dim;
+    font-size: 0.95rem;
+    line-height: 1.6;
+    max-width: 360px;
+    margin: 0 0 2rem;
+    text-shadow: 0 1px 6px rgba(0, 0, 0, 0.5);
+  }
+
+  .feature-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+
+    li {
+      display: flex;
+      align-items: center;
+      gap: 0.625rem;
+      color: $text-dim;
+      font-size: 0.9rem;
+      text-shadow: 0 1px 4px rgba(0, 0, 0, 0.5);
+
+      svg {
+        width: 16px;
+        height: 16px;
+        flex-shrink: 0;
+        color: $gold;
+      }
+    }
+  }
+}
+
+/* ─── Right form panel ─── */
+.form-panel {
+  flex: 1 1 45%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem 1.5rem;
+  background: $bg-form;
+}
+
+.form-inner {
+  width: 100%;
+  max-width: 400px;
+}
+
+.form-header {
+  margin-bottom: 2rem;
+
+  h1 {
+    color: #fff;
+    font-size: 1.875rem;
+    font-weight: 700;
+    margin: 0 0 0.35rem;
+    letter-spacing: -0.02em;
+  }
+
+  p {
+    color: $text-muted;
+    font-size: 0.9rem;
+    margin: 0;
+  }
+}
+
+/* ─── Fields ─── */
+.field-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  margin-bottom: 1.125rem;
+
+  label {
+    color: $text-dim;
+    font-size: 0.8rem;
+    font-weight: 500;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+
+  input {
+    width: 100%;
+    padding: 0.8rem 1rem;
+    background: #1a1a1a;
+    border: 1px solid $border;
+    border-radius: 8px;
+    color: #fff;
+    font-size: 0.95rem;
+    outline: none;
+    transition: border-color 0.2s, background 0.2s;
+    box-sizing: border-box;
+
+    &::placeholder { color: rgba(255, 255, 255, 0.2); }
+    &:focus { border-color: $gold; background: #1f1f1f; }
+  }
+
+  &.has-error input { border-color: #e87c7c; }
+
+  .field-error {
+    color: #e87c7c;
+    font-size: 0.78rem;
+  }
+}
+
+.input-wrap {
+  position: relative;
+
+  input { padding-right: 2.75rem; }
+
+  .toggle-btn {
+    position: absolute;
+    right: 0.75rem;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    color: rgba(255, 255, 255, 0.35);
+    transition: color 0.2s;
+
+    &:hover { color: rgba(255, 255, 255, 0.75); }
+
+    svg { width: 18px; height: 18px; }
+  }
+}
+
+/* ─── Submit ─── */
+.submit-btn {
+  width: 100%;
+  margin-top: 0.5rem;
+  padding: 0.9rem;
+  background: $gold;
+  color: #000;
+  font-size: 1rem;
+  font-weight: 700;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  letter-spacing: 0.02em;
+  transition: background 0.2s, transform 0.1s;
+
+  &:hover:not(:disabled) {
+    background: $gold-dark;
+    transform: translateY(-1px);
+  }
+
+  &:disabled { opacity: 0.6; cursor: not-allowed; }
+}
+
+.spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ─── Alt link ─── */
+.alt-link {
+  text-align: center;
+  color: $text-muted;
+  font-size: 0.875rem;
+  margin: 1.5rem 0 0;
+
+  a {
+    color: #fff;
+    font-weight: 600;
+    text-decoration: none;
+    &:hover { color: $gold; }
+  }
+}

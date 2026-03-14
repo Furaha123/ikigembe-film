@@ -1,6 +1,6 @@
 <header [class.scrolled]="isScrolled()">
   <div class="left">
-    <img width="110" src="/assets/ikigembe.png" alt="ikigembe-logo">
+    <img width="72" src="/assets/ikigembe.log.png" alt="ikigembe-logo">
     <ul class="nav-list">
       @for (item of navList; track item) {
         <li>{{ item }}</li>
@@ -21,7 +21,7 @@
       <span class="notification-badge">3</span>
     </button>
     <div class="user-menu">
-      <img src="/assets/user-img.jpg" width="32" alt="user-img">
+      <div class="avatar">{{ initials() }}</div>
       <svg class="dropdown-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
         <path d="M7 10l5 5 5-5z"/>
       </svg>

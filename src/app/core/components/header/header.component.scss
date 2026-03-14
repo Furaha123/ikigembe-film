@@ -27,7 +27,7 @@ header {
     align-items: center;
 
     > img {
-      width: 230px;
+      width: 150px;
     }
 
     .nav-list {
@@ -86,7 +86,7 @@ header {
         position: absolute;
         top: 2px;
         right: 2px;
-        background-color: #ef4444;
+        background-color: #b91c1c;
         color: #fff;
         font-size: 0.65rem;
         font-weight: 700;
@@ -108,11 +108,19 @@ header {
         opacity: 0.8;
       }
 
-      img {
-        border-radius: 4px;
-        width: 32px;
-        height: 32px;
-        object-fit: cover;
+      .avatar {
+        width: 34px;
+        height: 34px;
+        border-radius: 6px;
+        background: #C5A253;
+        color: #000;
+        font-size: 0.75rem;
+        font-weight: 800;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        letter-spacing: 0.03em;
+        flex-shrink: 0;
       }
 
       .dropdown-icon {

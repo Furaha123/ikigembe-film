@@ -14,14 +14,13 @@ import { Router } from '@angular/router';
 import Swiper from 'swiper';
 import { Navigation } from 'swiper/modules';
 import { IVideoContent } from '../../models/video-content.interface';
-import { ImagePipe } from '../../pipes/image.pipe';
 import { animate, style, transition, trigger } from '@angular/animations';
 
 @Component({
   selector: 'app-movie-carousel',
   templateUrl: './movie-carousel.component.html',
   styleUrls: ['./movie-carousel.component.scss'],
-  imports: [ ImagePipe],
+  imports: [],
   encapsulation: ViewEncapsulation.None,
   animations: [
     trigger('fade', [
