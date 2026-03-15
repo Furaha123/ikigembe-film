@@ -1,8 +1,19 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, inject, signal, PLATFORM_ID, AfterViewInit, ElementRef, viewChild } from '@angular/core';
+import { isPlatformBrowser, CommonModule } from '@angular/common';
 import { AbstractControl, FormBuilder, ReactiveFormsModule, ValidationErrors, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
-import { CommonModule } from '@angular/common';
 import { AuthService, RegisterErrors } from '../../core/services/auth.service';
+
+declare const google: {
+  accounts: {
+    id: {
+      initialize(cfg: { client_id: string; callback: (r: { credential: string }) => void }): void;
+      renderButton(el: HTMLElement, opts: Record<string, unknown>): void;
+    };
+  };
+};
+
+const GOOGLE_CLIENT_ID = '315063576340-7m07t5n12jerr8qjhalushs82h2c5rjl.apps.googleusercontent.com';
 
 @Component({
   selector: 'app-register',
@@ -10,10 +21,13 @@ import { AuthService, RegisterErrors } from '../../core/services/auth.service';
   templateUrl: './register.component.html',
   styleUrl: './register.component.scss'
 })
-export class RegisterComponent {
+export class RegisterComponent implements AfterViewInit {
   private readonly fb = inject(FormBuilder);
   private readonly authService = inject(AuthService);
   private readonly router = inject(Router);
+  private readonly platformId = inject(PLATFORM_ID);
+
+  googleBtnContainer = viewChild<ElementRef>('googleBtn');
 
   form = this.fb.group(
     {
@@ -27,6 +41,7 @@ export class RegisterComponent {
   );
 
   isLoading = signal(false);
+  googleLoading = signal(false);
   serverErrors = signal<RegisterErrors>({});
   showPassword = signal(false);
   showConfirm = signal(false);
@@ -36,6 +51,55 @@ export class RegisterComponent {
   get email() { return this.form.get('email'); }
   get password() { return this.form.get('password'); }
   get password_confirm() { return this.form.get('password_confirm'); }
+
+  ngAfterViewInit() {
+    if (isPlatformBrowser(this.platformId)) {
+      this.tryInitGoogleButton(0);
+    }
+  }
+
+  private tryInitGoogleButton(attempt: number) {
+    const container = this.googleBtnContainer()?.nativeElement;
+    const gsi = (globalThis as { google?: typeof google }).google;
+
+    if (!gsi || !container) {
+      if (attempt < 10) {
+        setTimeout(() => this.tryInitGoogleButton(attempt + 1), 300);
+      }
+      return;
+    }
+
+    gsi.accounts.id.initialize({
+      client_id: GOOGLE_CLIENT_ID,
+      callback: (response) => this.handleGoogleCredential(response.credential),
+    });
+
+    gsi.accounts.id.renderButton(container, {
+      theme: 'outline',
+      size: 'large',
+      width: container.offsetWidth || 340,
+      text: 'signup_with',
+      shape: 'rectangular',
+    });
+  }
+
+  private handleGoogleCredential(idToken: string) {
+    this.googleLoading.set(true);
+    this.serverErrors.set({});
+
+    this.authService.loginWithGoogle(idToken).subscribe({
+      next: () => {
+        this.googleLoading.set(false);
+        this.router.navigate(['/browse']);
+      },
+      error: (err) => {
+        this.googleLoading.set(false);
+        if (err.status === 400 && err.error) {
+          this.serverErrors.set(err.error);
+        }
+      }
+    });
+  }
 
   onSubmit(): void {
     if (this.form.invalid) {

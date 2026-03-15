@@ -75,6 +75,15 @@
 
       </form>
 
+      <div class="divider"><span>or</span></div>
+
+      @if (googleLoading()) {
+        <div class="google-loading">
+          <span class="spinner"></span> Signing in with Google…
+        </div>
+      }
+      <div #googleBtn class="google-btn-wrap"></div>
+
       <p class="alt-link">
         Don't have an account? <a routerLink="/register">Create one</a>
       </p>

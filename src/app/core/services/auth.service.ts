@@ -2,7 +2,7 @@ import { Injectable, PLATFORM_ID, inject, signal, computed } from '@angular/core
 import { isPlatformBrowser } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 import { tap } from 'rxjs/operators';
-import { RegisterPayload, RegisterResponse, LoginResponse } from '../models/auth.interface';
+import { RegisterPayload, RegisterResponse, LoginResponse, GoogleAuthPayload } from '../models/auth.interface';
 
 export type { RegisterPayload, RegisterErrors } from '../models/auth.interface';
 
@@ -44,6 +44,31 @@ export class AuthService {
 
   login(email: string, password: string) {
     return this.http.post<LoginResponse>(`${this.baseUrl}/auth/login/`, { email, password }).pipe(
+      tap((res) => {
+        const token =
+          res?.AuthenticationResult?.AccessToken ??
+          res?.AuthenticationResult?.IdToken ??
+          res?.AccessToken ??
+          res?.access_token ??
+          res?.access ??
+          res?.token ??
+          res?.key;
+        if (token && isPlatformBrowser(this.platformId)) {
+          localStorage.setItem(TOKEN_KEY, token);
+          this.isLoggedIn.set(true);
+        }
+        const name = [res?.first_name, res?.last_name].filter(Boolean).join(' ');
+        if (name && isPlatformBrowser(this.platformId)) {
+          localStorage.setItem(NAME_KEY, name);
+          this.userName.set(name);
+        }
+      })
+    );
+  }
+
+  loginWithGoogle(idToken: string) {
+    const payload: GoogleAuthPayload = { id_token: idToken };
+    return this.http.post<LoginResponse>(`${this.baseUrl}/auth/google/`, payload).pipe(
       tap((res) => {
         const token =
           res?.AuthenticationResult?.AccessToken ??

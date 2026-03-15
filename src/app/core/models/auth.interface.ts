@@ -1,3 +1,7 @@
+export interface GoogleAuthPayload {
+  id_token: string;
+}
+
 export interface RegisterPayload {
   email: string;
   password: string;
