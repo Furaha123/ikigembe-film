@@ -1,0 +1,149 @@
+<div class="admin-page">
+  <div class="page-header">
+    <div>
+      <h1>Producers</h1>
+      <p>Approve and manage film producers on the platform.</p>
+    </div>
+    <button class="add-btn" (click)="openAddModal()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      Add Producer
+    </button>
+  </div>
+
+  @if (generatedPassword()) {
+    <div class="password-banner">
+      <div class="password-banner-content">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+        <span>Producer created. Temporary password: <strong>{{ generatedPassword() }}</strong> — share this with the producer now, it won't be shown again.</span>
+      </div>
+      <button class="banner-close" (click)="dismissPassword()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+  }
+
+  @if (isLoading()) {
+    <div class="table-skeleton">
+      @for (i of [1,2,3,4]; track i) {
+        <div class="row-skeleton"></div>
+      }
+    </div>
+  } @else {
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Name</th>
+            <th>Email</th>
+            <th>Movies</th>
+            <th>Earnings</th>
+            <th>Balance</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (p of producers(); track p.id) {
+            <tr>
+              <td class="muted">{{ p.id }}</td>
+              <td class="name-cell">
+                <div class="producer-avatar">{{ getInitials(p.name) }}</div>
+                {{ p.name }}
+              </td>
+              <td class="muted">{{ p.email }}</td>
+              <td>{{ p.movies_uploaded }}</td>
+              <td class="amount">RWF {{ p.total_earnings | number }}</td>
+              <td>RWF {{ p.balance | number }}</td>
+              <td>
+                <span class="badge" [class.approved]="p.is_active" [class.suspended]="!p.is_active">
+                  {{ p.is_active ? 'Active' : 'Suspended' }}
+                </span>
+              </td>
+              <td class="actions">
+                @if (!p.is_active) {
+                  <button class="action-btn success" (click)="approve(p.id)" [disabled]="actionId() === p.id">Approve</button>
+                } @else {
+                  <button class="action-btn warn" (click)="suspend(p.id)" [disabled]="actionId() === p.id">Suspend</button>
+                }
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+
+  <!-- Add Producer Modal -->
+  @if (showAddModal()) {
+    <div class="overlay" (click)="closeAddModal()" (keydown.escape)="closeAddModal()">
+      <dialog open class="modal" (click)="$event.stopPropagation()" (keydown)="$event.stopPropagation()">
+
+        <div class="modal-header">
+          <h3>Add Producer</h3>
+          <button class="close-btn" (click)="closeAddModal()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          </button>
+        </div>
+
+        <form [formGroup]="form" (ngSubmit)="saveProducer()" class="modal-form">
+
+          <div class="form-row">
+            <div class="field" [class.error]="(form.get('first_name')?.invalid && form.get('first_name')?.touched) || apiErrors().first_name">
+              <label for="p-first-name">First Name</label>
+              <input id="p-first-name" type="text" formControlName="first_name" placeholder="e.g. John"
+                     (input)="clearFieldError('first_name')" />
+              @if (form.get('first_name')?.invalid && form.get('first_name')?.touched) {
+                <span class="field-error">First name is required</span>
+              } @else if (apiErrors().first_name) {
+                <span class="field-error">{{ apiErrors().first_name }}</span>
+              }
+            </div>
+            <div class="field" [class.error]="(form.get('last_name')?.invalid && form.get('last_name')?.touched) || apiErrors().last_name">
+              <label for="p-last-name">Last Name</label>
+              <input id="p-last-name" type="text" formControlName="last_name" placeholder="e.g. Doe"
+                     (input)="clearFieldError('last_name')" />
+              @if (form.get('last_name')?.invalid && form.get('last_name')?.touched) {
+                <span class="field-error">Last name is required</span>
+              } @else if (apiErrors().last_name) {
+                <span class="field-error">{{ apiErrors().last_name }}</span>
+              }
+            </div>
+          </div>
+
+          <div class="field" [class.error]="(form.get('email')?.invalid && form.get('email')?.touched) || apiErrors().email">
+            <label for="p-email">Email Address</label>
+            <input id="p-email" type="email" formControlName="email" placeholder="producer@example.com"
+                   (input)="clearFieldError('email')" />
+            @if (form.get('email')?.touched && form.get('email')?.hasError('required')) {
+              <span class="field-error">Email is required</span>
+            } @else if (form.get('email')?.touched && form.get('email')?.hasError('email')) {
+              <span class="field-error">Enter a valid email address</span>
+            } @else if (apiErrors().email) {
+              <span class="field-error">{{ apiErrors().email }}</span>
+            }
+          </div>
+
+          <div class="field" [class.error]="(form.get('phone_number')?.invalid && form.get('phone_number')?.touched) || apiErrors().phone_number">
+            <label for="p-phone">Phone Number</label>
+            <input id="p-phone" type="tel" formControlName="phone_number" placeholder="e.g. 0780000000"
+                   (input)="clearFieldError('phone_number')" />
+            @if (form.get('phone_number')?.invalid && form.get('phone_number')?.touched) {
+              <span class="field-error">Phone number is required</span>
+            } @else if (apiErrors().phone_number) {
+              <span class="field-error">{{ apiErrors().phone_number }}</span>
+            }
+          </div>
+
+          <div class="modal-actions">
+            <button type="button" class="action-btn neutral" (click)="closeAddModal()">Cancel</button>
+            <button type="submit" class="action-btn gold" [disabled]="isSaving()">
+              {{ isSaving() ? 'Creating...' : 'Create Producer' }}
+            </button>
+          </div>
+
+        </form>
+      </dialog>
+    </div>
+  }
+</div>

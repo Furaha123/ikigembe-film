@@ -1,0 +1,238 @@
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.4} }
+
+$gold:    #C5A253;
+$border:  #2a2a2a;
+$surface: #141414;
+$text:    #e5e5e5;
+$muted:   #888;
+
+.admin-page { max-width: 1200px; }
+
+.page-header {
+  margin-bottom: 1.5rem;
+  h1 { font-size: 1.75rem; font-weight: 700; color: #fff; margin: 0 0 0.3rem; }
+  p  { color: $muted; font-size: 0.875rem; margin: 0; }
+}
+
+// Filter tabs
+.filter-tabs {
+  display: flex;
+  gap: 0.35rem;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.filter-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.4rem 0.85rem;
+  border-radius: 8px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  border: 1px solid $border;
+  background: $surface;
+  color: $muted;
+  cursor: pointer;
+  transition: all 0.15s;
+
+  .tab-count {
+    background: rgba(255,255,255,0.07);
+    border-radius: 20px;
+    padding: 0.05rem 0.45rem;
+    font-size: 0.72rem;
+  }
+
+  &:hover { color: $text; border-color: #444; }
+  &.active { background: $gold; color: #000; border-color: $gold; .tab-count { background: rgba(0,0,0,0.15); } }
+}
+
+// Skeleton
+.table-skeleton {
+  display: flex; flex-direction: column; gap: 0.5rem;
+  .row-skeleton {
+    height: 56px; background: $surface; border: 1px solid $border;
+    border-radius: 8px; animation: pulse 1.5s ease-in-out infinite;
+  }
+}
+
+// Empty
+.empty-state {
+  display: flex; flex-direction: column; align-items: center;
+  padding: 4rem 2rem; color: $muted; gap: 0.75rem;
+  svg { width: 40px; height: 40px; opacity: 0.4; }
+  p { font-size: 0.9rem; margin: 0; }
+}
+
+// Table
+.table-wrap {
+  background: $surface;
+  border: 1px solid $border;
+  border-radius: 12px;
+  overflow: hidden;
+
+  table {
+    width: 100%; border-collapse: collapse;
+    th {
+      padding: 0.85rem 1rem;
+      text-align: left;
+      font-size: 0.75rem; font-weight: 600;
+      letter-spacing: 0.06em; text-transform: uppercase;
+      color: $muted; border-bottom: 1px solid $border;
+    }
+    td {
+      padding: 0.9rem 1rem; font-size: 0.875rem; color: $text;
+      border-bottom: 1px solid rgba(255,255,255,0.04);
+      vertical-align: middle;
+      &.muted { color: $muted; }
+      &.amount { font-weight: 600; }
+    }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: rgba(255,255,255,0.02); }
+  }
+}
+
+.producer-cell {
+  display: flex; align-items: center; gap: 0.65rem;
+}
+
+.producer-avatar {
+  width: 32px; height: 32px; border-radius: 6px;
+  background: $gold; color: #000;
+  font-size: 0.65rem; font-weight: 800;
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+}
+
+.producer-name { font-weight: 500; font-size: 0.875rem; }
+.producer-email { font-size: 0.78rem; margin-top: 1px; }
+
+.badge {
+  display: inline-block; padding: 0.2rem 0.65rem;
+  border-radius: 20px; font-size: 0.72rem; font-weight: 600;
+  &.badge-pending   { background: rgba(234,179,8,0.12);  color: #facc15; }
+  &.badge-approved  { background: rgba(59,130,246,0.12); color: #60a5fa; }
+  &.badge-completed { background: rgba(34,197,94,0.12);  color: #4ade80; }
+  &.badge-rejected  { background: rgba(239,68,68,0.12);  color: #f87171; }
+}
+
+.actions {
+  display: flex; gap: 0.4rem; flex-wrap: wrap;
+}
+
+.action-btn {
+  display: inline-flex; align-items: center; gap: 0.35rem;
+  padding: 0.35rem 0.8rem; border-radius: 6px;
+  font-size: 0.78rem; font-weight: 600;
+  border: 1px solid transparent; cursor: pointer; transition: opacity 0.2s;
+  white-space: nowrap;
+  &:disabled { opacity: 0.4; cursor: not-allowed; }
+  &:hover:not(:disabled) { opacity: 0.75; }
+  &.success  { background: rgba(34,197,94,0.12);    color: #4ade80; border-color: rgba(34,197,94,0.2); }
+  &.danger   { background: rgba(239,68,68,0.12);    color: #f87171; border-color: rgba(239,68,68,0.2); }
+  &.neutral  { background: rgba(255,255,255,0.06);  color: $text;   border-color: $border; }
+  &.gold     { background: $gold; color: #000; border-color: $gold; font-weight: 700; }
+}
+
+// Overlay
+.overlay {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.75);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 200;
+  backdrop-filter: blur(2px);
+}
+
+// Detail modal
+dialog.detail-modal {
+  position: relative; inset: auto; margin: 0;
+  background: #1c1c1c;
+  border: 1px solid $border;
+  border-radius: 16px;
+  padding: 0;
+  width: 90%; max-width: 500px;
+  color: $text;
+}
+
+.modal-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 1.4rem 1.75rem 1rem;
+  border-bottom: 1px solid $border;
+  h3 { font-size: 1.05rem; font-weight: 700; color: #fff; margin: 0; }
+}
+
+.close-btn {
+  background: none; border: none; cursor: pointer;
+  color: $muted; padding: 0.25rem;
+  display: flex; align-items: center; border-radius: 6px;
+  transition: color 0.15s, background 0.15s;
+  svg { width: 18px; height: 18px; }
+  &:hover { color: #fff; background: rgba(255,255,255,0.06); }
+}
+
+.detail-body {
+  padding: 1.5rem 1.75rem;
+  display: flex; flex-direction: column; gap: 1.25rem;
+}
+
+.detail-amount {
+  display: flex; flex-direction: column; gap: 0.25rem;
+  background: rgba(197,162,83,0.07);
+  border: 1px solid rgba(197,162,83,0.2);
+  border-radius: 10px; padding: 0.9rem 1.1rem;
+
+  .detail-amount-label { font-size: 0.75rem; color: $muted; text-transform: uppercase; letter-spacing: 0.05em; }
+  .detail-amount-value { font-size: 1.35rem; font-weight: 700; color: $gold; }
+}
+
+.detail-section {
+  display: flex; flex-direction: column; gap: 0.65rem;
+}
+
+.section-label {
+  font-size: 0.72rem; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 0.06em; color: $muted; margin: 0 0 0.25rem;
+}
+
+.detail-row {
+  display: flex; justify-content: space-between; align-items: center;
+  gap: 1rem; font-size: 0.875rem;
+  .detail-key { color: $muted; flex-shrink: 0; }
+  .detail-val { color: $text; text-align: right; }
+  .muted { color: $muted; }
+}
+
+.modal-actions {
+  display: flex; gap: 0.65rem; justify-content: flex-end; flex-wrap: wrap;
+  padding-top: 0.25rem;
+}
+
+// Confirm modal
+dialog.confirm-modal {
+  position: relative; inset: auto; margin: 0;
+  background: #1c1c1c;
+  border: 1px solid $border;
+  border-radius: 16px;
+  padding: 2rem;
+  width: 90%; max-width: 420px;
+  color: $text;
+  text-align: center;
+
+  .modal-icon {
+    width: 56px; height: 56px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    margin: 0 auto 1.25rem;
+    svg { width: 26px; height: 26px; }
+    &.success { background: rgba(34,197,94,0.12);  color: #4ade80; }
+    &.gold    { background: rgba(197,162,83,0.12); color: $gold; }
+    &.danger  { background: rgba(239,68,68,0.12);  color: #f87171; }
+  }
+
+  h3 { font-size: 1.1rem; font-weight: 700; color: #fff; margin: 0 0 0.75rem; }
+
+  p {
+    font-size: 0.875rem; color: $muted; margin: 0 0 1.75rem; line-height: 1.6;
+    strong { color: $text; font-weight: 600; }
+  }
+
+  .modal-actions { justify-content: center; }
+}

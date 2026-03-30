@@ -1,0 +1,211 @@
+<div class="admin-page">
+
+  <div class="page-header">
+    <div>
+      <h1>Withdrawals</h1>
+      <p>Review and process producer payout requests.</p>
+    </div>
+  </div>
+
+  <!-- Status filter tabs -->
+  <div class="filter-tabs">
+    @for (f of filters; track f) {
+      <button class="filter-tab" [class.active]="activeFilter() === f" (click)="activeFilter.set(f)">
+        {{ f === 'all' ? 'All' : f }}
+        <span class="tab-count">{{ counts()[f] }}</span>
+      </button>
+    }
+  </div>
+
+  @if (isLoading()) {
+    <div class="table-skeleton">
+      @for (i of [1,2,3,4,5]; track i) {
+        <div class="row-skeleton"></div>
+      }
+    </div>
+  } @else if (filtered().length === 0) {
+    <div class="empty-state">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 14l-4-4 4-4"/><path d="M5 10h11a4 4 0 0 1 0 8h-1"/></svg>
+      <p>No {{ activeFilter() === 'all' ? '' : activeFilter().toLowerCase() + ' ' }}withdrawals found.</p>
+    </div>
+  } @else {
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Producer</th>
+            <th>Amount</th>
+            <th>Method</th>
+            <th>Status</th>
+            <th>Requested</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (w of filtered(); track w.id) {
+            <tr>
+              <td class="muted">{{ w.id }}</td>
+              <td class="producer-cell">
+                <div class="producer-avatar">{{ (w.producer_name ? w.producer_name.slice(0,2).toUpperCase() : '??') }}</div>
+                <div>
+                  <div class="producer-name">{{ w.producer_name }}</div>
+                  <div class="producer-email muted">{{ w.producer_email }}</div>
+                </div>
+              </td>
+              <td class="amount">RWF {{ w.amount | number }}</td>
+              <td class="muted">{{ w.payment_method ?? '—' }}</td>
+              <td>
+                <span class="badge" [class]="'badge-' + w.status.toLowerCase()">{{ w.status }}</span>
+              </td>
+              <td class="muted">{{ w.created_at | date:'mediumDate' }}</td>
+              <td class="actions">
+                <button class="action-btn neutral" (click)="openDetail(w)">Details</button>
+                @if (w.status === 'Pending') {
+                  <button class="action-btn success" (click)="openConfirm(w.id, 'approve')" [disabled]="actionId() === w.id">Approve</button>
+                  <button class="action-btn danger" (click)="openConfirm(w.id, 'reject')" [disabled]="actionId() === w.id">Reject</button>
+                }
+                @if (w.status === 'Approved') {
+                  <button class="action-btn gold" (click)="openConfirm(w.id, 'complete')" [disabled]="actionId() === w.id">Mark Paid</button>
+                  <button class="action-btn danger" (click)="openConfirm(w.id, 'reject')" [disabled]="actionId() === w.id">Reject</button>
+                }
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+
+</div>
+
+<!-- Detail drawer -->
+@if (detailItem()) {
+  <div class="overlay" (click)="closeDetail()" (keydown.escape)="closeDetail()">
+    <dialog open class="detail-modal" (click)="$event.stopPropagation()" (keydown)="$event.stopPropagation()">
+
+      <div class="modal-header">
+        <h3>Withdrawal #{{ detailItem()!.id }}</h3>
+        <button class="close-btn" (click)="closeDetail()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+
+      <div class="detail-body">
+        <div class="detail-amount">
+          <span class="detail-amount-label">Amount</span>
+          <span class="detail-amount-value">RWF {{ detailItem()!.amount | number }}</span>
+        </div>
+
+        <div class="detail-section">
+          <div class="detail-row">
+            <span class="detail-key">Status</span>
+            <span class="badge" [class]="'badge-' + detailItem()!.status.toLowerCase()">{{ detailItem()!.status }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-key">Producer</span>
+            <span class="detail-val">{{ detailItem()!.producer_name }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-key">Email</span>
+            <span class="detail-val muted">{{ detailItem()!.producer_email }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-key">Requested</span>
+            <span class="detail-val muted">{{ detailItem()!.created_at | date:'medium' }}</span>
+          </div>
+          @if (detailItem()!.processed_at) {
+            <div class="detail-row">
+              <span class="detail-key">Processed</span>
+              <span class="detail-val muted">{{ detailItem()!.processed_at | date:'medium' }}</span>
+            </div>
+          }
+        </div>
+
+        <div class="detail-section">
+          <p class="section-label">Payment Details</p>
+          <div class="detail-row">
+            <span class="detail-key">Method</span>
+            <span class="detail-val">{{ detailItem()!.payment_method ?? '—' }}</span>
+          </div>
+          @if (detailItem()!.payment_method === 'Bank') {
+            <div class="detail-row">
+              <span class="detail-key">Bank</span>
+              <span class="detail-val">{{ detailItem()!.bank_name ?? '—' }}</span>
+            </div>
+            <div class="detail-row">
+              <span class="detail-key">Account No.</span>
+              <span class="detail-val">{{ detailItem()!.account_number ?? '—' }}</span>
+            </div>
+            <div class="detail-row">
+              <span class="detail-key">Account Name</span>
+              <span class="detail-val">{{ detailItem()!.account_holder_name ?? '—' }}</span>
+            </div>
+          }
+          @if (detailItem()!.payment_method === 'MoMo') {
+            <div class="detail-row">
+              <span class="detail-key">Provider</span>
+              <span class="detail-val">{{ detailItem()!.momo_provider ?? '—' }}</span>
+            </div>
+            <div class="detail-row">
+              <span class="detail-key">MoMo Number</span>
+              <span class="detail-val">{{ detailItem()!.momo_number ?? '—' }}</span>
+            </div>
+          }
+        </div>
+
+        @if (detailItem()!.status === 'Pending' || detailItem()!.status === 'Approved') {
+          <div class="modal-actions">
+            @if (detailItem()!.status === 'Pending') {
+              <button class="action-btn success" (click)="openConfirm(detailItem()!.id, 'approve'); closeDetail()" [disabled]="actionId() === detailItem()!.id">Approve</button>
+            }
+            @if (detailItem()!.status === 'Approved') {
+              <button class="action-btn gold" (click)="openConfirm(detailItem()!.id, 'complete'); closeDetail()" [disabled]="actionId() === detailItem()!.id">Mark as Paid</button>
+            }
+            <button class="action-btn danger" (click)="openConfirm(detailItem()!.id, 'reject'); closeDetail()" [disabled]="actionId() === detailItem()!.id">Reject</button>
+          </div>
+        }
+      </div>
+
+    </dialog>
+  </div>
+}
+
+<!-- Confirm action modal -->
+@if (confirmAction()) {
+  <div class="overlay" (click)="cancelConfirm()" (keydown.escape)="cancelConfirm()">
+    <dialog open class="confirm-modal" (click)="$event.stopPropagation()" (keydown)="$event.stopPropagation()">
+      <div class="modal-icon" [class.success]="confirmAction()!.type === 'approve'" [class.gold]="confirmAction()!.type === 'complete'" [class.danger]="confirmAction()!.type === 'reject'">
+        @if (confirmAction()!.type === 'approve') {
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+        } @else if (confirmAction()!.type === 'complete') {
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22V12m0 0V2m0 10H2m10 0h10"/></svg>
+        } @else {
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+        }
+      </div>
+      <h3>
+        {{ confirmAction()!.type === 'approve' ? 'Approve Withdrawal' : confirmAction()!.type === 'complete' ? 'Mark as Paid' : 'Reject Withdrawal' }}
+      </h3>
+      <p>
+        @if (confirmAction()!.type === 'approve') {
+          This will move the request to <strong>Approved</strong>. The producer will be notified.
+        } @else if (confirmAction()!.type === 'complete') {
+          Confirm that the bank or MoMo transfer has been completed. This action <strong>cannot be undone</strong>.
+        } @else {
+          The withdrawal will be <strong>rejected</strong> and the amount will be refunded to the producer's wallet.
+        }
+      </p>
+      <div class="modal-actions">
+        <button class="action-btn neutral" (click)="cancelConfirm()">Cancel</button>
+        <button class="action-btn"
+          [class.success]="confirmAction()!.type === 'approve'"
+          [class.gold]="confirmAction()!.type === 'complete'"
+          [class.danger]="confirmAction()!.type === 'reject'"
+          (click)="runAction()" [disabled]="actionId() !== null">
+          {{ confirmAction()!.type === 'approve' ? 'Yes, Approve' : confirmAction()!.type === 'complete' ? 'Yes, Mark Paid' : 'Yes, Reject' }}
+        </button>
+      </div>
+    </dialog>
+  </div>
+}

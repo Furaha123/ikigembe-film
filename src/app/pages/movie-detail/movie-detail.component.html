@@ -86,7 +86,7 @@
               </div>
               <p class="similar-name">{{ similar.title || similar.name }}</p>
               <div class="similar-meta">
-                <span>{{ similar.release_date?.substring(0, 4) }}</span>
+                <span>{{ similar.release_date ? similar.release_date.substring(0, 4) : '' }}</span>
                 <span class="similar-type">Movie</span>
               </div>
             </button>

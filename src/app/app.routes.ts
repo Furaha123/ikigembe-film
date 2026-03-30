@@ -22,5 +22,9 @@ export const routes: Routes = [
     path: 'movie/:id',
     canActivate: [authGuard],
     loadComponent: () => import('./pages/movie-detail/movie-detail.component').then(a => a.MovieDetailComponent)
+  },
+  {
+    path: 'admin',
+    loadChildren: () => import('./admin/admin.routes').then(m => m.adminRoutes),
   }
 ];

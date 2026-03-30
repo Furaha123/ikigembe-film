@@ -35,7 +35,7 @@ export class LoginComponent implements AfterViewInit {
   googleBtnContainer = viewChild<ElementRef>('googleBtn');
 
   form = this.fb.group({
-    email: ['', [Validators.required, Validators.email]],
+    identifier: ['', Validators.required],
     password: ['', Validators.required]
   });
 
@@ -44,7 +44,7 @@ export class LoginComponent implements AfterViewInit {
   serverErrors = signal<LoginErrors>({});
   showPassword = signal(false);
 
-  get email() { return this.form.get('email'); }
+  get identifier() { return this.form.get('identifier'); }
   get password() { return this.form.get('password'); }
 
   ngAfterViewInit() {
@@ -78,6 +78,16 @@ export class LoginComponent implements AfterViewInit {
     });
   }
 
+  private navigateByRole() {
+    if (this.authService.isAdmin()) {
+      this.router.navigate(['/admin/dashboard']);
+    } else if (this.authService.userRole() === 'Producer') {
+      this.router.navigate(['/producer/dashboard']);
+    } else {
+      this.router.navigate(['/browse']);
+    }
+  }
+
   private handleGoogleCredential(idToken: string) {
     this.googleLoading.set(true);
     this.serverErrors.set({});
@@ -85,7 +95,7 @@ export class LoginComponent implements AfterViewInit {
     this.authService.loginWithGoogle(idToken).subscribe({
       next: () => {
         this.googleLoading.set(false);
-        this.router.navigate(['/browse']);
+        this.navigateByRole();
       },
       error: (err) => {
         this.googleLoading.set(false);
@@ -105,12 +115,12 @@ export class LoginComponent implements AfterViewInit {
     this.isLoading.set(true);
     this.serverErrors.set({});
 
-    const { email, password } = this.form.value as { email: string; password: string };
+    const { identifier, password } = this.form.value as { identifier: string; password: string };
 
-    this.authService.login(email, password).subscribe({
+    this.authService.login(identifier, password).subscribe({
       next: () => {
         this.isLoading.set(false);
-        this.router.navigate(['/browse']);
+        this.navigateByRole();
       },
       error: (err) => {
         this.isLoading.set(false);

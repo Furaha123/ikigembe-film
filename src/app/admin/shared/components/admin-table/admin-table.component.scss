@@ -1,0 +1,231 @@
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.4} }
+
+$gold:    #C5A253;
+$border:  #2a2a2a;
+$surface: #141414;
+$text:    #e5e5e5;
+$muted:   #888;
+
+.at-wrapper { width: 100%; }
+
+// Toolbar
+.at-toolbar {
+  display: flex;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.at-search-wrap {
+  position: relative;
+  max-width: 320px;
+  width: 100%;
+
+  .at-search-icon {
+    position: absolute;
+    left: 0.75rem;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 14px; height: 14px;
+    color: $muted;
+    pointer-events: none;
+  }
+}
+
+.at-search-input {
+  width: 100%;
+  background: $surface;
+  border: 1px solid $border;
+  border-radius: 8px;
+  padding: 0.55rem 0.9rem 0.55rem 2.2rem;
+  color: $text;
+  font-size: 0.875rem;
+  outline: none;
+  transition: border-color 0.2s;
+  box-sizing: border-box;
+
+  &::placeholder { color: $muted; }
+  &:focus { border-color: rgba(197,162,83,0.5); }
+}
+
+// Skeleton
+.at-skeleton {
+  display: flex; flex-direction: column; gap: 0.4rem;
+  .at-skel-row {
+    height: 56px;
+    background: $surface;
+    border: 1px solid $border;
+    border-radius: 8px;
+    animation: pulse 1.5s ease-in-out infinite;
+  }
+}
+
+// Table
+.at-table-wrap {
+  background: $surface;
+  border: 1px solid $border;
+  border-radius: 12px;
+  overflow: hidden;
+  overflow-x: auto;
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 500px;
+  }
+
+  th {
+    padding: 0.8rem 1rem;
+    text-align: left;
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    color: $muted;
+    border-bottom: 1px solid $border;
+    background: rgba(255,255,255,0.02);
+    white-space: nowrap;
+  }
+
+  td {
+    padding: 0.9rem 1rem;
+    font-size: 0.875rem;
+    color: $text;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+    vertical-align: middle;
+  }
+
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: rgba(255,255,255,0.025); }
+}
+
+.muted { color: $muted; }
+
+.col-actions { width: 1%; white-space: nowrap; }
+
+.at-empty {
+  text-align: center;
+  padding: 3rem 1rem !important;
+  color: $muted;
+  font-size: 0.875rem;
+}
+
+// Avatar cell
+.at-name-cell {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  font-weight: 500;
+}
+
+.at-avatar {
+  width: 34px; height: 34px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.65rem;
+  font-weight: 800;
+  color: #fff;
+  flex-shrink: 0;
+  letter-spacing: 0.02em;
+}
+
+// Status badge
+.at-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.25rem 0.65rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  white-space: nowrap;
+
+  .at-dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  &.active  { background: rgba(34,197,94,0.1);  color: #4ade80; .at-dot { background: #4ade80; } }
+  &.inactive { background: rgba(239,68,68,0.1); color: #f87171; .at-dot { background: #f87171; } }
+}
+
+// Actions row (used by consumers via template)
+.at-actions-row {
+  display: flex;
+  gap: 0.4rem;
+  align-items: center;
+}
+
+// Pagination
+.at-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.9rem 0;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.at-rows-per-page {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-size: 0.8rem;
+  color: $muted;
+
+  select {
+    background: $surface;
+    border: 1px solid $border;
+    border-radius: 6px;
+    color: $text;
+    padding: 0.3rem 0.6rem;
+    font-size: 0.8rem;
+    outline: none;
+    cursor: pointer;
+    &:focus { border-color: rgba(197,162,83,0.5); }
+  }
+}
+
+.at-range {
+  font-size: 0.8rem;
+  color: $muted;
+}
+
+.at-page-controls {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.at-pg-btn {
+  width: 32px; height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  border: 1px solid $border;
+  background: $surface;
+  color: $text;
+  cursor: pointer;
+  font-size: 0.8rem;
+  font-weight: 600;
+  transition: border-color 0.15s, background 0.15s, color 0.15s;
+
+  svg { width: 14px; height: 14px; }
+
+  &:hover:not(:disabled) { border-color: $gold; color: $gold; }
+  &:disabled { opacity: 0.3; cursor: not-allowed; }
+
+  &.at-pg-num { width: auto; min-width: 32px; padding: 0 0.45rem; }
+  &.at-pg-num.active { background: $gold; border-color: $gold; color: #000; }
+}
+
+.at-ellipsis {
+  width: 32px;
+  text-align: center;
+  color: $muted;
+  font-size: 0.85rem;
+  line-height: 32px;
+}

@@ -20,11 +20,34 @@
       </svg>
       <span class="notification-badge">3</span>
     </button>
-    <div class="user-menu">
+    <div class="user-menu" (click)="toggleDropdown($event)">
       <div class="avatar">{{ initials() }}</div>
-      <svg class="dropdown-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+      <svg class="dropdown-icon" [class.open]="showDropdown()" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
         <path d="M7 10l5 5 5-5z"/>
       </svg>
+
+      @if (showDropdown()) {
+        <div class="dropdown-menu">
+          <div class="dropdown-user">
+            <div class="avatar-sm">{{ initials() }}</div>
+            <span>My Account</span>
+          </div>
+          <hr class="dropdown-divider">
+          <button class="dropdown-item logout" (click)="logout()" [disabled]="isLoggingOut()">
+            @if (isLoggingOut()) {
+              <span class="logout-spinner"></span>
+              Signing out...
+            } @else {
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+                <polyline points="16 17 21 12 16 7"/>
+                <line x1="21" y1="12" x2="9" y2="12"/>
+              </svg>
+              Sign Out
+            }
+          </button>
+        </div>
+      }
     </div>
   </div>
 </header>

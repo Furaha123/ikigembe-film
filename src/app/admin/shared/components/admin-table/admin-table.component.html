@@ -1,0 +1,149 @@
+<div class="at-wrapper">
+
+  <!-- Search -->
+  @if (searchable) {
+    <div class="at-toolbar">
+      <div class="at-search-wrap">
+        <svg class="at-search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/>
+        </svg>
+        <input
+          type="text"
+          class="at-search-input"
+          placeholder="Search..."
+          [value]="searchQuery()"
+          (input)="onSearch($any($event.target).value)"
+        />
+      </div>
+    </div>
+  }
+
+  <!-- Skeleton -->
+  @if (loading) {
+    <div class="at-skeleton">
+      @for (i of [1,2,3,4,5,6,7]; track i) {
+        <div class="at-skel-row"></div>
+      }
+    </div>
+
+  } @else {
+
+    <!-- Table -->
+    <div class="at-table-wrap">
+      <table>
+        <thead>
+          <tr>
+            @for (col of columns; track col.key) {
+              <th [style.width]="col.width ?? 'auto'">{{ col.label }}</th>
+            }
+            @if (actionsTemplate) {
+              <th class="col-actions">Actions</th>
+            }
+          </tr>
+        </thead>
+        <tbody>
+          @for (row of pagedRows(); track $index) {
+            <tr>
+              @for (col of columns; track col.key) {
+                <td [class.muted]="col.muted">
+
+                  @switch (col.type) {
+
+                    @case ('avatar') {
+                      <div class="at-name-cell">
+                        <div class="at-avatar" [style.background]="getAvatarColor(cellValue(row, col.key) || cellValue(row, col.fallbackKey ?? col.key))">
+                          {{ getInitials(cellValue(row, col.key) || cellValue(row, col.fallbackKey ?? col.key)) }}
+                        </div>
+                        <span>{{ cellValue(row, col.key) || (col.fallbackKey ? cellValue(row, col.fallbackKey) : '—') }}</span>
+                      </div>
+                    }
+
+                    @case ('status') {
+                      <span class="at-status" [class.active]="isActive(cellValue(row, col.key))" [class.inactive]="!isActive(cellValue(row, col.key))">
+                        <span class="at-dot"></span>
+                        {{ statusLabel(cellValue(row, col.key)) }}
+                      </span>
+                    }
+
+                    @case ('date') {
+                      {{ cellValue(row, col.key) | date:'dd MMM yyyy, h:mm a' }}
+                    }
+
+                    @case ('currency') {
+                      RWF {{ cellValue(row, col.key) | number }}
+                    }
+
+                    @case ('number') {
+                      {{ cellValue(row, col.key) | number }}
+                    }
+
+                    @default {
+                      {{ cellValue(row, col.key) ?? '—' }}
+                    }
+
+                  }
+
+                </td>
+              }
+
+              @if (actionsTemplate) {
+                <td class="col-actions">
+                  <div class="at-actions-row">
+                    <ng-container *ngTemplateOutlet="actionsTemplate; context: { $implicit: row }"></ng-container>
+                  </div>
+                </td>
+              }
+            </tr>
+          }
+
+          @if (pagedRows().length === 0) {
+            <tr>
+              <td [attr.colspan]="columns.length + (actionsTemplate ? 1 : 0)" class="at-empty">
+                No records found.
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Pagination -->
+    <div class="at-pagination">
+      <div class="at-rows-per-page">
+        <span>Rows per page</span>
+        <select [ngModel]="rowsPerPage()" (ngModelChange)="onRowsChange($event)">
+          @for (opt of rowsOptions; track opt) {
+            <option [value]="opt">{{ opt }}</option>
+          }
+        </select>
+      </div>
+
+      <span class="at-range">{{ rangeStart() }}–{{ rangeEnd() }} of {{ totalRows() }} rows</span>
+
+      <div class="at-page-controls">
+        <button class="at-pg-btn" (click)="goToPage(1)" [disabled]="currentPage() === 1" title="First">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="11 17 6 12 11 7"/><polyline points="18 17 13 12 18 7"/></svg>
+        </button>
+        <button class="at-pg-btn" (click)="prevPage()" [disabled]="currentPage() === 1" title="Previous">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+        </button>
+
+        @for (p of visiblePages(); track $index) {
+          @if (p === '...') {
+            <span class="at-ellipsis">…</span>
+          } @else {
+            <button class="at-pg-btn at-pg-num" [class.active]="currentPage() === p" (click)="goToPage(p)">{{ p }}</button>
+          }
+        }
+
+        <button class="at-pg-btn" (click)="nextPage()" [disabled]="currentPage() === totalPages()" title="Next">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+        </button>
+        <button class="at-pg-btn" (click)="goToPage(totalPages())" [disabled]="currentPage() === totalPages()" title="Last">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="13 17 18 12 13 7"/><polyline points="6 17 11 12 6 7"/></svg>
+        </button>
+      </div>
+    </div>
+
+  }
+</div>

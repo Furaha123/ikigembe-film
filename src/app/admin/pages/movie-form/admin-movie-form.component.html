@@ -1,0 +1,234 @@
+<div class="form-page">
+
+  <div class="form-page-header">
+    <button class="back-btn" type="button" (click)="cancel()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+      Movies
+    </button>
+    <div>
+      <h1>Add Movie</h1>
+      <p>Fill in the details below to publish a new movie on the platform.</p>
+    </div>
+  </div>
+
+  <form [formGroup]="form" (ngSubmit)="save()" class="movie-form" novalidate>
+
+    <!-- ─── Basic Info ─── -->
+    <section class="form-section">
+      <h2 class="section-title">Basic Info</h2>
+
+      <div class="field full">
+        <label for="f-title">Title <span class="req">*</span></label>
+        <input id="f-title" type="text" formControlName="title" placeholder="e.g. Ireme rya Gasabo" />
+        @if (form.get('title')?.invalid && form.get('title')?.touched) {
+          <span class="field-error">Title is required</span>
+        }
+      </div>
+
+      <div class="field full">
+        <label for="f-overview">Overview <span class="req">*</span></label>
+        <textarea id="f-overview" formControlName="overview" rows="4" placeholder="Short description of the movie..."></textarea>
+        @if (form.get('overview')?.invalid && form.get('overview')?.touched) {
+          <span class="field-error">Overview is required</span>
+        }
+      </div>
+
+      <div class="form-row">
+        <div class="field">
+          <label for="f-release">Release Date <span class="req">*</span></label>
+          <input id="f-release" type="date" formControlName="release_date" />
+          @if (form.get('release_date')?.invalid && form.get('release_date')?.touched) {
+            <span class="field-error">Release date is required</span>
+          }
+        </div>
+        <div class="field">
+          <label for="f-producer">Producer</label>
+          <input id="f-producer" type="text" formControlName="producer" placeholder="e.g. Jean Pierre" />
+        </div>
+      </div>
+    </section>
+
+    <!-- ─── Media Files ─── -->
+    <section class="form-section">
+      <h2 class="section-title">Media Files</h2>
+
+      <div class="form-row">
+        <!-- Thumbnail -->
+        <div class="field">
+          <label>Thumbnail <span class="req">*</span> <span class="hint">300×450px recommended</span></label>
+          @if (!thumbnailFile()) {
+            <label class="file-drop" for="f-thumbnail">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 16l4-4 4 4 4-5 4 5"/><rect x="3" y="3" width="18" height="18" rx="2"/></svg>
+              <span>Click to upload image</span>
+              <span class="file-hint">JPG, PNG, WEBP</span>
+              <input id="f-thumbnail" type="file" accept="image/*" (change)="onFileChange($event, 'thumbnail')" />
+            </label>
+          } @else {
+            <div class="file-selected">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+              <div class="file-info">
+                <span class="file-name">{{ thumbnailFile()!.name }}</span>
+                <span class="file-size">{{ formatBytes(thumbnailFile()!.size) }}</span>
+              </div>
+              <button type="button" class="file-remove" (click)="removeFile('thumbnail')">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+              </button>
+            </div>
+          }
+          @if (filesError().thumbnail) {
+            <span class="field-error">{{ filesError().thumbnail }}</span>
+          }
+        </div>
+
+        <!-- Backdrop -->
+        <div class="field">
+          <label>Backdrop <span class="hint">1280×720px recommended</span></label>
+          @if (!backdropFile()) {
+            <label class="file-drop" for="f-backdrop">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 16l4-4 4 4 4-5 4 5"/><rect x="3" y="3" width="18" height="18" rx="2"/></svg>
+              <span>Click to upload image</span>
+              <span class="file-hint">JPG, PNG, WEBP</span>
+              <input id="f-backdrop" type="file" accept="image/*" (change)="onFileChange($event, 'backdrop')" />
+            </label>
+          } @else {
+            <div class="file-selected">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+              <div class="file-info">
+                <span class="file-name">{{ backdropFile()!.name }}</span>
+                <span class="file-size">{{ formatBytes(backdropFile()!.size) }}</span>
+              </div>
+              <button type="button" class="file-remove" (click)="removeFile('backdrop')">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+              </button>
+            </div>
+          }
+        </div>
+      </div>
+
+      <div class="form-row">
+        <!-- Video File -->
+        <div class="field">
+          <label>Video File <span class="req">*</span></label>
+          @if (!videoFile()) {
+            <label class="file-drop" for="f-video">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>
+              <span>Click to upload video</span>
+              <span class="file-hint">MP4, MKV, MOV</span>
+              <input id="f-video" type="file" accept="video/*" (change)="onFileChange($event, 'video')" />
+            </label>
+          } @else {
+            <div class="file-selected">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>
+              <div class="file-info">
+                <span class="file-name">{{ videoFile()!.name }}</span>
+                <span class="file-size">{{ formatBytes(videoFile()!.size) }}</span>
+              </div>
+              <button type="button" class="file-remove" (click)="removeFile('video')">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+              </button>
+            </div>
+          }
+          @if (filesError().video) {
+            <span class="field-error">{{ filesError().video }}</span>
+          }
+        </div>
+
+        <!-- Trailer File -->
+        <div class="field">
+          <label>Trailer File <span class="hint">Optional</span></label>
+          @if (!trailerFile()) {
+            <label class="file-drop" for="f-trailer">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>
+              <span>Click to upload trailer</span>
+              <span class="file-hint">MP4, MKV, MOV</span>
+              <input id="f-trailer" type="file" accept="video/*" (change)="onFileChange($event, 'trailer')" />
+            </label>
+          } @else {
+            <div class="file-selected">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>
+              <div class="file-info">
+                <span class="file-name">{{ trailerFile()!.name }}</span>
+                <span class="file-size">{{ formatBytes(trailerFile()!.size) }}</span>
+              </div>
+              <button type="button" class="file-remove" (click)="removeFile('trailer')">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+              </button>
+            </div>
+          }
+        </div>
+      </div>
+    </section>
+
+    <!-- ─── Details ─── -->
+    <section class="form-section">
+      <h2 class="section-title">Details</h2>
+
+      <div class="form-row three-col">
+        <div class="field">
+          <label for="f-price">Price (RWF)</label>
+          <input id="f-price" type="number" formControlName="price" min="0" placeholder="0" />
+        </div>
+        <div class="field">
+          <label for="f-duration">Duration (minutes)</label>
+          <input id="f-duration" type="number" formControlName="duration_minutes" min="0" placeholder="0" />
+        </div>
+        <div class="field">
+          <label for="f-trailer-duration">Trailer Duration (seconds)</label>
+          <input id="f-trailer-duration" type="number" formControlName="trailer_duration_seconds" min="0" placeholder="0" />
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="field">
+          <label for="f-cast">Cast <span class="hint">Comma-separated names</span></label>
+          <input id="f-cast" type="text" formControlName="cast" placeholder='e.g. Alice, Bob, Charlie' />
+        </div>
+        <div class="field">
+          <label for="f-genres">Genres <span class="hint">Comma-separated</span></label>
+          <input id="f-genres" type="text" formControlName="genres" placeholder='e.g. Drama, Romance' />
+        </div>
+      </div>
+    </section>
+
+    <!-- ─── Settings ─── -->
+    <section class="form-section">
+      <h2 class="section-title">Settings</h2>
+      <div class="toggles-row">
+        <label class="toggle-field">
+          <div class="toggle-info">
+            <span class="toggle-label">Active</span>
+            <span class="toggle-desc">Movie is visible and available on the platform</span>
+          </div>
+          <div class="toggle-wrap">
+            <input type="checkbox" formControlName="is_active" class="toggle-input" id="t-active" />
+            <label for="t-active" class="toggle-track"></label>
+          </div>
+        </label>
+        <label class="toggle-field">
+          <div class="toggle-info">
+            <span class="toggle-label">Free Preview</span>
+            <span class="toggle-desc">Allow non-paying viewers to watch a short preview</span>
+          </div>
+          <div class="toggle-wrap">
+            <input type="checkbox" formControlName="has_free_preview" class="toggle-input" id="t-preview" />
+            <label for="t-preview" class="toggle-track"></label>
+          </div>
+        </label>
+      </div>
+    </section>
+
+    <!-- ─── Error ─── -->
+    @if (saveError()) {
+      <div class="save-error">{{ saveError() }}</div>
+    }
+
+    <!-- ─── Actions ─── -->
+    <div class="form-actions">
+      <button type="button" class="btn neutral" (click)="cancel()" [disabled]="isSaving()">Cancel</button>
+      <button type="submit" class="btn gold" [disabled]="isSaving()">
+        {{ isSaving() ? 'Saving...' : 'Publish Movie' }}
+      </button>
+    </div>
+
+  </form>
+</div>

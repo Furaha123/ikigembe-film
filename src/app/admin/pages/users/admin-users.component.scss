@@ -1,0 +1,107 @@
+$gold:    #C5A253;
+$border:  #2a2a2a;
+$text:    #e5e5e5;
+$muted:   #888;
+
+.admin-page { max-width: 1200px; }
+
+.page-header {
+  margin-bottom: 1.5rem;
+  h1 { font-size: 1.75rem; font-weight: 700; color: #fff; margin: 0 0 0.3rem; }
+  p  { color: $muted; font-size: 0.875rem; margin: 0; }
+}
+
+// Action buttons used inside the actions template
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.35rem 0.75rem;
+  border-radius: 6px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: opacity 0.15s;
+  white-space: nowrap;
+
+  svg { width: 13px; height: 13px; flex-shrink: 0; }
+
+  &:disabled { opacity: 0.4; cursor: not-allowed; }
+  &:hover:not(:disabled) { opacity: 0.75; }
+
+  &.warn    { background: rgba(234,179,8,0.1);    color: #facc15; border-color: rgba(234,179,8,0.2); }
+  &.danger  { background: rgba(239,68,68,0.1);    color: #f87171; border-color: rgba(239,68,68,0.2); }
+  &.neutral { background: rgba(255,255,255,0.06); color: $text;   border-color: $border; }
+}
+
+.suspended-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.35rem 0.75rem;
+  border-radius: 6px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  background: rgba(239,68,68,0.08);
+  color: #f87171;
+  border: 1px solid rgba(239,68,68,0.15);
+
+  svg { width: 13px; height: 13px; flex-shrink: 0; }
+}
+
+// Confirmation modals
+.overlay {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.75);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 200;
+  backdrop-filter: blur(2px);
+}
+
+dialog.modal {
+  position: relative;
+  inset: auto;
+  margin: 0;
+  background: #1c1c1c;
+  border: 1px solid $border;
+  border-radius: 16px;
+  padding: 2rem;
+  max-width: 420px;
+  width: 90%;
+  color: $text;
+  text-align: center;
+
+  .modal-icon {
+    width: 56px; height: 56px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    margin: 0 auto 1.25rem;
+    svg { width: 26px; height: 26px; }
+
+    &.warn   { background: rgba(234,179,8,0.12); color: #facc15; }
+    &.danger { background: rgba(239,68,68,0.12); color: #f87171; }
+  }
+
+  h3 {
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: #fff;
+    margin: 0 0 0.75rem;
+  }
+
+  p {
+    font-size: 0.875rem;
+    color: $muted;
+    margin: 0 0 1.75rem;
+    line-height: 1.6;
+
+    strong { color: $text; font-weight: 600; }
+  }
+
+  .modal-actions {
+    display: flex;
+    gap: 0.75rem;
+    justify-content: center;
+  }
+}

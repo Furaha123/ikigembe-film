@@ -1,0 +1,79 @@
+<div class="admin-page">
+  <div class="page-header">
+    <h1>Users</h1>
+    <p>Manage all registered viewers on the platform.</p>
+  </div>
+
+  <app-admin-table
+    [columns]="columns"
+    [data]="$any(users())"
+    [loading]="isLoading()"
+    [actionsTemplate]="actions"
+  />
+
+  <ng-template #actions let-user>
+    @if (user['is_active']) {
+      <button class="btn warn" (click)="openSuspendConfirm(user['id'])" [disabled]="actionId() === user['id']">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>
+        Suspend
+      </button>
+      <button class="btn danger" (click)="openDeleteConfirm(user['id'])" [disabled]="actionId() === user['id']">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg>
+        Delete
+      </button>
+    } @else {
+      <span class="suspended-label">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>
+        Suspended
+      </span>
+      <button class="btn danger" (click)="openDeleteConfirm(user['id'])" [disabled]="actionId() === user['id']">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg>
+        Delete
+      </button>
+    }
+  </ng-template>
+
+  <!-- Suspend confirmation modal -->
+  @if (confirmSuspendId() !== null) {
+    <div class="overlay" (click)="cancelSuspend()" (keydown.escape)="cancelSuspend()">
+      <dialog open class="modal" (click)="$event.stopPropagation()" (keydown)="$event.stopPropagation()">
+        <div class="modal-icon warn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>
+        </div>
+        <h3>Suspend User</h3>
+        <p>
+          You are about to suspend <strong>{{ targetUserName() }}</strong>.
+          They will lose access to the platform until their account is reactivated.
+        </p>
+        <div class="modal-actions">
+          <button class="btn neutral" (click)="cancelSuspend()">Cancel</button>
+          <button class="btn warn" (click)="confirmSuspend()" [disabled]="actionId() !== null">
+            @if (actionId() !== null) { Suspending... } @else { Yes, Suspend }
+          </button>
+        </div>
+      </dialog>
+    </div>
+  }
+
+  <!-- Delete confirmation modal -->
+  @if (confirmDeleteId() !== null) {
+    <div class="overlay" (click)="cancelDelete()" (keydown.escape)="cancelDelete()">
+      <dialog open class="modal" (click)="$event.stopPropagation()" (keydown)="$event.stopPropagation()">
+        <div class="modal-icon danger">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg>
+        </div>
+        <h3>Delete User</h3>
+        <p>
+          You are about to permanently delete <strong>{{ targetUserName() }}</strong>.
+          This action <strong>cannot be undone</strong> and all their data will be removed.
+        </p>
+        <div class="modal-actions">
+          <button class="btn neutral" (click)="cancelDelete()">Cancel</button>
+          <button class="btn danger" (click)="confirmDelete()" [disabled]="actionId() !== null">
+            @if (actionId() !== null) { Deleting... } @else { Yes, Delete }
+          </button>
+        </div>
+      </dialog>
+    </div>
+  }
+</div>

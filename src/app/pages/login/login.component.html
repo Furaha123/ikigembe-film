@@ -21,19 +21,17 @@
 
       <form [formGroup]="form" (ngSubmit)="onSubmit()" novalidate>
 
-        <div class="field" [class.has-error]="email?.invalid && email?.touched || serverErrors().email">
-          <label for="email">Email address</label>
+        <div class="field" [class.has-error]="identifier?.invalid && identifier?.touched || serverErrors().email">
+          <label for="identifier">Email or Phone</label>
           <input
-            id="email"
-            type="email"
-            formControlName="email"
+            id="identifier"
+            type="text"
+            formControlName="identifier"
             placeholder="you@example.com"
-            autocomplete="email"
+            autocomplete="username"
           />
-          @if (email?.touched && email?.hasError('required')) {
-            <span class="field-error">Email is required.</span>
-          } @else if (email?.touched && email?.hasError('email')) {
-            <span class="field-error">Enter a valid email address.</span>
+          @if (identifier?.touched && identifier?.hasError('required')) {
+            <span class="field-error">Email or phone is required.</span>
           } @else if (serverErrors().email) {
             <span class="field-error">{{ serverErrors().email![0] }}</span>
           }
