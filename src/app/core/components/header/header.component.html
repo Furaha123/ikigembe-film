@@ -20,11 +20,13 @@
       </svg>
       <span class="notification-badge">3</span>
     </button>
-    <div class="user-menu" (click)="toggleDropdown($event)">
-      <div class="avatar">{{ initials() }}</div>
-      <svg class="dropdown-icon" [class.open]="showDropdown()" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-        <path d="M7 10l5 5 5-5z"/>
-      </svg>
+    <div class="user-menu">
+      <button class="user-menu-trigger" (click)="toggleDropdown($event)" type="button">
+        <div class="avatar">{{ initials() }}</div>
+        <svg class="dropdown-icon" [class.open]="showDropdown()" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M7 10l5 5 5-5z"/>
+        </svg>
+      </button>
 
       @if (showDropdown()) {
         <div class="dropdown-menu">
@@ -32,6 +34,14 @@
             <div class="avatar-sm">{{ initials() }}</div>
             <span>My Account</span>
           </div>
+          <hr class="dropdown-divider">
+          <a class="dropdown-item" [routerLink]="'/profile'">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+              <circle cx="12" cy="7" r="4"/>
+            </svg>
+            Profile & Settings
+          </a>
           <hr class="dropdown-divider">
           <button class="dropdown-item logout" (click)="logout()" [disabled]="isLoggingOut()">
             @if (isLoggingOut()) {

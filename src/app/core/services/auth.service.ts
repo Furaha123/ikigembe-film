@@ -1,8 +1,30 @@
 import { Injectable, PLATFORM_ID, inject, signal, computed } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
+import { Observable } from 'rxjs';
 import { tap } from 'rxjs/operators';
 import { RegisterPayload, RegisterResponse, LoginResponse, GoogleAuthPayload, LoginUser } from '../models/auth.interface';
+
+export interface UserProfile {
+  id: number;
+  email: string;
+  first_name: string;
+  last_name: string;
+  phone_number: string | null;
+  role: string;
+  is_active: boolean;
+  is_staff: boolean;
+  date_joined: string;
+}
+
+export interface NotificationPreferences {
+  email_notifications: boolean;
+  sms_notifications: boolean;
+  push_notifications: boolean;
+  new_movie_alerts: boolean;
+  payment_notifications: boolean;
+  promotional_emails: boolean;
+}
 
 export type { RegisterPayload, RegisterErrors } from '../models/auth.interface';
 
@@ -138,6 +160,22 @@ export class AuthService {
       complete: () => { this.clearSession(); onDone?.(); },
       error: () => { this.clearSession(); onDone?.(); },
     });
+  }
+
+  getMe(): Observable<UserProfile> {
+    return this.http.get<UserProfile>(`${this.baseUrl}/auth/me/`);
+  }
+
+  getNotifications(): Observable<NotificationPreferences> {
+    return this.http.get<NotificationPreferences>(`${this.baseUrl}/auth/notifications/`);
+  }
+
+  updateNotifications(prefs: Partial<NotificationPreferences>): Observable<NotificationPreferences> {
+    return this.http.patch<NotificationPreferences>(`${this.baseUrl}/auth/notifications/`, prefs);
+  }
+
+  changePassword(current_password: string, new_password: string): Observable<unknown> {
+    return this.http.post(`${this.baseUrl}/auth/change-password/`, { current_password, new_password });
   }
 
   private clearSession() {

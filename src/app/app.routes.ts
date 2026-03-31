@@ -24,6 +24,15 @@ export const routes: Routes = [
     loadComponent: () => import('./pages/movie-detail/movie-detail.component').then(a => a.MovieDetailComponent)
   },
   {
+    path: 'profile',
+    canActivate: [authGuard],
+    loadComponent: () => import('./pages/profile/profile.component').then(a => a.ProfileComponent)
+  },
+  {
+    path: 'producer',
+    loadChildren: () => import('./producer/producer.routes').then(m => m.producerRoutes),
+  },
+  {
     path: 'admin',
     loadChildren: () => import('./admin/admin.routes').then(m => m.adminRoutes),
   }

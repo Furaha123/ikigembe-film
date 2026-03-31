@@ -72,10 +72,11 @@ $text-dim: rgba(255, 255, 255, 0.7);
   }
 
   .brand-logo {
-    height: 80px;
+    height: 120px;
     object-fit: contain;
     object-position: left;
-    margin-bottom: 1.5rem;
+    margin-bottom: 2rem;
+    filter: drop-shadow(0 4px 16px rgba(0,0,0,0.5));
   }
 
   .brand-headline {
@@ -136,6 +137,12 @@ $text-dim: rgba(255, 255, 255, 0.7);
 .form-inner {
   width: 100%;
   max-width: 400px;
+}
+
+.form-logo {
+  height: 64px;
+  display: block;
+  margin-bottom: 2rem;
 }
 
 .form-header {

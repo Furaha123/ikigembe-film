@@ -1,0 +1,64 @@
+<div class="withdrawals-page">
+  <div class="page-header">
+    <h1>Withdrawals</h1>
+    <p>History of your payout requests.</p>
+  </div>
+
+  <!-- Filter tabs -->
+  <div class="filter-tabs">
+    @for (tab of tabs; track tab) {
+      <button
+        class="tab"
+        [class.active]="activeFilter() === tab"
+        (click)="activeFilter.set(tab)"
+      >
+        {{ tab }}
+        @if (counts()[tab] > 0) {
+          <span class="tab-count">{{ counts()[tab] }}</span>
+        }
+      </button>
+    }
+  </div>
+
+  @if (isLoading()) {
+    <div class="skeleton-list">
+      @for (i of [1,2,3,4]; track i) { <div class="row-skeleton"></div> }
+    </div>
+  } @else if (filtered().length === 0) {
+    <div class="empty-state">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+        <path d="M11.8 10.9c-2.27-.59-3-1.2-3-2.15 0-1.09 1.01-1.85 2.7-1.85 1.78 0 2.44.85 2.5 2.1h2.21c-.07-1.72-1.12-3.3-3.21-3.81V3h-3v2.16c-1.94.42-3.5 1.68-3.5 3.61 0 2.31 1.91 3.46 4.7 4.13 2.5.6 3 1.48 3 2.41 0 .69-.49 1.79-2.7 1.79-2.06 0-2.87-.92-2.98-2.1h-2.2c.12 2.19 1.76 3.42 3.68 3.83V21h3v-2.15c1.95-.37 3.5-1.5 3.5-3.55 0-2.84-2.43-3.81-4.7-4.4z"/>
+      </svg>
+      <p>{{ activeFilter() === 'All' ? 'No withdrawal requests yet.' : 'No ' + activeFilter().toLowerCase() + ' withdrawals.' }}</p>
+    </div>
+  } @else {
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Amount</th>
+            <th>Method</th>
+            <th>Status</th>
+            <th>Requested</th>
+            <th>Processed</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (w of filtered(); track w.id) {
+            <tr>
+              <td class="muted">#{{ w.id }}</td>
+              <td class="amount">RWF {{ w.amount | number }}</td>
+              <td class="muted">{{ w.payment_method || '—' }}</td>
+              <td>
+                <span class="badge" [ngClass]="statusClass(w.status)">{{ w.status }}</span>
+              </td>
+              <td class="muted">{{ w.created_at | date:'mediumDate' }}</td>
+              <td class="muted">{{ w.processed_at ? (w.processed_at | date:'mediumDate') : '—' }}</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+</div>

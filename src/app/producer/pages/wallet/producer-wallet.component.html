@@ -1,0 +1,142 @@
+<div class="wallet-page">
+  <div class="page-header">
+    <h1>Wallet</h1>
+    <p>Your earnings and withdrawal details.</p>
+  </div>
+
+  <!-- Balance cards -->
+  @if (isLoading()) {
+    <div class="stats-grid">
+      @for (i of [1,2,3,4]; track i) { <div class="stat-skeleton"></div> }
+    </div>
+  } @else if (wallet()) {
+    <div class="stats-grid">
+      <div class="stat-card balance">
+        <div class="stat-icon">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M21 18v1c0 1.1-.9 2-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14c1.1 0 2 .9 2 2v1h-9a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h9zm-9-2h10V8H12v8zm4-2.5a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3z"/></svg>
+        </div>
+        <div class="stat-body">
+          <span class="stat-value">{{ formatCurrency(wallet()!.wallet_balance) }}</span>
+          <span class="stat-label">Available Balance</span>
+        </div>
+      </div>
+      <div class="stat-card earnings">
+        <div class="stat-icon">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M16 6l2.29 2.29-4.88 4.88-4-4L2 16.59 3.41 18l6-6 4 4 6.3-6.29L22 12V6h-6z"/></svg>
+        </div>
+        <div class="stat-body">
+          <span class="stat-value">{{ formatCurrency(wallet()!.total_earnings) }}</span>
+          <span class="stat-label">Total Earnings</span>
+        </div>
+      </div>
+      <div class="stat-card withdrawn">
+        <div class="stat-icon">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M11.8 10.9c-2.27-.59-3-1.2-3-2.15 0-1.09 1.01-1.85 2.7-1.85 1.78 0 2.44.85 2.5 2.1h2.21c-.07-1.72-1.12-3.3-3.21-3.81V3h-3v2.16c-1.94.42-3.5 1.68-3.5 3.61 0 2.31 1.91 3.46 4.7 4.13 2.5.6 3 1.48 3 2.41 0 .69-.49 1.79-2.7 1.79-2.06 0-2.87-.92-2.98-2.1h-2.2c.12 2.19 1.76 3.42 3.68 3.83V21h3v-2.15c1.95-.37 3.5-1.5 3.5-3.55 0-2.84-2.43-3.81-4.7-4.4z"/></svg>
+        </div>
+        <div class="stat-body">
+          <span class="stat-value">{{ formatCurrency(wallet()!.total_withdrawn) }}</span>
+          <span class="stat-label">Total Withdrawn</span>
+        </div>
+      </div>
+      <div class="stat-card pending">
+        <div class="stat-icon">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>
+        </div>
+        <div class="stat-body">
+          <span class="stat-value">{{ formatCurrency(wallet()!.pending_withdrawals) }}</span>
+          <span class="stat-label">Pending Payouts</span>
+        </div>
+      </div>
+    </div>
+
+    @if (wallet()!.producer_share_percentage) {
+      <p class="share-note">
+        Your revenue share is <strong>{{ wallet()!.producer_share_percentage }}%</strong> of every ticket sold.
+      </p>
+    }
+  }
+
+  <!-- Withdrawal form -->
+  <div class="form-card">
+    <h2 class="form-title">Request Withdrawal</h2>
+    <p class="form-sub">Minimum withdrawal: RWF 1,000. Processed within 1–2 business days.</p>
+
+    @if (successMsg()) {
+      <div class="alert success">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+        {{ successMsg() }}
+      </div>
+    }
+    @if (apiError()) {
+      <div class="alert error">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg>
+        {{ apiError() }}
+      </div>
+    }
+
+    <form [formGroup]="form" (ngSubmit)="submit()">
+      <!-- Amount -->
+      <div class="field">
+        <label>Amount (RWF)</label>
+        <input type="number" formControlName="amount" placeholder="e.g. 50000" min="1000" />
+        @if (form.get('amount')?.touched && form.get('amount')?.hasError('required')) {
+          <span class="field-error">Amount is required.</span>
+        } @else if (form.get('amount')?.touched && form.get('amount')?.hasError('min')) {
+          <span class="field-error">Minimum withdrawal is RWF 1,000.</span>
+        }
+      </div>
+
+      <!-- Payment method toggle -->
+      <div class="field">
+        <label>Payment Method</label>
+        <div class="method-tabs">
+          <button type="button" class="method-tab" [class.active]="isBank()" (click)="setMethod('Bank')">
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M4 10v7h3v-7H4zm6 0v7h3v-7h-3zM2 22h19v-3H2v3zm14-12v7h3v-7h-3zM11.5 1L2 6v2h19V6l-9.5-5z"/></svg>
+            Bank Transfer
+          </button>
+          <button type="button" class="method-tab" [class.active]="!isBank()" (click)="setMethod('MoMo')">
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M17 1.01L7 1c-1.1 0-2 .9-2 2v18c0 1.1.9 2 2 2h10c1.1 0 2-.9 2-2V3c0-1.1-.9-1.99-2-1.99zM17 19H7V5h10v14z"/></svg>
+            Mobile Money
+          </button>
+        </div>
+      </div>
+
+      <!-- Bank fields -->
+      @if (isBank()) {
+        <div class="field">
+          <label>Bank Name</label>
+          <input type="text" formControlName="bank_name" placeholder="e.g. Bank of Kigali" />
+        </div>
+        <div class="field">
+          <label>Account Number</label>
+          <input type="text" formControlName="account_number" placeholder="e.g. 1234567890" />
+        </div>
+        <div class="field">
+          <label>Account Holder Name</label>
+          <input type="text" formControlName="account_holder_name" placeholder="Full name as on bank account" />
+        </div>
+      } @else {
+        <div class="field">
+          <label>MoMo Number</label>
+          <input type="text" formControlName="momo_number" placeholder="e.g. 07X XXX XXXX" />
+        </div>
+        <div class="field">
+          <label>MoMo Provider</label>
+          <select formControlName="momo_provider">
+            <option value="">Select provider</option>
+            <option value="MTN">MTN Mobile Money</option>
+            <option value="Airtel">Airtel Money</option>
+          </select>
+        </div>
+      }
+
+      <button type="submit" class="submit-btn" [disabled]="isSaving() || form.invalid">
+        @if (isSaving()) {
+          <span class="spinner"></span>Submitting…
+        } @else {
+          Request Withdrawal
+        }
+      </button>
+    </form>
+  </div>
+</div>

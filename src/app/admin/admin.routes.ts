@@ -42,6 +42,10 @@ export const adminRoutes: Routes = [
         path: 'withdrawals',
         loadComponent: () => import('./pages/withdrawals/admin-withdrawals.component').then(m => m.AdminWithdrawalsComponent),
       },
+      {
+        path: 'settings',
+        loadComponent: () => import('../pages/profile/profile.component').then(m => m.ProfileComponent),
+      },
     ],
   },
 ];

@@ -18,17 +18,18 @@ export class AdminLayoutComponent {
   sidebarOpen = signal(true);
 
   navItems = [
-    { label: 'Dashboard', path: '/admin/dashboard', icon: 'dashboard' },
-    { label: 'Users', path: '/admin/users', icon: 'users' },
-    { label: 'Producers', path: '/admin/producers', icon: 'producers' },
-    { label: 'Movies', path: '/admin/movies', icon: 'movies' },
+    { label: 'Dashboard',   path: '/admin/dashboard',   icon: 'dashboard' },
+    { label: 'Users',       path: '/admin/users',       icon: 'users' },
+    { label: 'Producers',   path: '/admin/producers',   icon: 'producers' },
+    { label: 'Movies',      path: '/admin/movies',      icon: 'movies' },
     { label: 'Withdrawals', path: '/admin/withdrawals', icon: 'withdrawals' },
+    { label: 'Settings',    path: '/admin/settings',    icon: 'settings' },
   ];
 
   toggleSidebar() {
     this.sidebarOpen.update(v => !v);
   }
-
+  
   logout() {
     this.isLoggingOut.set(true);
     this.authService.logout(() => {

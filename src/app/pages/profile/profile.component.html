@@ -1,0 +1,194 @@
+<div class="profile-page">
+
+  <!-- ── Account Info ── -->
+  <section class="card">
+    <h2 class="card-title">Account</h2>
+
+    @if (isLoadingProfile()) {
+      <div class="skeleton-block"></div>
+    } @else if (profile()) {
+      <div class="account-header">
+        <div class="account-avatar">{{ getInitials(profile()!) }}</div>
+        <div class="account-meta">
+          <span class="account-name">{{ profile()!.first_name }} {{ profile()!.last_name }}</span>
+          <span class="account-email">{{ profile()!.email }}</span>
+          <span class="role-badge">{{ profile()!.role }}</span>
+        </div>
+      </div>
+
+      <div class="info-grid">
+        <div class="info-item">
+          <span class="info-label">Email</span>
+          <span class="info-val">{{ profile()!.email }}</span>
+        </div>
+        <div class="info-item">
+          <span class="info-label">Phone</span>
+          <span class="info-val">{{ profile()!.phone_number ?? '—' }}</span>
+        </div>
+        <div class="info-item">
+          <span class="info-label">Role</span>
+          <span class="info-val">{{ profile()!.role }}</span>
+        </div>
+        <div class="info-item">
+          <span class="info-label">Member Since</span>
+          <span class="info-val">{{ profile()!.date_joined | date:'mediumDate' }}</span>
+        </div>
+        <div class="info-item">
+          <span class="info-label">Account Status</span>
+          <span class="status-dot" [class.active]="profile()!.is_active">
+            {{ profile()!.is_active ? 'Active' : 'Suspended' }}
+          </span>
+        </div>
+      </div>
+    }
+  </section>
+
+  <!-- ── Notification Preferences ── -->
+  <section class="card">
+    <h2 class="card-title">Notification Preferences</h2>
+    <p class="card-desc">Choose how and when you want to receive notifications.</p>
+
+    @if (isLoadingNotifs()) {
+      <div class="skeleton-block"></div>
+    } @else {
+      <form [formGroup]="notifForm" (ngSubmit)="saveNotifications()" class="notif-form">
+
+        <div class="toggle-list">
+          <label class="toggle-row" for="n-email">
+            <div class="toggle-info">
+              <span class="toggle-label">Email Notifications</span>
+              <span class="toggle-desc">Receive updates and alerts via email</span>
+            </div>
+            <div class="toggle-wrap">
+              <input type="checkbox" id="n-email" formControlName="email_notifications" class="toggle-input" />
+              <label for="n-email" class="toggle-track"></label>
+            </div>
+          </label>
+
+          <label class="toggle-row" for="n-sms">
+            <div class="toggle-info">
+              <span class="toggle-label">SMS Notifications</span>
+              <span class="toggle-desc">Receive text messages for important updates</span>
+            </div>
+            <div class="toggle-wrap">
+              <input type="checkbox" id="n-sms" formControlName="sms_notifications" class="toggle-input" />
+              <label for="n-sms" class="toggle-track"></label>
+            </div>
+          </label>
+
+          <label class="toggle-row" for="n-push">
+            <div class="toggle-info">
+              <span class="toggle-label">Push Notifications</span>
+              <span class="toggle-desc">Browser or app push alerts</span>
+            </div>
+            <div class="toggle-wrap">
+              <input type="checkbox" id="n-push" formControlName="push_notifications" class="toggle-input" />
+              <label for="n-push" class="toggle-track"></label>
+            </div>
+          </label>
+
+          <label class="toggle-row" for="n-movies">
+            <div class="toggle-info">
+              <span class="toggle-label">New Movie Alerts</span>
+              <span class="toggle-desc">Be notified when new movies are published</span>
+            </div>
+            <div class="toggle-wrap">
+              <input type="checkbox" id="n-movies" formControlName="new_movie_alerts" class="toggle-input" />
+              <label for="n-movies" class="toggle-track"></label>
+            </div>
+          </label>
+
+          <label class="toggle-row" for="n-payment">
+            <div class="toggle-info">
+              <span class="toggle-label">Payment Notifications</span>
+              <span class="toggle-desc">Receipts and payment confirmations</span>
+            </div>
+            <div class="toggle-wrap">
+              <input type="checkbox" id="n-payment" formControlName="payment_notifications" class="toggle-input" />
+              <label for="n-payment" class="toggle-track"></label>
+            </div>
+          </label>
+
+          <label class="toggle-row" for="n-promo">
+            <div class="toggle-info">
+              <span class="toggle-label">Promotional Emails</span>
+              <span class="toggle-desc">Deals, offers and platform news</span>
+            </div>
+            <div class="toggle-wrap">
+              <input type="checkbox" id="n-promo" formControlName="promotional_emails" class="toggle-input" />
+              <label for="n-promo" class="toggle-track"></label>
+            </div>
+          </label>
+        </div>
+
+        @if (notifSuccess()) {
+          <div class="success-msg">Preferences saved successfully.</div>
+        }
+        @if (notifError()) {
+          <div class="error-msg">{{ notifError() }}</div>
+        }
+
+        <div class="card-actions">
+          <button type="submit" class="btn gold" [disabled]="isSavingNotifs()">
+            {{ isSavingNotifs() ? 'Saving...' : 'Save Preferences' }}
+          </button>
+        </div>
+      </form>
+    }
+  </section>
+
+  <!-- ── Change Password ── -->
+  <section class="card">
+    <h2 class="card-title">Change Password</h2>
+    <p class="card-desc">Use a strong password of at least 8 characters.</p>
+
+    <form [formGroup]="passwordForm" (ngSubmit)="savePassword()" class="password-form" novalidate>
+
+      <div class="field">
+        <label for="p-current">Current Password</label>
+        <input id="p-current" type="password" formControlName="current_password" placeholder="Enter current password" />
+        @if (passwordForm.get('current_password')?.invalid && passwordForm.get('current_password')?.touched) {
+          <span class="field-error">Current password is required</span>
+        } @else if (passwordErrors().current) {
+          <span class="field-error">{{ passwordErrors().current }}</span>
+        }
+      </div>
+
+      <div class="form-row">
+        <div class="field">
+          <label for="p-new">New Password</label>
+          <input id="p-new" type="password" formControlName="new_password" placeholder="At least 8 characters" />
+          @if (passwordForm.get('new_password')?.touched && passwordForm.get('new_password')?.hasError('required')) {
+            <span class="field-error">New password is required</span>
+          } @else if (passwordForm.get('new_password')?.touched && passwordForm.get('new_password')?.hasError('minlength')) {
+            <span class="field-error">Minimum 8 characters</span>
+          } @else if (passwordErrors().new) {
+            <span class="field-error">{{ passwordErrors().new }}</span>
+          }
+        </div>
+        <div class="field">
+          <label for="p-confirm">Confirm New Password</label>
+          <input id="p-confirm" type="password" formControlName="confirm_password" placeholder="Repeat new password" />
+          @if (passwordErrors()['confirm']) {
+            <span class="field-error">{{ passwordErrors()['confirm'] }}</span>
+          }
+        </div>
+      </div>
+
+      @if (passwordErrors().general) {
+        <div class="error-msg">{{ passwordErrors().general }}</div>
+      }
+      @if (passwordSuccess()) {
+        <div class="success-msg">Password changed successfully.</div>
+      }
+
+      <div class="card-actions">
+        <button type="submit" class="btn gold" [disabled]="isSavingPassword()">
+          {{ isSavingPassword() ? 'Updating...' : 'Update Password' }}
+        </button>
+      </div>
+
+    </form>
+  </section>
+
+</div>
