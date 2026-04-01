@@ -18,6 +18,8 @@ const GOOGLE_CLIENT_ID = '315063576340-7m07t5n12jerr8qjhalushs82h2c5rjl.apps.goo
 interface LoginErrors {
   email?: string[];
   password?: string[];
+  non_field_errors?: string[];
+  detail?: string;
 }
 
 @Component({

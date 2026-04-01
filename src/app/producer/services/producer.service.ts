@@ -1,8 +1,9 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { environment } from '../../../environments/environment';
 
-const BASE = 'https://ikigembe-backend.onrender.com/api';
+const BASE = environment.apiUrl;
 
 export interface ProducerWallet {
   wallet_balance: number;

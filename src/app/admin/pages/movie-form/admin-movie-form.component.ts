@@ -1,8 +1,9 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, inject, signal, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { AdminService } from '../../services/admin.service';
+import { ProducerItem } from '../../models/admin.interface';
 
 @Component({
   selector: 'app-admin-movie-form',
@@ -10,13 +11,21 @@ import { AdminService } from '../../services/admin.service';
   templateUrl: './admin-movie-form.component.html',
   styleUrl: './admin-movie-form.component.scss'
 })
-export class AdminMovieFormComponent {
+export class AdminMovieFormComponent implements OnInit {
   private readonly adminService = inject(AdminService);
   private readonly fb = inject(FormBuilder);
   private readonly router = inject(Router);
 
   isSaving = signal(false);
   saveError = signal<string | null>(null);
+  producers = signal<ProducerItem[]>([]);
+
+  ngOnInit() {
+    this.adminService.getProducers().subscribe({
+      next: (data) => this.producers.set(Array.isArray(data) ? data : (data as any).results ?? []),
+      error: () => {},
+    });
+  }
 
   // File selections
   thumbnailFile = signal<File | null>(null);

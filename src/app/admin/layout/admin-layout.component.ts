@@ -14,6 +14,7 @@ export class AdminLayoutComponent {
 
   readonly initials = this.authService.initials;
   readonly userName = this.authService.userName;
+  readonly userRole = this.authService.userRole;
   isLoggingOut = signal(false);
   sidebarOpen = signal(true);
 

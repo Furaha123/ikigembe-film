@@ -64,6 +64,12 @@
           }
         </div>
 
+        @if (serverErrors().non_field_errors || serverErrors().detail) {
+          <div class="form-error">
+            {{ serverErrors().non_field_errors?.[0] ?? serverErrors().detail }}
+          </div>
+        }
+
         <button type="submit" class="submit-btn" [disabled]="isLoading()">
           @if (isLoading()) {
             <span class="spinner"></span>Signing in…

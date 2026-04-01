@@ -12,7 +12,9 @@ import {
   AdminMovie,
 } from '../models/admin.interface';
 
-const BASE = 'https://ikigembe-backend.onrender.com/api';
+import { environment } from '../../../environments/environment';
+
+const BASE = environment.apiUrl;
 
 @Injectable({ providedIn: 'root' })
 export class AdminService {

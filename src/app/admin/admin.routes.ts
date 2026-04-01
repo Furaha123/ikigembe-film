@@ -1,5 +1,5 @@
 import { Routes } from '@angular/router';
-import { adminGuard, adminGuestGuard } from './guards/admin.guard';
+import { adminGuard } from './guards/admin.guard';
 import { AdminLayoutComponent } from './layout/admin-layout.component';
 
 export const adminRoutes: Routes = [
@@ -7,11 +7,6 @@ export const adminRoutes: Routes = [
     path: '',
     redirectTo: 'dashboard',
     pathMatch: 'full',
-  },
-  {
-    path: 'login',
-    canActivate: [adminGuestGuard],
-    loadComponent: () => import('./pages/login/admin-login.component').then(m => m.AdminLoginComponent),
   },
   {
     path: '',

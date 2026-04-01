@@ -1,8 +1,11 @@
-import { inject } from '@angular/core';
+import { inject, PLATFORM_ID } from '@angular/core';
 import { CanActivateFn, Router } from '@angular/router';
+import { isPlatformBrowser } from '@angular/common';
 import { AuthService } from '../../core/services/auth.service';
 
 export const producerGuard: CanActivateFn = () => {
+  if (!isPlatformBrowser(inject(PLATFORM_ID))) return true;
+
   const auth = inject(AuthService);
   const router = inject(Router);
   if (auth.isLoggedIn() && auth.userRole() === 'Producer') return true;
@@ -11,6 +14,8 @@ export const producerGuard: CanActivateFn = () => {
 };
 
 export const producerGuestGuard: CanActivateFn = () => {
+  if (!isPlatformBrowser(inject(PLATFORM_ID))) return true;
+
   const auth = inject(AuthService);
   const router = inject(Router);
   if (auth.isLoggedIn() && auth.userRole() === 'Producer') {

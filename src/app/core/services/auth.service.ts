@@ -4,6 +4,7 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { tap } from 'rxjs/operators';
 import { RegisterPayload, RegisterResponse, LoginResponse, GoogleAuthPayload, LoginUser } from '../models/auth.interface';
+import { environment } from '../../../environments/environment';
 
 export interface UserProfile {
   id: number;
@@ -39,7 +40,7 @@ const ROLE_KEY     = 'ikigembe_role';
 export class AuthService {
   private readonly http = inject(HttpClient);
   private readonly platformId = inject(PLATFORM_ID);
-  readonly baseUrl = 'https://ikigembe-backend.onrender.com/api';
+  readonly baseUrl = environment.apiUrl;
 
   readonly isLoggedIn = signal<boolean>(
     isPlatformBrowser(this.platformId) ? !!localStorage.getItem(TOKEN_KEY) : false

@@ -1,5 +1,6 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
+import { environment } from '../../../environments/environment';
 import { of } from 'rxjs';
 import {
   MovieListResponse,
@@ -14,7 +15,7 @@ import {
 })
 export class MovieService {
   private readonly http = inject(HttpClient);
-  private readonly baseUrl = 'https://ikigembe-backend.onrender.com/api/movies';
+  private readonly baseUrl = `${environment.apiUrl}/movies`;
 
   getMovies() {
     return this.http.get<MovieListResponse>(`${this.baseUrl}/discover/`);

@@ -4,8 +4,9 @@ import { isPlatformBrowser } from '@angular/common';
 import { throwError, BehaviorSubject, Observable } from 'rxjs';
 import { catchError, filter, take, switchMap } from 'rxjs/operators';
 import { HttpClient } from '@angular/common/http';
+import { environment } from '../../../environments/environment';
 
-const BACKEND_URL = 'https://ikigembe-backend.onrender.com';
+const BACKEND_URL = environment.backendUrl;
 const TOKEN_KEY   = 'ikigembe_token';
 const REFRESH_KEY = 'ikigembe_refresh';
 

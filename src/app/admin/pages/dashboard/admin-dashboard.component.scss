@@ -111,6 +111,58 @@ $muted: #888;
   &.profit     .stat-icon { background: rgba(16,185,129,0.12);  color: #34d399; }
 }
 
+// Charts
+.charts-row {
+  display: flex;
+  gap: 1.25rem;
+  margin-bottom: 2rem;
+  @media (max-width: 860px) { flex-direction: column; }
+}
+
+.chart-card {
+  background: $surface;
+  border: 1px solid $border;
+  border-radius: 12px;
+  padding: 1.5rem;
+  &.flex-bar   { flex: 3; min-width: 0; }
+  &.flex-donut { flex: 2; min-width: 0; }
+  &.skeleton-chart { animation: pulse 1.5s ease-in-out infinite; min-height: 280px; }
+}
+
+.chart-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 1.25rem;
+}
+
+.chart-title {
+  display: block;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: $text;
+  margin-bottom: 0.2rem;
+}
+
+.chart-sub {
+  display: block;
+  font-size: 0.78rem;
+  color: $muted;
+}
+
+.chart-total {
+  font-size: 1rem;
+  font-weight: 700;
+  color: $gold;
+  white-space: nowrap;
+}
+
+.chart-body {
+  height: 220px;
+  position: relative;
+  &.bar-body { height: 240px; }
+}
+
 // Tables
 .table-wrap {
   overflow-x: auto;

@@ -31,35 +31,22 @@ $sidebar-collapsed-w: 64px;
 .admin-shell.sidebar-collapsed .sidebar {
   width: $sidebar-collapsed-w;
 
-  .brand-label,
   .nav-label { display: none; }
-
-  .brand-logo { margin: 0 auto; }
-  .sidebar-brand { justify-content: center; }
   .nav-item, .sidebar-logout { justify-content: center; padding: 0.85rem; }
 }
 
 .sidebar-brand {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
-  padding: 1.25rem 1rem;
+  justify-content: center;
+  padding: 1rem 1.25rem;
   border-bottom: 1px solid $border;
 
   .brand-logo {
-    width: 32px;
-    height: 32px;
+    width: 100%;
+    height: auto;
+    max-height: 72px;
     object-fit: contain;
-    flex-shrink: 0;
-  }
-
-  .brand-label {
-    color: $gold;
-    font-weight: 700;
-    font-size: 0.85rem;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    white-space: nowrap;
   }
 }
 
@@ -170,22 +157,26 @@ $sidebar-collapsed-w: 64px;
     gap: 0.75rem;
   }
 
-  .admin-avatar {
-    width: 34px; height: 34px;
-    border-radius: 6px;
-    background: $gold;
-    color: #000;
-    font-size: 0.75rem;
-    font-weight: 800;
+  .topbar-user {
     display: flex;
-    align-items: center;
-    justify-content: center;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 0.1rem;
   }
 
-  .admin-name {
-    font-size: 0.85rem;
+  .topbar-name {
+    font-size: 0.9rem;
     color: $text;
+    font-weight: 600;
+    line-height: 1;
+  }
+
+  .topbar-role {
+    font-size: 0.72rem;
+    color: $gold;
     font-weight: 500;
+    text-transform: capitalize;
+    line-height: 1;
   }
 }
 
