@@ -1,7 +1,7 @@
 {
   "framework": null,
   "buildCommand": "npm run build",
-  "outputDirectory": "dist/ikigembe-film/browser",
+  "outputDirectory": "dist/ikigembe-film",
   "rewrites": [
     { "source": "/(.*)", "destination": "/index.html" }
   ]
