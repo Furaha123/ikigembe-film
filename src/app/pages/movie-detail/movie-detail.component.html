@@ -13,7 +13,7 @@
   <!-- Hero Section -->
   <section class="hero" [style.background-image]="movie.backdrop_url ? 'url(' + movie.backdrop_url + ')' : 'none'">
     <div class="hero-overlay">
-      <button class="hero-play-btn" (click)="playTrailer()">
+      <button class="hero-play-btn" (click)="playTrailer()" title="Watch Trailer">
         <svg viewBox="0 0 24 24" width="48" height="48" fill="currentColor">
           <path d="M8 5v14l11-7z"/>
         </svg>
@@ -44,6 +44,31 @@
           <span class="runtime">{{ movie.duration_minutes }} min</span>
         </div>
 
+        <!-- CTA Buttons -->
+        <div class="cta-row">
+          @if (movie.trailer_url) {
+            <button class="btn-trailer" (click)="playTrailer()">
+              <svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16"><path d="M8 5v14l11-7z"/></svg>
+              Watch Trailer
+            </button>
+          }
+          @if (movie.video_url) {
+            @if (purchased()) {
+              <button class="btn-watch btn-watch--owned" (click)="watchFullMovie()">
+                <svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16"><path d="M8 5v14l11-7z"/></svg>
+                Watch Movie
+              </button>
+            } @else {
+              <button class="btn-watch" (click)="watchFullMovie()">
+                <svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16">
+                  <path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"/>
+                </svg>
+                Watch Full Movie &mdash; RWF {{ movie.price | number }}
+              </button>
+            }
+          }
+        </div>
+
         <p class="overview">{{ movie.overview }}</p>
 
         <div class="detail-rows">
@@ -55,20 +80,20 @@
             <span class="label">Views:</span>
             <span class="value">{{ movie.views ?? 0 }}</span>
           </div>
-          @if (movie.price) {
-            <div class="detail-row">
-              <span class="label">Price:</span>
-              <span class="value">${{ movie.price }}</span>
+          @if (movie.cast?.length) {
+            <div class="cast-section">
+              <span class="label">Cast</span>
+              <div class="cast-list">
+                @for (name of movie.cast; track name) {
+                  <span class="cast-chip">{{ name }}</span>
+                }
+              </div>
             </div>
           }
-          @if (cast().length) {
+          @if (movie.producer) {
             <div class="detail-row">
-              <span class="label">Casts:</span>
-              <span class="value">
-                @for (actor of cast(); track actor.id; let last = $last) {
-                  {{ actor.name }}{{ last ? '' : ', ' }}
-                }
-              </span>
+              <span class="label">Producer:</span>
+              <span class="value producer-value">{{ movie.producer }}</span>
             </div>
           }
         </div>
@@ -98,22 +123,30 @@
 
   <app-footer />
 
-  <!-- Trailer Player Overlay -->
-  @if (isPlaying() && trailerUrl()) {
-    <div class="player-backdrop" (click)="closePlayer()" (keydown.escape)="closePlayer()">
-      <div class="player-container" (click)="$event.stopPropagation()" (keydown)="$event.stopPropagation()">
+  <!-- Video Player Overlay -->
+  @if (isPlaying() && videoSrc()) {
+    <div class="player-backdrop" (click)="closePlayer()">
+      <div class="player-container" (click)="$event.stopPropagation()">
         <button class="player-close" (click)="closePlayer()">
           <svg viewBox="0 0 24 24" width="28" height="28" fill="currentColor">
             <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
           </svg>
         </button>
-        <iframe
-          [src]="trailerUrl()"
-          title="Movie trailer"
-          allow="autoplay; encrypted-media; fullscreen"
-          allowfullscreen
-        ></iframe>
+        <app-video-player
+          [src]="videoSrc()"
+          [poster]="movie.thumbnail_url"
+          accentColor="#c9a84c">
+        </app-video-player>
       </div>
     </div>
+  }
+
+  <!-- Payment Modal -->
+  @if (showPaymentModal()) {
+    <app-payment-modal
+      [movie]="movie"
+      (paid)="onPaymentSuccess()"
+      (closed)="showPaymentModal.set(false)">
+    </app-payment-modal>
   }
 }

@@ -143,6 +143,55 @@
     }
   }
 
+  // CTA Buttons
+  .cta-row {
+    display: flex;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+    margin: 1.25rem 0;
+  }
+
+  .btn-trailer,
+  .btn-watch {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    padding: 0.65rem 1.25rem;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.18s;
+    border: none;
+  }
+
+  .btn-trailer {
+    background: transparent;
+    border: 1.5px solid #c9a84c;
+    color: #c9a84c;
+
+    &:hover {
+      background: rgba(201,168,76,0.12);
+    }
+  }
+
+  .btn-watch {
+    background: #c9a84c;
+    color: #000;
+
+    &:hover {
+      background: #a8893a;
+      transform: translateY(-1px);
+    }
+
+    &--owned {
+      background: #2a6e3f;
+      color: #fff;
+
+      &:hover { background: #235e35; }
+    }
+  }
+
   .overview {
     font-size: 0.95rem;
     line-height: 1.7;
@@ -169,6 +218,41 @@
       .value {
         color: #ddd;
       }
+
+      .producer-value {
+        color: #c9a84c;
+        font-weight: 600;
+      }
+    }
+
+    // Cast cards
+    .cast-section {
+      display: flex;
+      flex-direction: column;
+      gap: 0.6rem;
+      margin-top: 0.25rem;
+
+      .label {
+        color: #888;
+        font-size: 0.9rem;
+        min-width: 100px;
+      }
+    }
+
+    .cast-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+
+    .cast-chip {
+      padding: 0.35rem 0.85rem;
+      border-radius: 999px;
+      background: rgba(201, 168, 76, 0.1);
+      border: 1px solid rgba(201, 168, 76, 0.3);
+      color: #ccc;
+      font-size: 0.82rem;
+      white-space: nowrap;
     }
   }
 }
@@ -251,8 +335,8 @@
 .player-backdrop {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.9);
-  z-index: 100;
+  z-index: 9999;
+  background: rgba(0, 0, 0, 0.92);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -279,10 +363,8 @@
     }
   }
 
-  iframe {
+  app-video-player {
     width: 100%;
-    aspect-ratio: 16 / 9;
-    border-radius: 8px;
     display: block;
   }
 }

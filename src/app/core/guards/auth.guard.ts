@@ -18,5 +18,18 @@ export const guestGuard: CanActivateFn = () => {
   const authService = inject(AuthService);
   const router = inject(Router);
   if (!authService.isLoggedIn()) return true;
+
+  if (authService.isAdmin()) return router.createUrlTree(['/admin/dashboard']);
+  if (authService.userRole() === 'Producer') return router.createUrlTree(['/producer/dashboard']);
   return router.createUrlTree(['/browse']);
+};
+
+export const viewerGuard: CanActivateFn = () => {
+  if (!isPlatformBrowser(inject(PLATFORM_ID))) return true;
+
+  const authService = inject(AuthService);
+  const router = inject(Router);
+  if (authService.isAdmin()) return router.createUrlTree(['/admin/dashboard']);
+  if (authService.userRole() === 'Producer') return router.createUrlTree(['/producer/dashboard']);
+  return true;
 };

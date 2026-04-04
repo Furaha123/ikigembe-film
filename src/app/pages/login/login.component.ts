@@ -82,11 +82,11 @@ export class LoginComponent implements AfterViewInit {
 
   private navigateByRole() {
     if (this.authService.isAdmin()) {
-      this.router.navigate(['/admin/dashboard']);
+      this.router.navigate(['/admin/dashboard'], { replaceUrl: true });
     } else if (this.authService.userRole() === 'Producer') {
-      this.router.navigate(['/producer/dashboard']);
+      this.router.navigate(['/producer/dashboard'], { replaceUrl: true });
     } else {
-      this.router.navigate(['/browse']);
+      this.router.navigate(['/browse'], { replaceUrl: true });
     }
   }
 

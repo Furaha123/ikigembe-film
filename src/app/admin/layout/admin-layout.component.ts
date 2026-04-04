@@ -1,4 +1,4 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, HostListener, inject, signal } from '@angular/core';
 import { Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
 
@@ -15,8 +15,21 @@ export class AdminLayoutComponent {
   readonly initials = this.authService.initials;
   readonly userName = this.authService.userName;
   readonly userRole = this.authService.userRole;
-  isLoggingOut = signal(false);
-  sidebarOpen = signal(true);
+  isLoggingOut    = signal(false);
+  sidebarOpen     = signal(true);
+  showUserDropdown = signal(false);
+
+  @HostListener('document:click', ['$event'])
+  onDocumentClick(event: Event) {
+    if (!(event.target as HTMLElement).closest('.topbar-user-menu')) {
+      this.showUserDropdown.set(false);
+    }
+  }
+
+  toggleUserDropdown(event: Event) {
+    event.stopPropagation();
+    this.showUserDropdown.update(v => !v);
+  }
 
   navItems = [
     { label: 'Dashboard',   path: '/admin/dashboard',   icon: 'dashboard' },
@@ -35,7 +48,7 @@ export class AdminLayoutComponent {
     this.isLoggingOut.set(true);
     this.authService.logout(() => {
       this.isLoggingOut.set(false);
-      this.router.navigate(['/admin/login']);
+      this.router.navigate(['/login'], { replaceUrl: true });
     });
   }
 }

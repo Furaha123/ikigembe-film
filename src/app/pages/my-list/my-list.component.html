@@ -1,0 +1,72 @@
+<app-header [userImg]="''" />
+
+<main class="my-list-page">
+  <div class="page-header">
+    <h1 class="page-title">My List</h1>
+    <p class="page-subtitle">Movies you've purchased</p>
+  </div>
+
+  @if (loading()) {
+    <div class="state-center">
+      <div class="spinner"></div>
+      <p>Loading your movies...</p>
+    </div>
+  } @else if (error()) {
+    <div class="state-center">
+      <p class="error-msg">{{ error() }}</p>
+    </div>
+  } @else if (movies().length === 0) {
+    <div class="state-center empty">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="64" height="64">
+        <path d="M15 10l4.553-2.069A1 1 0 0 1 21 8.87v6.26a1 1 0 0 1-1.447.894L15 14M3 8a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8z"/>
+      </svg>
+      <h2>No movies yet</h2>
+      <p>Movies you purchase will appear here.</p>
+    </div>
+  } @else {
+    <div class="movies-grid">
+      @for (movie of movies(); track movie.id) {
+        <button class="movie-card" (click)="goToMovie(movie.id)">
+          <div class="card-poster">
+            <img [src]="movie.thumbnail_url" [alt]="movie.title" loading="lazy" />
+            <span class="hd-badge">HD</span>
+
+            <div class="play-overlay">
+              <svg viewBox="0 0 24 24" fill="currentColor" width="40" height="40">
+                <path d="M8 5v14l11-7z"/>
+              </svg>
+            </div>
+
+            @if (progressPercent(movie) > 0 && movie.completed !== 'true') {
+              <div class="progress-bar">
+                <div class="progress-fill" [style.width.%]="progressPercent(movie)"></div>
+              </div>
+            }
+
+            @if (movie.completed === 'true') {
+              <span class="watched-badge">Watched</span>
+            }
+          </div>
+
+          <div class="card-info">
+            <h3 class="card-title">{{ movie.title }}</h3>
+            <div class="card-meta">
+              <span class="duration">{{ movie.duration_minutes }} min</span>
+              @if (movie.rating) {
+                <span class="separator">·</span>
+                <span class="rating">
+                  <svg viewBox="0 0 24 24" fill="#ffc107" width="12" height="12">
+                    <path d="M12 2l3.09 6.26L22 9.27l-5 4.87L18.18 22 12 18.56 5.82 22 7 14.14l-5-4.87 6.91-1.01z"/>
+                  </svg>
+                  {{ movie.rating.toFixed(1) }}
+                </span>
+              }
+            </div>
+          </div>
+        </button>
+      }
+    </div>
+  }
+</main>
+
+<app-footer />

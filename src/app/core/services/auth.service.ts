@@ -127,7 +127,7 @@ export class AuthService {
 
     const u: LoginUser | undefined = res?.user;
     const name = [u?.first_name ?? res?.first_name, u?.last_name ?? res?.last_name].filter(Boolean).join(' ');
-    if (name && isPlatformBrowser(this.platformId)) {
+    if (isPlatformBrowser(this.platformId)) {
       localStorage.setItem(NAME_KEY, name);
       this.userName.set(name);
     }

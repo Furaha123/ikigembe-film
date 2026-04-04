@@ -1,5 +1,5 @@
 import { Routes } from '@angular/router';
-import { authGuard, guestGuard } from './core/guards/auth.guard';
+import { authGuard, guestGuard, viewerGuard } from './core/guards/auth.guard';
 
 export const routes: Routes = [
   { path: '', redirectTo: 'login', pathMatch: 'full' },
@@ -15,18 +15,23 @@ export const routes: Routes = [
   },
   {
     path: 'browse',
-    canActivate: [authGuard],
+    canActivate: [authGuard, viewerGuard],
     loadComponent: () => import('./pages/browse/browse.component').then(a => a.BrowseComponent)
   },
   {
     path: 'movie/:id',
-    canActivate: [authGuard],
+    canActivate: [authGuard, viewerGuard],
     loadComponent: () => import('./pages/movie-detail/movie-detail.component').then(a => a.MovieDetailComponent)
   },
   {
     path: 'profile',
-    canActivate: [authGuard],
+    canActivate: [authGuard, viewerGuard],
     loadComponent: () => import('./pages/profile/profile.component').then(a => a.ProfileComponent)
+  },
+  {
+    path: 'my-list',
+    canActivate: [authGuard, viewerGuard],
+    loadComponent: () => import('./pages/my-list/my-list.component').then(a => a.MyListComponent)
   },
   {
     path: 'producer',

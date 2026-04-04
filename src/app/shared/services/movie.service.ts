@@ -64,4 +64,27 @@ export class MovieService {
   getSimilarMovies(_id: number) {
     return of<SimilarMoviesResponse>({ results: [] });
   }
+
+  getMovieStream(id: number) {
+    return this.http.get<{ hls_url: string; video_url: string }>(`${this.baseUrl}/${id}/stream/`);
+  }
+
+  getMyList() {
+    return this.http.get<MyListMovie[]>(`${this.baseUrl}/my-list/`);
+  }
+}
+
+export interface MyListMovie {
+  id: number;
+  title: string;
+  overview: string;
+  thumbnail_url: string;
+  duration_minutes: number;
+  genres: string[];
+  rating: number;
+  price: number | null;
+  progress_seconds: string;
+  duration_seconds: string;
+  completed: string;
+  last_watched_at: string;
 }

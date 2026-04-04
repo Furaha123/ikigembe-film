@@ -106,8 +106,8 @@ export class AdminMovieFormComponent implements OnInit {
     fd.append('is_active',                String(v.is_active ?? true));
     fd.append('has_free_preview',         String(v.has_free_preview ?? false));
 
-    if (v.cast?.trim())     fd.append('cast',     v.cast.trim());
-    if (v.genres?.trim())   fd.append('genres',   v.genres.trim());
+    if (v.cast?.trim())     fd.append('cast',     JSON.stringify(v.cast.split(',').map((s: string) => s.trim()).filter(Boolean)));
+    if (v.genres?.trim())   fd.append('genres',   JSON.stringify(v.genres.split(',').map((s: string) => s.trim()).filter(Boolean)));
     if (v.producer?.trim()) fd.append('producer', v.producer.trim());
 
     fd.append('thumbnail',   this.thumbnailFile()!);

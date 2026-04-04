@@ -1,0 +1,201 @@
+:host {
+  display: block;
+  background: #1a1a2e;
+  min-height: 100vh;
+  color: #e5e5e5;
+}
+
+.my-list-page {
+  padding: 100px 3.5rem 3rem;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.page-header {
+  margin-bottom: 2rem;
+
+  .page-title {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #fff;
+    margin: 0 0 0.25rem;
+  }
+
+  .page-subtitle {
+    color: #888;
+    font-size: 0.95rem;
+    margin: 0;
+  }
+}
+
+// States
+.state-center {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 40vh;
+  gap: 1rem;
+  color: #888;
+  text-align: center;
+
+  &.empty {
+    svg { opacity: 0.3; }
+
+    h2 {
+      font-size: 1.4rem;
+      color: #ccc;
+      margin: 0;
+    }
+
+    p { margin: 0; }
+  }
+
+  .error-msg { color: #f87171; }
+}
+
+.spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid rgba(201, 168, 76, 0.2);
+  border-top-color: #c9a84c;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+// Grid
+.movies-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 1.5rem;
+}
+
+// Card
+.movie-card {
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  text-align: left;
+  color: inherit;
+  transition: transform 0.2s;
+
+  &:hover {
+    transform: translateY(-4px);
+
+    .play-overlay { opacity: 1; }
+  }
+}
+
+.card-poster {
+  position: relative;
+  border-radius: 8px;
+  overflow: hidden;
+  aspect-ratio: 2 / 3;
+  background: #0f0f1f;
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+
+  .hd-badge {
+    position: absolute;
+    top: 0.4rem;
+    left: 0.4rem;
+    background: #2563eb;
+    color: #fff;
+    font-size: 0.65rem;
+    font-weight: 700;
+    padding: 0.1rem 0.4rem;
+    border-radius: 3px;
+  }
+
+  .play-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.55);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.2s;
+    color: #fff;
+  }
+
+  .progress-bar {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: rgba(255, 255, 255, 0.2);
+
+    .progress-fill {
+      height: 100%;
+      background: #c9a84c;
+      border-radius: 0 2px 2px 0;
+    }
+  }
+
+  .watched-badge {
+    position: absolute;
+    bottom: 0.4rem;
+    right: 0.4rem;
+    background: rgba(42, 110, 63, 0.9);
+    color: #fff;
+    font-size: 0.65rem;
+    font-weight: 600;
+    padding: 0.15rem 0.45rem;
+    border-radius: 3px;
+  }
+}
+
+.card-info {
+  padding: 0.6rem 0.2rem 0;
+
+  .card-title {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #fff;
+    margin: 0 0 0.3rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .card-meta {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    font-size: 0.78rem;
+    color: #888;
+
+    .separator { color: #555; }
+
+    .rating {
+      display: flex;
+      align-items: center;
+      gap: 0.2rem;
+      color: #ffc107;
+    }
+  }
+}
+
+// Responsive
+@media (max-width: 768px) {
+  .my-list-page {
+    padding: 90px 1rem 2rem;
+  }
+
+  .movies-grid {
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 1rem;
+  }
+}

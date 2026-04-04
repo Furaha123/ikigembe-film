@@ -18,7 +18,11 @@ export class HeaderComponent {
   isScrolled = signal(false);
   showDropdown = signal(false);
   isLoggingOut = signal(false);
-  navList = ['Home', 'TV Shows', 'News & Popular', 'My List', 'Browse by Language'];
+  navList = [
+    { label: 'Home',                route: '/browse' },
+    { label: 'My List',             route: '/my-list' },
+    { label: 'Browse by Language',  route: null },
+  ];
 
   @HostListener('window:scroll')
   onScroll() {
