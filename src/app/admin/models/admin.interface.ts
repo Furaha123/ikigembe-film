@@ -98,3 +98,37 @@ export interface MovieFormData {
   release_date: string;
   trailer_url: string;
 }
+
+// ── Report interfaces ──────────────────────────────────
+export interface RevenueTrendItem {
+  period_start: string;
+  total_revenue: number;
+  producer_share: number;
+  ikigembe_commission: number;
+  purchase_count: number;
+}
+
+export interface TopMovieItem {
+  id: number;
+  title: string;
+  producer: string;
+  views: number;
+  purchase_count: number;
+  total_revenue: number;
+  producer_share: number;
+}
+
+export interface UserGrowthItem {
+  month: string;
+  viewers: number;
+  producers: number;
+  total: number;
+}
+
+export interface WithdrawalSummaryItem {
+  month: string;
+  completed: number;
+  rejected: number;
+  pending: number;
+  request_count: number;
+}

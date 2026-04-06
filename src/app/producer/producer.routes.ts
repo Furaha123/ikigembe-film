@@ -26,6 +26,10 @@ export const producerRoutes: Routes = [
         loadComponent: () => import('./pages/withdrawals/producer-withdrawals.component').then(m => m.ProducerWithdrawalsComponent),
       },
       {
+        path: 'reports',
+        loadComponent: () => import('./pages/reports/producer-reports.component').then(m => m.ProducerReportsComponent),
+      },
+      {
         path: 'settings',
         loadComponent: () => import('../pages/profile/profile.component').then(m => m.ProfileComponent),
       },

@@ -10,6 +10,10 @@ import {
   TransactionHistory,
   WithdrawalItem,
   AdminMovie,
+  RevenueTrendItem,
+  TopMovieItem,
+  UserGrowthItem,
+  WithdrawalSummaryItem,
 } from '../models/admin.interface';
 
 import { environment } from '../../../environments/environment';
@@ -99,6 +103,31 @@ export class AdminService {
   // Viewer payment history
   getViewerPayments(userId: number): Observable<ViewerPaymentItem[]> {
     return this.http.get<ViewerPaymentItem[]>(`${BASE}/admin/dashboard/viewers/${userId}/payments/`);
+  }
+
+  // ── Reports ──────────────────────────────────────────
+  getRevenueTrend(period: 'monthly' | 'weekly' = 'monthly', periods = 12): Observable<{ trend: RevenueTrendItem[] }> {
+    return this.http.get<{ trend: RevenueTrendItem[] }>(
+      `${BASE}/admin/dashboard/reports/revenue-trend/?period=${period}&periods=${periods}`
+    );
+  }
+
+  getTopMovies(limit = 10, sort: 'revenue' | 'views' = 'revenue'): Observable<{ results: TopMovieItem[] }> {
+    return this.http.get<{ results: TopMovieItem[] }>(
+      `${BASE}/admin/dashboard/reports/top-movies/?limit=${limit}&sort=${sort}`
+    );
+  }
+
+  getUserGrowth(months = 12): Observable<{ trend: UserGrowthItem[] }> {
+    return this.http.get<{ trend: UserGrowthItem[] }>(
+      `${BASE}/admin/dashboard/reports/user-growth/?months=${months}`
+    );
+  }
+
+  getWithdrawalSummary(months = 12): Observable<{ trend: WithdrawalSummaryItem[] }> {
+    return this.http.get<{ trend: WithdrawalSummaryItem[] }>(
+      `${BASE}/admin/dashboard/reports/withdrawal-summary/?months=${months}`
+    );
   }
 }
 

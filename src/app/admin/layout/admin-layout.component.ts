@@ -54,6 +54,7 @@ export class AdminLayoutComponent {
     { label: 'Producers',   path: '/admin/producers',   icon: 'producers' },
     { label: 'Movies',      path: '/admin/movies',      icon: 'movies' },
     { label: 'Withdrawals', path: '/admin/withdrawals', icon: 'withdrawals' },
+    { label: 'Reports',     path: '/admin/reports',     icon: 'reports' },
     { label: 'Settings',    path: '/admin/settings',    icon: 'settings' },
   ];
 
