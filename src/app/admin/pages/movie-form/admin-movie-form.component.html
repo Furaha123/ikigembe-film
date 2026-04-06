@@ -6,8 +6,8 @@
       Movies
     </button>
     <div>
-      <h1>Add Movie</h1>
-      <p>Fill in the details below to publish a new movie on the platform.</p>
+      <h1>{{ isEditMode() ? 'Edit Movie' : 'Add Movie' }}</h1>
+      <p>{{ isEditMode() ? 'Update the movie details below.' : 'Fill in the details below to publish a new movie on the platform.' }}</p>
     </div>
   </div>
 
@@ -112,7 +112,7 @@
       <div class="form-row">
         <!-- Video File -->
         <div class="field">
-          <label>Video File <span class="req">*</span></label>
+          <label>Video File @if (!isEditMode()) { <span class="req">*</span> } @else { <span class="hint">Leave empty to keep current</span> }</label>
           @if (!videoFile()) {
             <label class="file-drop" for="f-video">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>
@@ -230,7 +230,7 @@
     <div class="form-actions">
       <button type="button" class="btn neutral" (click)="cancel()" [disabled]="isSaving()">Cancel</button>
       <button type="submit" class="btn gold" [disabled]="isSaving()">
-        {{ isSaving() ? 'Saving...' : 'Publish Movie' }}
+        {{ isSaving() ? 'Saving...' : (isEditMode() ? 'Save Changes' : 'Publish Movie') }}
       </button>
     </div>
 

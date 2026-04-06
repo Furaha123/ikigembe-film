@@ -69,10 +69,10 @@ $muted:   #888;
   background: $surface;
   border: 1px solid $border;
   border-radius: 12px;
-  overflow: hidden;
+  overflow-x: auto;
 
   table {
-    width: 100%; border-collapse: collapse;
+    width: 100%; border-collapse: collapse; min-width: 560px;
     th {
       padding: 0.85rem 1rem;
       text-align: left;

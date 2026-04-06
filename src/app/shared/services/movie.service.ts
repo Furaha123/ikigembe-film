@@ -72,6 +72,13 @@ export class MovieService {
   getMyList() {
     return this.http.get<MyListMovie[]>(`${this.baseUrl}/my-list/`);
   }
+
+  saveProgress(movieId: number, secondsWatched: number, completed: boolean) {
+    return this.http.post(`${this.baseUrl}/${movieId}/progress/`, {
+      seconds_watched: Math.floor(secondsWatched),
+      completed,
+    });
+  }
 }
 
 export interface MyListMovie {

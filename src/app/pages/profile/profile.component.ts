@@ -2,6 +2,7 @@ import { Component, inject, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { AuthService, UserProfile, NotificationPreferences } from '../../core/services/auth.service';
+import { PaymentService, PaymentHistoryItem } from '../../core/services/payment.service';
 
 @Component({
   selector: 'app-profile',
@@ -10,13 +11,17 @@ import { AuthService, UserProfile, NotificationPreferences } from '../../core/se
   styleUrl: './profile.component.scss'
 })
 export class ProfileComponent implements OnInit {
-  private readonly authService = inject(AuthService);
-  private readonly fb = inject(FormBuilder);
+  private readonly authService    = inject(AuthService);
+  private readonly paymentService = inject(PaymentService);
+  private readonly fb             = inject(FormBuilder);
 
   profile = signal<UserProfile | null>(null);
   notifications = signal<NotificationPreferences | null>(null);
   isLoadingProfile = signal(true);
-  isLoadingNotifs = signal(true);
+  isLoadingNotifs  = signal(true);
+
+  payments        = signal<PaymentHistoryItem[]>([]);
+  isLoadingPayments = signal(true);
 
   isSavingNotifs = signal(false);
   notifSuccess = signal(false);
@@ -45,6 +50,11 @@ export class ProfileComponent implements OnInit {
     this.authService.getMe().subscribe({
       next: (data) => { this.profile.set(data); this.isLoadingProfile.set(false); },
       error: () => this.isLoadingProfile.set(false),
+    });
+
+    this.paymentService.getHistory().subscribe({
+      next: (res) => { this.payments.set(res.results); this.isLoadingPayments.set(false); },
+      error: ()    => this.isLoadingPayments.set(false),
     });
 
     this.authService.getNotifications().subscribe({
@@ -104,6 +114,13 @@ export class ProfileComponent implements OnInit {
         this.passwordErrors.set(errors);
       },
     });
+  }
+
+  paymentStatusClass(status: string): string {
+    const s = status.toLowerCase();
+    if (s === 'completed') return 'status-ok';
+    if (s === 'failed')    return 'status-fail';
+    return 'status-pending';
   }
 
   getInitials(p: UserProfile): string {

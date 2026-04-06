@@ -12,6 +12,10 @@
   />
 
   <ng-template #actions let-user>
+    <button class="btn info" (click)="openPayments($any(user))">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
+      Payments
+    </button>
     @if (user['is_active']) {
       <button class="btn warn" (click)="openSuspendConfirm(user['id'])" [disabled]="actionId() === user['id']">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>
@@ -74,6 +78,47 @@
           </button>
         </div>
       </dialog>
+    </div>
+  }
+
+  <!-- Payments slide-in panel -->
+  @if (paymentsUserId() !== null) {
+    <div class="overlay" (click)="closePayments()" (keydown.escape)="closePayments()">
+      <div class="payments-panel" (click)="$event.stopPropagation()" (keydown)="$event.stopPropagation()">
+        <div class="payments-panel__header">
+          <div>
+            <h3>Payment History</h3>
+            <p class="payments-panel__sub">{{ paymentsUserName() }}</p>
+          </div>
+          <button class="close-btn" (click)="closePayments()">
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+          </button>
+        </div>
+
+        @if (paymentsLoading()) {
+          <div class="payments-panel__loading">Loading...</div>
+        } @else if (payments().length === 0) {
+          <div class="payments-panel__empty">No payments found for this user.</div>
+        } @else {
+          <div class="payments-table-wrap">
+            <table class="payments-table">
+              <thead>
+                <tr><th>Movie</th><th>Amount</th><th>Status</th><th>Date</th></tr>
+              </thead>
+              <tbody>
+                @for (p of payments(); track p.id) {
+                  <tr>
+                    <td>{{ p.movie_title }}</td>
+                    <td>RWF {{ p.amount | number }}</td>
+                    <td><span class="status-badge" [class]="paymentStatusClass(p.status)">{{ p.status }}</span></td>
+                    <td class="muted">{{ p.created_at | date:'mediumDate' }}</td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        }
+      </div>
     </div>
   }
 </div>

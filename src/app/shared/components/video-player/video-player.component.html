@@ -9,23 +9,27 @@
     [src]="src"
     [poster]="poster"
     preload="metadata"
-    (click)="togglePlay()">
+    (click)="togglePlay()"
+    (keydown)="onKeyDown($event)">
+    <track kind="captions" />
   </video>
 
   <!-- Controls overlay -->
   <div class="vp-controls" [class.vp-controls--hidden]="!showControls()">
 
     <!-- Progress bar -->
-    <div class="vp-progress" (click)="seek($event)">
+    <div class="vp-progress">
       <div class="vp-progress__buffered" [style.width.%]="buffered()"></div>
       <div class="vp-progress__filled"
            [style.width.%]="progress()"
            [style.background]="accentColor">
       </div>
-      <div class="vp-progress__thumb"
-           [style.left.%]="progress()"
-           [style.background]="accentColor">
-      </div>
+      <input class="vp-progress__input"
+             type="range" min="0" [max]="duration()" step="1"
+             [value]="currentTime()"
+             aria-label="Seek"
+             (input)="onSeekInput($event)"
+             (keydown)="onProgressKeyDown($event)" />
     </div>
 
     <!-- Bottom bar -->
@@ -43,12 +47,10 @@
         <!-- Play / Pause -->
         <button class="vp-btn vp-btn--play" (click)="togglePlay()" title="Play/Pause">
           @if (playing()) {
-            <!-- Pause icon -->
             <svg viewBox="0 0 24 24" fill="currentColor">
               <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>
             </svg>
           } @else {
-            <!-- Play icon -->
             <svg viewBox="0 0 24 24" fill="currentColor">
               <path d="M8 5v14l11-7z"/>
             </svg>
@@ -104,11 +106,21 @@
   </div>
 
   <!-- Big play button when paused -->
-  @if (!playing()) {
+  @if (!playing() && !srcError()) {
     <button class="vp-center-play" (click)="togglePlay()">
       <svg viewBox="0 0 24 24" fill="currentColor">
         <path d="M8 5v14l11-7z"/>
       </svg>
     </button>
+  }
+
+  <!-- Source error -->
+  @if (srcError()) {
+    <div class="vp-error">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="48" height="48">
+        <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+      </svg>
+      <p>This video could not be played.</p>
+    </div>
   }
 </div>

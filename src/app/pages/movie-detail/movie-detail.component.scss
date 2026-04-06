@@ -54,6 +54,18 @@
     justify-content: center;
   }
 
+  .hero-no-trailer {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    color: rgba(255,255,255,0.45);
+    font-size: 0.85rem;
+    font-weight: 500;
+    letter-spacing: 0.03em;
+    pointer-events: none;
+  }
+
   .hero-play-btn {
     width: 80px;
     height: 80px;

@@ -13,11 +13,21 @@
   <!-- Hero Section -->
   <section class="hero" [style.background-image]="movie.backdrop_url ? 'url(' + movie.backdrop_url + ')' : 'none'">
     <div class="hero-overlay">
-      <button class="hero-play-btn" (click)="playTrailer()" title="Watch Trailer">
-        <svg viewBox="0 0 24 24" width="48" height="48" fill="currentColor">
-          <path d="M8 5v14l11-7z"/>
-        </svg>
-      </button>
+      @if (movie.trailer_url) {
+        <button class="hero-play-btn" (click)="playTrailer()" title="Watch Trailer">
+          <svg viewBox="0 0 24 24" width="48" height="48" fill="currentColor">
+            <path d="M8 5v14l11-7z"/>
+          </svg>
+        </button>
+      } @else {
+        <div class="hero-no-trailer">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="32" height="32">
+            <path d="M15 10l4.553-2.069A1 1 0 0 1 21 8.87v6.26a1 1 0 0 1-1.447.894L15 14M3 8a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8z"/>
+            <line x1="3" y1="3" x2="21" y2="21" stroke-width="1.5"/>
+          </svg>
+          <span>No trailer available</span>
+        </div>
+      }
     </div>
   </section>
 

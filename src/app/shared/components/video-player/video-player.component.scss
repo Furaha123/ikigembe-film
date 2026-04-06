@@ -79,15 +79,17 @@ $ctrl-bg: rgba(0, 0, 0, 0.72);
   transition: width 0.1s linear;
 }
 
-.vp-progress__thumb {
+// Transparent range input laid over the track — handles seeking + keyboard
+.vp-progress__input {
   position: absolute;
-  top: 50%;
-  width: 14px;
-  height: 14px;
-  border-radius: 50%;
-  transform: translateX(-50%) translateY(-50%) scale(0);
-  transition: transform 0.15s;
-  pointer-events: none;
+  top: -8px;
+  left: 0;
+  width: 100%;
+  height: calc(100% + 16px);
+  opacity: 0;
+  cursor: pointer;
+  margin: 0;
+  padding: 0;
 }
 
 // ── Bottom bar ────────────────────────────────────────

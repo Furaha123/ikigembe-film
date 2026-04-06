@@ -26,15 +26,19 @@
   } @else {
     <div class="movies-grid">
       @for (movie of movies(); track movie.id) {
-        <button class="movie-card" (click)="goToMovie(movie.id)">
+        <button class="movie-card" (click)="watchMovie(movie)" [disabled]="playerLoading()">
           <div class="card-poster">
             <img [src]="movie.thumbnail_url" [alt]="movie.title" loading="lazy" />
             <span class="hd-badge">HD</span>
 
             <div class="play-overlay">
-              <svg viewBox="0 0 24 24" fill="currentColor" width="40" height="40">
-                <path d="M8 5v14l11-7z"/>
-              </svg>
+              @if (playerLoading()) {
+                <div class="mini-spinner"></div>
+              } @else {
+                <svg viewBox="0 0 24 24" fill="currentColor" width="40" height="40">
+                  <path d="M8 5v14l11-7z"/>
+                </svg>
+              }
             </div>
 
             @if (progressPercent(movie) > 0 && movie.completed !== 'true') {
@@ -61,6 +65,10 @@
                   {{ movie.rating.toFixed(1) }}
                 </span>
               }
+              @if (progressPercent(movie) > 0 && movie.completed !== 'true') {
+                <span class="separator">·</span>
+                <span class="resume-label">Resume {{ progressPercent(movie) }}%</span>
+              }
             </div>
           </div>
         </button>
@@ -70,3 +78,27 @@
 </main>
 
 <app-footer />
+
+<!-- ── Fullscreen Player Overlay ── -->
+@if (playerOpen()) {
+  <div class="player-overlay">
+    <div class="player-topbar">
+      <span class="player-title">{{ playerTitle() }}</span>
+      <button class="player-close" (click)="closePlayer()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="22" height="22">
+          <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+        </svg>
+      </button>
+    </div>
+
+    <div class="player-body">
+      <app-video-player
+        [src]="playerSrc()"
+        [poster]="playerPoster()"
+        [startAt]="playerStartAt()"
+        (progressUpdate)="onProgressUpdate($event)"
+        (videoEnded)="onVideoEnded()">
+      </app-video-player>
+    </div>
+  </div>
+}

@@ -33,6 +33,86 @@ $muted:   #888;
   &.warn    { background: rgba(234,179,8,0.1);    color: #facc15; border-color: rgba(234,179,8,0.2); }
   &.danger  { background: rgba(239,68,68,0.1);    color: #f87171; border-color: rgba(239,68,68,0.2); }
   &.neutral { background: rgba(255,255,255,0.06); color: $text;   border-color: $border; }
+  &.info    { background: rgba(59,130,246,0.1);   color: #93c5fd; border-color: rgba(59,130,246,0.2); }
+}
+
+// Payments panel
+.payments-panel {
+  position: fixed;
+  top: 0; right: 0; bottom: 0;
+  width: min(480px, 100vw);
+  background: #141414;
+  border-left: 1px solid $border;
+  display: flex;
+  flex-direction: column;
+  z-index: 200;
+  overflow: hidden;
+
+  &__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    padding: 1.5rem;
+    border-bottom: 1px solid $border;
+
+    h3 { font-size: 1.1rem; font-weight: 700; color: #fff; margin: 0 0 0.2rem; }
+  }
+
+  &__sub { font-size: 0.82rem; color: $muted; margin: 0; }
+
+  &__loading,
+  &__empty {
+    padding: 2rem 1.5rem;
+    color: $muted;
+    font-size: 0.875rem;
+  }
+}
+
+.close-btn {
+  background: none; border: none; color: $muted; cursor: pointer; padding: 0.2rem;
+  svg { width: 20px; height: 20px; display: block; }
+  &:hover { color: #fff; }
+}
+
+.payments-table-wrap {
+  overflow-x: auto;
+  flex: 1;
+}
+
+.payments-table {
+  width: 100%;
+  min-width: 360px;
+  border-collapse: collapse;
+  font-size: 0.82rem;
+
+  th {
+    padding: 0.75rem 1.5rem;
+    text-align: left;
+    font-size: 0.72rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: $muted;
+    border-bottom: 1px solid $border;
+  }
+
+  td {
+    padding: 0.75rem 1.5rem;
+    color: $text;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+    &.muted { color: $muted; }
+  }
+}
+
+.status-badge {
+  padding: 0.2rem 0.55rem;
+  border-radius: 99px;
+  font-size: 0.72rem;
+  font-weight: 600;
+
+  &.status-ok      { background: rgba(74,222,128,0.15); color: #86efac; }
+  &.status-fail    { background: rgba(239,68,68,0.15);  color: #fca5a5; }
+  &.status-pending { background: rgba(234,179,8,0.15);  color: #fde68a; }
 }
 
 .suspended-label {

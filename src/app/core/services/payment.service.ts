@@ -27,6 +27,16 @@ export interface PaymentStatusResponse {
   created_at: string;
 }
 
+export interface PaymentHistoryItem {
+  deposit_id: string;
+  movie_id: number | null;
+  movie_title: string | null;
+  amount: number;
+  currency: string;
+  status: string;
+  created_at: string;
+}
+
 const PURCHASED_KEY = 'purchased_movies';
 
 @Injectable({ providedIn: 'root' })
@@ -44,6 +54,12 @@ export class PaymentService {
   checkStatus(depositId: string): Observable<PaymentStatusResponse> {
     return this.http.get<PaymentStatusResponse>(
       `${environment.apiUrl}/payments/${depositId}/status/`
+    );
+  }
+
+  getHistory(): Observable<{ count: number; results: PaymentHistoryItem[] }> {
+    return this.http.get<{ count: number; results: PaymentHistoryItem[] }>(
+      `${environment.apiUrl}/payments/history/`
     );
   }
 

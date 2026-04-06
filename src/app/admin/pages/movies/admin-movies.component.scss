@@ -10,7 +10,7 @@ $muted: #888;
 
 .page-header {
   display: flex; align-items: flex-start; justify-content: space-between;
-  margin-bottom: 1.75rem;
+  gap: 1rem; margin-bottom: 1.75rem; flex-wrap: wrap;
   h1 { font-size: 1.75rem; font-weight: 700; color: #fff; margin: 0 0 0.35rem; }
   p  { color: $muted; font-size: 0.875rem; margin: 0; }
 }

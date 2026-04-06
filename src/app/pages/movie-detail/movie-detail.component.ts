@@ -50,17 +50,16 @@ export class MovieDetailComponent implements OnInit {
       this.cast.set(credits.cast?.slice(0, 10) || []);
       this.similarMovies.set(similar.results?.slice(0, 6) || []);
       this.fullVideoUrl = details.video_url || '';
-      this.videoSrc.set(details.trailer_url || details.video_url || '');
+      this.videoSrc.set(details.trailer_url || '');
       this.purchased.set(this.paymentService.hasPurchased(id));
     });
   }
 
   playTrailer() {
-    const src = this.movie()?.trailer_url || this.videoSrc();
-    if (src) {
-      this.videoSrc.set(src);
-      this.isPlaying.set(true);
-    }
+    const trailerUrl = this.movie()?.trailer_url;
+    if (!trailerUrl) return;
+    this.videoSrc.set(trailerUrl);
+    this.isPlaying.set(true);
   }
 
   watchFullMovie() {

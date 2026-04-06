@@ -245,3 +245,49 @@ $muted:  #888;
   &:hover:not(:disabled) { opacity: 0.82; }
   &.gold { background: $gold; color: #000; border-color: $gold; }
 }
+
+// Payment history
+.ph-loading,
+.ph-empty {
+  padding: 1rem 0;
+  color: #888;
+  font-size: 0.875rem;
+}
+
+.ph-table-wrap { overflow-x: auto; }
+
+.ph-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.85rem;
+
+  th {
+    padding: 0.6rem 1rem;
+    text-align: left;
+    font-size: 0.72rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #888;
+    border-bottom: 1px solid $border;
+  }
+
+  td {
+    padding: 0.75rem 1rem;
+    color: $text;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+  }
+
+  .ph-muted { color: #888; }
+}
+
+.ph-badge {
+  padding: 0.2rem 0.55rem;
+  border-radius: 99px;
+  font-size: 0.72rem;
+  font-weight: 600;
+
+  &.status-ok      { background: rgba(74,222,128,0.15); color: #bbf7d0; }
+  &.status-fail    { background: rgba(239,68,68,0.15);  color: #fecaca; }
+  &.status-pending { background: rgba(234,179,8,0.15);  color: #fef08a; }
+}

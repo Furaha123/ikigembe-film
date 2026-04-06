@@ -34,6 +34,10 @@ export const adminRoutes: Routes = [
         loadComponent: () => import('./pages/movie-form/admin-movie-form.component').then(m => m.AdminMovieFormComponent),
       },
       {
+        path: 'movies/edit/:id',
+        loadComponent: () => import('./pages/movie-form/admin-movie-form.component').then(m => m.AdminMovieFormComponent),
+      },
+      {
         path: 'withdrawals',
         loadComponent: () => import('./pages/withdrawals/admin-withdrawals.component').then(m => m.AdminWithdrawalsComponent),
       },

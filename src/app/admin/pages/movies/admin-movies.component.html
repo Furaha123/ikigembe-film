@@ -40,6 +40,7 @@
               <td>{{ movie.price | number }}</td>
               <td class="muted">{{ movie.release_date | date:'mediumDate' }}</td>
               <td class="actions">
+                <button class="action-btn edit" (click)="goToEdit(movie.id)">Edit</button>
                 <button class="action-btn danger" (click)="confirmDeleteMovie(movie.id)" [disabled]="actionId() === movie.id">Delete</button>
               </td>
             </tr>

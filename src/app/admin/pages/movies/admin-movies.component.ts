@@ -17,6 +17,7 @@ export class AdminMoviesComponent implements OnInit {
   private readonly router = inject(Router);
 
   goToCreate() { this.router.navigate(['/admin/movies/create']); }
+  goToEdit(id: number) { this.router.navigate(['/admin/movies/edit', id]); }
 
   movies = signal<AdminMovie[]>([]);
   isLoading = signal(true);

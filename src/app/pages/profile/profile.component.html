@@ -191,4 +191,43 @@
     </form>
   </section>
 
+  <!-- Payment History -->
+  <section class="card">
+    <h2 class="card-title">Payment History</h2>
+    <p class="card-desc">Movies you have purchased on Ikigembe.</p>
+
+    @if (isLoadingPayments()) {
+      <div class="ph-loading">Loading...</div>
+    } @else if (payments().length === 0) {
+      <div class="ph-empty">No payments yet. Purchase a movie to see your history here.</div>
+    } @else {
+      <div class="ph-table-wrap">
+        <table class="ph-table">
+          <thead>
+            <tr>
+              <th>Movie</th>
+              <th>Amount</th>
+              <th>Status</th>
+              <th>Date</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (p of payments(); track p.deposit_id) {
+              <tr>
+                <td>{{ p.movie_title ?? '—' }}</td>
+                <td>RWF {{ p.amount | number }}</td>
+                <td>
+                  <span class="ph-badge" [class]="paymentStatusClass(p.status)">
+                    {{ p.status }}
+                  </span>
+                </td>
+                <td class="ph-muted">{{ p.created_at | date:'mediumDate' }}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+  </section>
+
 </div>

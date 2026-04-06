@@ -1,4 +1,5 @@
-import { Component, HostListener, inject, signal } from '@angular/core';
+import { Component, HostListener, inject, signal, PLATFORM_ID } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
 import { Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
 
@@ -10,19 +11,35 @@ import { AuthService } from '../../core/services/auth.service';
 })
 export class AdminLayoutComponent {
   private readonly authService = inject(AuthService);
-  private readonly router = inject(Router);
+  private readonly router      = inject(Router);
+  private readonly platformId  = inject(PLATFORM_ID);
 
   readonly initials = this.authService.initials;
   readonly userName = this.authService.userName;
   readonly userRole = this.authService.userRole;
-  isLoggingOut    = signal(false);
-  sidebarOpen     = signal(true);
+
+  isLoggingOut     = signal(false);
   showUserDropdown = signal(false);
+
+  // Start sidebar closed on mobile so it doesn't push content
+  sidebarOpen = signal(
+    isPlatformBrowser(this.platformId) ? window.innerWidth > 768 : true
+  );
 
   @HostListener('document:click', ['$event'])
   onDocumentClick(event: Event) {
     if (!(event.target as HTMLElement).closest('.topbar-user-menu')) {
       this.showUserDropdown.set(false);
+    }
+    // Close sidebar on mobile when clicking outside
+    if (
+      isPlatformBrowser(this.platformId) &&
+      window.innerWidth <= 768 &&
+      this.sidebarOpen() &&
+      !(event.target as HTMLElement).closest('.sidebar') &&
+      !(event.target as HTMLElement).closest('.toggle-btn')
+    ) {
+      this.sidebarOpen.set(false);
     }
   }
 
@@ -43,7 +60,7 @@ export class AdminLayoutComponent {
   toggleSidebar() {
     this.sidebarOpen.update(v => !v);
   }
-  
+
   logout() {
     this.isLoggingOut.set(true);
     this.authService.logout(() => {

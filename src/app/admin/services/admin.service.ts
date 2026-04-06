@@ -88,7 +88,24 @@ export class AdminService {
     return this.http.post(`${BASE}/movies/create/`, formData);
   }
 
+  updateMovie(id: number, formData: FormData): Observable<unknown> {
+    return this.http.patch(`${BASE}/movies/${id}/update/`, formData);
+  }
+
   deleteMovie(id: number): Observable<unknown> {
     return this.http.delete(`${BASE}/movies/${id}/delete/`);
   }
+
+  // Viewer payment history
+  getViewerPayments(userId: number): Observable<ViewerPaymentItem[]> {
+    return this.http.get<ViewerPaymentItem[]>(`${BASE}/admin/dashboard/viewers/${userId}/payments/`);
+  }
+}
+
+export interface ViewerPaymentItem {
+  id: number;
+  movie_title: string;
+  amount: number;
+  status: string;
+  created_at: string;
 }

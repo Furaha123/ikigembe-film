@@ -1,6 +1,6 @@
 import { Component, inject, OnInit, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { AdminService } from '../../services/admin.service';
+import { AdminService, ViewerPaymentItem } from '../../services/admin.service';
 import { ViewerItem } from '../../models/admin.interface';
 import { AdminTableComponent } from '../../shared/components/admin-table/admin-table.component';
 import { TableColumn } from '../../shared/components/admin-table/table-column.interface';
@@ -79,5 +79,31 @@ export class AdminUsersComponent implements OnInit {
       },
       error: () => { this.actionId.set(null); this.confirmDeleteId.set(null); },
     });
+  }
+
+  // Payments panel
+  paymentsUserId   = signal<number | null>(null);
+  paymentsUserName = signal('');
+  payments         = signal<ViewerPaymentItem[]>([]);
+  paymentsLoading  = signal(false);
+
+  openPayments(user: ViewerItem) {
+    this.paymentsUserId.set(user.id);
+    this.paymentsUserName.set(user.name || user.email);
+    this.payments.set([]);
+    this.paymentsLoading.set(true);
+    this.adminService.getViewerPayments(user.id).subscribe({
+      next: (data) => { this.payments.set(data); this.paymentsLoading.set(false); },
+      error: ()     => this.paymentsLoading.set(false),
+    });
+  }
+
+  closePayments() { this.paymentsUserId.set(null); }
+
+  paymentStatusClass(status: string): string {
+    const s = status.toLowerCase();
+    if (s === 'completed') return 'status-ok';
+    if (s === 'failed')    return 'status-fail';
+    return 'status-pending';
   }
 }

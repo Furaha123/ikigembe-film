@@ -1,8 +1,9 @@
 import { Component, inject, signal, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { Router } from '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router';
 import { AdminService } from '../../services/admin.service';
+import { MovieService } from '../../../shared/services/movie.service';
 import { ProducerItem } from '../../models/admin.interface';
 
 @Component({
@@ -12,28 +13,28 @@ import { ProducerItem } from '../../models/admin.interface';
   styleUrl: './admin-movie-form.component.scss'
 })
 export class AdminMovieFormComponent implements OnInit {
-  private readonly adminService = inject(AdminService);
-  private readonly fb = inject(FormBuilder);
-  private readonly router = inject(Router);
+  private readonly adminService  = inject(AdminService);
+  private readonly movieService  = inject(MovieService);
+  private readonly fb            = inject(FormBuilder);
+  private readonly router        = inject(Router);
+  private readonly route         = inject(ActivatedRoute);
 
-  isSaving = signal(false);
-  saveError = signal<string | null>(null);
-  producers = signal<ProducerItem[]>([]);
+  // ── Mode ──────────────────────────────────────────────────────────────
+  editId     = signal<number | null>(null);
+  isEditMode = signal(false);
+  isLoadingMovie = signal(false);
 
-  ngOnInit() {
-    this.adminService.getProducers().subscribe({
-      next: (data) => this.producers.set(Array.isArray(data) ? data : (data as any).results ?? []),
-      error: () => {},
-    });
-  }
+  // ── Data ──────────────────────────────────────────────────────────────
+  producers  = signal<ProducerItem[]>([]);
+  isSaving   = signal(false);
+  saveError  = signal<string | null>(null);
 
-  // File selections
+  // ── File state ────────────────────────────────────────────────────────
   thumbnailFile = signal<File | null>(null);
-  videoFile = signal<File | null>(null);
-  backdropFile = signal<File | null>(null);
-  trailerFile = signal<File | null>(null);
+  videoFile     = signal<File | null>(null);
+  backdropFile  = signal<File | null>(null);
+  trailerFile   = signal<File | null>(null);
 
-  // Validation errors for required files
   filesError = signal<{ thumbnail?: string; video?: string }>({});
 
   form = this.fb.group({
@@ -50,9 +51,46 @@ export class AdminMovieFormComponent implements OnInit {
     has_free_preview:         [false],
   });
 
+  ngOnInit() {
+    this.adminService.getProducers().subscribe({
+      next: (data) => this.producers.set(Array.isArray(data) ? data : (data as any).results ?? []),
+      error: () => {},
+    });
+
+    const id = this.route.snapshot.paramMap.get('id');
+    if (id) {
+      this.editId.set(+id);
+      this.isEditMode.set(true);
+      this.loadMovieForEdit(+id);
+    }
+  }
+
+  private loadMovieForEdit(id: number) {
+    this.isLoadingMovie.set(true);
+    this.movieService.getMovieDetails(id).subscribe({
+      next: (movie: any) => {
+        this.form.patchValue({
+          title:                    movie.title ?? '',
+          overview:                 movie.overview ?? '',
+          release_date:             movie.release_date ?? '',
+          price:                    movie.price ?? 0,
+          duration_minutes:         movie.duration_minutes ?? 0,
+          trailer_duration_seconds: movie.trailer_duration_seconds ?? 0,
+          cast:                     Array.isArray(movie.cast) ? movie.cast.join(', ') : (movie.cast ?? ''),
+          genres:                   Array.isArray(movie.genres) ? movie.genres.join(', ') : (movie.genres ?? ''),
+          producer:                 movie.producer_id ?? movie.producer ?? '',
+          is_active:                movie.is_active ?? true,
+          has_free_preview:         movie.has_free_preview ?? false,
+        });
+        this.isLoadingMovie.set(false);
+      },
+      error: () => this.isLoadingMovie.set(false),
+    });
+  }
+
+  // ── File picking ───────────────────────────────────────────────────────
   onFileChange(event: Event, field: 'thumbnail' | 'video' | 'backdrop' | 'trailer') {
-    const input = event.target as HTMLInputElement;
-    const file = input.files?.[0] ?? null;
+    const file = (event.target as HTMLInputElement).files?.[0] ?? null;
     if (field === 'thumbnail') {
       this.thumbnailFile.set(file);
       this.filesError.update(e => ({ ...e, thumbnail: undefined }));
@@ -73,27 +111,44 @@ export class AdminMovieFormComponent implements OnInit {
     else this.trailerFile.set(null);
   }
 
-  formatBytes(bytes: number): string {
-    if (bytes < 1024) return bytes + ' B';
-    if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
-    return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
-  }
-
-  cancel() {
-    this.router.navigate(['/admin/movies']);
-  }
-
+  // ── Submit ─────────────────────────────────────────────────────────────
   save() {
     if (this.form.invalid) { this.form.markAllAsTouched(); return; }
 
-    const errors: { thumbnail?: string; video?: string } = {};
-    if (!this.thumbnailFile()) errors.thumbnail = 'Thumbnail is required';
-    if (!this.videoFile()) errors.video = 'Video file is required';
-    if (Object.keys(errors).length) { this.filesError.set(errors); return; }
+    if (!this.isEditMode()) {
+      const errors: { thumbnail?: string; video?: string } = {};
+      if (!this.thumbnailFile()) errors.thumbnail = 'Thumbnail is required';
+      if (!this.videoFile())     errors.video = 'Video file is required';
+      if (Object.keys(errors).length) { this.filesError.set(errors); return; }
+    }
 
     this.isSaving.set(true);
     this.saveError.set(null);
 
+    const fd = this.buildFormData();
+    const request$ = this.isEditMode()
+      ? this.adminService.updateMovie(this.editId()!, fd)
+      : this.adminService.createMovie(fd);
+
+    request$.subscribe({
+      next: () => {
+        this.isSaving.set(false);
+        this.router.navigate(['/admin/movies']);
+      },
+      error: (err) => {
+        this.isSaving.set(false);
+        const body = err?.error;
+        if (typeof body === 'object') {
+          const first = Object.values(body)[0];
+          this.saveError.set(Array.isArray(first) ? first[0] as string : String(first));
+        } else {
+          this.saveError.set('Something went wrong. Please try again.');
+        }
+      },
+    });
+  }
+
+  private buildFormData(): FormData {
     const v = this.form.value;
     const fd = new FormData();
 
@@ -110,26 +165,21 @@ export class AdminMovieFormComponent implements OnInit {
     if (v.genres?.trim())   fd.append('genres',   JSON.stringify(v.genres.split(',').map((s: string) => s.trim()).filter(Boolean)));
     if (v.producer?.trim()) fd.append('producer', v.producer.trim());
 
-    fd.append('thumbnail',   this.thumbnailFile()!);
-    fd.append('video_file',  this.videoFile()!);
-    if (this.backdropFile()) fd.append('backdrop',     this.backdropFile()!);
-    if (this.trailerFile())  fd.append('trailer_file', this.trailerFile()!);
+    if (this.videoFile())     fd.append('video_file',    this.videoFile()!);
+    if (this.thumbnailFile()) fd.append('thumbnail',     this.thumbnailFile()!);
+    if (this.backdropFile())  fd.append('backdrop',      this.backdropFile()!);
+    if (this.trailerFile())   fd.append('trailer_file',  this.trailerFile()!);
 
-    this.adminService.createMovie(fd).subscribe({
-      next: () => {
-        this.isSaving.set(false);
-        this.router.navigate(['/admin/movies']);
-      },
-      error: (err) => {
-        this.isSaving.set(false);
-        const body = err?.error;
-        if (typeof body === 'object') {
-          const first = Object.values(body)[0];
-          this.saveError.set(Array.isArray(first) ? first[0] as string : String(first));
-        } else {
-          this.saveError.set('Something went wrong. Please try again.');
-        }
-      },
-    });
+    return fd;
+  }
+
+  cancel() {
+    this.router.navigate(['/admin/movies']);
+  }
+
+  formatBytes(bytes: number): string {
+    if (bytes < 1024) return bytes + ' B';
+    if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+    return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
   }
 }

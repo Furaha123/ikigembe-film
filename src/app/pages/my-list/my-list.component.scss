@@ -188,6 +188,70 @@
   }
 }
 
+.resume-label {
+  color: #c9a84c;
+  font-size: 0.72rem;
+  font-weight: 600;
+}
+
+.mini-spinner {
+  width: 28px; height: 28px;
+  border: 3px solid rgba(255,255,255,0.2);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+
+// ── Player overlay ──
+.player-overlay {
+  position: fixed;
+  inset: 0;
+  background: #000;
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+}
+
+.player-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem 1.25rem;
+  background: rgba(0,0,0,0.6);
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  z-index: 10;
+}
+
+.player-title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #fff;
+}
+
+.player-close {
+  background: none;
+  border: none;
+  color: #ccc;
+  cursor: pointer;
+  padding: 0.25rem;
+  display: flex;
+  align-items: center;
+  &:hover { color: #fff; }
+}
+
+.player-body {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  app-video-player {
+    width: 100%;
+    height: 100%;
+  }
+}
+
 // Responsive
 @media (max-width: 768px) {
   .my-list-page {
