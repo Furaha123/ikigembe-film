@@ -79,6 +79,10 @@ export class MovieService {
       completed,
     });
   }
+
+  search(query: string) {
+    return this.http.get<MovieListResponse>(`${this.baseUrl}/search/?q=${encodeURIComponent(query)}`);
+  }
 }
 
 export interface MyListMovie {
