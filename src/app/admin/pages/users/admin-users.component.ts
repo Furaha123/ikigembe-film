@@ -1,4 +1,4 @@
-import { Component, inject, OnInit, signal, computed } from '@angular/core';
+import { Component, HostListener, inject, OnInit, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { AdminService, ViewerPaymentItem } from '../../services/admin.service';
 import { ViewerItem, ViewerDetail } from '../../models/admin.interface';
@@ -28,10 +28,11 @@ export class AdminUsersComponent implements OnInit {
   });
 
   readonly columns: TableColumn[] = [
-    { key: 'id',                label: 'User ID',      type: 'text',     width: '100px' },
-    { key: 'payment_count',     label: 'Payments',     type: 'number',   width: '120px' },
-    { key: 'total_paid_rwf',    label: 'Total Paid',   type: 'currency', width: '160px' },
-    { key: 'last_payment_date', label: 'Last Payment', type: 'date',     muted: true, width: '220px' },
+    { key: 'id',                label: 'User ID',      type: 'text',     width: '90px' },
+    { key: 'name',              label: 'Name',         type: 'text',     width: '180px' },
+    { key: 'payment_count',     label: 'Payments',     type: 'number',   width: '110px' },
+    { key: 'total_paid_rwf',    label: 'Total Paid',   type: 'currency', width: '150px' },
+    { key: 'last_payment_date', label: 'Last Payment', type: 'date',     muted: true, width: '200px' },
     { key: 'is_active',         label: 'Status',       type: 'status',   width: '110px' },
   ];
 
@@ -42,11 +43,29 @@ export class AdminUsersComponent implements OnInit {
     });
   }
 
+  // ── Kebab menu ─────────────────────────────────────────
+  menuUser = signal<{ id: number; is_active: boolean } | null>(null);
+  menuPos  = signal<{ top: number; right: number }>({ top: 0, right: 0 });
+
+  @HostListener('document:click')
+  onDocumentClick() { this.menuUser.set(null); }
+
+  toggleMenu(user: { id: number; is_active: boolean }, event: Event) {
+    event.stopPropagation();
+    if (this.menuUser()?.id === user.id) { this.menuUser.set(null); return; }
+    const btn  = (event.currentTarget as HTMLElement).getBoundingClientRect();
+    this.menuPos.set({ top: btn.bottom + 6, right: window.innerWidth - btn.right });
+    this.menuUser.set(user);
+  }
+
+  closeMenu() { this.menuUser.set(null); }
+
   // ── View Detail panel ──────────────────────────────────
   detailUser    = signal<ViewerDetail | null>(null);
   detailLoading = signal(false);
 
   openDetail(id: number) {
+    this.closeMenu();
     this.detailUser.set(null);
     this.detailLoading.set(true);
     this.adminService.getViewerDetail(id).subscribe({
@@ -62,7 +81,7 @@ export class AdminUsersComponent implements OnInit {
   }
 
   // ── Suspend flow ───────────────────────────────────────
-  openSuspendConfirm(id: number) { this.confirmSuspendId.set(id); }
+  openSuspendConfirm(id: number) { this.closeMenu(); this.confirmSuspendId.set(id); }
   cancelSuspend() { this.confirmSuspendId.set(null); }
 
   confirmSuspend() {
@@ -72,9 +91,7 @@ export class AdminUsersComponent implements OnInit {
     this.adminService.suspendUser(id).subscribe({
       next: () => {
         this.users.update(list => list.map(u => u.id === id ? { ...u, is_active: false } : u));
-        if (this.detailUser()?.id === id) {
-          this.detailUser.update(u => u ? { ...u, is_active: false } : u);
-        }
+        if (this.detailUser()?.id === id) this.detailUser.update(u => u ? { ...u, is_active: false } : u);
         this.actionId.set(null);
         this.confirmSuspendId.set(null);
       },
@@ -83,7 +100,7 @@ export class AdminUsersComponent implements OnInit {
   }
 
   // ── Delete flow ────────────────────────────────────────
-  openDeleteConfirm(id: number) { this.confirmDeleteId.set(id); }
+  openDeleteConfirm(id: number) { this.closeMenu(); this.confirmDeleteId.set(id); }
   cancelDelete() { this.confirmDeleteId.set(null); }
 
   confirmDelete() {
@@ -107,6 +124,7 @@ export class AdminUsersComponent implements OnInit {
   paymentsLoading = signal(false);
 
   openPayments(userId: number) {
+    this.closeMenu();
     this.paymentsUserId.set(userId);
     this.payments.set([]);
     this.paymentsLoading.set(true);

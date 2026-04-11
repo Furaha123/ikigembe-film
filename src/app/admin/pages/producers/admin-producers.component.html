@@ -10,6 +10,7 @@
     </button>
   </div>
 
+  <!-- Generated password banner -->
   @if (generatedPassword()) {
     <div class="password-banner">
       <div class="password-banner-content">
@@ -17,6 +18,19 @@
         <span>Producer created. Temporary password: <strong>{{ generatedPassword() }}</strong> — share this with the producer now, it won't be shown again.</span>
       </div>
       <button class="banner-close" (click)="dismissPassword()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+  }
+
+  <!-- Reset password banner -->
+  @if (resetPasswordBanner()) {
+    <div class="password-banner reset-banner">
+      <div class="password-banner-content">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 1l4 4-4 4"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><path d="M7 23l-4-4 4-4"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>
+        <span>Password reset. New temporary password: <strong>{{ resetPasswordBanner() }}</strong> — share this with the producer immediately.</span>
+      </div>
+      <button class="banner-close" (click)="dismissResetBanner()">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
       </button>
     </div>
@@ -40,7 +54,7 @@
             <th>Earnings</th>
             <th>Balance</th>
             <th>Status</th>
-            <th>Actions</th>
+            <th></th>
           </tr>
         </thead>
         <tbody>
@@ -57,15 +71,17 @@
               <td>RWF {{ p.balance | number }}</td>
               <td>
                 <span class="badge" [class.approved]="p.is_active" [class.suspended]="!p.is_active">
-                  {{ p.is_active ? 'Active' : 'Suspended' }}
+                  {{ p.is_active ? 'Active' : 'Inactive' }}
                 </span>
               </td>
               <td class="actions">
-                @if (!p.is_active) {
-                  <button class="action-btn success" (click)="approve(p.id)" [disabled]="actionId() === p.id">Approve</button>
-                } @else {
-                  <button class="action-btn warn" (click)="suspend(p.id)" [disabled]="actionId() === p.id">Suspend</button>
-                }
+                <button class="dots-btn" (click)="toggleMenu({ id: p.id, is_active: p.is_active }, $event)" title="Actions">
+                  <svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16">
+                    <circle cx="12" cy="5"  r="1.5"/>
+                    <circle cx="12" cy="12" r="1.5"/>
+                    <circle cx="12" cy="19" r="1.5"/>
+                  </svg>
+                </button>
               </td>
             </tr>
           }
@@ -74,10 +90,239 @@
     </div>
   }
 
-  <!-- Add Producer Modal -->
+  <!-- ── Kebab dropdown ── -->
+  @if (menuProducer()) {
+    <div
+      class="kebab-dropdown"
+      [style.top.px]="menuPos().top"
+      [style.right.px]="menuPos().right"
+      (click)="$event.stopPropagation()"
+      (keydown)="$event.stopPropagation()"
+    >
+      <button class="kd-item" (click)="openDetail(menuProducer()!.id)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15" height="15">
+          <circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/>
+        </svg>
+        View Details
+      </button>
+      <button class="kd-item" (click)="doResetPassword(menuProducer()!.id)" [disabled]="actionId() === menuProducer()!.id">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15" height="15">
+          <path d="M17 1l4 4-4 4"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/>
+          <path d="M7 23l-4-4 4-4"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/>
+        </svg>
+        Reset Password
+      </button>
+      @if (!menuProducer()!.is_active) {
+        <button class="kd-item success" (click)="approve(menuProducer()!.id)" [disabled]="actionId() === menuProducer()!.id">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15" height="15">
+            <polyline points="20 6 9 17 4 12"/>
+          </svg>
+          Approve
+        </button>
+      }
+      <hr class="kd-divider">
+      <button class="kd-item danger" (click)="openDeleteConfirm(menuProducer()!.id)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15" height="15">
+          <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/>
+          <path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/>
+        </svg>
+        Delete
+      </button>
+    </div>
+  }
+
+  <!-- ── Detail slide-in panel ── -->
+  @if (detailReport() || detailLoading()) {
+    <div class="overlay" (click)="closeDetail()" (keydown.escape)="closeDetail()">
+      <div class="detail-panel" (click)="$event.stopPropagation()" (keydown)="$event.stopPropagation()">
+
+        <div class="panel-header">
+          <h3>Producer Details</h3>
+          <button class="close-btn" (click)="closeDetail()">
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+          </button>
+        </div>
+
+        @if (detailLoading()) {
+          <div class="panel-loading">
+            <span class="panel-spinner"></span>
+            Loading producer details...
+          </div>
+        } @else {
+          @if (detailReport(); as report) {
+
+            <div class="detail-hero">
+              <div class="detail-avatar">{{ getInitials(report.producer.name) }}</div>
+              <div>
+                <p class="detail-name">{{ report.producer.name }}</p>
+                <p class="detail-email">{{ report.producer.email || '—' }}</p>
+              </div>
+            </div>
+
+            <div class="detail-rows">
+              <div class="detail-row">
+                <span class="detail-label">Phone</span>
+                <span class="detail-value">{{ report.producer.phone_number || '—' }}</span>
+              </div>
+              <div class="detail-row">
+                <span class="detail-label">Address</span>
+                <span class="detail-value">{{ report.producer.address || '—' }}</span>
+              </div>
+              <div class="detail-row">
+                <span class="detail-label">Copyright Code</span>
+                <span class="detail-value mono">{{ report.producer.copyright_code || '—' }}</span>
+              </div>
+              <div class="detail-row">
+                <span class="detail-label">Total Earnings</span>
+                <span class="detail-value gold">RWF {{ report.producer.total_earnings | number }}</span>
+              </div>
+              <div class="detail-row">
+                <span class="detail-label">Balance</span>
+                <span class="detail-value gold">RWF {{ report.producer.balance | number }}</span>
+              </div>
+              <div class="detail-row">
+                <span class="detail-label">Total Withdrawn</span>
+                <span class="detail-value">RWF {{ report.producer.total_withdrawn | number }}</span>
+              </div>
+              <div class="detail-row">
+                <span class="detail-label">Pending Withdrawals</span>
+                <span class="detail-value">RWF {{ report.producer.pending_withdrawals | number }}</span>
+              </div>
+            </div>
+
+            <!-- Movies table -->
+            <div class="panel-section-header">
+              <span>Movies ({{ report.movies.length }})</span>
+            </div>
+
+            @if (report.movies.length === 0) {
+              <p class="panel-empty">No movies uploaded.</p>
+            } @else {
+              <div class="panel-movies-wrap">
+                <table class="panel-movies-table">
+                  <thead>
+                    <tr>
+                      <th>Title</th>
+                      <th>Views</th>
+                      <th>Sales</th>
+                      <th>Revenue</th>
+                      <th></th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    @for (m of report.movies; track m.id) {
+                      <tr>
+                        <td class="movie-title-cell">{{ m.title }}</td>
+                        <td>{{ m.views | number }}</td>
+                        <td>{{ m.purchase_count }}</td>
+                        <td class="gold-text">RWF {{ m.total_revenue | number }}</td>
+                        <td>
+                          <button class="purchases-btn" (click)="openPurchases(report.producer.id, m.id, m.title)">
+                            Buyers
+                          </button>
+                        </td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
+            }
+
+            <div class="detail-actions">
+              <button class="btn-action secondary full" (click)="doResetPassword(report.producer.id)" [disabled]="actionId() === report.producer.id">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 1l4 4-4 4"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><path d="M7 23l-4-4 4-4"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>
+                {{ actionId() === report.producer.id ? 'Resetting...' : 'Reset Password' }}
+              </button>
+              <button class="btn-action danger full" (click)="openDeleteConfirm(report.producer.id)" [disabled]="actionId() === report.producer.id">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg>
+                Delete Producer
+              </button>
+            </div>
+          }
+        }
+      </div>
+    </div>
+  }
+
+  <!-- ── Purchases drilldown panel ── -->
+  @if (purchasesMovieId() !== null) {
+    <div class="overlay" (click)="closePurchases()" (keydown.escape)="closePurchases()">
+      <div class="purchases-panel" (click)="$event.stopPropagation()" (keydown)="$event.stopPropagation()">
+        <div class="purchases-panel__header">
+          <div>
+            <h3>Buyers</h3>
+            <p class="purchases-panel__sub">{{ purchasesMovieTitle() }}</p>
+          </div>
+          <button class="close-btn" (click)="closePurchases()">
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+          </button>
+        </div>
+
+        @if (purchasesLoading()) {
+          <div class="purchases-panel__loading">Loading...</div>
+        } @else if (purchases().length === 0) {
+          <div class="purchases-panel__empty">No purchases found for this movie.</div>
+        } @else {
+          <div class="purchases-table-wrap">
+            <table class="purchases-table">
+              <thead>
+                <tr><th>Buyer</th><th>Phone</th><th>Amount</th><th>Status</th><th>Date</th></tr>
+              </thead>
+              <tbody>
+                @for (b of purchases(); track b.payment_id) {
+                  <tr>
+                    <td>{{ b.buyer_name }}</td>
+                    <td class="muted">{{ b.phone_number || '—' }}</td>
+                    <td>RWF {{ b.amount | number }}</td>
+                    <td><span class="status-badge" [class]="purchaseStatusClass(b.status)">{{ b.status }}</span></td>
+                    <td class="muted">{{ b.purchased_at | date:'dd MMM yyyy' }}</td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+          @if (purchasesTotalPages() > 1) {
+            <div class="purchases-pagination">
+              <button class="page-btn" (click)="prevPage()" [disabled]="purchasesPage() === 1">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><polyline points="15 18 9 12 15 6"/></svg>
+              </button>
+              <span class="page-info">{{ purchasesPage() }} / {{ purchasesTotalPages() }}</span>
+              <button class="page-btn" (click)="nextPage()" [disabled]="purchasesPage() === purchasesTotalPages()">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><polyline points="9 18 15 12 9 6"/></svg>
+              </button>
+            </div>
+          }
+        }
+      </div>
+    </div>
+  }
+
+  <!-- ── Delete confirmation modal ── -->
+  @if (confirmDeleteId() !== null) {
+    <div class="overlay" (click)="cancelDelete()" (keydown.escape)="cancelDelete()">
+      <dialog open class="modal" (click)="$event.stopPropagation()" (keydown)="$event.stopPropagation()">
+        <div class="modal-icon danger">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg>
+        </div>
+        <h3>Delete Producer</h3>
+        <p>
+          You are about to permanently delete <strong>{{ targetProducerName() }}</strong>.
+          This action <strong>cannot be undone</strong> and all their data will be removed.
+        </p>
+        <div class="modal-actions">
+          <button class="action-btn neutral" (click)="cancelDelete()">Cancel</button>
+          <button class="action-btn danger-btn" (click)="confirmDelete()" [disabled]="actionId() !== null">
+            @if (actionId() !== null) { Deleting... } @else { Yes, Delete }
+          </button>
+        </div>
+      </dialog>
+    </div>
+  }
+
+  <!-- ── Add Producer Modal ── -->
   @if (showAddModal()) {
     <div class="overlay" (click)="closeAddModal()" (keydown.escape)="closeAddModal()">
-      <dialog open class="modal" (click)="$event.stopPropagation()" (keydown)="$event.stopPropagation()">
+      <dialog open class="modal add-modal" (click)="$event.stopPropagation()" (keydown)="$event.stopPropagation()">
 
         <div class="modal-header">
           <h3>Add Producer</h3>

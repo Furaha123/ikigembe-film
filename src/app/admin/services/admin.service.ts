@@ -7,6 +7,9 @@ import {
   ViewerItem,
   ViewerDetail,
   ProducerItem,
+  ProducerReport,
+  MoviePurchaseList,
+  ResetPasswordResponse,
   CreateProducerRequest,
   TransactionHistory,
   WithdrawalItem,
@@ -99,6 +102,23 @@ export class AdminService {
 
   deleteMovie(id: number): Observable<unknown> {
     return this.http.delete(`${BASE}/movies/${id}/delete/`);
+  }
+
+  // Producer detail report & movie purchases
+  getProducerReport(id: number): Observable<ProducerReport> {
+    return this.http.get<ProducerReport>(`${BASE}/admin/dashboard/producers/${id}/report/`);
+  }
+
+  getMoviePurchases(producerId: number, movieId: number, page = 1): Observable<MoviePurchaseList> {
+    return this.http.get<MoviePurchaseList>(
+      `${BASE}/admin/dashboard/producers/${producerId}/movies/${movieId}/purchases/?page=${page}`
+    );
+  }
+
+  resetUserPassword(userId: number): Observable<ResetPasswordResponse> {
+    return this.http.post<ResetPasswordResponse>(
+      `${BASE}/admin/dashboard/users/${userId}/reset-password/`, {}
+    );
   }
 
   // Viewer detail & payment history

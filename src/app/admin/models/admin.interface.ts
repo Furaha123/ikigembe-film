@@ -18,6 +18,7 @@ export interface DashboardOverview {
 
 export interface ViewerItem {
   id: number;
+  name: string;
   payment_count: number;
   total_paid_rwf: number;
   last_payment_date: string | null;
@@ -105,6 +106,59 @@ export interface MovieFormData {
   price: number;
   release_date: string;
   trailer_url: string;
+}
+
+// ── Producer report ───────────────────────────────────
+export interface ProducerReportProfile {
+  id: number;
+  name: string;
+  email: string | null;
+  phone_number: string | null;
+  address: string;
+  copyright_code: string;
+  total_earnings: number;
+  balance: number;
+  pending_withdrawals: number;
+  total_withdrawn: number;
+}
+
+export interface ProducerReportMovie {
+  id: number;
+  title: string;
+  price: number;
+  views: number;
+  release_date: string;
+  total_revenue: number;
+  purchase_count: number;
+  producer_share: number;
+}
+
+export interface ProducerReport {
+  producer: ProducerReportProfile;
+  movies: ProducerReportMovie[];
+}
+
+export interface MoviePurchaseItem {
+  payment_id: number;
+  buyer_name: string;
+  phone_number: string | null;
+  amount: number;
+  status: string;
+  deposit_id: string | null;
+  purchased_at: string;
+}
+
+export interface MoviePurchaseList {
+  page: number;
+  total_results: number;
+  total_pages: number;
+  results: MoviePurchaseItem[];
+}
+
+export interface ResetPasswordResponse {
+  temporary_password: string;
+  user_id: number;
+  message: string;
 }
 
 // ── Report interfaces ──────────────────────────────────

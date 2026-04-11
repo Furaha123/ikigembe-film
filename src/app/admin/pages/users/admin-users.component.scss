@@ -30,10 +30,54 @@ $muted:   #888;
   &:disabled { opacity: 0.4; cursor: not-allowed; }
   &:hover:not(:disabled) { opacity: 0.75; }
 
-  &.warn    { background: rgba(234,179,8,0.12);    color: #fef9c3; border-color: rgba(234,179,8,0.25); }
-  &.danger  { background: rgba(239,68,68,0.12);   color: #fca5a5; border-color: rgba(239,68,68,0.25); }
-  &.neutral { background: rgba(255,255,255,0.06); color: $text;   border-color: $border; }
-  &.info    { background: rgba(59,130,246,0.12);  color: #bfdbfe; border-color: rgba(59,130,246,0.25); }
+  &.warn    { background: #2d2713; color: #fef9c3; border-color: #453d1d; }
+  &.danger  { background: #2e1a1a; color: #fecaca; border-color: #471f1f; }
+  &.neutral { background: rgba(255,255,255,0.06); color: $text; border-color: $border; }
+  &.info    { background: #19212f; color: #bfdbfe; border-color: #1e3048; }
+}
+
+// ── 3-dot trigger button ──────────────────────────────
+.dots-btn {
+  width: 30px; height: 30px;
+  display: inline-flex; align-items: center; justify-content: center;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid $border;
+  border-radius: 7px;
+  color: $muted;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+  &:hover { background: rgba(255,255,255,0.1); color: $text; }
+}
+
+// ── Fixed-position kebab dropdown ─────────────────────
+.kebab-dropdown {
+  position: fixed;
+  z-index: 500;
+  background: #1e1e1e;
+  border: 1px solid #2e2e2e;
+  border-radius: 10px;
+  min-width: 168px;
+  overflow: hidden;
+  box-shadow: 0 8px 28px rgba(0,0,0,0.6);
+}
+
+.kd-item {
+  display: flex; align-items: center; gap: 0.55rem;
+  width: 100%; padding: 0.65rem 1rem;
+  background: none; border: none;
+  font-size: 0.82rem; font-weight: 500;
+  color: $text; cursor: pointer; text-align: left;
+  transition: background 0.12s;
+
+  &:hover { background: rgba(255,255,255,0.06); }
+  &.warn   { color: #fef9c3; }
+  &.danger { color: #fca5a5; &:hover { background: rgba(239,68,68,0.08); } }
+}
+
+.kd-divider {
+  border: none;
+  border-top: 1px solid #2e2e2e;
+  margin: 0.2rem 0;
 }
 
 // ── Detail panel ──────────────────────────────────────
@@ -116,8 +160,8 @@ $muted:   #888;
     border-radius: 50%;
   }
 
-  &.active   { background: rgba(74,222,128,0.12); color: #86efac; .dot { background: #86efac; } }
-  &.inactive { background: rgba(239,68,68,0.12);  color: #fca5a5; .dot { background: #fca5a5; } }
+  &.active   { background: #1a2c21; color: #86efac;  .dot { background: #86efac; } }
+  &.inactive { background: #2e1a1a; color: #fecaca; .dot { background: #fecaca; } }
 }
 
 .detail-rows {
@@ -231,9 +275,9 @@ $muted:   #888;
   font-size: 0.72rem;
   font-weight: 600;
 
-  &.status-ok      { background: rgba(74,222,128,0.15); color: #86efac; }
-  &.status-fail    { background: rgba(239,68,68,0.15);  color: #fca5a5; }
-  &.status-pending { background: rgba(234,179,8,0.15);  color: #fde68a; }
+  &.status-ok      { background: #1a2c21; color: #86efac; }
+  &.status-fail    { background: #2e1a1a; color: #fecaca; }
+  &.status-pending { background: #2d2713; color: #fef9c3; }
 }
 
 .suspended-label {
@@ -244,9 +288,9 @@ $muted:   #888;
   border-radius: 6px;
   font-size: 0.78rem;
   font-weight: 600;
-  background: rgba(239,68,68,0.08);
-  color: #f87171;
-  border: 1px solid rgba(239,68,68,0.15);
+  background: #220e0e;
+  color: #fecaca;
+  border: 1px solid #3a1515;
 
   svg { width: 13px; height: 13px; flex-shrink: 0; }
 }
@@ -280,8 +324,8 @@ dialog.modal {
     margin: 0 auto 1.25rem;
     svg { width: 26px; height: 26px; }
 
-    &.warn   { background: rgba(234,179,8,0.12); color: #facc15; }
-    &.danger { background: rgba(239,68,68,0.12); color: #f87171; }
+    &.warn   { background: #2d2713; color: #fef9c3; }
+    &.danger { background: #2e1a1a; color: #fecaca; }
   }
 
   h3 {
