@@ -7,7 +7,6 @@ import {
   output,
   signal
 } from "@angular/core";
-import { DatePipe } from "@angular/common";
 
 export interface DateRange {
   start: Date | null;
@@ -19,7 +18,7 @@ export interface DateRange {
   templateUrl: "./date-picker.html",
   styleUrl: "./date-picker.scss",
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [DatePipe]
+  imports: []
 })
 export class DatePickerComponent {
   public disabled   = input(false);
