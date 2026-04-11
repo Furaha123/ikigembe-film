@@ -1,0 +1,95 @@
+<section class="report-section">
+
+  <div class="section-header">
+    <div>
+      <h3>Transaction History</h3>
+      <p>
+        @if (!isLoading()) {
+          {{ totalResults() | number }} transactions
+        } @else {
+          Loading transactions…
+        }
+      </p>
+    </div>
+    <div class="section-actions">
+      <button class="btn-export" (click)="export()" [disabled]="isLoading()">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M19 9h-4V3H9v6H5l7 7 7-7zm-8 2V5h2v6h1.17L12 13.17 9.83 11H11zm-6 7h14v2H5v-2z"/></svg>
+        Export
+      </button>
+    </div>
+  </div>
+
+  @if (isLoading()) {
+    <div class="section-skeleton">
+      <div class="skel tall"></div>
+    </div>
+  } @else if (hasError()) {
+    <div class="section-error">
+      <p>Failed to load transactions.</p>
+      <button class="btn-retry" (click)="load()">Retry</button>
+    </div>
+  } @else if (transactions().length === 0) {
+    <div class="empty-state">No transactions found.</div>
+  } @else {
+
+    <div class="table-scroll">
+      <table>
+        <thead>
+          <tr>
+            <th>Movie</th>
+            <th>Buyer</th>
+            <th class="r">Amount</th>
+            <th class="r">Your Share</th>
+            <th>Status</th>
+            <th>Date</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (t of transactions(); track t.id) {
+            <tr>
+              <td class="fw">{{ t.movie_title }}</td>
+              <td class="muted">{{ t.buyer_name ?? '—' }}</td>
+              <td class="r gold fw">{{ fmt(t.amount) }}</td>
+              <td class="r green">{{ fmt(t.your_share) }}</td>
+              <td>
+                <span class="status-badge" [class]="'status-' + t.status.toLowerCase()">
+                  {{ t.status }}
+                </span>
+              </td>
+              <td class="muted small">{{ t.created_at | date:'dd MMM yyyy, HH:mm' }}</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+
+    @if (totalPages() > 1) {
+      <div class="pagination">
+        <button class="page-btn" (click)="goToPage(page() - 1)" [disabled]="page() === 1">
+          <svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16"><path d="M15.41 16.59L10.83 12l4.58-4.59L14 6l-6 6 6 6z"/></svg>
+        </button>
+
+        @if (pages()[0] > 1) {
+          <button class="page-btn" (click)="goToPage(1)">1</button>
+          @if (pages()[0] > 2) { <span class="page-dots">…</span> }
+        }
+
+        @for (p of pages(); track p) {
+          <button class="page-btn" [class.active]="p === page()" (click)="goToPage(p)">{{ p }}</button>
+        }
+
+        @if (pages()[pages().length - 1] < totalPages()) {
+          @if (pages()[pages().length - 1] < totalPages() - 1) { <span class="page-dots">…</span> }
+          <button class="page-btn" (click)="goToPage(totalPages())">{{ totalPages() }}</button>
+        }
+
+        <button class="page-btn" (click)="goToPage(page() + 1)" [disabled]="page() === totalPages()">
+          <svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6z"/></svg>
+        </button>
+
+        <span class="page-info">Page {{ page() }} of {{ totalPages() }}</span>
+      </div>
+    }
+
+  }
+</section>

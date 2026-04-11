@@ -1,0 +1,178 @@
+$gold:   #C5A253;
+$border: #222;
+$card:   #161616;
+$text:   #e5e5e5;
+$muted:  #555;
+
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.4} }
+
+.report-section {
+  background: $card;
+  border: 1px solid $border;
+  border-radius: 14px;
+  padding: 1.35rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.section-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+
+  h3 { font-size: 0.95rem; font-weight: 700; color: $text; margin: 0 0 0.15rem; }
+  p  { font-size: 0.75rem; color: $muted; margin: 0; }
+}
+
+.section-actions {
+  display: flex; align-items: center; gap: 0.5rem; flex-shrink: 0;
+}
+
+.tab-group {
+  display: flex;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid $border;
+  border-radius: 8px;
+  overflow: hidden;
+
+  button {
+    background: none; border: none;
+    color: $muted; font-size: 0.75rem; font-weight: 600;
+    padding: 0.3rem 0.8rem; cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+    &.active { background: $gold; color: #000; }
+    &:hover:not(.active) { color: $text; }
+  }
+}
+
+.btn-export {
+  display: inline-flex; align-items: center; gap: 0.4rem;
+  padding: 0.45rem 1rem;
+  background: $gold; color: #000;
+  border: none; border-radius: 8px;
+  font-size: 0.78rem; font-weight: 700;
+  cursor: pointer; white-space: nowrap;
+  transition: opacity 0.15s;
+  svg { width: 14px; height: 14px; }
+  &:hover:not(:disabled) { opacity: 0.85; }
+  &:disabled { opacity: 0.4; cursor: not-allowed; }
+}
+
+// ── Ranked list ────────────────────────────────────────
+.movies-list {
+  display: flex; flex-direction: column; gap: 0.6rem;
+}
+
+.movie-row {
+  display: grid;
+  grid-template-columns: 1.5rem 1fr auto;
+  align-items: center;
+  gap: 0.65rem;
+}
+
+.rank {
+  font-size: 0.72rem; font-weight: 700;
+  color: $muted; text-align: center;
+}
+
+.movie-info {
+  display: flex; flex-direction: column; gap: 0.1rem; min-width: 0;
+}
+
+.movie-title {
+  font-size: 0.82rem; font-weight: 600; color: $text;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+
+.movie-producer { font-size: 0.72rem; color: $muted; }
+
+.movie-stats {
+  display: flex; flex-direction: column; align-items: flex-end; gap: 0.05rem; flex-shrink: 0;
+}
+
+.stat-main { font-size: 0.8rem; font-weight: 700; color: $gold; white-space: nowrap; }
+.stat-sub  { font-size: 0.68rem; color: $muted; }
+
+.bar-wrap {
+  grid-column: 1 / -1;
+  height: 3px;
+  background: rgba(255,255,255,0.06);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.bar {
+  height: 100%;
+  background: $gold;
+  border-radius: 999px;
+  transition: width 0.4s ease;
+}
+
+// ── Table ──────────────────────────────────────────────
+.table-scroll { overflow-x: auto; }
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.82rem;
+  min-width: 520px;
+
+  th {
+    padding: 0.6rem 1rem;
+    text-align: left;
+    font-size: 0.7rem; font-weight: 600;
+    text-transform: uppercase; letter-spacing: 0.05em;
+    color: $muted;
+    border-bottom: 1px solid $border;
+    background: rgba(255,255,255,0.015);
+    white-space: nowrap;
+    &.r { text-align: right; }
+  }
+
+  td {
+    padding: 0.6rem 1rem;
+    color: $text;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+    vertical-align: middle;
+    &.r    { text-align: right; }
+    &.gold { color: $gold; }
+    &.muted { color: $muted; font-size: 0.78rem; }
+    &.fw   { font-weight: 700; }
+  }
+
+  tr:hover td { background: rgba(255,255,255,0.02); }
+}
+
+// ── States ─────────────────────────────────────────────
+.section-skeleton {
+  display: flex; flex-direction: column; gap: 0.75rem;
+}
+
+.skel {
+  background: rgba(255,255,255,0.04);
+  border-radius: 8px;
+  animation: pulse 1.5s ease-in-out infinite;
+  &.skel-list { height: 280px; }
+}
+
+.section-error {
+  display: flex; flex-direction: column; align-items: center;
+  gap: 0.75rem; padding: 2.5rem 1rem;
+  color: $muted; font-size: 0.82rem; text-align: center;
+}
+
+.btn-retry {
+  padding: 0.4rem 1rem;
+  background: none; border: 1px solid $border;
+  color: $text; border-radius: 8px;
+  font-size: 0.78rem; cursor: pointer;
+  &:hover { border-color: #444; }
+}
+
+.empty-state {
+  padding: 3rem; text-align: center;
+  color: $muted; font-size: 0.82rem;
+}

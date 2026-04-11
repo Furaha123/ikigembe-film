@@ -1,0 +1,96 @@
+$gold:   #C5A253;
+$green:  #34d399;
+$border: #222;
+$card:   #161616;
+$text:   #e5e5e5;
+$muted:  #555;
+
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.4} }
+
+.report-section {
+  background: $card; border: 1px solid $border;
+  border-radius: 14px; padding: 1.35rem;
+  display: flex; flex-direction: column; gap: 1rem;
+}
+
+.section-header {
+  display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem; flex-wrap: wrap;
+  h3 { font-size: 0.95rem; font-weight: 700; color: $text; margin: 0 0 0.15rem; }
+  p  { font-size: 0.75rem; color: $muted; margin: 0; }
+}
+
+.section-actions { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; flex-shrink: 0; }
+
+.btn-export {
+  display: inline-flex; align-items: center; gap: 0.4rem;
+  padding: 0.45rem 1rem; background: $gold; color: #000;
+  border: none; border-radius: 8px; font-size: 0.78rem; font-weight: 700;
+  cursor: pointer; white-space: nowrap; transition: opacity 0.15s;
+  svg { width: 14px; height: 14px; }
+  &:hover:not(:disabled) { opacity: 0.85; }
+  &:disabled { opacity: 0.4; cursor: not-allowed; }
+}
+
+.kpi-strip {
+  display: flex; border: 1px solid $border; border-radius: 10px; overflow: hidden;
+}
+.kpi-item {
+  flex: 1; display: flex; flex-direction: column; gap: 0.15rem; padding: 0.75rem 1rem;
+  border-right: 1px solid $border;
+  &:last-child { border-right: none; }
+}
+.kpi-label { font-size: 0.7rem; font-weight: 600; color: $muted; text-transform: uppercase; letter-spacing: 0.04em; }
+.kpi-value { font-size: 1.05rem; font-weight: 800; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  &.gold  { color: $gold; }
+  &.green { color: $green; }
+}
+
+.chart-body { height: 220px; position: relative; }
+
+.table-scroll { overflow-x: auto; }
+table {
+  width: 100%; border-collapse: collapse; font-size: 0.82rem; min-width: 380px;
+  th {
+    padding: 0.6rem 1rem; text-align: left; font-size: 0.7rem; font-weight: 600;
+    text-transform: uppercase; letter-spacing: 0.05em; color: $muted;
+    border-bottom: 1px solid $border; background: rgba(255,255,255,0.015); white-space: nowrap;
+    &.r { text-align: right; }
+  }
+  td {
+    padding: 0.65rem 1rem; color: $text; border-bottom: 1px solid rgba(255,255,255,0.04); vertical-align: middle;
+    &.r     { text-align: right; }
+    &.gold  { color: $gold; }
+    &.green { color: $green; }
+    &.fw    { font-weight: 700; }
+  }
+  tr:hover td { background: rgba(255,255,255,0.02); }
+}
+.th-note {
+  display: inline-block; background: rgba(255,255,255,0.06); border-radius: 4px;
+  padding: 0.05rem 0.35rem; font-size: 0.65rem; margin-left: 0.3rem; font-weight: 500;
+  text-transform: none; letter-spacing: 0;
+}
+
+.section-skeleton { display: flex; flex-direction: column; gap: 0.75rem; }
+.skel {
+  background: rgba(255,255,255,0.04); border-radius: 8px; animation: pulse 1.5s ease-in-out infinite;
+  &.kpi-row { height: 72px; }
+  &.chart   { height: 220px; }
+  &.tbl     { height: 120px; }
+}
+.section-error {
+  display: flex; flex-direction: column; align-items: center; gap: 0.75rem; padding: 2.5rem 1rem;
+  color: $muted; font-size: 0.82rem; text-align: center;
+}
+.btn-retry {
+  padding: 0.4rem 1rem; background: none; border: 1px solid $border; color: $text;
+  border-radius: 8px; font-size: 0.78rem; cursor: pointer;
+  &:hover { border-color: #444; }
+}
+.empty-state { padding: 3rem; text-align: center; color: $muted; font-size: 0.82rem; }
+
+@media (max-width: 640px) {
+  .chart-body { height: 180px; }
+  .kpi-strip  { flex-wrap: wrap; }
+  .kpi-item   { min-width: 50%; border-bottom: 1px solid $border; }
+}

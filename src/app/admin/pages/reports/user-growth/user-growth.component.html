@@ -1,0 +1,63 @@
+<section class="report-section">
+
+  <div class="section-header">
+    <div>
+      <h3>User Growth</h3>
+      <p>New registrations per month for the selected period</p>
+    </div>
+    <div class="section-actions">
+      <procurement-date-picker (dateChange)="onDateRangeChange($event)" />
+      <div class="legend-inline">
+        <span class="legend-dot" style="background:#60a5fa"></span> Viewers
+        <span class="legend-dot" style="background:#C5A253; margin-left:0.75rem"></span> Producers
+      </div>
+      <button class="btn-export" (click)="export()" [disabled]="isLoading()">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M19 9h-4V3H9v6H5l7 7 7-7zm-8 2V5h2v6h1.17L12 13.17 9.83 11H11zm-6 7h14v2H5v-2z"/></svg>
+        Export
+      </button>
+    </div>
+  </div>
+
+  @if (isLoading()) {
+    <div class="section-skeleton">
+      <div class="skel skel-chart"></div>
+      <div class="skel skel-table"></div>
+    </div>
+  } @else if (hasError()) {
+    <div class="section-error">
+      <p>Failed to load user growth data.</p>
+      <button class="btn-retry" (click)="load()">Retry</button>
+    </div>
+  } @else if (growth().length === 0) {
+    <div class="empty-state">No growth data for this period.</div>
+  } @else {
+
+    <div class="chart-body">
+      <canvas #canvas></canvas>
+    </div>
+
+    <div class="table-scroll">
+      <table>
+        <thead>
+          <tr>
+            <th>Month</th>
+            <th class="r">Viewers</th>
+            <th class="r">Producers</th>
+            <th class="r">Total</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (row of growth(); track row.month) {
+            <tr>
+              <td>{{ row.month }}</td>
+              <td class="r blue">{{ row.viewers | number }}</td>
+              <td class="r gold">{{ row.producers | number }}</td>
+              <td class="r fw">{{ row.total | number }}</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+
+  }
+</section>

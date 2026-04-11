@@ -162,20 +162,30 @@ export interface ResetPasswordResponse {
 }
 
 // ── Paying users report ───────────────────────────────
+export interface PayingUserPaymentItem {
+  id: number;
+  movie_title: string;
+  amount: number;
+  status: string;
+  paid_at: string;
+}
+
 export interface PayingUserItem {
-  user_id: number;
+  id: number;
   name: string;
-  email: string;
+  email: string | null;
   phone_number: string | null;
+  payment_count: number;
   total_paid_rwf: number;
-  purchase_count: number;
+  first_payment_date: string | null;
   last_payment_date: string | null;
+  payments: PayingUserPaymentItem[];
 }
 
 export interface PayingUsersReport {
   page: number;
-  total_results: number;
   total_pages: number;
+  total_paying_users: number;
   results: PayingUserItem[];
 }
 

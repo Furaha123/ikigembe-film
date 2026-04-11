@@ -43,6 +43,7 @@ export interface WithdrawalRequest {
   momo_provider?: string;
 }
 
+// ── Report interfaces ──────────────────────────────────
 export interface ProducerRevenueTrendItem {
   period_start: string;
   total_revenue: number;
@@ -62,6 +63,39 @@ export interface ProducerTopMovieItem {
 export interface ProducerReportData {
   trend: ProducerRevenueTrendItem[];
   top_movies: ProducerTopMovieItem[];
+}
+
+// ── Earnings report ────────────────────────────────────
+export interface ProducerEarningsTrendItem {
+  period_start: string;
+  total_revenue: number;
+  producer_share: number;
+  purchase_count: number;
+}
+
+export interface ProducerEarningsReport {
+  total_revenue: number;
+  producer_share: number;
+  purchase_count: number;
+  trend: ProducerEarningsTrendItem[];
+}
+
+// ── Transactions ───────────────────────────────────────
+export interface ProducerTransactionItem {
+  id: number;
+  movie_title: string;
+  buyer_name: string | null;
+  amount: number;
+  your_share: number;
+  status: string;
+  created_at: string;
+}
+
+export interface ProducerTransactionList {
+  page: number;
+  total_pages: number;
+  total_results: number;
+  results: ProducerTransactionItem[];
 }
 
 @Injectable({ providedIn: 'root' })
@@ -84,13 +118,38 @@ export class ProducerService {
     return this.http.post<ProducerWithdrawal>(`${BASE}/producer/dashboard/withdrawals/`, payload);
   }
 
-  getReport(): Observable<ProducerReportData> {
-    return this.http.get<ProducerReportData>(`${BASE}/producer/dashboard/report/`);
+  getReport(startDate?: string, endDate?: string): Observable<ProducerReportData> {
+    let url = `${BASE}/producer/dashboard/report/`;
+    if (startDate) url += `?start_date=${startDate}`;
+    if (endDate)   url += `${startDate ? '&' : '?'}end_date=${endDate}`;
+    return this.http.get<ProducerReportData>(url);
   }
 
-  getRevenueTrend(period = 'monthly', periods = 12): Observable<{ trend: ProducerRevenueTrendItem[] }> {
-    return this.http.get<{ trend: ProducerRevenueTrendItem[] }>(
-      `${BASE}/producer/dashboard/revenue-trend/?period=${period}&periods=${periods}`
+  getRevenueTrend(
+    period = 'monthly',
+    startDate?: string,
+    endDate?: string,
+  ): Observable<{ trend: ProducerRevenueTrendItem[] }> {
+    let url = `${BASE}/producer/dashboard/revenue-trend/?period=${period}`;
+    if (startDate) url += `&start_date=${startDate}`;
+    if (endDate)   url += `&end_date=${endDate}`;
+    return this.http.get<{ trend: ProducerRevenueTrendItem[] }>(url);
+  }
+
+  getEarningsReport(
+    period = 'monthly',
+    startDate?: string,
+    endDate?: string,
+  ): Observable<ProducerEarningsReport> {
+    let url = `${BASE}/producer/dashboard/earnings/report/?period=${period}`;
+    if (startDate) url += `&start_date=${startDate}`;
+    if (endDate)   url += `&end_date=${endDate}`;
+    return this.http.get<ProducerEarningsReport>(url);
+  }
+
+  getTransactions(page = 1): Observable<ProducerTransactionList> {
+    return this.http.get<ProducerTransactionList>(
+      `${BASE}/producer/dashboard/transactions/?page=${page}`
     );
   }
 }

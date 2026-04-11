@@ -1,0 +1,77 @@
+<section class="report-section">
+
+  <div class="section-header">
+    <div>
+      <h3>Earnings Report</h3>
+      <p>Earnings breakdown by period</p>
+    </div>
+    <div class="section-actions">
+      <procurement-date-picker (dateChange)="onDateRangeChange($event)" />
+      <button class="btn-export" (click)="export()" [disabled]="isLoading()">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M19 9h-4V3H9v6H5l7 7 7-7zm-8 2V5h2v6h1.17L12 13.17 9.83 11H11zm-6 7h14v2H5v-2z"/></svg>
+        Export
+      </button>
+    </div>
+  </div>
+
+  @if (isLoading()) {
+    <div class="section-skeleton">
+      <div class="skel kpi-row"></div>
+      <div class="skel chart"></div>
+      <div class="skel tbl"></div>
+    </div>
+  } @else if (hasError()) {
+    <div class="section-error">
+      <p>Failed to load earnings report.</p>
+      <button class="btn-retry" (click)="load()">Retry</button>
+    </div>
+  } @else {
+
+    <div class="kpi-strip">
+      <div class="kpi-item">
+        <span class="kpi-label">Total Revenue</span>
+        <span class="kpi-value gold">{{ fmt(totalRevenue()) }}</span>
+      </div>
+      <div class="kpi-item">
+        <span class="kpi-label">Your Share</span>
+        <span class="kpi-value green">{{ fmt(totalShare()) }}</span>
+      </div>
+      <div class="kpi-item">
+        <span class="kpi-label">Purchases</span>
+        <span class="kpi-value">{{ totalPurchases() | number }}</span>
+      </div>
+    </div>
+
+    @if (trend().length > 0) {
+      <div class="chart-body"><canvas #canvas></canvas></div>
+    } @else {
+      <div class="empty-state">No earnings data for this period.</div>
+    }
+
+    @if (trend().length > 0) {
+      <div class="table-scroll">
+        <table>
+          <thead>
+            <tr>
+              <th>Period</th>
+              <th class="r">Total Revenue</th>
+              <th class="r">Your Share <span class="th-note">70%</span></th>
+              <th class="r">Purchases</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (row of trend(); track row.period_start) {
+              <tr>
+                <td>{{ row.period_start | date:'MMMM yyyy' }}</td>
+                <td class="r gold fw">{{ fmt(row.total_revenue) }}</td>
+                <td class="r green fw">{{ fmt(row.producer_share) }}</td>
+                <td class="r">{{ row.purchase_count }}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+
+  }
+</section>
