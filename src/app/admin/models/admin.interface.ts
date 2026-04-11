@@ -18,11 +18,19 @@ export interface DashboardOverview {
 
 export interface ViewerItem {
   id: number;
+  payment_count: number;
+  total_paid_rwf: number;
+  last_payment_date: string | null;
+  is_active: boolean;
+}
+
+export interface ViewerDetail {
+  id: number;
   name: string;
   email: string;
   phone_number: string | null;
   movies_watched: number;
-  payments_made: number;
+  total_paid_rwf: number;
   is_active: boolean;
   date_joined: string;
 }

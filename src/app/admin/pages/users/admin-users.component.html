@@ -12,7 +12,11 @@
   />
 
   <ng-template #actions let-user>
-    <button class="btn info" (click)="openPayments($any(user))">
+    <button class="btn info" (click)="openDetail(user['id'])">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+      View Details
+    </button>
+    <button class="btn secondary" (click)="openPayments(user['id'])">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
       Payments
     </button>
@@ -21,23 +25,99 @@
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>
         Suspend
       </button>
-      <button class="btn danger" (click)="openDeleteConfirm(user['id'])" [disabled]="actionId() === user['id']">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg>
-        Delete
-      </button>
     } @else {
       <span class="suspended-label">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>
         Suspended
       </span>
-      <button class="btn danger" (click)="openDeleteConfirm(user['id'])" [disabled]="actionId() === user['id']">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg>
-        Delete
-      </button>
     }
+    <button class="btn danger" (click)="openDeleteConfirm(user['id'])" [disabled]="actionId() === user['id']">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg>
+      Delete
+    </button>
   </ng-template>
 
-  <!-- Suspend confirmation modal -->
+  <!-- ── View Detail slide-in panel ── -->
+  @if (detailUser() || detailLoading()) {
+    <div class="overlay" (click)="closeDetail()" (keydown.escape)="closeDetail()">
+      <div class="detail-panel" (click)="$event.stopPropagation()" (keydown)="$event.stopPropagation()">
+
+        <div class="panel-header">
+          <h3>User Details</h3>
+          <button class="close-btn" (click)="closeDetail()">
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+          </button>
+        </div>
+
+        @if (detailLoading()) {
+          <div class="panel-loading">
+            <span class="panel-spinner"></span>
+            Loading user details...
+          </div>
+        } @else {
+        @if (detailUser(); as user) {
+
+          <!-- Avatar + name block -->
+          <div class="detail-hero">
+            <div class="detail-avatar">{{ getInitials(user.name || '?') }}</div>
+            <div>
+              <p class="detail-name">{{ user.name || '—' }}</p>
+              <p class="detail-email">{{ user.email }}</p>
+              <span class="detail-status-badge" [class.active]="user.is_active" [class.inactive]="!user.is_active">
+                <span class="dot"></span>
+                {{ user.is_active ? 'Active' : 'Suspended' }}
+              </span>
+            </div>
+          </div>
+
+          <!-- Info rows -->
+          <div class="detail-rows">
+            <div class="detail-row">
+              <span class="detail-label">User ID</span>
+              <span class="detail-value">#{{ user.id }}</span>
+            </div>
+            <div class="detail-row">
+              <span class="detail-label">Phone</span>
+              <span class="detail-value">{{ user.phone_number || '—' }}</span>
+            </div>
+            <div class="detail-row">
+              <span class="detail-label">Movies Watched</span>
+              <span class="detail-value">{{ user.movies_watched | number }}</span>
+            </div>
+            <div class="detail-row">
+              <span class="detail-label">Total Paid</span>
+              <span class="detail-value gold">RWF {{ user.total_paid_rwf | number }}</span>
+            </div>
+            <div class="detail-row">
+              <span class="detail-label">Date Joined</span>
+              <span class="detail-value muted">{{ user.date_joined | date:'dd MMM yyyy, h:mm a' }}</span>
+            </div>
+          </div>
+
+          <!-- Actions -->
+          <div class="detail-actions">
+            <button class="btn secondary full" (click)="closeDetail(); openPayments(user.id)">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
+              View Payment History
+            </button>
+            @if (user.is_active) {
+              <button class="btn warn full" (click)="openSuspendConfirm(user.id)" [disabled]="actionId() === user.id">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>
+                Suspend User
+              </button>
+            }
+            <button class="btn danger full" (click)="openDeleteConfirm(user.id)" [disabled]="actionId() === user.id">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg>
+              Delete User
+            </button>
+          </div>
+        }
+        }
+      </div>
+    </div>
+  }
+
+  <!-- ── Suspend confirmation modal ── -->
   @if (confirmSuspendId() !== null) {
     <div class="overlay" (click)="cancelSuspend()" (keydown.escape)="cancelSuspend()">
       <dialog open class="modal" (click)="$event.stopPropagation()" (keydown)="$event.stopPropagation()">
@@ -59,7 +139,7 @@
     </div>
   }
 
-  <!-- Delete confirmation modal -->
+  <!-- ── Delete confirmation modal ── -->
   @if (confirmDeleteId() !== null) {
     <div class="overlay" (click)="cancelDelete()" (keydown.escape)="cancelDelete()">
       <dialog open class="modal" (click)="$event.stopPropagation()" (keydown)="$event.stopPropagation()">
@@ -81,14 +161,14 @@
     </div>
   }
 
-  <!-- Payments slide-in panel -->
+  <!-- ── Payments slide-in panel ── -->
   @if (paymentsUserId() !== null) {
     <div class="overlay" (click)="closePayments()" (keydown.escape)="closePayments()">
       <div class="payments-panel" (click)="$event.stopPropagation()" (keydown)="$event.stopPropagation()">
         <div class="payments-panel__header">
           <div>
             <h3>Payment History</h3>
-            <p class="payments-panel__sub">{{ paymentsUserName() }}</p>
+            <p class="payments-panel__sub">User #{{ paymentsUserId() }}</p>
           </div>
           <button class="close-btn" (click)="closePayments()">
             <svg viewBox="0 0 24 24" fill="currentColor"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>

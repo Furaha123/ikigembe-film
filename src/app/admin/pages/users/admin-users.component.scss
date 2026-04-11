@@ -30,10 +30,131 @@ $muted:   #888;
   &:disabled { opacity: 0.4; cursor: not-allowed; }
   &:hover:not(:disabled) { opacity: 0.75; }
 
-  &.warn    { background: rgba(234,179,8,0.1);    color: #facc15; border-color: rgba(234,179,8,0.2); }
-  &.danger  { background: rgba(239,68,68,0.1);    color: #f87171; border-color: rgba(239,68,68,0.2); }
+  &.warn    { background: rgba(234,179,8,0.12);    color: #fef9c3; border-color: rgba(234,179,8,0.25); }
+  &.danger  { background: rgba(239,68,68,0.12);   color: #fca5a5; border-color: rgba(239,68,68,0.25); }
   &.neutral { background: rgba(255,255,255,0.06); color: $text;   border-color: $border; }
-  &.info    { background: rgba(59,130,246,0.1);   color: #93c5fd; border-color: rgba(59,130,246,0.2); }
+  &.info    { background: rgba(59,130,246,0.12);  color: #bfdbfe; border-color: rgba(59,130,246,0.25); }
+}
+
+// ── Detail panel ──────────────────────────────────────
+.detail-panel {
+  position: fixed;
+  top: 0; right: 0; bottom: 0;
+  width: min(400px, 100vw);
+  background: #141414;
+  border-left: 1px solid $border;
+  display: flex;
+  flex-direction: column;
+  z-index: 200;
+  overflow-y: auto;
+}
+
+.panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.25rem 1.5rem;
+  border-bottom: 1px solid $border;
+  flex-shrink: 0;
+  h3 { font-size: 1rem; font-weight: 700; color: #fff; margin: 0; }
+}
+
+.panel-loading {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 2.5rem 1.5rem;
+  color: $muted;
+  font-size: 0.875rem;
+}
+
+.panel-spinner {
+  width: 18px; height: 18px;
+  border: 2px solid rgba(255,255,255,0.1);
+  border-top-color: $gold;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+  flex-shrink: 0;
+}
+
+.detail-hero {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1.5rem;
+  border-bottom: 1px solid $border;
+}
+
+.detail-avatar {
+  width: 54px; height: 54px;
+  border-radius: 50%;
+  background: $gold;
+  color: #000;
+  font-size: 1.1rem;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  letter-spacing: 0.03em;
+}
+
+.detail-name  { font-size: 1rem; font-weight: 700; color: #fff; margin: 0 0 0.2rem; }
+.detail-email { font-size: 0.8rem; color: $muted; margin: 0 0 0.5rem; }
+
+.detail-status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.2rem 0.6rem;
+  border-radius: 99px;
+  font-size: 0.72rem;
+  font-weight: 600;
+
+  .dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+  }
+
+  &.active   { background: rgba(74,222,128,0.12); color: #86efac; .dot { background: #86efac; } }
+  &.inactive { background: rgba(239,68,68,0.12);  color: #fca5a5; .dot { background: #fca5a5; } }
+}
+
+.detail-rows {
+  padding: 0.75rem 0;
+  border-bottom: 1px solid $border;
+}
+
+.detail-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.65rem 1.5rem;
+  gap: 1rem;
+
+  &:hover { background: rgba(255,255,255,0.02); }
+}
+
+.detail-label { font-size: 0.78rem; color: $muted; font-weight: 500; }
+.detail-value {
+  font-size: 0.85rem; color: $text; font-weight: 600; text-align: right;
+  &.gold  { color: $gold; }
+  &.muted { color: $muted; font-weight: 400; }
+}
+
+.detail-actions {
+  padding: 1.25rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.btn.full { width: 100%; justify-content: center; padding: 0.6rem 1rem; }
+.btn.secondary {
+  background: rgba(255,255,255,0.05);
+  color: $text;
+  border-color: $border;
+  &:hover:not(:disabled) { background: rgba(255,255,255,0.1); opacity: 1; }
 }
 
 // Payments panel

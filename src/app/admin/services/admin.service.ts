@@ -5,6 +5,7 @@ import { map } from 'rxjs/operators';
 import {
   DashboardOverview,
   ViewerItem,
+  ViewerDetail,
   ProducerItem,
   CreateProducerRequest,
   TransactionHistory,
@@ -100,7 +101,11 @@ export class AdminService {
     return this.http.delete(`${BASE}/movies/${id}/delete/`);
   }
 
-  // Viewer payment history
+  // Viewer detail & payment history
+  getViewerDetail(id: number): Observable<ViewerDetail> {
+    return this.http.get<ViewerDetail>(`${BASE}/admin/dashboard/viewers/${id}/`);
+  }
+
   getViewerPayments(userId: number): Observable<ViewerPaymentItem[]> {
     return this.http.get<ViewerPaymentItem[]>(`${BASE}/admin/dashboard/viewers/${userId}/payments/`);
   }

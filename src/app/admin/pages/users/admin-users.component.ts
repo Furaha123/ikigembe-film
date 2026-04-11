@@ -1,7 +1,7 @@
 import { Component, inject, OnInit, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { AdminService, ViewerPaymentItem } from '../../services/admin.service';
-import { ViewerItem } from '../../models/admin.interface';
+import { ViewerItem, ViewerDetail } from '../../models/admin.interface';
 import { AdminTableComponent } from '../../shared/components/admin-table/admin-table.component';
 import { TableColumn } from '../../shared/components/admin-table/table-column.interface';
 
@@ -14,38 +14,54 @@ import { TableColumn } from '../../shared/components/admin-table/table-column.in
 export class AdminUsersComponent implements OnInit {
   private readonly adminService = inject(AdminService);
 
-  users = signal<ViewerItem[]>([]);
+  users     = signal<ViewerItem[]>([]);
   isLoading = signal(true);
-  actionId = signal<number | null>(null);
+  actionId  = signal<number | null>(null);
 
   confirmSuspendId = signal<number | null>(null);
   confirmDeleteId  = signal<number | null>(null);
 
-  // Resolve the user name for the modal message
   targetUserName = computed(() => {
     const id = this.confirmSuspendId() ?? this.confirmDeleteId();
     if (id === null) return '';
-    const user = this.users().find(u => u.id === id);
-    return user?.name || user?.email || 'this user';
+    return this.detailUser()?.name || `User #${id}`;
   });
 
   readonly columns: TableColumn[] = [
-    { key: 'name',          label: 'Full name',      type: 'avatar', fallbackKey: 'email', width: '220px' },
-    { key: 'email',         label: 'Email',          type: 'text',   muted: true, width: '240px' },
-    { key: 'movies_watched',label: 'Movies watched', type: 'number', width: '140px' },
-    { key: 'date_joined',   label: 'Joined date',    type: 'date',   muted: true, width: '200px' },
-    { key: 'is_active',     label: 'Status',         type: 'status', width: '110px' },
+    { key: 'id',                label: 'User ID',      type: 'text',     width: '100px' },
+    { key: 'payment_count',     label: 'Payments',     type: 'number',   width: '120px' },
+    { key: 'total_paid_rwf',    label: 'Total Paid',   type: 'currency', width: '160px' },
+    { key: 'last_payment_date', label: 'Last Payment', type: 'date',     muted: true, width: '220px' },
+    { key: 'is_active',         label: 'Status',       type: 'status',   width: '110px' },
   ];
 
   ngOnInit() {
-    this.isLoading.set(true);
     this.adminService.getViewers().subscribe({
       next: (data) => { this.users.set(data); this.isLoading.set(false); },
       error: () => this.isLoading.set(false),
     });
   }
 
-  // Suspend flow
+  // ── View Detail panel ──────────────────────────────────
+  detailUser    = signal<ViewerDetail | null>(null);
+  detailLoading = signal(false);
+
+  openDetail(id: number) {
+    this.detailUser.set(null);
+    this.detailLoading.set(true);
+    this.adminService.getViewerDetail(id).subscribe({
+      next: (data) => { this.detailUser.set(data); this.detailLoading.set(false); },
+      error: ()     => this.detailLoading.set(false),
+    });
+  }
+
+  closeDetail() { this.detailUser.set(null); this.detailLoading.set(false); }
+
+  getInitials(name: string): string {
+    return name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2);
+  }
+
+  // ── Suspend flow ───────────────────────────────────────
   openSuspendConfirm(id: number) { this.confirmSuspendId.set(id); }
   cancelSuspend() { this.confirmSuspendId.set(null); }
 
@@ -56,6 +72,9 @@ export class AdminUsersComponent implements OnInit {
     this.adminService.suspendUser(id).subscribe({
       next: () => {
         this.users.update(list => list.map(u => u.id === id ? { ...u, is_active: false } : u));
+        if (this.detailUser()?.id === id) {
+          this.detailUser.update(u => u ? { ...u, is_active: false } : u);
+        }
         this.actionId.set(null);
         this.confirmSuspendId.set(null);
       },
@@ -63,7 +82,7 @@ export class AdminUsersComponent implements OnInit {
     });
   }
 
-  // Delete flow
+  // ── Delete flow ────────────────────────────────────────
   openDeleteConfirm(id: number) { this.confirmDeleteId.set(id); }
   cancelDelete() { this.confirmDeleteId.set(null); }
 
@@ -74,6 +93,7 @@ export class AdminUsersComponent implements OnInit {
     this.adminService.deleteUser(id).subscribe({
       next: () => {
         this.users.update(list => list.filter(u => u.id !== id));
+        if (this.detailUser()?.id === id) this.closeDetail();
         this.actionId.set(null);
         this.confirmDeleteId.set(null);
       },
@@ -81,18 +101,16 @@ export class AdminUsersComponent implements OnInit {
     });
   }
 
-  // Payments panel
-  paymentsUserId   = signal<number | null>(null);
-  paymentsUserName = signal('');
-  payments         = signal<ViewerPaymentItem[]>([]);
-  paymentsLoading  = signal(false);
+  // ── Payments panel ─────────────────────────────────────
+  paymentsUserId  = signal<number | null>(null);
+  payments        = signal<ViewerPaymentItem[]>([]);
+  paymentsLoading = signal(false);
 
-  openPayments(user: ViewerItem) {
-    this.paymentsUserId.set(user.id);
-    this.paymentsUserName.set(user.name || user.email);
+  openPayments(userId: number) {
+    this.paymentsUserId.set(userId);
     this.payments.set([]);
     this.paymentsLoading.set(true);
-    this.adminService.getViewerPayments(user.id).subscribe({
+    this.adminService.getViewerPayments(userId).subscribe({
       next: (data) => { this.payments.set(data); this.paymentsLoading.set(false); },
       error: ()     => this.paymentsLoading.set(false),
     });
