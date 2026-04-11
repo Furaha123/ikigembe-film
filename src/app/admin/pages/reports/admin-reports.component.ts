@@ -5,6 +5,7 @@ import {
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { forkJoin } from 'rxjs';
 import { AdminService } from '../../services/admin.service';
+import { DatePickerComponent, type DateRange } from '../../../shared/components/date-picker/date-picker';
 import {
   RevenueTrendItem, TopMovieItem, UserGrowthItem, WithdrawalSummaryItem
 } from '../../models/admin.interface';
@@ -13,13 +14,14 @@ import {
   BarElement, BarController,
   LineController, LineElement, PointElement, Filler,
 } from 'chart.js';
+import * as XLSX from 'xlsx';
 
 Chart.register(CategoryScale, LinearScale, Tooltip, Legend, BarElement, BarController, LineController, LineElement, PointElement, Filler);
 
 @Component({
   selector: 'app-admin-reports',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, DatePickerComponent],
   templateUrl: './admin-reports.component.html',
   styleUrl: './admin-reports.component.scss',
 })
@@ -37,17 +39,38 @@ export class AdminReportsComponent implements OnInit, AfterViewChecked, OnDestro
   topSort: 'revenue' | 'views' = 'revenue';
   activeRevenueTab: 'revenue' | 'commission' | 'producer' = 'revenue';
 
-  // ── Computed KPI totals ────────────────────────────────
-  totalRevenue       = computed(() => this.revenueTrend().reduce((s, d) => s + d.total_revenue, 0));
-  totalCommission    = computed(() => this.revenueTrend().reduce((s, d) => s + d.ikigembe_commission, 0));
-  totalProducerShare = computed(() => this.revenueTrend().reduce((s, d) => s + d.producer_share, 0));
-  totalPurchases     = computed(() => this.revenueTrend().reduce((s, d) => s + d.purchase_count, 0));
-  totalUsers         = computed(() => this.userGrowth().reduce((s, d) => s + d.total, 0));
+  // ── Date range ─────────────────────────────────────────
+  dateFrom = signal<string>(this.defaultFrom());
+  dateTo   = signal<string>(new Date().toISOString().slice(0, 10));
 
-  revenueChange = computed(() => this.pctChange(this.revenueTrend(), d => d.total_revenue));
-  commissionChange = computed(() => this.pctChange(this.revenueTrend(), d => d.ikigembe_commission));
-  purchaseChange = computed(() => this.pctChange(this.revenueTrend(), d => d.purchase_count));
-  userChange = computed(() => this.pctChange(this.userGrowth(), (d: any) => d.total));
+  private defaultFrom(): string {
+    const d = new Date();
+    d.setFullYear(d.getFullYear() - 1);
+    return d.toISOString().slice(0, 10);
+  }
+
+  onDateRangeChange(range: DateRange) {
+    if (range.start) this.dateFrom.set(range.start.toISOString().slice(0, 10));
+    if (range.end)   this.dateTo.set(range.end.toISOString().slice(0, 10));
+    if (range.start && range.end) this.load();
+  }
+
+  // all data is server-filtered by start_date/end_date on load()
+  filteredTrend       = computed(() => this.revenueTrend());
+  filteredGrowth      = computed(() => this.userGrowth());
+  filteredWithdrawals = computed(() => this.withdrawalSummary());
+
+  // ── Computed KPI totals ────────────────────────────────
+  totalRevenue       = computed(() => this.filteredTrend().reduce((s, d) => s + d.total_revenue, 0));
+  totalCommission    = computed(() => this.filteredTrend().reduce((s, d) => s + d.ikigembe_commission, 0));
+  totalProducerShare = computed(() => this.filteredTrend().reduce((s, d) => s + d.producer_share, 0));
+  totalPurchases     = computed(() => this.filteredTrend().reduce((s, d) => s + d.purchase_count, 0));
+  totalUsers         = computed(() => this.filteredGrowth().reduce((s, d) => s + d.total, 0));
+
+  revenueChange    = computed(() => this.pctChange(this.filteredTrend(), d => d.total_revenue));
+  commissionChange = computed(() => this.pctChange(this.filteredTrend(), d => d.ikigembe_commission));
+  purchaseChange   = computed(() => this.pctChange(this.filteredTrend(), d => d.purchase_count));
+  userChange       = computed(() => this.pctChange(this.filteredGrowth(), (d: any) => d.total));
 
   @ViewChild('revenueCanvas')    revenueCanvas!:    ElementRef<HTMLCanvasElement>;
   @ViewChild('growthCanvas')     growthCanvas!:     ElementRef<HTMLCanvasElement>;
@@ -62,11 +85,11 @@ export class AdminReportsComponent implements OnInit, AfterViewChecked, OnDestro
     this.isLoading.set(true);
     this.loadError.set(false);
     this.chartsBuilt = false;
-    forkJoin({
-      revenue:     this.adminService.getRevenueTrend(),
-      topMovies:   this.adminService.getTopMovies(10, this.topSort),
-      userGrowth:  this.adminService.getUserGrowth(),
-      withdrawals: this.adminService.getWithdrawalSummary(),
+    forkJoin({  
+      revenue:     this.adminService.getRevenueTrend('monthly', this.dateFrom(), this.dateTo()),
+      topMovies:   this.adminService.getTopMovies(10, this.topSort, this.dateFrom(), this.dateTo()),
+      userGrowth:  this.adminService.getUserGrowth(this.dateFrom(), this.dateTo()),
+      withdrawals: this.adminService.getWithdrawalSummary(this.dateFrom(), this.dateTo()),
     }).subscribe({
       next: (data) => {
         this.revenueTrend.set(data.revenue.trend ?? []);
@@ -110,7 +133,7 @@ export class AdminReportsComponent implements OnInit, AfterViewChecked, OnDestro
 
   private buildRevenueChart() {
     this.charts['revenue']?.destroy();
-    const data   = this.revenueTrend();
+    const data   = this.filteredTrend();
     const labels = data.map(d => this.shortMonth(d.period_start));
 
     const colorMap = { revenue: '#C5A253', commission: '#818cf8', producer: '#34d399' };
@@ -146,7 +169,7 @@ export class AdminReportsComponent implements OnInit, AfterViewChecked, OnDestro
 
   private buildGrowthChart() {
     this.charts['growth']?.destroy();
-    const data   = this.userGrowth();
+    const data   = this.filteredGrowth();
     const labels = data.map(d => this.shortMonth(d.month));
     this.charts['growth'] = new Chart(this.growthCanvas.nativeElement, {
       type: 'bar',
@@ -163,7 +186,7 @@ export class AdminReportsComponent implements OnInit, AfterViewChecked, OnDestro
 
   private buildWithdrawalChart() {
     this.charts['withdrawal']?.destroy();
-    const data   = this.withdrawalSummary();
+    const data   = this.filteredWithdrawals();
     const labels = data.map(d => this.shortMonth(d.month));
     this.charts['withdrawal'] = new Chart(this.withdrawalCanvas.nativeElement, {
       type: 'bar',
@@ -220,37 +243,69 @@ export class AdminReportsComponent implements OnInit, AfterViewChecked, OnDestro
 
   // ── Export ─────────────────────────────────────────────
   exportAll() {
-    const rows: string[] = [];
-    rows.push('IKIGEMBE PLATFORM REPORT — ' + new Date().toDateString());
-    rows.push('');
-    rows.push('REVENUE TREND');
-    rows.push('Period,Total Revenue (RWF),Producer Share (RWF),Commission (RWF),Purchases');
-    this.revenueTrend().forEach(d =>
-      rows.push(`${d.period_start},${d.total_revenue},${d.producer_share},${d.ikigembe_commission},${d.purchase_count}`)
-    );
-    rows.push('');
-    rows.push('TOP MOVIES');
-    rows.push('Title,Producer,Views,Purchases,Revenue (RWF),Producer Share (RWF)');
-    this.topMovies().forEach(d =>
-      rows.push(`"${d.title}","${d.producer}",${d.views},${d.purchase_count},${d.total_revenue},${d.producer_share}`)
-    );
-    rows.push('');
-    rows.push('USER GROWTH');
-    rows.push('Month,Viewers,Producers,Total');
-    this.userGrowth().forEach(d => rows.push(`${d.month},${d.viewers},${d.producers},${d.total}`));
-    rows.push('');
-    rows.push('WITHDRAWAL SUMMARY');
-    rows.push('Month,Completed,Pending,Rejected,Total Requests');
-    this.withdrawalSummary().forEach(d =>
-      rows.push(`${d.month},${d.completed},${d.pending},${d.rejected},${d.request_count}`)
-    );
-    const blob = new Blob([rows.join('\n')], { type: 'text/csv' });
-    const url  = URL.createObjectURL(blob);
-    const a    = document.createElement('a');
-    a.href = url;
-    a.download = `ikigembe_report_${new Date().toISOString().slice(0,10)}.csv`;
-    a.click();
-    URL.revokeObjectURL(url);
+    const wb = XLSX.utils.book_new();
+    const dateLabel = new Date().toLocaleDateString('en-GB', { day:'2-digit', month:'short', year:'numeric' });
+
+    // ── Sheet 1: Revenue Trend ──────────────────────────
+    const revRows: (string | number)[][] = [
+      ['IKIGEMBE PLATFORM REPORT'],
+      [`Generated: ${dateLabel}`],
+      [],
+      ['REVENUE TREND'],
+      ['Period', 'Total Revenue (RWF)', 'Producer Share (RWF)', 'Commission (RWF)', 'Purchases'],
+      ...this.filteredTrend().map(d => [
+        new Date(d.period_start).toLocaleDateString('en-GB', { month:'long', year:'numeric' }),
+        d.total_revenue, d.producer_share, d.ikigembe_commission, d.purchase_count
+      ]),
+      [],
+      ['', 'TOTALS', this.totalProducerShare(), this.totalCommission(), this.totalPurchases()],
+    ];
+    const wsRev = XLSX.utils.aoa_to_sheet(revRows);
+    wsRev['!cols'] = [{ wch: 20 }, { wch: 22 }, { wch: 22 }, { wch: 20 }, { wch: 12 }];
+    wsRev['!rows'] = [{ hpt: 20 }, { hpt: 14 }, { hpt: 6 }]; // title row taller
+    XLSX.utils.book_append_sheet(wb, wsRev, 'Revenue Trend');
+
+    // ── Sheet 2: Top Movies ─────────────────────────────
+    const movRows: (string | number)[][] = [
+      ['TOP MOVIES'],
+      [`Generated: ${dateLabel}`],
+      [],
+      ['Title', 'Producer', 'Views', 'Purchases', 'Revenue (RWF)', 'Producer Share (RWF)'],
+      ...this.topMovies().map(d => [
+        d.title, d.producer, d.views, d.purchase_count, d.total_revenue, d.producer_share
+      ]),
+    ];
+    const wsMov = XLSX.utils.aoa_to_sheet(movRows);
+    wsMov['!cols'] = [{ wch: 30 }, { wch: 22 }, { wch: 10 }, { wch: 12 }, { wch: 18 }, { wch: 20 }];
+    XLSX.utils.book_append_sheet(wb, wsMov, 'Top Movies');
+
+    // ── Sheet 3: User Growth ────────────────────────────
+    const growRows: (string | number)[][] = [
+      ['USER GROWTH'],
+      [`Generated: ${dateLabel}`],
+      [],
+      ['Month', 'Viewers', 'Producers', 'Total'],
+      ...this.filteredGrowth().map(d => [d.month, d.viewers, d.producers, d.total]),
+    ];
+    const wsGrow = XLSX.utils.aoa_to_sheet(growRows);
+    wsGrow['!cols'] = [{ wch: 16 }, { wch: 12 }, { wch: 12 }, { wch: 10 }];
+    XLSX.utils.book_append_sheet(wb, wsGrow, 'User Growth');
+
+    // ── Sheet 4: Withdrawal Summary ─────────────────────
+    const wdRows: (string | number)[][] = [
+      ['WITHDRAWAL SUMMARY'],
+      [`Generated: ${dateLabel}`],
+      [],
+      ['Month', 'Completed', 'Pending', 'Rejected', 'Total Requests'],
+      ...this.filteredWithdrawals().map(d => [
+        d.month, d.completed, d.pending, d.rejected, d.request_count
+      ]),
+    ];
+    const wsWd = XLSX.utils.aoa_to_sheet(wdRows);
+    wsWd['!cols'] = [{ wch: 16 }, { wch: 14 }, { wch: 12 }, { wch: 12 }, { wch: 16 }];
+    XLSX.utils.book_append_sheet(wb, wsWd, 'Withdrawals');
+
+    XLSX.writeFile(wb, `ikigembe_report_${new Date().toISOString().slice(0, 10)}.xlsx`);
   }
 
   private pctChange<T>(arr: T[], getValue: (item: T) => number): number {

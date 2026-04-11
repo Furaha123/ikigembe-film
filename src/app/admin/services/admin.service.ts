@@ -18,6 +18,7 @@ import {
   TopMovieItem,
   UserGrowthItem,
   WithdrawalSummaryItem,
+  PayingUsersReport,
 } from '../models/admin.interface';
 
 import { environment } from '../../../environments/environment';
@@ -131,28 +132,48 @@ export class AdminService {
   }
 
   // ── Reports ──────────────────────────────────────────
-  getRevenueTrend(period: 'monthly' | 'weekly' = 'monthly', periods = 12): Observable<{ trend: RevenueTrendItem[] }> {
-    return this.http.get<{ trend: RevenueTrendItem[] }>(
-      `${BASE}/admin/dashboard/reports/revenue-trend/?period=${period}&periods=${periods}`
-    );
+  getRevenueTrend(
+    period: 'monthly' | 'weekly' = 'monthly',
+    startDate?: string,
+    endDate?: string
+  ): Observable<{ trend: RevenueTrendItem[] }> {
+    let url = `${BASE}/admin/dashboard/reports/revenue-trend/?period=${period}`;
+    if (startDate) url += `&start_date=${startDate}`;
+    if (endDate)   url += `&end_date=${endDate}`;
+    return this.http.get<{ trend: RevenueTrendItem[] }>(url);
   }
 
-  getTopMovies(limit = 10, sort: 'revenue' | 'views' = 'revenue'): Observable<{ results: TopMovieItem[] }> {
-    return this.http.get<{ results: TopMovieItem[] }>(
-      `${BASE}/admin/dashboard/reports/top-movies/?limit=${limit}&sort=${sort}`
-    );
+  getTopMovies(
+    limit = 10,
+    sort: 'revenue' | 'views' = 'revenue',
+    startDate?: string,
+    endDate?: string
+  ): Observable<{ results: TopMovieItem[] }> {
+    let url = `${BASE}/admin/dashboard/reports/top-movies/?limit=${limit}&sort=${sort}`;
+    if (startDate) url += `&start_date=${startDate}`;
+    if (endDate)   url += `&end_date=${endDate}`;
+    return this.http.get<{ results: TopMovieItem[] }>(url);
   }
 
-  getUserGrowth(months = 12): Observable<{ trend: UserGrowthItem[] }> {
-    return this.http.get<{ trend: UserGrowthItem[] }>(
-      `${BASE}/admin/dashboard/reports/user-growth/?months=${months}`
-    );
+  getUserGrowth(startDate?: string, endDate?: string): Observable<{ trend: UserGrowthItem[] }> {
+    let url = `${BASE}/admin/dashboard/reports/user-growth/`;
+    if (startDate) url += `?start_date=${startDate}`;
+    if (endDate)   url += `${startDate ? '&' : '?'}end_date=${endDate}`;
+    return this.http.get<{ trend: UserGrowthItem[] }>(url);
   }
 
-  getWithdrawalSummary(months = 12): Observable<{ trend: WithdrawalSummaryItem[] }> {
-    return this.http.get<{ trend: WithdrawalSummaryItem[] }>(
-      `${BASE}/admin/dashboard/reports/withdrawal-summary/?months=${months}`
-    );
+  getWithdrawalSummary(startDate?: string, endDate?: string): Observable<{ trend: WithdrawalSummaryItem[] }> {
+    let url = `${BASE}/admin/dashboard/reports/withdrawal-summary/`;
+    if (startDate) url += `?start_date=${startDate}`;
+    if (endDate)   url += `${startDate ? '&' : '?'}end_date=${endDate}`;
+    return this.http.get<{ trend: WithdrawalSummaryItem[] }>(url);
+  }
+
+  getPayingUsers(page = 1, startDate?: string, endDate?: string): Observable<PayingUsersReport> {
+    let url = `${BASE}/admin/dashboard/reports/paying-users/?page=${page}`;
+    if (startDate) url += `&start_date=${startDate}`;
+    if (endDate)   url += `&end_date=${endDate}`;
+    return this.http.get<PayingUsersReport>(url);
   }
 }
 

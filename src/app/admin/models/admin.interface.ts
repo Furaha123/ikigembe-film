@@ -161,6 +161,24 @@ export interface ResetPasswordResponse {
   message: string;
 }
 
+// ── Paying users report ───────────────────────────────
+export interface PayingUserItem {
+  user_id: number;
+  name: string;
+  email: string;
+  phone_number: string | null;
+  total_paid_rwf: number;
+  purchase_count: number;
+  last_payment_date: string | null;
+}
+
+export interface PayingUsersReport {
+  page: number;
+  total_results: number;
+  total_pages: number;
+  results: PayingUserItem[];
+}
+
 // ── Report interfaces ──────────────────────────────────
 export interface RevenueTrendItem {
   period_start: string;

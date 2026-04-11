@@ -23,7 +23,8 @@ $muted:   #555;
   p  { font-size: 0.82rem; color: $muted; margin: 0; }
 }
 
-.header-right { display: flex; align-items: center; gap: 0.5rem; }
+.header-right { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; }
+
 
 .btn-refresh {
   width: 36px; height: 36px;
@@ -106,10 +107,10 @@ $muted:   #555;
   flex-shrink: 0;
   svg { width: 22px; height: 22px; }
 
-  &.revenue-icon    { background: rgba(197,162,83,0.15); color: #f5d78a; }
-  &.commission-icon { background: rgba(129,140,248,0.15); color: #a5b4fc; }
-  &.purchases-icon  { background: rgba(52,211,153,0.15); color: #6ee7b7; }
-  &.users-icon      { background: rgba(96,165,250,0.15); color: #93c5fd; }
+  &.revenue-icon    { background: rgba(197,162,83,0.15); color: #fde68a; }
+  &.commission-icon { background: rgba(129,140,248,0.15); color: #c7d2fe; }
+  &.purchases-icon  { background: rgba(52,211,153,0.15); color: #a7f3d0; }
+  &.users-icon      { background: rgba(96,165,250,0.15); color: #bfdbfe; }
 }
 
 .kpi-body {
