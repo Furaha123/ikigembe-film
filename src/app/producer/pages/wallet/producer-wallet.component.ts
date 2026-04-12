@@ -20,7 +20,7 @@ export class ProducerWalletComponent implements OnInit {
   apiError = signal('');
 
   form = this.fb.group({
-    amount: [null as number | null, [Validators.required, Validators.min(1000)]],
+    amount: [null as number | null, [Validators.required, Validators.min(1)]],
     payment_method: ['Bank' as 'Bank' | 'MoMo', Validators.required],
     bank_name: [''],
     account_number: [''],
