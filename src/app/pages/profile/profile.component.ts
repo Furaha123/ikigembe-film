@@ -3,10 +3,11 @@ import { CommonModule } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { AuthService, UserProfile, NotificationPreferences } from '../../core/services/auth.service';
 import { PaymentService, PaymentHistoryItem } from '../../core/services/payment.service';
+import { HeaderComponent } from '../../core/components/header/header.component';
 
 @Component({
   selector: 'app-profile',
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, HeaderComponent],
   templateUrl: './profile.component.html',
   styleUrl: './profile.component.scss'
 })
@@ -23,6 +24,17 @@ export class ProfileComponent implements OnInit {
   payments        = signal<PaymentHistoryItem[]>([]);
   isLoadingPayments = signal(true);
 
+  isEditingProfile = signal(false);
+  isSavingProfile  = signal(false);
+  profileSuccess   = signal(false);
+  profileError     = signal<string | null>(null);
+
+  profileEditForm = this.fb.group({
+    first_name:   ['', Validators.required],
+    last_name:    ['', Validators.required],
+    phone_number: [''],
+  });
+
   isSavingNotifs = signal(false);
   notifSuccess = signal(false);
   notifError = signal<string | null>(null);
@@ -38,12 +50,9 @@ export class ProfileComponent implements OnInit {
   });
 
   notifForm = this.fb.group({
-    email_notifications:   [false],
-    sms_notifications:     [false],
-    push_notifications:    [false],
-    new_movie_alerts:      [false],
-    payment_notifications: [false],
-    promotional_emails:    [false],
+    notify_new_trailers: [false],
+    notify_new_movies:   [false],
+    notify_promotions:   [false],
   });
 
   ngOnInit() {
@@ -64,6 +73,46 @@ export class ProfileComponent implements OnInit {
         this.isLoadingNotifs.set(false);
       },
       error: () => this.isLoadingNotifs.set(false),
+    });
+  }
+
+  openProfileEdit(): void {
+    const p = this.profile();
+    if (!p) return;
+    this.profileEditForm.patchValue({
+      first_name:   p.first_name,
+      last_name:    p.last_name,
+      phone_number: p.phone_number ?? '',
+    });
+    this.profileError.set(null);
+    this.profileSuccess.set(false);
+    this.isEditingProfile.set(true);
+  }
+
+  cancelProfileEdit(): void { this.isEditingProfile.set(false); }
+
+  saveProfile(): void {
+    if (this.profileEditForm.invalid || this.isSavingProfile()) return;
+    this.isSavingProfile.set(true);
+    this.profileError.set(null);
+    const val = this.profileEditForm.getRawValue();
+    this.authService.updateProfile({
+      first_name:   val.first_name!,
+      last_name:    val.last_name!,
+      phone_number: val.phone_number ?? '',
+    }).subscribe({
+      next: (updated) => {
+        this.profile.set(updated);
+        this.isSavingProfile.set(false);
+        this.profileSuccess.set(true);
+        this.isEditingProfile.set(false);
+        setTimeout(() => this.profileSuccess.set(false), 3000);
+      },
+      error: (err) => {
+        this.isSavingProfile.set(false);
+        const msg = err?.error?.detail ?? err?.error?.first_name?.[0] ?? err?.error?.last_name?.[0] ?? 'Update failed.';
+        this.profileError.set(msg);
+      },
     });
   }
 

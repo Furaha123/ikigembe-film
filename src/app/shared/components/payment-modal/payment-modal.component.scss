@@ -198,6 +198,11 @@ $muted:  #888;
     &::placeholder { color: #555; }
     &:disabled { opacity: 0.5; }
   }
+
+  &__hint {
+    font-size: 0.75rem;
+    color: $muted;
+  }
 }
 
 // Error

@@ -27,18 +27,38 @@ export class PaymentModalComponent implements OnDestroy {
   error           = signal('');
 
   onPhoneInput(e: Event) {
-    this.phoneNumber.set((e.target as HTMLInputElement).value);
+    // Allow only digits, spaces, +, hyphens
+    const raw = (e.target as HTMLInputElement).value;
+    this.phoneNumber.set(raw);
     this.error.set('');
   }
 
+  /** Normalise and validate a Rwandan MoMo number.
+   *  Accepts: 07XXXXXXXX | 7XXXXXXXX | +2507XXXXXXXX | 2507XXXXXXXX
+   *  Valid prefixes: 072 073 078 079
+   *  Returns the normalised 10-digit local number or null if invalid. */
+  private normaliseRwandaPhone(input: string): string | null {
+    let n = input.replace(/[\s\-\(\)]/g, '');
+    if (n.startsWith('+250')) n = n.slice(4);
+    else if (n.startsWith('250')) n = n.slice(3);
+    if (n.startsWith('0')) n = n.slice(1);
+
+    if (!/^\d{9}$/.test(n)) return null;
+    const prefix = n.slice(0, 2);
+    if (!['72', '73', '78', '79'].includes(prefix)) return null;
+    return '0' + n; // e.g. 0782345678
+  }
+
   pay() {
-    const phone = this.phoneNumber().trim();
-    if (!phone) {
+    const raw = this.phoneNumber().trim();
+    if (!raw) {
       this.error.set('Please enter your phone number.');
       return;
     }
-    if (!/^\d{9,15}$/.test(phone.replaceAll(' ', ''))) {
-      this.error.set('Enter a valid phone number (digits only).');
+
+    const normalised = this.normaliseRwandaPhone(raw);
+    if (!normalised) {
+      this.error.set('Enter a valid Rwandan number starting with 072, 073, 078 or 079.');
       return;
     }
 
@@ -48,7 +68,7 @@ export class PaymentModalComponent implements OnDestroy {
 
     this.paymentService.initiate({
       movie_id:     this.movie.id,
-      phone_number: phone
+      phone_number: normalised,
     }).subscribe({
       next: (res) => {
         this.loadingMessage.set('Check your phone to approve the payment...');

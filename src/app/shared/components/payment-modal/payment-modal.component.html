@@ -41,11 +41,15 @@
               id="pm-phone"
               class="pm-field__input"
               type="tel"
-              placeholder="7XX XXX XXX"
+              inputmode="numeric"
+              placeholder="07X XXX XXXX"
+              maxlength="13"
+              autocomplete="tel"
               [value]="phoneNumber()"
               (input)="onPhoneInput($event)"
               [disabled]="loading()" />
           </div>
+          <span class="pm-field__hint">MTN: 078 / 079 &nbsp;·&nbsp; Airtel: 072 / 073</span>
         </div>
 
         @if (error()) {

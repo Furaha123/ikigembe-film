@@ -8,6 +8,7 @@ $muted:  #888;
 .profile-page {
   max-width: 760px;
   margin: 0 auto;
+  padding: 6rem 1.5rem 3rem;
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
@@ -35,6 +36,43 @@ $muted:  #888;
   font-size: 0.85rem;
   color: $muted;
   margin: -0.75rem 0 0;
+}
+
+// ── Card header row ──
+.card-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.btn-edit {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.35rem 0.9rem;
+  border-radius: 8px;
+  border: 1px solid #333;
+  background: none;
+  color: $muted;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: border-color 0.2s, color 0.2s;
+  svg { width: 13px; height: 13px; }
+  &:hover { border-color: $gold; color: $gold; }
+}
+
+// ── Edit profile form ──
+.edit-profile-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.edit-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.6rem;
 }
 
 // ── Account header ──

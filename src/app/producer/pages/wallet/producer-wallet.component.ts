@@ -29,7 +29,8 @@ export class ProducerWalletComponent implements OnInit {
     momo_provider: [''],
   });
 
-  isBank = computed(() => this.form.get('payment_method')!.value === 'Bank');
+  paymentMethod = signal<'Bank' | 'MoMo'>('Bank');
+  isBank = computed(() => this.paymentMethod() === 'Bank');
 
   ngOnInit() {
     this.producerService.getWallet().subscribe({
@@ -39,6 +40,7 @@ export class ProducerWalletComponent implements OnInit {
   }
 
   setMethod(method: 'Bank' | 'MoMo') {
+    this.paymentMethod.set(method);
     this.form.get('payment_method')!.setValue(method);
   }
 
@@ -67,6 +69,7 @@ export class ProducerWalletComponent implements OnInit {
       next: () => {
         this.isSaving.set(false);
         this.successMsg.set('Withdrawal request submitted! It will be reviewed within 1–2 business days.');
+        this.paymentMethod.set('Bank');
         this.form.reset({ payment_method: 'Bank' });
         // refresh wallet balance
         this.producerService.getWallet().subscribe({ next: (d) => this.wallet.set(d) });

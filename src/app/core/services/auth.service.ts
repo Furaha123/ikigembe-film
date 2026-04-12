@@ -19,12 +19,9 @@ export interface UserProfile {
 }
 
 export interface NotificationPreferences {
-  email_notifications: boolean;
-  sms_notifications: boolean;
-  push_notifications: boolean;
-  new_movie_alerts: boolean;
-  payment_notifications: boolean;
-  promotional_emails: boolean;
+  notify_new_trailers: boolean;
+  notify_new_movies: boolean;
+  notify_promotions: boolean;
 }
 
 export type { RegisterPayload, RegisterErrors } from '../models/auth.interface';
@@ -165,6 +162,10 @@ export class AuthService {
 
   getMe(): Observable<UserProfile> {
     return this.http.get<UserProfile>(`${this.baseUrl}/auth/me/`);
+  }
+
+  updateProfile(payload: { first_name: string; last_name: string; phone_number: string }): Observable<UserProfile> {
+    return this.http.patch<UserProfile>(`${this.baseUrl}/auth/me/`, payload);
   }
 
   getNotifications(): Observable<NotificationPreferences> {
