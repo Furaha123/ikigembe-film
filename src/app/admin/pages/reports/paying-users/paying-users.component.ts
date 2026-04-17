@@ -83,15 +83,19 @@ export class PayingUsersComponent implements OnInit, OnDestroy {
       [`Generated: ${dateLabel}`],
       [`Total paying users: ${this.totalUsers()}`],
       [],
-      ['Name', 'Email', 'Phone', 'Payments', 'Total Paid (RWF)', 'First Payment', 'Last Payment'],
-      ...this.users().map(u => [
-        u.name, u.email ?? '', u.phone_number ?? '',
-        u.payment_count, u.total_paid_rwf,
-        u.first_payment_date ?? '', u.last_payment_date ?? '',
-      ]),
+      ['Name', 'Email', 'Phone', 'Movie Title', 'Amount (RWF)', 'Status', 'Paid At'],
+      ...this.users().flatMap(u =>
+        u.payments.length
+          ? u.payments.map(p => [
+              u.name, u.email ?? '', u.phone_number ?? '',
+              p.movie_title, p.amount, p.status,
+              p.paid_at ? new Date(p.paid_at).toLocaleString('en-GB') : '',
+            ])
+          : [[u.name, u.email ?? '', u.phone_number ?? '', '', '', '', '']],
+      ),
     ];
     const ws = XLSX.utils.aoa_to_sheet(rows);
-    ws['!cols'] = [{ wch: 24 }, { wch: 28 }, { wch: 18 }, { wch: 10 }, { wch: 18 }, { wch: 16 }, { wch: 16 }];
+    ws['!cols'] = [{ wch: 24 }, { wch: 28 }, { wch: 18 }, { wch: 30 }, { wch: 14 }, { wch: 12 }, { wch: 20 }];
     XLSX.utils.book_append_sheet(wb, ws, 'Paying Users');
     XLSX.writeFile(wb, `paying_users_${new Date().toISOString().slice(0, 10)}.xlsx`);
   }
