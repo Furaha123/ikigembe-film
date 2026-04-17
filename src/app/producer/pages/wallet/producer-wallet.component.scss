@@ -1,3 +1,4 @@
+@use "sass:color";
 @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.4} }
 @keyframes spin   { to { transform: rotate(360deg); } }
 
@@ -174,7 +175,7 @@ $muted: #888;
   justify-content: center;
   gap: 0.5rem;
   transition: background 0.2s;
-  &:hover:not(:disabled) { background: darken($gold, 10%); }
+  &:hover:not(:disabled) { background: color.adjust($gold, $lightness: -10%); }
   &:disabled { opacity: 0.55; cursor: not-allowed; }
 }
 
