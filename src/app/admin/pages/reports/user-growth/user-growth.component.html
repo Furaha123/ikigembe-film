@@ -44,15 +44,19 @@
             <th class="r">Viewers</th>
             <th class="r">Producers</th>
             <th class="r">Total</th>
+            <th class="r">Active Users</th>
+            <th class="r">Paying Users</th>
           </tr>
         </thead>
         <tbody>
           @for (row of growth(); track row.month) {
             <tr>
-              <td>{{ row.month }}</td>
+              <td>{{ row.month | date:'MMMM yyyy' }}</td>
               <td class="r blue">{{ row.viewers | number }}</td>
               <td class="r gold">{{ row.producers | number }}</td>
               <td class="r fw">{{ row.total | number }}</td>
+              <td class="r">{{ row.active_users | number }}</td>
+              <td class="r">{{ row.paying_users | number }}</td>
             </tr>
           }
         </tbody>

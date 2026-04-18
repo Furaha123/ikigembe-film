@@ -263,7 +263,123 @@ header {
       color: #555;
       flex-shrink: 0;
     }
+  }
+}
 
+// ── Hamburger button (hidden on desktop) ──────────────
+.hamburger-btn {
+  display: none;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #e5e5e5;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  min-width: 44px;
+  padding: 0.5rem;
+
+  .icon-x     { display: none; }
+  .icon-burger { display: block; }
+  svg { width: 22px; height: 22px; display: block; }
+
+  &.is-open {
+    .icon-burger { display: none; }
+    .icon-x { display: block; color: #C5A253; }
+  }
+}
+
+// ── Mobile drawer (hidden on desktop) ─────────────────
+.mobile-drawer {
+  display: none;
+}
+
+// ── Mobile breakpoints ────────────────────────────────
+@media (max-width: 768px) {
+  header {
+    padding: 0 1rem;
+    min-height: 56px;
+    height: 56px;
+
+    .left {
+      .nav-list { display: none; }
+    }
+
+    .right {
+      gap: 0.75rem;
+
+      .search-input-wrap.open {
+        width: min(200px, calc(100vw - 180px));
+      }
+
+      .search-results {
+        width: calc(100vw - 2rem);
+        right: -0.5rem;
+      }
+    }
+  }
+
+  .hamburger-btn {
+    display: flex;
+  }
+
+  .mobile-drawer {
+    display: block;
+    position: fixed;
+    top: 56px;
+    left: 0;
+    right: 0;
+    background: #141414;
+    border-bottom: 1px solid #2a2a2a;
+    z-index: 299;
+    padding: 0.5rem 0;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6);
+
+    .mobile-nav-list {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+
+      li {
+        a, span {
+          display: flex;
+          align-items: center;
+          min-height: 44px;
+          padding: 0 1.25rem;
+          color: #e5e5e5;
+          text-decoration: none;
+          font-size: 0.9rem;
+          font-weight: 400;
+          border-left: 3px solid transparent;
+          transition: background 0.15s, color 0.15s;
+          cursor: pointer;
+
+          &:hover { background: rgba(255, 255, 255, 0.05); }
+        }
+
+        a.active {
+          color: #C5A253;
+          border-left-color: #C5A253;
+          background: rgba(197, 162, 83, 0.07);
+        }
+      }
+    }
+  }
+}
+
+@media (max-width: 380px) {
+  header {
+    padding: 0 0.75rem;
+  }
+
+  .right {
+    .search-input-wrap.open {
+      width: min(150px, calc(100vw - 150px));
+    }
+  }
+}
+
+header .right {
     .notification-btn {
       position: relative;
 
@@ -399,5 +515,5 @@ header {
         }
       }
     }
-  }
 }
+

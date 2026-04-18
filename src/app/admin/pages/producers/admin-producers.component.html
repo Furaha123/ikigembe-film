@@ -4,10 +4,16 @@
       <h1>Producers</h1>
       <p>Approve and manage film producers on the platform.</p>
     </div>
-    <button class="add-btn" (click)="openAddModal()">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-      Add Producer
-    </button>
+    <div class="header-actions">
+      <button class="export-btn" (click)="exportToCSV()" [disabled]="isLoading()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        Export CSV
+      </button>
+      <button class="add-btn" (click)="openAddModal()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Add Producer
+      </button>
+    </div>
   </div>
 
   @if (generatedPassword()) {
@@ -43,20 +49,15 @@
       <table>
         <thead>
           <tr>
-            <th>#</th><th>Name</th><th>Email</th><th>Movies</th><th>Earnings</th><th>Balance</th><th>Status</th><th></th>
+            <th>Name</th><th>Status</th><th></th>
           </tr>
         </thead>
         <tbody>
           @for (p of producers(); track p.id) {
             <tr>
-              <td class="muted">{{ p.id }}</td>
               <td class="name-cell">
                 <div class="producer-avatar">{{ getInitials(p.name) }}</div>{{ p.name }}
               </td>
-              <td class="muted">{{ p.email }}</td>
-              <td>{{ p.movies_uploaded }}</td>
-              <td class="amount">RWF {{ p.total_earnings | number }}</td>
-              <td>RWF {{ p.balance | number }}</td>
               <td>
                 <span class="badge" [class.approved]="p.is_active" [class.suspended]="!p.is_active">
                   {{ p.is_active ? 'Active' : 'Inactive' }}

@@ -2,10 +2,10 @@ import {
   Component, HostListener, inject, input, signal,
   ViewChild, ElementRef, OnInit, OnDestroy
 } from '@angular/core';
-import { Router, RouterLink } from '@angular/router';
+import { Router, RouterLink, NavigationEnd } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { Subject, Subscription } from 'rxjs';
-import { debounceTime, distinctUntilChanged, switchMap, catchError, of } from 'rxjs';
+import { debounceTime, distinctUntilChanged, switchMap, catchError, of, filter } from 'rxjs';
 import { AuthService } from '../../services/auth.service';
 import { MovieService } from '../../../shared/services/movie.service';
 import { IVideoContent } from '../../../shared/models/video-content.interface';
@@ -25,9 +25,10 @@ export class HeaderComponent implements OnInit, OnDestroy {
 
   readonly initials = this.authService.initials;
 
-  isScrolled    = signal(false);
-  showDropdown  = signal(false);
-  isLoggingOut  = signal(false);
+  isScrolled     = signal(false);
+  showDropdown   = signal(false);
+  isLoggingOut   = signal(false);
+  mobileMenuOpen = signal(false);
 
   searchOpen    = signal(false);
   searchLoading = signal(false);
@@ -46,6 +47,10 @@ export class HeaderComponent implements OnInit, OnDestroy {
   ];
 
   ngOnInit() {
+    this.router.events.pipe(
+      filter(e => e instanceof NavigationEnd)
+    ).subscribe(() => this.closeMobileMenu());
+
     this.searchSub = this.searchSubject.pipe(
       debounceTime(300),
       distinctUntilChanged(),
@@ -74,10 +79,25 @@ export class HeaderComponent implements OnInit, OnDestroy {
     if (!target.closest('.search-wrapper')) {
       this.closeSearch();
     }
+    if (!target.closest('.mobile-drawer') && !target.closest('.hamburger-btn')) {
+      this.mobileMenuOpen.set(false);
+    }
   }
 
   @HostListener('document:keydown.escape')
   onEscape() { this.closeSearch(); }
+
+  toggleMobileMenu() {
+    this.mobileMenuOpen.update(v => !v);
+    if (this.mobileMenuOpen()) {
+      this.showDropdown.set(false);
+      this.closeSearch();
+    }
+  }
+
+  closeMobileMenu() {
+    this.mobileMenuOpen.set(false);
+  }
 
   toggleDropdown(event: Event) {
     event.stopPropagation();

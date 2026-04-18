@@ -54,6 +54,26 @@ export class AdminProducersComponent implements OnInit {
 
   dismissPassword() { this.generatedPassword.set(null); }
 
+  exportToCSV() {
+    const headers = ['ID', 'Name', 'Email', 'Phone', 'Movies', 'Earnings (RWF)', 'Balance (RWF)', 'Pending Withdrawals (RWF)', 'Total Withdrawn (RWF)', 'Status', 'Date Joined'];
+    const rows = this.producers().map(p => [
+      p.id, p.name, p.email, p.phone_number ?? '', p.movies_uploaded,
+      p.total_earnings, p.balance, p.pending_withdrawals, p.total_withdrawn,
+      p.is_active ? 'Active' : 'Inactive', p.date_joined,
+    ]);
+    this.downloadCSV('producers.csv', headers, rows);
+  }
+
+  private downloadCSV(filename: string, headers: string[], rows: unknown[][]) {
+    const esc = (v: unknown) => `"${String(v ?? '').replace(/"/g, '""')}"`;
+    const csv = [headers.map(esc).join(','), ...rows.map((r: any) => r.map(esc).join(','))].join('\n');
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = filename; a.click();
+    URL.revokeObjectURL(url);
+  }
+
   openAddModal() {
     this.form.reset();
     this.apiErrors.set({});

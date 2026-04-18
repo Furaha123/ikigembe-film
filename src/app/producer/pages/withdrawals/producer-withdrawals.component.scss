@@ -124,3 +124,16 @@ $muted: #888;
   &.completed { background: rgba(99,102,241,0.12); color: #818cf8; }
   &.rejected  { background: rgba(239,68,68,0.12);  color: #fca5a5; }
 }
+
+@media (max-width: 600px) {
+  .page-header {
+    h1 { font-size: 1.35rem; }
+    p  { font-size: 0.82rem; }
+  }
+  .tab { font-size: 0.78rem; padding: 0.4rem 0.75rem; min-height: 36px; }
+}
+
+@media (max-width: 380px) {
+  .page-header h1 { font-size: 1.2rem; }
+  .tab { font-size: 0.72rem; padding: 0.35rem 0.6rem; }
+}

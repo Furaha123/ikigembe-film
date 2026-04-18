@@ -204,3 +204,25 @@ table {
   padding: 3rem; text-align: center;
   color: $muted; font-size: 0.82rem;
 }
+
+@media (max-width: 640px) {
+  .section-header h3 { font-size: 0.88rem; }
+  .section-actions {
+    flex-direction: column;
+    align-items: flex-start;
+    width: 100%;
+    procurement-date-picker { width: 100%; }
+    .btn-export { width: 100%; justify-content: center; }
+  }
+  table { min-width: 480px; font-size: 0.75rem;
+    th { padding: 0.5rem 0.65rem; font-size: 0.65rem; }
+    td { padding: 0.55rem 0.65rem; }
+  }
+  .payments-table table {
+    min-width: 280px;
+    th { font-size: 0.6rem; padding: 0.35rem 0.55rem; }
+    td { font-size: 0.72rem; padding: 0.4rem 0.55rem; }
+  }
+  .page-btn { min-width: 28px; height: 28px; font-size: 0.72rem; }
+  .page-info { display: none; }
+}
