@@ -18,7 +18,7 @@
     <div class="empty-badge">Coming Soon</div>
   </div>
 } @else {
-  <app-banner [bannerTitle]="bannerTitle" [bannerOverview]="bannerOverview" [trailerKey]="bannerTrailerKey" [bannerBackdropUrl]="bannerBackdropUrl" />
+  <app-banner [bannerTitle]="bannerTitle" [bannerOverview]="bannerOverview" [trailerKey]="bannerTrailerKey" [bannerBackdropUrl]="bannerBackdropUrl" [movieId]="bannerId" />
 
   <app-movie-carousel [title]="'Now Playing'" [videoContents]="nowPlayingMovies" />
   <app-movie-carousel [title]="'Popular Movies'" [videoContents]="popularMovies" />

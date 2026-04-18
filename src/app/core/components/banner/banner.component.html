@@ -8,13 +8,13 @@
     <h1>{{ bannerTitle() }}</h1>
     <p class="overview">{{ bannerOverview() }}</p>
     <div class="actions">
-      <button class="btn-play">
+      <button class="btn-play" (click)="play()">
         <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor">
           <path d="M6 4l15 8-15 8V4z"/>
         </svg>
         Play
       </button>
-      <button class="btn-info">
+      <button class="btn-info" (click)="moreInfo()">
         <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor">
           <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/>
         </svg>
