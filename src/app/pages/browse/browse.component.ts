@@ -25,6 +25,7 @@ export class BrowseComponent implements OnInit {
   bannerOverview = '';
   bannerTrailerKey = '';
   bannerBackdropUrl = '';
+  bannerId: number | null = null;
 
   movies: IVideoContent[] = [];
   popularMovies: IVideoContent[] = [];
@@ -69,6 +70,7 @@ export class BrowseComponent implements OnInit {
     if (!source.length) return;
 
     const movie = source[Math.floor(Math.random() * source.length)];
+    this.bannerId = movie.id;
     this.bannerTitle = movie.title || movie.name || '';
     this.bannerOverview = movie.overview;
     this.bannerTrailerKey = '';
