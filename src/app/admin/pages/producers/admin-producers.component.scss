@@ -22,6 +22,20 @@ $muted:   #888;
   p  { color: $muted; font-size: .875rem; margin: 0; }
 }
 
+.header-actions {
+  display: flex; align-items: center; gap: 0.65rem; flex-shrink: 0; flex-wrap: wrap;
+}
+
+.export-btn {
+  display: inline-flex; align-items: center; gap: 0.4rem;
+  background: none; border: 1px solid $border; color: $text;
+  border-radius: 8px; padding: 0.5rem 1rem; font-size: 0.82rem; font-weight: 600;
+  cursor: pointer; white-space: nowrap; transition: border-color 0.15s, color 0.15s;
+  svg { width: 14px; height: 14px; }
+  &:hover:not(:disabled) { border-color: #555; color: #fff; }
+  &:disabled { opacity: 0.4; cursor: not-allowed; }
+}
+
 .add-btn {
   display: inline-flex;
   align-items: center;
@@ -577,4 +591,17 @@ dialog.add-modal { text-align: left; padding: 0; max-width: 480px; }
   justify-content: flex-end;
   gap: .75rem;
   padding-top: .5rem;
+}
+
+@media (max-width: 600px) {
+  .page-header {
+    h1 { font-size: 1.35rem; }
+    p  { font-size: 0.82rem; }
+  }
+  .add-btn { width: 100%; justify-content: center; min-height: 44px; }
+  dialog.modal { width: 95%; padding: 1.5rem; }
+}
+
+@media (max-width: 380px) {
+  .page-header h1 { font-size: 1.2rem; }
 }

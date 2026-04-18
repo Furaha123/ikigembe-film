@@ -17,3 +17,14 @@ $muted: #555;
   flex-direction: column;
   gap: 1.25rem;
 }
+
+@media (max-width: 600px) {
+  .page-header {
+    h1 { font-size: 1.3rem; }
+    p  { font-size: 0.78rem; }
+  }
+}
+
+@media (max-width: 380px) {
+  .page-header h1 { font-size: 1.15rem; }
+}

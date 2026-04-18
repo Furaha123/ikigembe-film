@@ -319,5 +319,36 @@ $sidebar-collapsed-w: 64px;
     .topbar-name,
     .topbar-role,
     .topbar-chevron { display: none; }
+
+    .toggle-btn {
+      min-height: 44px;
+      min-width: 44px;
+      padding: 0.6rem;
+
+      .icon-burger { display: block; }
+      .icon-x      { display: none; }
+
+      &.is-open {
+        .icon-burger { display: none; }
+        .icon-x      { display: block; color: $gold; }
+      }
+    }
+
+    .topbar-trigger { min-height: 44px; }
   }
+
+  .nav-item { min-height: 44px; padding: 0.85rem 1rem; }
+  .sidebar-logout { min-height: 44px; padding: 0.85rem 1rem; }
+}
+
+@media (max-width: 380px) {
+  .admin-topbar { padding: 0 0.5rem; height: 52px; }
+  .admin-content { padding: 0.75rem; }
+}
+
+// ── Toggle button icon states (base, for desktop too) ─
+.toggle-btn {
+  .icon-x { display: none; }
+  .icon-burger { display: block; }
+  svg { width: 22px; height: 22px; display: block; }
 }

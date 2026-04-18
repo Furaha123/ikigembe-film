@@ -193,8 +193,9 @@ export interface PayingUsersReport {
 export interface RevenueTrendItem {
   period_start: string;
   total_revenue: number;
+  failed_attempts: number;
   producer_share: number;
-  ikigembe_commission: number;
+  platform_commission: number;
   purchase_count: number;
 }
 
@@ -203,9 +204,14 @@ export interface TopMovieItem {
   title: string;
   producer: string;
   views: number;
+  unique_viewers: number;
+  avg_watch_time_minutes: number;
+  completion_rate: number;
   purchase_count: number;
   total_revenue: number;
   producer_share: number;
+  platform_commission: number;
+  revenue_per_view: number;
 }
 
 export interface UserGrowthItem {
@@ -213,6 +219,8 @@ export interface UserGrowthItem {
   viewers: number;
   producers: number;
   total: number;
+  active_users: number;
+  paying_users: number;
 }
 
 export interface WithdrawalSummaryItem {

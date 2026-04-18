@@ -28,13 +28,28 @@ export class AdminUsersComponent implements OnInit {
   });
 
   readonly columns: TableColumn[] = [
-    { key: 'id',                label: 'User ID',      type: 'text',     width: '90px' },
-    { key: 'name',              label: 'Name',         type: 'text',     width: '180px' },
-    { key: 'payment_count',     label: 'Payments',     type: 'number',   width: '110px' },
-    { key: 'total_paid_rwf',    label: 'Total Paid',   type: 'currency', width: '150px' },
-    { key: 'last_payment_date', label: 'Last Payment', type: 'date',     muted: true, width: '200px' },
-    { key: 'is_active',         label: 'Status',       type: 'status',   width: '110px' },
+    { key: 'name',     label: 'Name',   type: 'text',   width: '240px' },
+    { key: 'is_active', label: 'Status', type: 'status', width: '110px' },
   ];
+
+  exportToCSV() {
+    const headers = ['ID', 'Name', 'Payments', 'Total Paid (RWF)', 'Last Payment', 'Status'];
+    const rows = this.users().map(u => [
+      u.id, u.name, u.payment_count, u.total_paid_rwf,
+      u.last_payment_date ?? '', u.is_active ? 'Active' : 'Suspended',
+    ]);
+    this.downloadCSV('users.csv', headers, rows);
+  }
+
+  private downloadCSV(filename: string, headers: string[], rows: unknown[][]) {
+    const esc = (v: unknown) => `"${String(v ?? '').replace(/"/g, '""')}"`;
+    const csv = [headers.map(esc).join(','), ...rows.map((r: any) => r.map(esc).join(','))].join('\n');
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = filename; a.click();
+    URL.revokeObjectURL(url);
+  }
 
   ngOnInit() {
     this.adminService.getViewers().subscribe({

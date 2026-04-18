@@ -111,3 +111,16 @@ $muted: #888;
     &::placeholder { color: #555; }
   }
 }
+
+@media (max-width: 600px) {
+  .page-header {
+    h1 { font-size: 1.35rem; }
+    p  { font-size: 0.82rem; }
+  }
+  .add-btn { width: 100%; justify-content: center; min-height: 44px; }
+  .action-btn { min-height: 36px; padding: 0.4rem 0.75rem; }
+}
+
+@media (max-width: 380px) {
+  .page-header h1 { font-size: 1.2rem; }
+}

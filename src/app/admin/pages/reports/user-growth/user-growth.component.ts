@@ -108,8 +108,8 @@ export class UserGrowthComponent implements OnInit, AfterViewChecked, OnDestroy 
       ['USER GROWTH REPORT'],
       [`Generated: ${dateLabel}`],
       [],
-      ['Month', 'Viewers', 'Producers', 'Total'],
-      ...this.growth().map(d => [d.month, d.viewers, d.producers, d.total]),
+      ['Month', 'Viewers', 'Producers', 'Total', 'Active Users', 'Paying Users'],
+      ...this.growth().map(d => [d.month, d.viewers, d.producers, d.total, d.active_users, d.paying_users]),
     ];
     const ws = XLSX.utils.aoa_to_sheet(rows);
     ws['!cols'] = [{ wch: 16 }, { wch: 12 }, { wch: 12 }, { wch: 10 }];

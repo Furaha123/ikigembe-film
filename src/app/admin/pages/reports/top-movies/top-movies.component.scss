@@ -176,3 +176,21 @@ table {
   padding: 3rem; text-align: center;
   color: $muted; font-size: 0.82rem;
 }
+
+@media (max-width: 640px) {
+  .section-header h3 { font-size: 0.88rem; }
+  .section-actions {
+    flex-direction: column;
+    align-items: flex-start;
+    width: 100%;
+    .tab-group {
+      width: 100%;
+      button { flex: 1; min-height: 36px; text-align: center; }
+    }
+    .btn-export { width: 100%; justify-content: center; }
+  }
+  table { min-width: 400px; font-size: 0.75rem;
+    th { padding: 0.5rem 0.65rem; font-size: 0.65rem; }
+    td { padding: 0.5rem 0.65rem; }
+  }
+}
