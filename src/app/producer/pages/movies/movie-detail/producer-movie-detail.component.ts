@@ -32,6 +32,11 @@ export class ProducerMovieDetailComponent implements OnInit {
     this.router.navigate(['/producer/movies']);
   }
 
+  watchMovie(): void {
+    const id = this.movie()?.id;
+    if (id) this.router.navigate(['/movie', id]);
+  }
+
   fmt(n: number): string {
     if (n >= 1_000_000) return 'RWF ' + (n / 1_000_000).toFixed(1) + 'M';
     if (n >= 1_000)     return 'RWF ' + (n / 1_000).toFixed(1) + 'K';
