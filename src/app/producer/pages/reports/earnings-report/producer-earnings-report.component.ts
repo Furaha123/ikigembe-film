@@ -33,9 +33,10 @@ export class ProducerEarningsReportComponent implements OnInit, AfterViewChecked
   isLoading = signal(true);
   hasError  = signal(false);
 
-  totalRevenue   = computed(() => this.report()?.total_revenue ?? 0);
-  totalShare     = computed(() => this.report()?.producer_share ?? 0);
-  totalPurchases = computed(() => this.report()?.purchase_count ?? 0);
+  totalRevenue   = computed(() => this.report()?.kpis.total_gross_revenue ?? 0);
+  totalShare     = computed(() => this.report()?.kpis.total_net_earnings ?? 0);
+  totalPurchases = computed(() => this.report()?.kpis.total_purchases ?? 0);
+  commission     = computed(() => this.report()?.kpis.total_platform_commission ?? 0);
 
   @ViewChild('canvas') canvas!: ElementRef<HTMLCanvasElement>;
   private chart: Chart | null = null;
@@ -85,8 +86,9 @@ export class ProducerEarningsReportComponent implements OnInit, AfterViewChecked
       data: {
         labels,
         datasets: [
-          { label: 'Total Revenue', data: data.map(d => d.total_revenue), backgroundColor: 'rgba(197,162,83,0.7)',  borderRadius: 5, borderSkipped: false as const },
-          { label: 'Your Share',    data: data.map(d => d.producer_share), backgroundColor: 'rgba(52,211,153,0.7)', borderRadius: 5, borderSkipped: false as const },
+          { label: 'Gross Revenue',  data: data.map(d => d.gross_revenue),      backgroundColor: 'rgba(197,162,83,0.7)',  borderRadius: 5, borderSkipped: false as const },
+          { label: 'Your Earnings',  data: data.map(d => d.producer_earnings),  backgroundColor: 'rgba(52,211,153,0.7)', borderRadius: 5, borderSkipped: false as const },
+          { label: 'Commission',     data: data.map(d => d.platform_commission), backgroundColor: 'rgba(239,68,68,0.5)',  borderRadius: 5, borderSkipped: false as const },
         ],
       },
       options: {
@@ -118,18 +120,18 @@ export class ProducerEarningsReportComponent implements OnInit, AfterViewChecked
       [`Generated: ${dateLabel}`],
       [],
       ['SUMMARY'],
-      ['Total Revenue (RWF)', 'Your Share (RWF)', 'Purchases'],
-      [this.totalRevenue(), this.totalShare(), this.totalPurchases()],
+      ['Gross Revenue (RWF)', 'Net Earnings (RWF)', 'Commission (RWF)', 'Purchases'],
+      [this.totalRevenue(), this.totalShare(), this.commission(), this.totalPurchases()],
       [],
       ['TREND'],
-      ['Period', 'Total Revenue (RWF)', 'Your Share (RWF)', 'Purchases'],
+      ['Period', 'Gross Revenue (RWF)', 'Commission (RWF)', 'Your Earnings (RWF)', 'Transactions'],
       ...this.trend().map(d => [
         new Date(d.period_start).toLocaleDateString('en-GB', { month: 'long', year: 'numeric' }),
-        d.total_revenue, d.producer_share, d.purchase_count,
+        d.gross_revenue, d.platform_commission, d.producer_earnings, d.transactions,
       ]),
     ];
     const ws = XLSX.utils.aoa_to_sheet(rows);
-    ws['!cols'] = [{ wch: 20 }, { wch: 22 }, { wch: 20 }, { wch: 12 }];
+    ws['!cols'] = [{ wch: 20 }, { wch: 22 }, { wch: 20 }, { wch: 22 }, { wch: 14 }];
     XLSX.utils.book_append_sheet(wb, ws, 'Earnings Report');
     XLSX.writeFile(wb, `earnings_report_${new Date().toISOString().slice(0, 10)}.xlsx`);
   }

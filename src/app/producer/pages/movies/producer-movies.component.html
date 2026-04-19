@@ -29,7 +29,8 @@
   } @else {
     <div class="movies-grid">
       @for (movie of filtered(); track movie.id) {
-        <div class="movie-card">
+        <div class="movie-card" (click)="viewDetail(movie.id)" role="button" tabindex="0"
+             (keydown.enter)="viewDetail(movie.id)" (keydown.space)="viewDetail(movie.id)">
           <div class="card-thumb">
             @if (movie.thumbnail_url) {
               <img [src]="movie.thumbnail_url" [alt]="movie.title" />
@@ -44,6 +45,12 @@
             <span class="status-badge" [class.active]="movie.is_active" [class.inactive]="!movie.is_active">
               {{ movie.is_active ? 'Active' : 'Inactive' }}
             </span>
+            <div class="card-overlay">
+              <svg viewBox="0 0 24 24" fill="currentColor" class="view-icon">
+                <path d="M9 5l7 7-7 7"/>
+              </svg>
+              <span>View Analytics</span>
+            </div>
           </div>
           <div class="card-body">
             <h3 class="card-title">{{ movie.title }}</h3>
