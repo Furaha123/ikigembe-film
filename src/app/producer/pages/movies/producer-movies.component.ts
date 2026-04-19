@@ -1,6 +1,7 @@
 import { Component, inject, OnInit, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { Router } from '@angular/router';
 import { ProducerService, ProducerMovie } from '../../services/producer.service';
 
 @Component({
@@ -11,6 +12,7 @@ import { ProducerService, ProducerMovie } from '../../services/producer.service'
 })
 export class ProducerMoviesComponent implements OnInit {
   private readonly producerService = inject(ProducerService);
+  private readonly router = inject(Router);
 
   movies = signal<ProducerMovie[]>([]);
   isLoading = signal(true);
@@ -31,6 +33,10 @@ export class ProducerMoviesComponent implements OnInit {
       },
       error: () => this.isLoading.set(false),
     });
+  }
+
+  viewDetail(id: number): void {
+    this.router.navigate(['/producer/movies', id]);
   }
 
   formatCurrency(n: number): string {

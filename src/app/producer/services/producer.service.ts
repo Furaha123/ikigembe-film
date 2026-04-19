@@ -24,6 +24,32 @@ export interface ProducerMovie {
   thumbnail_url: string | null;
 }
 
+export interface ProducerMovieDetail {
+  id: number;
+  title: string;
+  overview: string;
+  thumbnail_url: string | null;
+  backdrop_url: string | null;
+  trailer_url: string | null;
+  trailer_duration_seconds: number | null;
+  video_url: string | null;
+  hls_url: string | null;
+  hls_status: 'not_started' | 'processing' | 'completed' | 'failed';
+  subtitles: string | null;
+  price: number;
+  views: number;
+  rating: number;
+  release_date: string;
+  duration_minutes: number | null;
+  has_free_preview: boolean;
+  is_active: boolean;
+  cast: string | null;
+  genres: string | null;
+  producer: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
 export interface ProducerWithdrawal {
   id: number;
   amount: number;
@@ -44,11 +70,29 @@ export interface WithdrawalRequest {
 }
 
 // ── Report interfaces ──────────────────────────────────
-export interface ProducerRevenueTrendItem {
+export interface ProducerEarningsKpis {
+  total_gross_revenue: number;
+  total_net_earnings: number;
+  total_platform_commission: number;
+  total_purchases: number;
+  total_movies: number;
+  avg_revenue_per_movie: number;
+  avg_completion_rate: number;
+  best_movie: { id: number; title: string; revenue: number } | null;
+}
+
+export interface ProducerEarningsTrendItem {
   period_start: string;
-  total_revenue: number;
-  producer_share: number;
-  purchase_count: number;
+  gross_revenue: number;
+  platform_commission: number;
+  producer_earnings: number;
+  transactions: number;
+}
+
+export interface ProducerEarningsReport {
+  kpis: ProducerEarningsKpis;
+  period: string;
+  trend: ProducerEarningsTrendItem[];
 }
 
 export interface ProducerTopMovieItem {
@@ -61,41 +105,45 @@ export interface ProducerTopMovieItem {
 }
 
 export interface ProducerReportData {
-  trend: ProducerRevenueTrendItem[];
+  trend: ProducerEarningsTrendItem[];
   top_movies: ProducerTopMovieItem[];
 }
 
-// ── Earnings report ────────────────────────────────────
-export interface ProducerEarningsTrendItem {
-  period_start: string;
-  total_revenue: number;
-  producer_share: number;
-  purchase_count: number;
-}
-
-export interface ProducerEarningsReport {
-  total_revenue: number;
-  producer_share: number;
-  purchase_count: number;
-  trend: ProducerEarningsTrendItem[];
-}
-
 // ── Transactions ───────────────────────────────────────
-export interface ProducerTransactionItem {
+export interface ProducerPaymentItem {
   id: number;
   movie_title: string;
-  buyer_name: string | null;
-  amount: number;
-  your_share: number;
-  status: string;
-  created_at: string;
+  gross_amount: number;
+  producer_earnings: number;
+  date: string;
 }
 
-export interface ProducerTransactionList {
+export interface ProducerWithdrawalTransactionItem {
+  id: number;
+  amount: number;
+  tax_amount: number;
+  amount_after_tax: number;
+  payment_method: string;
+  bank_name: string | null;
+  account_number: string | null;
+  account_holder_name: string | null;
+  momo_number: string | null;
+  momo_provider: string | null;
+  status: string;
+  created_at: string;
+  processed_at: string | null;
+}
+
+export interface ProducerPaginatedList<T> {
   page: number;
-  total_pages: number;
   total_results: number;
-  results: ProducerTransactionItem[];
+  total_pages: number;
+  results: T[];
+}
+
+export interface ProducerTransactionResponse {
+  payments: ProducerPaginatedList<ProducerPaymentItem>;
+  withdrawals: ProducerPaginatedList<ProducerWithdrawalTransactionItem>;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -108,6 +156,10 @@ export class ProducerService {
 
   getMovies(): Observable<ProducerMovie[]> {
     return this.http.get<ProducerMovie[]>(`${BASE}/producer/dashboard/movies/`);
+  }
+
+  getMovieDetail(id: number): Observable<ProducerMovieDetail> {
+    return this.http.get<ProducerMovieDetail>(`${BASE}/producer/dashboard/movies/${id}/`);
   }
 
   getWithdrawals(): Observable<{ results: ProducerWithdrawal[] }> {
@@ -125,17 +177,6 @@ export class ProducerService {
     return this.http.get<ProducerReportData>(url);
   }
 
-  getRevenueTrend(
-    period = 'monthly',
-    startDate?: string,
-    endDate?: string,
-  ): Observable<{ trend: ProducerRevenueTrendItem[] }> {
-    let url = `${BASE}/producer/dashboard/revenue-trend/?period=${period}`;
-    if (startDate) url += `&start_date=${startDate}`;
-    if (endDate)   url += `&end_date=${endDate}`;
-    return this.http.get<{ trend: ProducerRevenueTrendItem[] }>(url);
-  }
-
   getEarningsReport(
     period = 'monthly',
     startDate?: string,
@@ -147,8 +188,8 @@ export class ProducerService {
     return this.http.get<ProducerEarningsReport>(url);
   }
 
-  getTransactions(page = 1): Observable<ProducerTransactionList> {
-    return this.http.get<ProducerTransactionList>(
+  getTransactions(page = 1): Observable<ProducerTransactionResponse> {
+    return this.http.get<ProducerTransactionResponse>(
       `${BASE}/producer/dashboard/transactions/?page=${page}`
     );
   }

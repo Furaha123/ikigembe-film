@@ -3,15 +3,17 @@
   <div class="section-header">
     <div>
       <h3>Transaction History</h3>
-      <p>
-        @if (!isLoading()) {
-          {{ totalResults() | number }} transactions
-        } @else {
-          Loading transactions…
-        }
-      </p>
+      @if (!isLoading()) {
+        <p>{{ totalResults() | number }} {{ activeTab() === 'payments' ? 'payments' : 'withdrawals' }}</p>
+      } @else {
+        <p>Loading…</p>
+      }
     </div>
     <div class="section-actions">
+      <div class="tab-group">
+        <button [class.active]="activeTab() === 'payments'"    (click)="switchTab('payments')">Payments</button>
+        <button [class.active]="activeTab() === 'withdrawals'" (click)="switchTab('withdrawals')">Withdrawals</button>
+      </div>
       <button class="btn-export" (click)="export()" [disabled]="isLoading()">
         <svg viewBox="0 0 24 24" fill="currentColor"><path d="M19 9h-4V3H9v6H5l7 7 7-7zm-8 2V5h2v6h1.17L12 13.17 9.83 11H11zm-6 7h14v2H5v-2z"/></svg>
         Export
@@ -28,44 +30,81 @@
       <p>Failed to load transactions.</p>
       <button class="btn-retry" (click)="load()">Retry</button>
     </div>
-  } @else if (transactions().length === 0) {
-    <div class="empty-state">No transactions found.</div>
   } @else {
 
-    <div class="table-scroll">
-      <table>
-        <thead>
-          <tr>
-            <th>Movie</th>
-            <th>Buyer</th>
-            <th class="r">Amount</th>
-            <th class="r">Your Share</th>
-            <th>Status</th>
-            <th>Date</th>
-          </tr>
-        </thead>
-        <tbody>
-          @for (t of transactions(); track t.id) {
-            <tr>
-              <td class="fw">{{ t.movie_title }}</td>
-              <td class="muted">{{ t.buyer_name ?? '—' }}</td>
-              <td class="r gold fw">{{ fmt(t.amount) }}</td>
-              <td class="r green">{{ fmt(t.your_share) }}</td>
-              <td>
-                <span class="status-badge" [class]="'status-' + t.status.toLowerCase()">
-                  {{ t.status }}
-                </span>
-              </td>
-              <td class="muted small">{{ t.created_at | date:'dd MMM yyyy, HH:mm' }}</td>
-            </tr>
-          }
-        </tbody>
-      </table>
-    </div>
+    @if (activeTab() === 'payments') {
+      @if (payments().length === 0) {
+        <div class="empty-state">No payments found.</div>
+      } @else {
+        <div class="table-scroll">
+          <table>
+            <thead>
+              <tr>
+                <th>Movie</th>
+                <th class="r">Gross Amount</th>
+                <th class="r">Your Earnings</th>
+                <th>Date</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (t of payments(); track t.id) {
+                <tr>
+                  <td class="fw">{{ t.movie_title }}</td>
+                  <td class="r gold fw">{{ fmt(t.gross_amount) }}</td>
+                  <td class="r green">{{ fmt(t.producer_earnings) }}</td>
+                  <td class="muted small">{{ t.date | date:'dd MMM yyyy, HH:mm' }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      }
+    }
+
+    @if (activeTab() === 'withdrawals') {
+      @if (withdrawals().length === 0) {
+        <div class="empty-state">No withdrawals found.</div>
+      } @else {
+        <div class="table-scroll">
+          <table>
+            <thead>
+              <tr>
+                <th class="r">Amount</th>
+                <th class="r">Tax</th>
+                <th class="r">After Tax</th>
+                <th>Method</th>
+                <th>Account / MoMo</th>
+                <th>Status</th>
+                <th>Processed</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (w of withdrawals(); track w.id) {
+                <tr>
+                  <td class="r gold fw">{{ fmt(w.amount) }}</td>
+                  <td class="r muted">{{ fmt(w.tax_amount) }}</td>
+                  <td class="r green fw">{{ fmt(w.amount_after_tax) }}</td>
+                  <td>{{ w.payment_method }}</td>
+                  <td class="muted small">{{ accountInfo(w) }}</td>
+                  <td>
+                    <span class="status-badge" [class]="'status-' + w.status.toLowerCase()">
+                      {{ w.status }}
+                    </span>
+                  </td>
+                  <td class="muted small">
+                    {{ w.processed_at ? (w.processed_at | date:'dd MMM yyyy, HH:mm') : '—' }}
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      }
+    }
 
     @if (totalPages() > 1) {
       <div class="pagination">
-        <button class="page-btn" (click)="goToPage(page() - 1)" [disabled]="page() === 1">
+        <button class="page-btn" (click)="goToPage(currentPage() - 1)" [disabled]="currentPage() === 1">
           <svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16"><path d="M15.41 16.59L10.83 12l4.58-4.59L14 6l-6 6 6 6z"/></svg>
         </button>
 
@@ -75,7 +114,7 @@
         }
 
         @for (p of pages(); track p) {
-          <button class="page-btn" [class.active]="p === page()" (click)="goToPage(p)">{{ p }}</button>
+          <button class="page-btn" [class.active]="p === currentPage()" (click)="goToPage(p)">{{ p }}</button>
         }
 
         @if (pages()[pages().length - 1] < totalPages()) {
@@ -83,11 +122,11 @@
           <button class="page-btn" (click)="goToPage(totalPages())">{{ totalPages() }}</button>
         }
 
-        <button class="page-btn" (click)="goToPage(page() + 1)" [disabled]="page() === totalPages()">
+        <button class="page-btn" (click)="goToPage(currentPage() + 1)" [disabled]="currentPage() === totalPages()">
           <svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6z"/></svg>
         </button>
 
-        <span class="page-info">Page {{ page() }} of {{ totalPages() }}</span>
+        <span class="page-info">Page {{ currentPage() }} of {{ totalPages() }}</span>
       </div>
     }
 

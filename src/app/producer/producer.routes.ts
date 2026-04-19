@@ -18,6 +18,10 @@ export const producerRoutes: Routes = [
         loadComponent: () => import('./pages/movies/producer-movies.component').then(m => m.ProducerMoviesComponent),
       },
       {
+        path: 'movies/:id',
+        loadComponent: () => import('./pages/movies/movie-detail/producer-movie-detail.component').then(m => m.ProducerMovieDetailComponent),
+      },
+      {
         path: 'wallet',
         loadComponent: () => import('./pages/wallet/producer-wallet.component').then(m => m.ProducerWalletComponent),
       },
