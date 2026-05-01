@@ -603,3 +603,19 @@ $muted:   #666;
   &.completed { background: #143020; color: #bbf7d0; }
   &.pending   { background: #2a2000; color: #fef9c3; }
 }
+
+@media (max-width: 600px) {
+  .page-header {
+    h1 { font-size: 1.35rem; }
+    p  { font-size: 0.82rem; }
+  }
+  .stat-card {
+    padding: 1rem;
+    .stat-value { font-size: 1.1rem; }
+    .stat-icon  { width: 40px; height: 40px; }
+  }
+}
+
+@media (max-width: 380px) {
+  .page-header h1 { font-size: 1.2rem; }
+}

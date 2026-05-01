@@ -236,3 +236,16 @@ dialog.confirm-modal {
 
   .modal-actions { justify-content: center; }
 }
+
+@media (max-width: 600px) {
+  .page-header {
+    h1 { font-size: 1.35rem; }
+    p  { font-size: 0.82rem; }
+  }
+  .filter-tab { font-size: 0.75rem; padding: 0.35rem 0.65rem; min-height: 36px; }
+}
+
+@media (max-width: 380px) {
+  .page-header h1 { font-size: 1.2rem; }
+  .filter-tab { font-size: 0.7rem; padding: 0.3rem 0.5rem; }
+}

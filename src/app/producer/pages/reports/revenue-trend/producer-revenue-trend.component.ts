@@ -4,7 +4,9 @@ import {
 } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { Subscription } from 'rxjs';
-import { ProducerService, ProducerRevenueTrendItem } from '../../../services/producer.service';
+import {
+  ProducerService, ProducerEarningsTrendItem, ProducerEarningsKpis,
+} from '../../../services/producer.service';
 import { DatePickerComponent, type DateRange } from '../../../../shared/components/date-picker/date-picker';
 import {
   Chart, CategoryScale, LinearScale, Tooltip, Legend,
@@ -13,6 +15,17 @@ import {
 import * as XLSX from 'xlsx';
 
 Chart.register(CategoryScale, LinearScale, Tooltip, Legend, LineController, LineElement, PointElement, Filler);
+
+const NULL_KPIS: ProducerEarningsKpis = {
+  total_gross_revenue: 0,
+  total_net_earnings: 0,
+  total_platform_commission: 0,
+  total_purchases: 0,
+  total_movies: 0,
+  avg_revenue_per_movie: 0,
+  avg_completion_rate: 0,
+  best_movie: null,
+};
 
 @Component({
   selector: 'app-producer-revenue-trend',
@@ -28,14 +41,16 @@ export class ProducerRevenueTrendComponent implements OnInit, AfterViewChecked, 
   dateFrom = signal<string>(this.defaultFrom());
   dateTo   = signal<string>(new Date().toISOString().slice(0, 10));
 
-  trend      = signal<ProducerRevenueTrendItem[]>([]);
+  kpis       = signal<ProducerEarningsKpis>(NULL_KPIS);
+  trend      = signal<ProducerEarningsTrendItem[]>([]);
   isLoading  = signal(true);
   hasError   = signal(false);
   activeTab: 'revenue' | 'share' = 'revenue';
 
-  totalRevenue   = computed(() => this.trend().reduce((s, d) => s + d.total_revenue, 0));
-  totalShare     = computed(() => this.trend().reduce((s, d) => s + d.producer_share, 0));
-  totalPurchases = computed(() => this.trend().reduce((s, d) => s + d.purchase_count, 0));
+  totalRevenue   = computed(() => this.kpis().total_gross_revenue);
+  totalShare     = computed(() => this.kpis().total_net_earnings);
+  totalPurchases = computed(() => this.kpis().total_purchases);
+  commission     = computed(() => this.kpis().total_platform_commission);
 
   @ViewChild('canvas') canvas!: ElementRef<HTMLCanvasElement>;
   private chart: Chart | null = null;
@@ -55,12 +70,13 @@ export class ProducerRevenueTrendComponent implements OnInit, AfterViewChecked, 
     this.isLoading.set(true);
     this.hasError.set(false);
     this.needsBuild = false;
-    this.sub = this.producerService.getRevenueTrend(
+    this.sub = this.producerService.getEarningsReport(
       'monthly',
       this.dateFrom() || undefined,
       this.dateTo()   || undefined,
     ).subscribe({
       next: (data) => {
+        this.kpis.set(data.kpis ?? NULL_KPIS);
         this.trend.set(data.trend ?? []);
         this.isLoading.set(false);
         this.needsBuild = true;
@@ -86,10 +102,10 @@ export class ProducerRevenueTrendComponent implements OnInit, AfterViewChecked, 
     const data   = this.trend();
     const labels = data.map(d => this.shortMonth(d.period_start));
     const colorMap = { revenue: '#C5A253', share: '#34d399' };
-    const labelMap = { revenue: 'Total Revenue', share: 'Your Share' };
+    const labelMap = { revenue: 'Gross Revenue', share: 'Your Earnings' };
     const dataMap  = {
-      revenue: data.map(d => d.total_revenue),
-      share:   data.map(d => d.producer_share),
+      revenue: data.map(d => d.gross_revenue),
+      share:   data.map(d => d.producer_earnings),
     };
     const color = colorMap[this.activeTab];
     this.chart = new Chart(this.canvas.nativeElement, {
@@ -132,20 +148,24 @@ export class ProducerRevenueTrendComponent implements OnInit, AfterViewChecked, 
   export(): void {
     const wb = XLSX.utils.book_new();
     const dateLabel = new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
-    const rows: (string | number)[][] = [
+    const k = this.kpis();
+    const rows: (string | number | null)[][] = [
       ['REVENUE TREND REPORT'],
       [`Generated: ${dateLabel}`],
       [],
-      ['Period', 'Total Revenue (RWF)', 'Your Share (RWF)', 'Purchases'],
+      ['SUMMARY'],
+      ['Gross Revenue (RWF)', 'Net Earnings (RWF)', 'Platform Commission (RWF)', 'Purchases'],
+      [k.total_gross_revenue, k.total_net_earnings, k.total_platform_commission, k.total_purchases],
+      [],
+      ['TREND'],
+      ['Period', 'Gross Revenue (RWF)', 'Platform Commission (RWF)', 'Your Earnings (RWF)', 'Transactions'],
       ...this.trend().map(d => [
         new Date(d.period_start).toLocaleDateString('en-GB', { month: 'long', year: 'numeric' }),
-        d.total_revenue, d.producer_share, d.purchase_count,
+        d.gross_revenue, d.platform_commission, d.producer_earnings, d.transactions,
       ]),
-      [],
-      ['TOTALS', this.totalRevenue(), this.totalShare(), this.totalPurchases()],
     ];
     const ws = XLSX.utils.aoa_to_sheet(rows);
-    ws['!cols'] = [{ wch: 20 }, { wch: 22 }, { wch: 20 }, { wch: 12 }];
+    ws['!cols'] = [{ wch: 20 }, { wch: 22 }, { wch: 26 }, { wch: 20 }, { wch: 14 }];
     XLSX.utils.book_append_sheet(wb, ws, 'Revenue Trend');
     XLSX.writeFile(wb, `revenue_trend_${new Date().toISOString().slice(0, 10)}.xlsx`);
   }

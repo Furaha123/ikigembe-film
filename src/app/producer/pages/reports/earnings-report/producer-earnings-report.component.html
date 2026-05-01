@@ -29,12 +29,16 @@
 
     <div class="kpi-strip">
       <div class="kpi-item">
-        <span class="kpi-label">Total Revenue</span>
+        <span class="kpi-label">Gross Revenue</span>
         <span class="kpi-value gold">{{ fmt(totalRevenue()) }}</span>
       </div>
       <div class="kpi-item">
-        <span class="kpi-label">Your Share</span>
+        <span class="kpi-label">Net Earnings</span>
         <span class="kpi-value green">{{ fmt(totalShare()) }}</span>
+      </div>
+      <div class="kpi-item">
+        <span class="kpi-label">Commission</span>
+        <span class="kpi-value muted">{{ fmt(commission()) }}</span>
       </div>
       <div class="kpi-item">
         <span class="kpi-label">Purchases</span>
@@ -54,18 +58,20 @@
           <thead>
             <tr>
               <th>Period</th>
-              <th class="r">Total Revenue</th>
-              <th class="r">Your Share <span class="th-note">70%</span></th>
-              <th class="r">Purchases</th>
+              <th class="r">Gross Revenue</th>
+              <th class="r">Commission</th>
+              <th class="r">Your Earnings</th>
+              <th class="r">Transactions</th>
             </tr>
           </thead>
           <tbody>
             @for (row of trend(); track row.period_start) {
               <tr>
                 <td>{{ row.period_start | date:'MMMM yyyy' }}</td>
-                <td class="r gold fw">{{ fmt(row.total_revenue) }}</td>
-                <td class="r green fw">{{ fmt(row.producer_share) }}</td>
-                <td class="r">{{ row.purchase_count }}</td>
+                <td class="r gold fw">{{ fmt(row.gross_revenue) }}</td>
+                <td class="r muted">{{ fmt(row.platform_commission) }}</td>
+                <td class="r green fw">{{ fmt(row.producer_earnings) }}</td>
+                <td class="r">{{ row.transactions }}</td>
               </tr>
             }
           </tbody>

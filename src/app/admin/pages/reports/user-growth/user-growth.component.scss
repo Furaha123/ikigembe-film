@@ -128,4 +128,30 @@ table {
 
 @media (max-width: 640px) {
   .chart-body { height: 180px; }
+  .section-actions {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+    width: 100%;
+    procurement-date-picker { width: 100%; }
+    .legend-inline { font-size: 0.72rem; flex-wrap: wrap; }
+    .btn-export { width: 100%; justify-content: center; }
+  }
+  table {
+    font-size: 0.75rem;
+    th { padding: 0.5rem 0.55rem; font-size: 0.63rem; letter-spacing: 0.02em; }
+    td { padding: 0.55rem 0.55rem; }
+  }
+}
+
+@media (max-width: 380px) {
+  table {
+    font-size: 0.7rem;
+    th { padding: 0.45rem 0.45rem; }
+    td { padding: 0.5rem 0.45rem; }
+  }
+}
+
+@media (max-width: 640px) {
+  .chart-body { height: 180px; }
 }

@@ -64,6 +64,10 @@
           }
         </div>
 
+        <div class="forgot-link">
+          <a routerLink="/forgot-password">Forgot password?</a>
+        </div>
+
         @if (serverErrors().non_field_errors || serverErrors().detail) {
           <div class="form-error">
             {{ serverErrors().non_field_errors?.[0] ?? serverErrors().detail }}

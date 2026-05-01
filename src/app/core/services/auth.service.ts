@@ -180,6 +180,14 @@ export class AuthService {
     return this.http.post(`${this.baseUrl}/auth/change-password/`, { current_password, new_password });
   }
 
+  forgotPassword(identifier: string): Observable<unknown> {
+    return this.http.post(`${this.baseUrl}/auth/forgot-password/`, { identifier });
+  }
+
+  resetPassword(token: string, new_password: string, confirm_password: string): Observable<unknown> {
+    return this.http.post(`${this.baseUrl}/auth/reset-password/`, { token, new_password, confirm_password });
+  }
+
   private clearSession() {
     if (isPlatformBrowser(this.platformId)) {
       localStorage.removeItem(TOKEN_KEY);

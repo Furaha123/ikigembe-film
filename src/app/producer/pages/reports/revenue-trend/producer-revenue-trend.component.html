@@ -8,8 +8,8 @@
     <div class="section-actions">
       <procurement-date-picker (dateChange)="onDateRangeChange($event)" />
       <div class="tab-group">
-        <button [class.active]="activeTab === 'revenue'" (click)="switchTab('revenue')">Total</button>
-        <button [class.active]="activeTab === 'share'"   (click)="switchTab('share')">Your Share</button>
+        <button [class.active]="activeTab === 'revenue'" (click)="switchTab('revenue')">Gross</button>
+        <button [class.active]="activeTab === 'share'"   (click)="switchTab('share')">Earnings</button>
       </div>
       <button class="btn-export" (click)="export()" [disabled]="isLoading()">
         <svg viewBox="0 0 24 24" fill="currentColor"><path d="M19 9h-4V3H9v6H5l7 7 7-7zm-8 2V5h2v6h1.17L12 13.17 9.83 11H11zm-6 7h14v2H5v-2z"/></svg>
@@ -33,17 +33,28 @@
 
     <div class="kpi-strip">
       <div class="kpi-item">
-        <span class="kpi-label">Total Revenue</span>
+        <span class="kpi-label">Gross Revenue</span>
         <span class="kpi-value gold">{{ fmt(totalRevenue()) }}</span>
       </div>
       <div class="kpi-item">
-        <span class="kpi-label">Your Share</span>
+        <span class="kpi-label">Net Earnings</span>
         <span class="kpi-value green">{{ fmt(totalShare()) }}</span>
+      </div>
+      <div class="kpi-item">
+        <span class="kpi-label">Platform Commission</span>
+        <span class="kpi-value muted">{{ fmt(commission()) }}</span>
       </div>
       <div class="kpi-item">
         <span class="kpi-label">Purchases</span>
         <span class="kpi-value">{{ totalPurchases() | number }}</span>
       </div>
+      @if (kpis().best_movie) {
+        <div class="kpi-item best-movie">
+          <span class="kpi-label">Best Movie</span>
+          <span class="kpi-value accent">{{ kpis().best_movie!.title }}</span>
+          <span class="kpi-sub">{{ fmt(kpis().best_movie!.revenue) }}</span>
+        </div>
+      }
     </div>
 
     @if (trend().length > 0) {
@@ -58,18 +69,20 @@
           <thead>
             <tr>
               <th>Period</th>
-              <th class="r">Total Revenue</th>
-              <th class="r">Your Share <span class="th-note">70%</span></th>
-              <th class="r">Purchases</th>
+              <th class="r">Gross Revenue</th>
+              <th class="r">Commission</th>
+              <th class="r">Your Earnings</th>
+              <th class="r">Transactions</th>
             </tr>
           </thead>
           <tbody>
             @for (row of trend(); track row.period_start) {
               <tr>
                 <td>{{ row.period_start | date:'MMMM yyyy' }}</td>
-                <td class="r gold fw">{{ fmt(row.total_revenue) }}</td>
-                <td class="r green fw">{{ fmt(row.producer_share) }}</td>
-                <td class="r">{{ row.purchase_count }}</td>
+                <td class="r gold fw">{{ fmt(row.gross_revenue) }}</td>
+                <td class="r muted">{{ fmt(row.platform_commission) }}</td>
+                <td class="r green fw">{{ fmt(row.producer_earnings) }}</td>
+                <td class="r">{{ row.transactions }}</td>
               </tr>
             }
           </tbody>
@@ -77,6 +90,7 @@
             <tr>
               <td class="fw">Totals</td>
               <td class="r gold fw">{{ fmt(totalRevenue()) }}</td>
+              <td class="r muted fw">{{ fmt(commission()) }}</td>
               <td class="r green fw">{{ fmt(totalShare()) }}</td>
               <td class="r fw">{{ totalPurchases() }}</td>
             </tr>

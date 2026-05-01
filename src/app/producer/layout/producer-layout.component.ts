@@ -57,6 +57,12 @@ export class ProducerLayoutComponent {
 
   toggleSidebar() { this.sidebarOpen.update(v => !v); }
 
+  closeSidebarOnMobile() {
+    if (isPlatformBrowser(this.platformId) && window.innerWidth <= 768) {
+      this.sidebarOpen.set(false);
+    }
+  }
+
   logout() {
     this.isLoggingOut.set(true);
     this.authService.logout(() => {

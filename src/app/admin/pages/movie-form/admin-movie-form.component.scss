@@ -287,3 +287,21 @@ $muted:   #888;
   margin-top: 3px;
   display: block;
 }
+
+@media (max-width: 600px) {
+  .form-page-header {
+    flex-direction: column;
+    gap: 0.5rem;
+    h1 { font-size: 1.35rem; }
+    p  { font-size: 0.82rem; }
+  }
+  .back-btn { align-self: flex-start; }
+  .form-actions {
+    flex-direction: column;
+    .btn { width: 100%; justify-content: center; min-height: 44px; }
+  }
+}
+
+@media (max-width: 380px) {
+  .form-page-header h1 { font-size: 1.2rem; }
+}

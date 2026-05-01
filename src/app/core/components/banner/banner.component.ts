@@ -1,5 +1,6 @@
 import { Component, computed, inject, input, signal } from '@angular/core';
 import { DomSanitizer } from '@angular/platform-browser';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-banner',
@@ -8,11 +9,13 @@ import { DomSanitizer } from '@angular/platform-browser';
 })
 export class BannerComponent {
   private sanitizer = inject(DomSanitizer);
+  private router = inject(Router);
 
   bannerTitle = input<string>('');
   bannerOverview = input<string>('');
   trailerKey = input<string>('');
   bannerBackdropUrl = input<string>('');
+  movieId = input<number | null>(null);
 
   isMuted = signal(true);
 
@@ -27,5 +30,15 @@ export class BannerComponent {
 
   toggleMute() {
     this.isMuted.update(v => !v);
+  }
+
+  play() {
+    const id = this.movieId();
+    if (id != null) this.router.navigate(['/movie', id]);
+  }
+
+  moreInfo() {
+    const id = this.movieId();
+    if (id != null) this.router.navigate(['/movie', id]);
   }
 }

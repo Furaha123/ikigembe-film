@@ -1,5 +1,14 @@
 <header [class.scrolled]="isScrolled()">
   <div class="left">
+    <button class="hamburger-btn" [class.is-open]="mobileMenuOpen()" (click)="toggleMobileMenu()" aria-label="Toggle navigation">
+      <svg class="icon-burger" viewBox="0 0 24 24" fill="currentColor">
+        <path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"/>
+      </svg>
+      <svg class="icon-x" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+        <line x1="18" y1="6" x2="6" y2="18"/>
+        <line x1="6" y1="6" x2="18" y2="18"/>
+      </svg>
+    </button>
     <img width="72" src="/assets/ikigembe.log.png" alt="ikigembe-logo">
     <ul class="nav-list">
       @for (item of navList; track item.label) {
@@ -132,4 +141,18 @@
       }
     </div>
   </div>
+
+  @if (mobileMenuOpen()) {
+    <nav class="mobile-drawer" (click)="$event.stopPropagation()">
+      <ul class="mobile-nav-list">
+        @for (item of navList; track item.label) {
+          @if (item.route) {
+            <li><a [routerLink]="item.route" routerLinkActive="active" (click)="closeMobileMenu()">{{ item.label }}</a></li>
+          } @else {
+            <li><span>{{ item.label }}</span></li>
+          }
+        }
+      </ul>
+    </nav>
+  }
 </header>

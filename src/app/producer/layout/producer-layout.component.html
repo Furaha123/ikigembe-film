@@ -7,7 +7,7 @@
 
     <nav class="sidebar-nav">
       @for (item of navItems; track item.path) {
-        <a [routerLink]="item.path" routerLinkActive="active" class="nav-item">
+        <a [routerLink]="item.path" routerLinkActive="active" class="nav-item" (click)="closeSidebarOnMobile()">
           <span class="nav-icon">
             @if (item.icon === 'dashboard') {
               <svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z"/></svg>
@@ -50,8 +50,12 @@
 
   <div class="producer-main">
     <header class="producer-topbar">
-      <button class="toggle-btn" (click)="toggleSidebar()" aria-label="Toggle sidebar">
-        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"/></svg>
+      <button class="toggle-btn" [class.is-open]="sidebarOpen()" (click)="toggleSidebar()" aria-label="Toggle sidebar">
+        <svg class="icon-burger" viewBox="0 0 24 24" fill="currentColor"><path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"/></svg>
+        <svg class="icon-x" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <line x1="18" y1="6" x2="6" y2="18"/>
+          <line x1="6" y1="6" x2="18" y2="18"/>
+        </svg>
       </button>
       <div class="topbar-right">
         <div class="topbar-user-menu">

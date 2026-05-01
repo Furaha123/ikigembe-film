@@ -35,7 +35,7 @@ export class RevenueTrendComponent implements OnInit, AfterViewChecked, OnDestro
   activeTab: 'revenue' | 'commission' | 'producer' = 'revenue';
 
   totalRevenue   = computed(() => this.trend().reduce((s, d) => s + d.total_revenue, 0));
-  totalComm      = computed(() => this.trend().reduce((s, d) => s + d.ikigembe_commission, 0));
+  totalComm      = computed(() => this.trend().reduce((s, d) => s + d.platform_commission, 0));
   totalProd      = computed(() => this.trend().reduce((s, d) => s + d.producer_share, 0));
   totalPurchases = computed(() => this.trend().reduce((s, d) => s + d.purchase_count, 0));
 
@@ -91,7 +91,7 @@ export class RevenueTrendComponent implements OnInit, AfterViewChecked, OnDestro
     const labelMap = { revenue: 'Total Revenue', commission: 'Platform Commission', producer: 'Producer Share' };
     const dataMap  = {
       revenue:    data.map(d => d.total_revenue),
-      commission: data.map(d => d.ikigembe_commission),
+      commission: data.map(d => d.platform_commission),
       producer:   data.map(d => d.producer_share),
     };
     const color = colorMap[this.activeTab];
@@ -142,7 +142,7 @@ export class RevenueTrendComponent implements OnInit, AfterViewChecked, OnDestro
       ['Period', 'Total Revenue (RWF)', 'Producer Share (RWF)', 'Commission (RWF)', 'Purchases'],
       ...this.trend().map(d => [
         new Date(d.period_start).toLocaleDateString('en-GB', { month: 'long', year: 'numeric' }),
-        d.total_revenue, d.producer_share, d.ikigembe_commission, d.purchase_count,
+        d.total_revenue, d.producer_share, d.platform_commission, d.purchase_count,
       ]),
       [],
       ['TOTALS', this.totalRevenue(), this.totalProd(), this.totalComm(), this.totalPurchases()],

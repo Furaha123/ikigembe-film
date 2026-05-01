@@ -92,3 +92,18 @@ table {
   &:hover { border-color: #444; }
 }
 .empty-state { padding: 3rem; text-align: center; color: $muted; font-size: 0.82rem; }
+
+@media (max-width: 640px) {
+  .section-actions {
+    flex-direction: column;
+    align-items: flex-start;
+    width: 100%;
+    .btn-export { width: 100%; justify-content: center; }
+  }
+  table { min-width: 400px; font-size: 0.75rem;
+    th { padding: 0.5rem 0.65rem; font-size: 0.63rem; }
+    td { padding: 0.55rem 0.65rem; }
+  }
+  .page-btn { min-width: 28px; height: 28px; }
+  .page-info { display: none; }
+}
