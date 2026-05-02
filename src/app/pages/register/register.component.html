@@ -1,36 +1,19 @@
-<div class="auth-layout">
+<div class="auth-page">
 
-  <div class="brand-panel">
-    <img src="/assets/auth.bg.jpg" alt="" class="brand-bg" aria-hidden="true" />
-    <div class="brand-overlay"></div>
-    <div class="brand-inner">
-      <img src="/assets/ikigembe.log.png" alt="Ikigembe" class="brand-logo" />
-      <h2 class="brand-headline">Join the<br/>Ikigembe Community</h2>
-      <p class="brand-sub">Stream thousands of African films, series and documentaries. New content added every week.</p>
-      <ul class="feature-list" aria-label="Features">
-        <li>
-          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
-          HD &amp; 4K streaming
-        </li>
-        <li>
-          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
-          Watch on any device
-        </li>
-        <li>
-          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
-          Exclusive African content
-        </li>
-      </ul>
-    </div>
-  </div>
+  <img src="/assets/auth.bg.jpg" alt="" class="auth-bg-img" aria-hidden="true" />
+  <div class="auth-overlay"></div>
 
-  <div class="form-panel">
-    <div class="form-inner">
-      <img src="/assets/ikigembe.log.png" alt="Ikigembe" class="form-logo" />
-      <div class="form-header">
-        <h1>Create account</h1>
-        <p>Start watching in minutes</p>
-      </div>
+  <!-- Logo top-left -->
+  <nav class="auth-nav">
+    <img src="/assets/ikigembe.log.png" alt="Ikigembe" class="nav-logo" />
+  </nav>
+
+  <!-- Centered form -->
+  <main class="auth-center">
+    <div class="form-card">
+
+      <h1 class="form-title">Create account</h1>
+      <p class="form-subtitle">Start watching in minutes</p>
 
       <form [formGroup]="form" (ngSubmit)="onSubmit()" novalidate>
 
@@ -152,7 +135,8 @@
       <p class="alt-link">
         Already have an account? <a routerLink="/login">Sign in</a>
       </p>
+
     </div>
-  </div>
+  </main>
 
 </div>

@@ -1,24 +1,19 @@
-<div class="auth-layout">
+<div class="auth-page">
 
-  <!-- Left: Branding Panel -->
-  <div class="brand-panel">
-    <img src="/assets/auth.bg.jpg" alt="" class="brand-bg" aria-hidden="true" />
-    <div class="brand-overlay"></div>
-    <div class="brand-inner">
-      <img src="/assets/ikigembe.log.png" alt="Ikigembe" class="brand-logo" />
-      <h2 class="brand-headline">Beyond the Passion,<br/>Their Purpose</h2>
-      <p class="brand-sub">Discover award-winning films, series and documentaries from across the continent.</p>
-    </div>
-  </div>
+  <img src="/assets/auth.bg.jpg" alt="" class="auth-bg-img" aria-hidden="true" />
+  <div class="auth-overlay"></div>
 
-  <!-- Right: Form Panel -->
-  <div class="form-panel">
-    <div class="form-inner">
-      <img src="/assets/ikigembe.log.png" alt="Ikigembe" class="form-logo" />
-      <div class="form-header">
-        <h1>Welcome back</h1>
-        <p>Sign in to continue watching</p>
-      </div>
+  <!-- Logo top-left -->
+  <nav class="auth-nav">
+    <img src="/assets/ikigembe.log.png" alt="Ikigembe" class="nav-logo" />
+  </nav>
+
+  <!-- Centered form card -->
+  <main class="auth-center">
+    <div class="form-card">
+
+      <h1 class="form-title">Sign In</h1>
+      <p class="form-subtitle">Welcome back — continue watching</p>
 
       <form [formGroup]="form" (ngSubmit)="onSubmit()" novalidate>
 
@@ -45,7 +40,7 @@
               id="password"
               [type]="showPassword() ? 'text' : 'password'"
               formControlName="password"
-              placeholder="Your password"
+              placeholder="Password"
               [autocomplete]="showPassword() ? 'off' : 'current-password'"
             />
             <button type="button" class="toggle-btn" (click)="showPassword.set(!showPassword())" tabindex="-1">
@@ -94,9 +89,10 @@
       <div #googleBtn class="google-btn-wrap"></div>
 
       <p class="alt-link">
-        Don't have an account? <a routerLink="/register">Create one</a>
+        New to Ikigembe? <a routerLink="/register">Sign up now</a>
       </p>
+
     </div>
-  </div>
+  </main>
 
 </div>

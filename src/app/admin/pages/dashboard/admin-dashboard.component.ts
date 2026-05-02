@@ -1,119 +1,182 @@
 import {
-  Component, signal, AfterViewInit, OnDestroy, ElementRef, ViewChild,
+  Component, signal, computed, inject, OnInit, OnDestroy,
+  AfterViewChecked, ViewChild, ElementRef, PLATFORM_ID,
 } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
+import { RouterLink } from '@angular/router';
+import { Subscription } from 'rxjs';
 import {
-  Chart, BarController, BarElement, CategoryScale, LinearScale, Tooltip,
+  Chart, CategoryScale, LinearScale, Tooltip,
+  LineController, LineElement, PointElement, Filler,
 } from 'chart.js';
+import { AdminService } from '../../services/admin.service';
+import type { DashboardOverview, RevenueTrendItem, TransactionHistory } from '../../models/admin.interface';
 
-Chart.register(BarController, BarElement, CategoryScale, LinearScale, Tooltip);
+Chart.register(CategoryScale, LinearScale, Tooltip, LineController, LineElement, PointElement, Filler);
 
-const MOCK = {
-  totalRevenue:      { amount: 124_563_000, growth: 12.5 },
-  commission:        { amount:  37_369_000, rate: 30 },
-  producerPayouts:   { amount:  87_194_000, rate: 70 },
-  pendingWithdrawals:{ amount:  12_450_000, count: 8 },
-  totalUsers:        { count: 45_231, growth: 8.2 },
-  activeProducers:   { count: 287,    growth: 15.3 },
-  moviesOnPlatform:  { count: 1_542,  newThisMonth: 24 },
-  totalViews:        { count: 2_400_000, growth: 18.5 },
-  revenueTrend: [
-    { label: 'Jan', revenue: 32_000_000, payouts: 15_000_000 },
-    { label: 'Feb', revenue: 38_000_000, payouts: 18_000_000 },
-    { label: 'Mar', revenue: 42_000_000, payouts: 22_000_000 },
-    { label: 'Apr', revenue: 45_000_000, payouts: 28_000_000 },
-    { label: 'May', revenue: 48_000_000, payouts: 35_000_000 },
-    { label: 'Jun', revenue: 55_000_000, payouts: 45_000_000 },
-  ],
-  withdrawalRequests: [
-    { producer: 'FitLife Productions', date: 'Apr 23, 2026', amount: 1_900_000, status: 'Pending'    },
-    { producer: 'Success Media',       date: 'Apr 22, 2026', amount: 2_100_000, status: 'Pending'    },
-    { producer: 'Design Pro Studios',  date: 'Apr 22, 2026', amount: 1_650_000, status: 'Processing' },
-    { producer: 'TechVision Studios',  date: 'Apr 21, 2026', amount: 3_200_000, status: 'Completed'  },
-    { producer: 'Chef Masters Inc',    date: 'Apr 20, 2026', amount: 1_450_000, status: 'Completed'  },
-  ],
-  topProducers: [
-    { name: 'Tech Vision Studios', revenue: 18_450_000, commission: 5_535_000, videos: 12, growth: 24 },
-    { name: 'Chef Masters Inc',    revenue: 14_920_000, commission: 4_476_000, videos:  8, growth: 18 },
-    { name: 'World Explorers',     revenue: 12_650_000, commission: 3_795_000, videos: 15, growth: 15 },
-    { name: 'FitLife Productions', revenue: 11_340_000, commission: 3_402_000, videos: 10, growth: 12 },
-    { name: 'Success Media',       revenue:  9_890_000, commission: 2_967_000, videos:  6, growth:  9 },
-  ],
-};
+type ChartTab = 'revenue' | 'commission' | 'producer';
 
 @Component({
   selector: 'app-admin-dashboard',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, RouterLink],
   templateUrl: './admin-dashboard.component.html',
   styleUrl: './admin-dashboard.component.scss',
 })
-export class AdminDashboardComponent implements AfterViewInit, OnDestroy {
-  @ViewChild('revenueChart') chartCanvas!: ElementRef<HTMLCanvasElement>;
+export class AdminDashboardComponent implements OnInit, AfterViewChecked, OnDestroy {
+  private readonly adminService = inject(AdminService);
+  private readonly platformId   = inject(PLATFORM_ID);
 
-  readonly data = MOCK;
-  isLoading = signal(false);
+  @ViewChild('trendChart') chartCanvas!: ElementRef<HTMLCanvasElement>;
+
+  overview  = signal<DashboardOverview | null>(null);
+  trend     = signal<RevenueTrendItem[]>([]);
+  txHistory = signal<TransactionHistory | null>(null);
+
+  loadingOverview = signal(true);
+  loadingTrend    = signal(true);
+  loadingTx       = signal(true);
+
+  activeTab = signal<ChartTab>('revenue');
+
+  readonly today = new Date().toLocaleDateString('en-GB', {
+    weekday: 'long', day: 'numeric', month: 'long', year: 'numeric',
+  });
+
+  totalRevenue   = computed(() => this.overview()?.financials.total_revenue     ?? 0);
+  totalComm      = computed(() => this.overview()?.financials.platform_commission ?? 0);
+  producerPayout = computed(() => this.overview()?.financials.producer_revenue   ?? 0);
+  pendingCount   = computed(() => this.txHistory()?.pending_withdrawals.length   ?? 0);
+  recentPayments = computed(() => (this.txHistory()?.payments ?? []).slice(0, 5));
 
   private chart: Chart | null = null;
+  private needsBuild = false;
+  private subs: Subscription[] = [];
 
-  initial(name: string): string {
-    return name.charAt(0).toUpperCase();
+  ngOnInit(): void {
+    this.loadOverview();
+    this.loadTrend();
+    this.loadTransactions();
   }
 
-  ngAfterViewInit(): void {
+  private loadOverview(): void {
+    this.subs.push(
+      this.adminService.getOverview().subscribe({
+        next: (d) => { this.overview.set(d); this.loadingOverview.set(false); },
+        error: ()  => { this.loadingOverview.set(false); },
+      })
+    );
+  }
+
+  private loadTrend(): void {
+    const to   = new Date();
+    const from = new Date(to);
+    from.setFullYear(from.getFullYear() - 1);
+    this.subs.push(
+      this.adminService.getRevenueTrend(
+        'monthly',
+        from.toISOString().slice(0, 10),
+        to.toISOString().slice(0, 10),
+      ).subscribe({
+        next: (d)  => { this.trend.set(d.trend ?? []); this.loadingTrend.set(false); this.needsBuild = true; },
+        error: ()  => { this.loadingTrend.set(false); },
+      })
+    );
+  }
+
+  private loadTransactions(): void {
+    this.subs.push(
+      this.adminService.getTransactions().subscribe({
+        next: (d) => { this.txHistory.set(d); this.loadingTx.set(false); },
+        error: ()  => { this.loadingTx.set(false); },
+      })
+    );
+  }
+
+  setTab(tab: ChartTab): void {
+    this.activeTab.set(tab);
+    this.buildChart();
+  }
+
+  ngAfterViewChecked(): void {
+    if (!this.needsBuild || !isPlatformBrowser(this.platformId) || !this.chartCanvas?.nativeElement) return;
+    this.needsBuild = false;
     this.buildChart();
   }
 
   private buildChart(): void {
-    const canvas = this.chartCanvas?.nativeElement;
-    if (!canvas) return;
     this.chart?.destroy();
-    this.chart = new Chart(canvas, {
-      type: 'bar',
+    if (!this.chartCanvas?.nativeElement) return;
+
+    const data   = this.trend();
+    const tab    = this.activeTab();
+    const labels = data.map(d => this.shortMonth(d.period_start));
+
+    const colorMap: Record<ChartTab, string> = {
+      revenue:    '#C8A84B',
+      commission: '#818cf8',
+      producer:   '#34d399',
+    };
+    const dataMap: Record<ChartTab, number[]> = {
+      revenue:    data.map(d => d.total_revenue),
+      commission: data.map(d => d.platform_commission),
+      producer:   data.map(d => d.producer_share),
+    };
+
+    const color = colorMap[tab];
+    this.chart = new Chart(this.chartCanvas.nativeElement, {
+      type: 'line',
       data: {
-        labels: MOCK.revenueTrend.map(r => r.label),
-        datasets: [
-          {
-            label: 'Total Revenue',
-            data: MOCK.revenueTrend.map(r => r.revenue / 1_000_000),
-            backgroundColor: '#2dd4bf',
-            borderRadius: 4,
-            borderSkipped: false,
-          },
-          {
-            label: 'Producer Payouts',
-            data: MOCK.revenueTrend.map(r => r.payouts / 1_000_000),
-            backgroundColor: '#C8A84B',
-            borderRadius: 4,
-            borderSkipped: false,
-          },
-        ],
+        labels,
+        datasets: [{
+          data: dataMap[tab],
+          borderColor: color,
+          backgroundColor: color + '18',
+          fill: true,
+          tension: 0.45,
+          pointRadius: 4,
+          pointHoverRadius: 7,
+          pointBackgroundColor: color,
+          pointBorderColor: '#0f0f0f',
+          pointBorderWidth: 2,
+          borderWidth: 2.5,
+        }],
       },
       options: {
         responsive: true,
         maintainAspectRatio: false,
+        interaction: { mode: 'index', intersect: false },
         plugins: {
           legend: { display: false },
           tooltip: {
-            backgroundColor: '#1a1a1a',
-            titleColor: '#999',
-            bodyColor: '#fff',
+            backgroundColor: '#1c1c1c',
             borderColor: '#333',
             borderWidth: 1,
-            callbacks: { label: ctx => ` RWF ${(ctx.parsed.y as number).toFixed(1)}M` },
+            titleColor: '#888',
+            bodyColor: '#e5e5e5',
+            padding: 10,
+            callbacks: {
+              label: (ctx) => `  ${this.fmt(ctx.parsed.y as number)}`,
+            },
           },
         },
         scales: {
           x: {
-            grid: { color: 'rgba(255,255,255,0.05)' },
-            ticks: { color: '#666', font: { size: 12 } },
-            border: { color: 'transparent' },
+            ticks: { color: '#555', font: { size: 11 } },
+            grid: { display: false },
+            border: { display: false },
           },
           y: {
-            grid: { color: 'rgba(255,255,255,0.05)' },
-            ticks: { color: '#666', font: { size: 11 }, callback: v => v + 'M' },
-            border: { color: 'transparent' },
-            beginAtZero: true,
+            ticks: {
+              color: '#555',
+              font: { size: 11 },
+              callback: (v) =>
+                Number(v) >= 1_000_000 ? (Number(v) / 1_000_000).toFixed(1) + 'M' :
+                Number(v) >= 1_000     ? (Number(v) / 1_000).toFixed(0) + 'K' :
+                String(v),
+            },
+            grid: { color: 'rgba(255,255,255,0.04)' },
+            border: { display: false },
           },
         },
       },
@@ -132,5 +195,19 @@ export class AdminDashboardComponent implements AfterViewInit, OnDestroy {
     return n.toLocaleString();
   }
 
-  ngOnDestroy(): void { this.chart?.destroy(); }
+  fmtDate(s: string): string {
+    return new Date(s).toLocaleDateString('en-GB', {
+      day: 'numeric', month: 'short', year: 'numeric',
+    });
+  }
+
+  private shortMonth(s: string): string {
+    if (!s) return '';
+    return new Date(s).toLocaleDateString('en-US', { month: 'short', year: '2-digit' });
+  }
+
+  ngOnDestroy(): void {
+    this.subs.forEach(s => s.unsubscribe());
+    this.chart?.destroy();
+  }
 }

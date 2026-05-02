@@ -36,6 +36,12 @@ export class TopMoviesComponent implements OnInit, OnDestroy {
     if (range.start && range.end) this.load();
   }
 
+  setDateRange(from: string, to: string): void {
+    this.dateFrom.set(from);
+    this.dateTo.set(to);
+    this.load();
+  }
+
   load(): void {
     this.sub?.unsubscribe();
     this.isLoading.set(true);

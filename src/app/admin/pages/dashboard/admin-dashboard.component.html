@@ -3,183 +3,256 @@
   <!-- ── Header ── -->
   <div class="dash-header">
     <div>
-      <h1>Admin Dashboard</h1>
-      <p>Platform revenue &amp; producer management</p>
+      <h1>Dashboard</h1>
+      <p>{{ today }}</p>
     </div>
-    <div class="total-revenue-banner">
-      <span class="banner-label">Total Platform Revenue</span>
-      <span class="banner-value">{{ fmt(data.totalRevenue.amount) }}</span>
-    </div>
+    <a routerLink="/admin/reports" class="btn-reports">
+      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 14H7v-2h5v2zm5-4H7v-2h10v2zm0-4H7V7h10v2z"/></svg>
+      Full Reports
+    </a>
   </div>
 
-  <!-- ── 8 KPI cards (2 × 4 grid) ── -->
-  <div class="kpi-grid">
+  <!-- ── Metric KPI cards (drive the chart) ── -->
+  <div class="kpi-row">
 
-    <div class="kpi-card">
-      <div class="kpi-top">
-        <div class="kpi-icon green">
-          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M11.8 10.9c-2.27-.59-3-1.2-3-2.15 0-1.09 1.01-1.85 2.7-1.85 1.78 0 2.44.85 2.5 2.1h2.21c-.07-1.72-1.12-3.3-3.21-3.81V3h-3v2.16c-1.94.42-3.5 1.68-3.5 3.61 0 2.31 1.91 3.46 4.7 4.13 2.5.6 3 1.48 3 2.41 0 .69-.49 1.79-2.7 1.79-2.06 0-2.87-.92-2.98-2.1h-2.2c.12 2.19 1.76 3.42 3.68 3.83V21h3v-2.15c1.95-.37 3.5-1.5 3.5-3.55 0-2.84-2.43-3.81-4.7-4.4z"/></svg>
-        </div>
-        <span class="kpi-badge success">+{{ data.totalRevenue.growth }}%</span>
+    <div class="kpi-card" [class.active-gold]="activeTab() === 'revenue'" (click)="setTab('revenue')">
+      <div class="kpi-bar"></div>
+      <div class="kpi-icon icon-gold">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M11.8 10.9c-2.27-.59-3-1.2-3-2.15 0-1.09 1.01-1.85 2.7-1.85 1.78 0 2.44.85 2.5 2.1h2.21c-.07-1.72-1.12-3.3-3.21-3.81V3h-3v2.16c-1.94.42-3.5 1.68-3.5 3.61 0 2.31 1.91 3.46 4.7 4.13 2.5.6 3 1.48 3 2.41 0 .69-.49 1.79-2.7 1.79-2.06 0-2.87-.92-2.98-2.1h-2.2c.12 2.19 1.76 3.42 3.68 3.83V21h3v-2.15c1.95-.37 3.5-1.5 3.5-3.55 0-2.84-2.43-3.81-4.7-4.4z"/></svg>
       </div>
-      <div class="kpi-value">{{ fmt(data.totalRevenue.amount) }}</div>
-      <div class="kpi-label">Total Revenue (This Month)</div>
+      <div class="kpi-label">Total Revenue</div>
+      <div class="kpi-value">
+        @if (loadingOverview()) { <span class="skel skel-val"></span> }
+        @else { {{ fmt(totalRevenue()) }} }
+      </div>
     </div>
 
-    <div class="kpi-card">
-      <div class="kpi-top">
-        <div class="kpi-icon teal">
-          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M16 6l2.29 2.29-4.88 4.88-4-4L2 16.59 3.41 18l6-6 4 4 6.3-6.29L22 12V6h-6z"/></svg>
-        </div>
-        <span class="kpi-badge neutral">{{ data.commission.rate }}%</span>
+    <div class="kpi-card" [class.active-purple]="activeTab() === 'commission'" (click)="setTab('commission')">
+      <div class="kpi-bar"></div>
+      <div class="kpi-icon icon-purple">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M16 6l2.29 2.29-4.88 4.88-4-4L2 16.59 3.41 18l6-6 4 4 6.3-6.29L22 12V6h-6z"/></svg>
       </div>
-      <div class="kpi-value">{{ fmt(data.commission.amount) }}</div>
       <div class="kpi-label">Platform Commission</div>
+      <div class="kpi-value">
+        @if (loadingOverview()) { <span class="skel skel-val"></span> }
+        @else { {{ fmt(totalComm()) }} }
+      </div>
     </div>
 
-    <div class="kpi-card">
-      <div class="kpi-top">
-        <div class="kpi-icon teal">
-          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M21 18v1c0 1.1-.9 2-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14c1.1 0 2 .9 2 2v1h-9a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h9zm-9-2h10V8H12v8zm4-2.5a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3z"/></svg>
-        </div>
-        <span class="kpi-badge neutral">{{ data.producerPayouts.rate }}%</span>
+    <div class="kpi-card" [class.active-teal]="activeTab() === 'producer'" (click)="setTab('producer')">
+      <div class="kpi-bar"></div>
+      <div class="kpi-icon icon-teal">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M21 18v1c0 1.1-.9 2-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14c1.1 0 2 .9 2 2v1h-9a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h9zm-9-2h10V8H12v8zm4-2.5a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3z"/></svg>
       </div>
-      <div class="kpi-value">{{ fmt(data.producerPayouts.amount) }}</div>
       <div class="kpi-label">Producer Payouts</div>
-    </div>
-
-    <div class="kpi-card">
-      <div class="kpi-top">
-        <div class="kpi-icon gold">
-          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67V7z"/></svg>
-        </div>
-        <span class="kpi-badge warning">{{ data.pendingWithdrawals.count }} pending</span>
+      <div class="kpi-value">
+        @if (loadingOverview()) { <span class="skel skel-val"></span> }
+        @else { {{ fmt(producerPayout()) }} }
       </div>
-      <div class="kpi-value">{{ fmt(data.pendingWithdrawals.amount) }}</div>
-      <div class="kpi-label">Pending Withdrawals</div>
-    </div>
-
-    <div class="kpi-card">
-      <div class="kpi-top">
-        <div class="kpi-icon teal">
-          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg>
-        </div>
-        <span class="kpi-badge success">+{{ data.totalUsers.growth }}%</span>
-      </div>
-      <div class="kpi-value">{{ fmtNum(data.totalUsers.count) }}</div>
-      <div class="kpi-label">Total Users</div>
-    </div>
-
-    <div class="kpi-card">
-      <div class="kpi-top">
-        <div class="kpi-icon teal">
-          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
-        </div>
-        <span class="kpi-badge success">+{{ data.activeProducers.growth }}%</span>
-      </div>
-      <div class="kpi-value">{{ fmtNum(data.activeProducers.count) }}</div>
-      <div class="kpi-label">Active Producers</div>
-    </div>
-
-    <div class="kpi-card">
-      <div class="kpi-top">
-        <div class="kpi-icon teal">
-          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M18 4l2 4h-3l-2-4h-2l2 4h-3l-2-4H8l2 4H7L5 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V4h-4z"/></svg>
-        </div>
-        <span class="kpi-badge success">+{{ data.moviesOnPlatform.newThisMonth }} new</span>
-      </div>
-      <div class="kpi-value">{{ fmtNum(data.moviesOnPlatform.count) }}</div>
-      <div class="kpi-label">Movies on Platform</div>
-    </div>
-
-    <div class="kpi-card">
-      <div class="kpi-top">
-        <div class="kpi-icon teal">
-          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg>
-        </div>
-        <span class="kpi-badge success">+{{ data.totalViews.growth }}%</span>
-      </div>
-      <div class="kpi-value">{{ fmtNum(data.totalViews.count) }}</div>
-      <div class="kpi-label">Total Views (This Month)</div>
     </div>
 
   </div>
 
-  <!-- ── Two-column: Chart + Withdrawal Requests ── -->
-  <div class="dash-two-col">
+  <!-- ── Platform stats (secondary metrics, linkable) ── -->
+  <div class="stats-row">
 
-    <div class="chart-card">
-      <div class="chart-hd">
-        <h2>Revenue Breakdown</h2>
-        <div class="chart-legend">
-          <span class="legend-dot teal-dot"></span><span>Total Revenue</span>
-          <span class="legend-dot gold-dot"></span><span>Producer Payouts</span>
-        </div>
+    <a routerLink="/admin/users" class="stat-card">
+      <div class="stat-icon icon-teal">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg>
       </div>
-      <div class="chart-body">
-        <canvas #revenueChart></canvas>
+      <div class="stat-body">
+        <div class="stat-value">
+          @if (loadingOverview()) { <span class="skel skel-sm"></span> }
+          @else { {{ fmtNum(overview()?.total_viewers ?? 0) }} }
+        </div>
+        <div class="stat-label">Total Users</div>
+      </div>
+      <svg class="stat-arrow" viewBox="0 0 24 24" fill="currentColor"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6z"/></svg>
+    </a>
+
+    <a routerLink="/admin/producers" class="stat-card">
+      <div class="stat-icon icon-teal">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 14.5v-9l6 4.5-6 4.5z"/></svg>
+      </div>
+      <div class="stat-body">
+        <div class="stat-value">
+          @if (loadingOverview()) { <span class="skel skel-sm"></span> }
+          @else { {{ fmtNum(overview()?.total_producers ?? 0) }} }
+        </div>
+        <div class="stat-label">Producers</div>
+      </div>
+      <svg class="stat-arrow" viewBox="0 0 24 24" fill="currentColor"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6z"/></svg>
+    </a>
+
+    <a routerLink="/admin/movies" class="stat-card">
+      <div class="stat-icon icon-teal">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M18 4l2 4h-3l-2-4h-2l2 4h-3l-2-4H8l2 4H7L5 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V4h-4z"/></svg>
+      </div>
+      <div class="stat-body">
+        <div class="stat-value">
+          @if (loadingOverview()) { <span class="skel skel-sm"></span> }
+          @else { {{ fmtNum(overview()?.total_movies ?? 0) }} }
+        </div>
+        <div class="stat-label">Movies</div>
+      </div>
+      <svg class="stat-arrow" viewBox="0 0 24 24" fill="currentColor"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6z"/></svg>
+    </a>
+
+    <a routerLink="/admin/withdrawals" class="stat-card" [class.stat-urgent]="pendingCount() > 0">
+      <div class="stat-icon" [class.icon-gold]="pendingCount() > 0" [class.icon-teal]="pendingCount() === 0">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67V7z"/></svg>
+      </div>
+      <div class="stat-body">
+        <div class="stat-value">
+          @if (loadingTx()) { <span class="skel skel-sm"></span> }
+          @else { {{ pendingCount() }} }
+        </div>
+        <div class="stat-label">Pending Withdrawals</div>
+      </div>
+      @if (pendingCount() > 0) {
+        <span class="stat-badge">Action needed</span>
+      } @else {
+        <svg class="stat-arrow" viewBox="0 0 24 24" fill="currentColor"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6z"/></svg>
+      }
+    </a>
+
+  </div>
+
+  <!-- ── Revenue Trend Chart ── -->
+  <div class="chart-card">
+    <div class="chart-hd">
+      <div>
+        <h2>Revenue Trend</h2>
+        <p class="chart-sub">Last 12 months · monthly</p>
+      </div>
+      <div class="chart-tabs">
+        <button [class.active]="activeTab() === 'revenue'"    (click)="setTab('revenue')">Revenue</button>
+        <button [class.active]="activeTab() === 'commission'" (click)="setTab('commission')">Commission</button>
+        <button [class.active]="activeTab() === 'producer'"   (click)="setTab('producer')">Payouts</button>
       </div>
     </div>
+    <div class="chart-body">
+      @if (loadingTrend()) {
+        <div class="chart-skel">
+          @for (_ of [60, 80, 50, 95, 70, 85, 55, 90, 65, 75, 88, 72]; track $index) {
+            <div class="skel skel-bar" [style.height.%]="_"></div>
+          }
+        </div>
+      } @else if (trend().length === 0) {
+        <p class="empty-msg">No trend data available.</p>
+      } @else {
+        <canvas #trendChart></canvas>
+      }
+    </div>
+  </div>
 
-    <div class="withdraw-card">
-      <h2 class="wr-title">Withdrawal Requests</h2>
-      <div class="wr-list">
-        @for (w of data.withdrawalRequests; track w.producer + w.date) {
-          <div class="wr-item">
-            <div class="wr-info">
-              <span class="wr-producer">{{ w.producer }}</span>
-              <span class="wr-date">{{ w.date }}</span>
+  <!-- ── Bottom row ── -->
+  <div class="bottom-row">
+
+    <!-- Recent Payments -->
+    <div class="panel-card">
+      <div class="panel-hd">
+        <h2>Recent Payments</h2>
+        <a routerLink="/admin/users" class="see-all">View all →</a>
+      </div>
+
+      @if (loadingTx()) {
+        @for (_ of [1,2,3,4,5]; track $index) {
+          <div class="act-skel">
+            <span class="skel skel-avatar"></span>
+            <div class="act-skel-text">
+              <span class="skel" style="width: 55%; height: 12px"></span>
+              <span class="skel" style="width: 40%; height: 10px; margin-top: 4px"></span>
             </div>
-            <div class="wr-right">
-              <span class="wr-amount">{{ fmt(w.amount) }}</span>
-              <span class="wr-badge"
-                [class.pending]="w.status === 'Pending'"
-                [class.processing]="w.status === 'Processing'"
-                [class.completed]="w.status === 'Completed'">
-                {{ w.status }}
-              </span>
+            <span class="skel" style="width: 68px; height: 12px; margin-left: auto"></span>
+          </div>
+        }
+      } @else if (recentPayments().length === 0) {
+        <p class="empty-msg">No recent payments.</p>
+      } @else {
+        @for (p of recentPayments(); track p.id) {
+          <div class="act-item">
+            <div class="act-avatar">{{ p.user.charAt(0).toUpperCase() }}</div>
+            <div class="act-info">
+              <span class="act-name">{{ p.user }}</span>
+              <span class="act-movie">{{ p.movie_title }}</span>
+            </div>
+            <div class="act-right">
+              <span class="act-amount">{{ fmt(p.amount) }}</span>
+              <span class="act-date">{{ fmtDate(p.created_at) }}</span>
             </div>
           </div>
         }
+      }
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="panel-card">
+      <div class="panel-hd">
+        <h2>Quick Actions</h2>
       </div>
-    </div>
 
-  </div>
-
-  <!-- ── Top Producers ── -->
-  <div class="producers-card">
-    <div class="pc-header">
-      <h2>Top Producers</h2>
-    </div>
-    <div class="pc-table-wrap">
-      <table>
-        <thead>
-          <tr>
-            <th>Producer</th>
-            <th>Total Revenue</th>
-            <th>Platform Commission</th>
-            <th>Content</th>
-            <th>Growth</th>
-          </tr>
-        </thead>
-        <tbody>
-          @for (p of data.topProducers; track p.name) {
-            <tr>
-              <td>
-                <div class="producer-cell">
-                  <span class="producer-avatar">{{ initial(p.name) }}</span>
-                  <span class="producer-name">{{ p.name }}</span>
-                </div>
-              </td>
-              <td class="t-white">{{ fmt(p.revenue) }}</td>
-              <td class="t-gold">{{ fmt(p.commission) }}</td>
-              <td class="t-muted">{{ p.videos }} videos</td>
-              <td class="t-green">+{{ p.growth }}%</td>
-            </tr>
+      <a routerLink="/admin/withdrawals" class="qa-item" [class.qa-urgent]="pendingCount() > 0">
+        <div class="qa-icon icon-gold">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M11.8 10.9c-2.27-.59-3-1.2-3-2.15 0-1.09 1.01-1.85 2.7-1.85 1.78 0 2.44.85 2.5 2.1h2.21c-.07-1.72-1.12-3.3-3.21-3.81V3h-3v2.16c-1.94.42-3.5 1.68-3.5 3.61 0 2.31 1.91 3.46 4.7 4.13 2.5.6 3 1.48 3 2.41 0 .69-.49 1.79-2.7 1.79-2.06 0-2.87-.92-2.98-2.1h-2.2c.12 2.19 1.76 3.42 3.68 3.83V21h3v-2.15c1.95-.37 3.5-1.5 3.5-3.55 0-2.84-2.43-3.81-4.7-4.4z"/></svg>
+        </div>
+        <div class="qa-text">
+          <span class="qa-title">Manage Withdrawals</span>
+          @if (pendingCount() > 0) {
+            <span class="qa-badge">{{ pendingCount() }} pending</span>
+          } @else {
+            <span class="qa-sub">No pending requests</span>
           }
-        </tbody>
-      </table>
+        </div>
+        <svg class="qa-arrow" viewBox="0 0 24 24" fill="currentColor"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6z"/></svg>
+      </a>
+
+      <a routerLink="/admin/producers" class="qa-item">
+        <div class="qa-icon icon-teal">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 14.5v-9l6 4.5-6 4.5z"/></svg>
+        </div>
+        <div class="qa-text">
+          <span class="qa-title">Manage Producers</span>
+          <span class="qa-sub">Approve, suspend, view reports</span>
+        </div>
+        <svg class="qa-arrow" viewBox="0 0 24 24" fill="currentColor"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6z"/></svg>
+      </a>
+
+      <a routerLink="/admin/users" class="qa-item">
+        <div class="qa-icon icon-teal">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg>
+        </div>
+        <div class="qa-text">
+          <span class="qa-title">Manage Users</span>
+          <span class="qa-sub">View, suspend, payment history</span>
+        </div>
+        <svg class="qa-arrow" viewBox="0 0 24 24" fill="currentColor"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6z"/></svg>
+      </a>
+
+      <a routerLink="/admin/movies/create" class="qa-item">
+        <div class="qa-icon icon-purple">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
+        </div>
+        <div class="qa-text">
+          <span class="qa-title">Upload Movie</span>
+          <span class="qa-sub">Add new content to the platform</span>
+        </div>
+        <svg class="qa-arrow" viewBox="0 0 24 24" fill="currentColor"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6z"/></svg>
+      </a>
+
+      <a routerLink="/admin/reports" class="qa-item">
+        <div class="qa-icon icon-purple">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 14H7v-2h5v2zm5-4H7v-2h10v2zm0-4H7V7h10v2z"/></svg>
+        </div>
+        <div class="qa-text">
+          <span class="qa-title">Full Reports</span>
+          <span class="qa-sub">Revenue, top movies, user growth</span>
+        </div>
+        <svg class="qa-arrow" viewBox="0 0 24 24" fill="currentColor"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6z"/></svg>
+      </a>
+
     </div>
+
   </div>
 
 </div>

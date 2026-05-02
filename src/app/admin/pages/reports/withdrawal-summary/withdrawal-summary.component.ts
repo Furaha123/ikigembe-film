@@ -46,6 +46,12 @@ export class WithdrawalSummaryComponent implements OnInit, AfterViewChecked, OnD
     if (range.start && range.end) this.load();
   }
 
+  setDateRange(from: string, to: string): void {
+    this.dateFrom.set(from);
+    this.dateTo.set(to);
+    this.load();
+  }
+
   load(): void {
     this.sub?.unsubscribe();
     this.isLoading.set(true);

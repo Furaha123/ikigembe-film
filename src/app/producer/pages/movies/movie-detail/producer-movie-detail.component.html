@@ -1,137 +1,454 @@
 <div class="detail-page">
 
-  <div class="top-bar">
-    <button class="btn-back" (click)="back()">
-      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M15.41 16.59L10.83 12l4.58-4.59L14 6l-6 6 6 6z"/></svg>
-      Back to My Movies
-    </button>
-    @if (movie()) {
-      <button class="btn-watch" (click)="watchMovie()">
-        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
-        Watch Movie
+  <!-- ═══════════════════════════════════════════ SIDEBAR ═══ -->
+  <aside class="sidebar">
+
+    <div class="sidebar-top">
+      <button class="back-btn" (click)="back()">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
+        My Content
       </button>
-    }
-  </div>
-
-  @if (isLoading()) {
-    <div class="skeleton-wrap">
-      <div class="skel hero"></div>
-      <div class="skel-kpis">
-        @for (i of [1,2,3,4]; track i) { <div class="skel kpi"></div> }
-      </div>
-      <div class="skel body-text"></div>
     </div>
-  } @else if (hasError()) {
-    <div class="error-state">
-      <p>Failed to load movie details.</p>
-      <button class="btn-retry" (click)="back()">Go back</button>
-    </div>
-  } @else if (movie()) {
 
-    <div class="hero" [style.background-image]="movie()!.backdrop_url ? 'url(' + movie()!.backdrop_url + ')' : 'none'">
-      <div class="hero-overlay">
+    @if (movie()) {
+      <div class="sidebar-movie">
         @if (movie()!.thumbnail_url) {
-          <img class="poster" [src]="movie()!.thumbnail_url" [alt]="movie()!.title" />
-        }
-        <div class="hero-info">
-          <div class="badges">
-            <span class="badge" [class.badge-active]="movie()!.is_active" [class.badge-inactive]="!movie()!.is_active">
-              {{ movie()!.is_active ? 'Active' : 'Inactive' }}
-            </span>
-            @if (movie()!.has_free_preview) {
-              <span class="badge badge-preview">Free Preview</span>
-            }
-            <span class="badge" [class]="hlsClass(movie()!.hls_status)">
-              HLS: {{ hlsLabel(movie()!.hls_status) }}
-            </span>
+          <img class="sb-thumb" [src]="movie()!.thumbnail_url" [alt]="movie()!.title" />
+        } @else {
+          <div class="sb-thumb-ph">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+              <rect x="2" y="2" width="20" height="20" rx="2"/><path d="M10 8l6 4-6 4V8z"/>
+            </svg>
           </div>
-          <h1>{{ movie()!.title }}</h1>
-          @if (movie()!.genres) {
-            <p class="genres">{{ movie()!.genres }}</p>
-          }
-        </div>
-      </div>
-    </div>
-
-    <div class="kpi-grid">
-      <div class="kpi-card">
-        <div class="kpi-icon views">
-          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg>
-        </div>
-        <div class="kpi-body">
-          <span class="kpi-value">{{ movie()!.views | number }}</span>
-          <span class="kpi-label">Total Views</span>
+        }
+        <div class="sb-movie-info">
+          <span class="sb-label">Your movie</span>
+          <span class="sb-title">{{ movie()!.title }}</span>
         </div>
       </div>
 
-      <div class="kpi-card">
-        <div class="kpi-icon price">
-          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M11.8 10.9c-2.27-.59-3-1.2-3-2.15 0-1.09 1.01-1.85 2.7-1.85 1.78 0 2.44.85 2.5 2.1h2.21c-.07-1.72-1.12-3.3-3.21-3.81V3h-3v2.16c-1.94.42-3.5 1.68-3.5 3.61 0 2.31 1.91 3.46 4.7 4.13 2.5.6 3 1.48 3 2.41 0 .69-.49 1.79-2.7 1.79-2.06 0-2.87-.92-2.98-2.1h-2.2c.12 2.19 1.76 3.42 3.68 3.83V21h3v-2.15c1.95-.37 3.5-1.5 3.5-3.55 0-2.84-2.43-3.81-4.7-4.4z"/></svg>
-        </div>
-        <div class="kpi-body">
-          <span class="kpi-value">{{ fmt(movie()!.price) }}</span>
-          <span class="kpi-label">Price</span>
-        </div>
+      <nav class="sidebar-nav">
+        <button class="nav-item" [class.active]="activeTab() === 'details'" (click)="setTab('details')">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6zm-1 1.5L18.5 9H13V3.5zM6 20V4h5v7h7v9H6z"/></svg>
+          Details
+        </button>
+        <button class="nav-item" [class.active]="activeTab() === 'analytics'" (click)="setTab('analytics')">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/></svg>
+          Analytics
+        </button>
+      </nav>
+    }
+
+  </aside>
+
+  <!-- ════════════════════════════════════════ MAIN CONTENT ═ -->
+  <main class="main-content">
+
+    <!-- Loading -->
+    @if (isLoading()) {
+      <div class="skel-wrap">
+        <div class="skel skel-title"></div>
+        <div class="skel skel-block"></div>
+        <div class="skel skel-sm"></div>
       </div>
 
-      <div class="kpi-card">
-        <div class="kpi-icon duration">
-          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67V7z"/></svg>
-        </div>
-        <div class="kpi-body">
-          <span class="kpi-value">{{ movie()!.duration_minutes ?? '—' }}{{ movie()!.duration_minutes ? ' min' : '' }}</span>
-          <span class="kpi-label">Duration</span>
-        </div>
+    <!-- Error -->
+    } @else if (hasError()) {
+      <div class="error-state">
+        <p>Failed to load movie details.</p>
+        <button class="btn-retry" (click)="back()">Go back</button>
       </div>
-    </div>
 
-    <div class="detail-body">
-      @if (movie()!.overview) {
-        <div class="detail-section">
-          <h2>Overview</h2>
-          <p>{{ movie()!.overview }}</p>
+    } @else if (movie()) {
+
+      <!-- ─────────────────────── DETAILS VIEW ─────────────── -->
+      @if (activeTab() === 'details') {
+
+        <div class="view-header">
+          <h1>Movie details</h1>
+          <button class="btn-watch" (click)="watchMovie()">
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+            Watch Movie
+          </button>
+        </div>
+
+        <div class="details-layout">
+
+          <!-- Left: info fields -->
+          <div class="details-left">
+            <div class="field-block">
+              <div class="field-label">Title</div>
+              <div class="field-value title-value">{{ movie()!.title }}</div>
+            </div>
+
+            @if (movie()!.overview) {
+              <div class="field-block">
+                <div class="field-label">Overview</div>
+                <p class="field-value overview-text">{{ movie()!.overview }}</p>
+              </div>
+            }
+
+            @if (movie()!.cast) {
+              <div class="field-block">
+                <div class="field-label">Cast</div>
+                <div class="field-value">{{ movie()!.cast }}</div>
+              </div>
+            }
+
+            @if (movie()!.genres) {
+              <div class="field-block">
+                <div class="field-label">Genres</div>
+                <div class="field-value">{{ movie()!.genres }}</div>
+              </div>
+            }
+
+            @if (movie()!.producer) {
+              <div class="field-block">
+                <div class="field-label">Producer</div>
+                <div class="field-value">{{ movie()!.producer }}</div>
+              </div>
+            }
+          </div>
+
+          <!-- Right: poster + metadata -->
+          <div class="details-right">
+            @if (movie()!.thumbnail_url) {
+              <div class="poster-wrap">
+                <img class="poster-img" [src]="movie()!.thumbnail_url" [alt]="movie()!.title" />
+              </div>
+            }
+
+            <div class="meta-panel">
+              <div class="meta-row">
+                <span class="meta-label">Status</span>
+                <span class="status-badge"
+                      [class.badge-active]="movie()!.is_active"
+                      [class.badge-inactive]="!movie()!.is_active">
+                  <span class="status-dot"></span>
+                  {{ movie()!.is_active ? 'Active' : 'Inactive' }}
+                </span>
+              </div>
+
+              <div class="meta-row">
+                <span class="meta-label">Price</span>
+                <span class="meta-value gold">{{ fmt(movie()!.price) }}</span>
+              </div>
+
+              <div class="meta-row">
+                <span class="meta-label">Views</span>
+                <span class="meta-value">{{ fmtNum(movie()!.views) }}</span>
+              </div>
+
+              @if (movie()!.duration_minutes) {
+                <div class="meta-row">
+                  <span class="meta-label">Duration</span>
+                  <span class="meta-value">{{ movie()!.duration_minutes }} min</span>
+                </div>
+              }
+
+              <div class="meta-row">
+                <span class="meta-label">HLS</span>
+                <span class="hls-badge" [class]="hlsClass(movie()!.hls_status)">
+                  {{ hlsLabel(movie()!.hls_status) }}
+                </span>
+              </div>
+
+              @if (movie()!.has_free_preview) {
+                <div class="meta-row">
+                  <span class="meta-label">Free Preview</span>
+                  <span class="meta-value gold">Enabled</span>
+                </div>
+              }
+
+              <div class="meta-row">
+                <span class="meta-label">Release date</span>
+                <span class="meta-value">{{ movie()!.release_date | date:'d MMM yyyy' }}</span>
+              </div>
+
+              <div class="meta-row">
+                <span class="meta-label">Uploaded</span>
+                <span class="meta-value">{{ movie()!.created_at | date:'d MMM yyyy' }}</span>
+              </div>
+
+              <div class="meta-row">
+                <span class="meta-label">Last updated</span>
+                <span class="meta-value">{{ movie()!.updated_at | date:'d MMM yyyy' }}</span>
+              </div>
+            </div>
+          </div>
+
         </div>
       }
 
-      <div class="detail-grid">
-        @if (movie()!.cast) {
-          <div class="detail-item">
-            <span class="detail-label">Cast</span>
-            <span class="detail-value">{{ movie()!.cast }}</span>
+      <!-- ──────────────────────── ANALYTICS VIEW ───────────── -->
+      @if (activeTab() === 'analytics') {
+
+        <div class="view-header analytics-view-header">
+          <h1>Movie analytics</h1>
+          <div class="analytics-header-right">
+            <div class="analytics-date-controls">
+              <div class="quick-ranges">
+                @for (r of ranges; track r) {
+                  <button class="range-btn"
+                          [class.active]="selectedRange() === r"
+                          (click)="setRange(r)">{{ r }}</button>
+                }
+              </div>
+              <div class="custom-range">
+                <input type="date" />
+                <span class="range-sep">to</span>
+                <input type="date" />
+              </div>
+            </div>
+            <button class="btn-advanced" (click)="openAdvanced()">Advanced mode</button>
           </div>
-        }
-        @if (movie()!.genres) {
-          <div class="detail-item">
-            <span class="detail-label">Genres</span>
-            <span class="detail-value">{{ movie()!.genres }}</span>
-          </div>
-        }
-        @if (movie()!.producer) {
-          <div class="detail-item">
-            <span class="detail-label">Producer</span>
-            <span class="detail-value">{{ movie()!.producer }}</span>
-          </div>
-        }
-        <div class="detail-item">
-          <span class="detail-label">Release Date</span>
-          <span class="detail-value">{{ movie()!.release_date | date:'longDate' }}</span>
         </div>
-        <div class="detail-item">
-          <span class="detail-label">Uploaded</span>
-          <span class="detail-value">{{ movie()!.created_at | date:'dd MMM yyyy, HH:mm' }}</span>
-        </div>
-        <div class="detail-item">
-          <span class="detail-label">Last Updated</span>
-          <span class="detail-value">{{ movie()!.updated_at | date:'dd MMM yyyy, HH:mm' }}</span>
-        </div>
-        @if (movie()!.trailer_duration_seconds) {
-          <div class="detail-item">
-            <span class="detail-label">Trailer Duration</span>
-            <span class="detail-value">{{ movie()!.trailer_duration_seconds }} sec</span>
+
+        <div class="analytics-body">
+
+          <!-- Left: main analytics -->
+          <div class="analytics-main">
+
+            <!-- Summary card -->
+            <div class="summary-card">
+              <p class="summary-text">
+                This movie has had
+                @if (movie()!.views === 0) {
+                  <strong>no views</strong>
+                } @else if (movie()!.views === 1) {
+                  <strong>one view</strong>
+                } @else {
+                  <strong>{{ fmtNum(movie()!.views) }} views</strong>
+                }
+                since it was published
+              </p>
+
+              <!-- Clickable KPI tiles -->
+              <div class="kpi-tiles">
+                <div class="kpi-tile"
+                     [class.active]="metric() === 'views'"
+                     (click)="setMetric('views')">
+                  <div class="kpi-tile-label">Views</div>
+                  <div class="kpi-tile-value">{{ fmtNum(movie()!.views) }}</div>
+                </div>
+                <div class="kpi-tile"
+                     [class.active]="metric() === 'watchTime'"
+                     (click)="setMetric('watchTime')">
+                  <div class="kpi-tile-label">Watch time (hours)</div>
+                  <div class="kpi-tile-value">{{ estimatedWatchTime() }}</div>
+                </div>
+                <div class="kpi-tile"
+                     [class.active]="metric() === 'revenue'"
+                     (click)="setMetric('revenue')">
+                  <div class="kpi-tile-label">Revenue</div>
+                  <div class="kpi-tile-value">{{ estimatedRevenue() }}</div>
+                </div>
+              </div>
+
+              <!-- Chart -->
+              <div class="chart-wrap">
+                <canvas #analyticsChart></canvas>
+              </div>
+
+              <button class="see-more-link">See more</button>
+            </div>
+
           </div>
-        }
+
+          <!-- Right: realtime panel -->
+          <div class="analytics-sidebar">
+            <div class="realtime-card">
+              <div class="rt-header">
+                <span class="rt-title">Realtime</span>
+                <div class="rt-live">
+                  <span class="live-dot"></span>
+                  <span class="live-label">Updating live</span>
+                </div>
+              </div>
+              <div class="rt-value">{{ movie()!.views }}</div>
+              <div class="rt-sub">Views · Since published</div>
+              <div class="rt-divider"></div>
+              <button class="see-more-link rt-see-more">See more</button>
+            </div>
+          </div>
+
+        </div>
+      }
+
+    }
+  </main>
+</div>
+
+<!-- ══════════════════════════════════ ADVANCED MODE OVERLAY ═ -->
+@if (showAdvanced()) {
+  <div class="advanced-overlay" (click)="closeAdvanced()">
+    <div class="advanced-panel" (click)="$event.stopPropagation()">
+
+      <!-- Header -->
+      <div class="adv-header">
+        <div class="adv-header-left">
+          <svg class="adv-menu-icon" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"/>
+          </svg>
+          <span class="adv-title">Advanced mode</span>
+          <div class="adv-report-info">
+            <span class="adv-report-label">Report</span>
+            <span class="adv-divider-dot">·</span>
+            <span class="adv-report-value">Top content · Since published</span>
+            <svg viewBox="0 0 24 24" fill="currentColor" style="width:14px;height:14px;color:#666"><path d="M7 10l5 5 5-5z"/></svg>
+          </div>
+        </div>
+        <div class="adv-header-actions">
+          <button class="adv-icon-btn" (click)="exportAdvancedData()" title="Export data as CSV">
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg>
+          </button>
+          <button class="adv-close" (click)="closeAdvanced()">
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- Body -->
+      <div class="adv-body">
+
+        <!-- Controls panel -->
+        <div class="adv-controls">
+
+          <div class="ctl-section">
+            <div class="ctl-label">Controls</div>
+            <div class="ctl-movie-chip">
+              @if (movie()!.thumbnail_url) {
+                <img [src]="movie()!.thumbnail_url" [alt]="movie()!.title" />
+              }
+              <span>{{ movie()!.title }}</span>
+              <svg viewBox="0 0 24 24" fill="currentColor"><path d="M7 10l5 5 5-5z"/></svg>
+            </div>
+          </div>
+
+          <div class="ctl-section">
+            <div class="ctl-label">Date range</div>
+            <div class="ctl-range-btns">
+              @for (r of ranges; track r) {
+                <button class="ctl-range-btn"
+                        [class.active]="advRange() === r"
+                        (click)="setAdvRange(r)">{{ r }}</button>
+              }
+            </div>
+            <div class="ctl-date-row">
+              <input type="date" class="ctl-date-input" />
+              <span class="ctl-date-sep">–</span>
+              <input type="date" class="ctl-date-input" />
+            </div>
+          </div>
+
+          <div class="ctl-section">
+            <div class="ctl-label">Breakdown</div>
+            <div class="ctl-pills">
+              @for (b of breakdowns; track b) {
+                <button class="ctl-pill"
+                        [class.active]="advBreakdown() === b"
+                        (click)="setAdvBreakdown(b)">{{ b }}</button>
+              }
+            </div>
+          </div>
+
+          <div class="ctl-section">
+            <div class="ctl-label">Metrics</div>
+            <label class="ctl-check">
+              <input type="checkbox" [checked]="advMetrics().views"
+                     (change)="toggleAdvMetric('views')" />
+              <span class="check-color" style="background:#4f9ef7"></span>
+              Views
+            </label>
+            <label class="ctl-check">
+              <input type="checkbox" [checked]="advMetrics().watchTime"
+                     (change)="toggleAdvMetric('watchTime')" />
+              <span class="check-color" style="background:#2dd4bf"></span>
+              Watch time (h)
+            </label>
+            <label class="ctl-check">
+              <input type="checkbox" [checked]="advMetrics().revenue"
+                     (change)="toggleAdvMetric('revenue')" />
+              <span class="check-color" style="background:#C8A84B"></span>
+              Revenue
+            </label>
+          </div>
+
+        </div>
+
+        <!-- Main chart + table -->
+        <div class="adv-main">
+
+          <div class="adv-main-header">
+            <h3>Views by: Content <span class="adv-breakdown-badge">· {{ advBreakdown() }}</span></h3>
+            <div class="adv-chart-controls">
+              <button class="chart-ctrl-btn" [class.active]="advChartType() === 'line'" (click)="setAdvChartType('line')">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px">
+                  <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+                </svg>
+                Line
+              </button>
+              <button class="chart-ctrl-btn" [class.active]="advChartType() === 'bar'" (click)="setAdvChartType('bar')">
+                <svg viewBox="0 0 24 24" fill="currentColor" style="width:14px;height:14px">
+                  <path d="M5 9.2h3V19H5V9.2zm5.6-4.8H14V19h-3.4V4.4zm5.6 8H20V19h-3.8v-6.6z"/>
+                </svg>
+                Bar
+              </button>
+            </div>
+          </div>
+
+          <div class="adv-chart-wrap">
+            <canvas #advancedChart></canvas>
+          </div>
+
+          <!-- Breakdown table -->
+          <div class="adv-table-wrap">
+            <table class="adv-table">
+              <thead>
+                <tr>
+                  <th>Content</th>
+                  <th class="col-sorted">
+                    Views
+                    <svg viewBox="0 0 24 24" fill="currentColor" style="width:13px;height:13px;vertical-align:middle">
+                      <path d="M7 14l5-5 5 5H7z"/>
+                    </svg>
+                  </th>
+                  <th>Watch time (hours)</th>
+                  <th>Subscribers</th>
+                  <th>Impressions</th>
+                  <th>Impressions click-through rate (%)</th>
+                </tr>
+              </thead>
+              <tfoot>
+                <tr class="adv-total-row">
+                  <td>Total</td>
+                  <td>{{ fmtNum(advTotals().views) }}</td>
+                  <td>{{ advTotals().watchTime }}</td>
+                  <td>{{ fmtNum(advTotals().subscribers) }}</td>
+                  <td>{{ fmtNum(advTotals().impressions) }}</td>
+                  <td>{{ advTotals().ctr }}%</td>
+                </tr>
+              </tfoot>
+              <tbody>
+                @for (row of advChartData(); track row.label) {
+                  <tr>
+                    <td class="adv-td-title">
+                      <span class="adv-bar"></span>
+                      {{ movie()!.title }} – {{ row.label }}
+                    </td>
+                    <td>{{ fmtNum(row.views) }}</td>
+                    <td>{{ row.watchTime }}</td>
+                    <td>{{ fmtNum(row.subscribers) }}</td>
+                    <td>{{ fmtNum(row.impressions) }}</td>
+                    <td>{{ row.ctr }}%</td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+
+        </div>
       </div>
     </div>
-
-  }
-</div>
+  </div>
+}
