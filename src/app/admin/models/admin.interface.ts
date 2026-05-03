@@ -1,7 +1,7 @@
 export interface DashboardFinancials {
   total_revenue: number;
   producer_revenue: number;
-  ikigembe_commission: number;
+  platform_commission: number;
   revenue_today: number;
   revenue_this_month: number;
   total_paid_to_producers: number;

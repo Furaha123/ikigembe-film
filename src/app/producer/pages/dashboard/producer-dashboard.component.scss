@@ -102,12 +102,42 @@ $muted:   #666;
   display: flex;
   align-items: center;
   gap: 1.1rem;
-  transition: border-color 0.15s;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  transition: border-color 0.2s, background 0.2s, transform 0.15s;
+
+  &:hover:not(.kpi-active):not(.kpi-active-teal) {
+    border-color: #333;
+    background: rgba(255,255,255,0.02);
+  }
+
+  &:active { transform: scale(0.99); }
 
   &.kpi-active {
-    border-color: rgba(200, 168, 75, 0.5);
+    border-color: rgba(200, 168, 75, 0.55);
     background: rgba(200, 168, 75, 0.07);
+
+    .kpi-metric-bar { background: $gold; }
   }
+
+  &.kpi-active-teal {
+    border-color: rgba(45, 212, 191, 0.45);
+    background: rgba(45, 212, 191, 0.06);
+
+    .kpi-metric-bar { background: $teal; }
+  }
+}
+
+.kpi-metric-bar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  border-radius: 14px 14px 0 0;
+  background: transparent;
+  transition: background 0.2s;
 }
 
 .kpi-icon {
@@ -154,6 +184,8 @@ $muted:   #666;
   color: $green;
 
   .arrow-up { width: 14px; height: 14px; }
+
+  &--teal { color: $teal; }
 }
 
 .kpi-sub {
@@ -169,6 +201,44 @@ $muted:   #666;
   overflow: hidden;
 }
 
+.chart-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  padding: 1.25rem 1.5rem 0.9rem;
+  border-bottom: 1px solid $border;
+}
+
+.chart-summary {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #fff;
+  margin: 0;
+  line-height: 1.3;
+}
+
+.chart-metric-tabs {
+  display: flex;
+  gap: 0.3rem;
+}
+
+.cmt-btn {
+  background: transparent;
+  border: 1px solid $border;
+  border-radius: 6px;
+  color: $muted;
+  font-size: 0.78rem;
+  font-weight: 600;
+  padding: 0.3rem 0.75rem;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+
+  &:hover:not(.active) { color: #ccc; border-color: #444; }
+  &.active { background: $gold; border-color: $gold; color: #000; }
+}
+
 .trend-chart-body {
   padding: 1.25rem 1.5rem;
   height: 220px;
@@ -180,7 +250,7 @@ $muted:   #666;
   display: grid;
   grid-template-columns: 1fr 360px;
   gap: 1.25rem;
-  align-items: start;
+  align-items: stretch;
   @media (max-width: 1024px) { grid-template-columns: 1fr; }
 }
 
@@ -189,6 +259,8 @@ $muted:   #666;
   border: 1px solid $border;
   border-radius: 14px;
   overflow: hidden;
+  display: flex;
+  flex-direction: column;
 }
 
 .earnings-hd {
@@ -222,7 +294,8 @@ $muted:   #666;
 
 .earnings-chart-body {
   padding: 0 1.5rem 1.5rem;
-  height: 260px;
+  flex: 1;
+  min-height: 0;
   canvas { width: 100% !important; height: 100% !important; }
 }
 

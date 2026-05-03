@@ -1,0 +1,196 @@
+$gold: #C5A253;
+$gold-dark: #8f7235;
+$bg-dark: #0a0a0a;
+$bg-form: #111;
+$border: rgba(255, 255, 255, 0.1);
+$text-muted: rgba(255, 255, 255, 0.45);
+$text-dim: rgba(255, 255, 255, 0.7);
+
+.auth-layout {
+  display: flex;
+  min-height: 100vh;
+  background: $bg-dark;
+}
+
+/* ─── Left branding panel ─── */
+.brand-panel {
+  flex: 1 1 55%;
+  position: relative;
+  overflow: hidden;
+  display: none;
+  background: #000;
+
+  @media (min-width: 900px) { display: flex; }
+
+  .brand-inner {
+    position: relative;
+    z-index: 3;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    padding: 4rem 3.5rem;
+    height: 100%;
+  }
+
+  .brand-bg {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center top;
+    filter: brightness(0.55) contrast(1.1);
+    z-index: 1;
+  }
+
+  .brand-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      to bottom,
+      rgba(0, 0, 0, 0.2) 0%,
+      rgba(0, 0, 0, 0.15) 40%,
+      rgba(0, 0, 0, 0.75) 75%,
+      rgba(0, 0, 0, 0.92) 100%
+    );
+    z-index: 2;
+  }
+
+  .brand-logo {
+    height: 120px;
+    object-fit: contain;
+    object-position: left;
+    margin-bottom: 2rem;
+    filter: drop-shadow(0 4px 16px rgba(0, 0, 0, 0.5));
+  }
+
+  .brand-headline {
+    color: #fff;
+    font-size: clamp(1.75rem, 2.5vw, 2.5rem);
+    font-weight: 800;
+    line-height: 1.2;
+    margin: 0 0 0.875rem;
+    letter-spacing: -0.02em;
+    text-shadow: 0 2px 12px rgba(0, 0, 0, 0.6);
+  }
+
+  .brand-sub {
+    color: $text-dim;
+    font-size: 0.95rem;
+    line-height: 1.6;
+    max-width: 360px;
+    margin: 0;
+    text-shadow: 0 1px 6px rgba(0, 0, 0, 0.5);
+  }
+}
+
+/* ─── Right form panel ─── */
+.form-panel {
+  flex: 1 1 45%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem 1.5rem;
+  background: $bg-form;
+}
+
+.form-inner {
+  width: 100%;
+  max-width: 400px;
+}
+
+.form-logo {
+  height: 48px;
+  object-fit: contain;
+  object-position: left;
+  margin-bottom: 2.5rem;
+  display: block;
+}
+
+/* ─── Status states ─── */
+.status-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 0.75rem;
+
+  h1 {
+    color: #fff;
+    font-size: 1.75rem;
+    font-weight: 700;
+    margin: 0;
+    letter-spacing: -0.02em;
+  }
+
+  p {
+    color: $text-dim;
+    font-size: 0.9rem;
+    margin: 0;
+    line-height: 1.6;
+    max-width: 300px;
+  }
+}
+
+.status-icon {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 0.5rem;
+
+  svg { width: 26px; height: 26px; }
+
+  &.success-icon {
+    background: rgba($gold, 0.15);
+    border: 2px solid rgba($gold, 0.4);
+    color: $gold;
+  }
+
+  &.error-icon {
+    background: rgba(239, 68, 68, 0.1);
+    border: 2px solid rgba(239, 68, 68, 0.35);
+    color: #e87c7c;
+  }
+}
+
+/* ─── Loading spinner ─── */
+.big-spinner {
+  width: 48px;
+  height: 48px;
+  border: 3px solid rgba(255, 255, 255, 0.12);
+  border-top-color: $gold;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  margin-bottom: 0.5rem;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ─── Submit / CTA button ─── */
+.submit-btn {
+  width: 100%;
+  max-width: 260px;
+  margin-top: 0.75rem;
+  padding: 0.9rem;
+  background: $gold;
+  color: #000;
+  font-size: 1rem;
+  font-weight: 700;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+  letter-spacing: 0.02em;
+  transition: background 0.2s, transform 0.1s;
+
+  &:hover {
+    background: $gold-dark;
+    transform: translateY(-1px);
+  }
+}

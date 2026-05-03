@@ -1,16 +1,120 @@
-<div class="reports-page">
+<div class="adv-mode" [class.sidebar-closed]="!sidebarOpen()">
 
-  <div class="page-header">
-    <h1>Reports & Analytics</h1>
-    <p>Platform performance overview</p>
-  </div>
+  <!-- ── Left controls panel ── -->
+  <aside class="ctrl-panel">
 
-  <div class="sections">
-    <app-revenue-trend />
-    <app-top-movies />
-    <app-user-growth />
-    <app-withdrawal-summary />
-    <app-paying-users />
+    <div class="ctrl-brand">
+      <div class="mode-label">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 14H7v-2h5v2zm5-4H7v-2h10v2zm0-4H7V7h10v2z"/></svg>
+        Advanced mode
+      </div>
+      <span class="admin-badge">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z"/></svg>
+        Admin
+      </span>
+    </div>
+
+    <!-- Report selector -->
+    <div class="ctrl-section">
+      <div class="ctrl-section-label">Report</div>
+      @for (r of reports; track r.key) {
+        <button
+          class="report-item"
+          [class.active]="activeReport() === r.key"
+          (click)="setReport(r.key)"
+          [style.--dot-color]="r.color">
+          <span class="ri-dot"></span>
+          <div class="ri-text">
+            <span class="ri-label">{{ r.label }}</span>
+            <span class="ri-sub">{{ r.sub }}</span>
+          </div>
+          @if (activeReport() === r.key) {
+            <svg class="ri-check" viewBox="0 0 24 24" fill="currentColor"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+          }
+        </button>
+      }
+    </div>
+
+    <!-- Metrics (admin-only) -->
+    <div class="ctrl-section">
+      <div class="ctrl-section-label">
+        Admin-only metrics
+        <span class="label-badge">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z"/></svg>
+        </span>
+      </div>
+      <div class="metrics-list">
+        @for (m of adminExtras[activeReport()]; track m) {
+          <div class="metric-item">
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+            {{ m }}
+          </div>
+        }
+      </div>
+    </div>
+
+  </aside>
+
+  <!-- ── Main panel ── -->
+  <div class="main-panel">
+
+    <!-- Main topbar -->
+    <div class="main-topbar">
+      <div class="topbar-left">
+        <button class="sidebar-toggle" (click)="toggleSidebar()" title="Toggle controls">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"/></svg>
+        </button>
+        <div class="topbar-heading">
+          <span class="report-tag">Report</span>
+          <span class="report-name">{{ active.label }}</span>
+        </div>
+      </div>
+
+      <div class="topbar-right">
+        <!-- Quick range presets -->
+        <div class="range-presets">
+          @for (r of rangePresets; track r) {
+            <button class="range-btn" [class.active]="selectedRange() === r" (click)="setRange(r)">{{ r }}</button>
+          }
+        </div>
+
+        <!-- Custom date range picker -->
+        <procurement-date-picker (dateChange)="onDateChange($event)" />
+
+        <div class="topbar-sep"></div>
+
+        <!-- Show chart toggle -->
+        <label class="chart-toggle">
+          <span class="ct-label">Chart</span>
+          <button
+            class="ct-switch"
+            [class.on]="showChart()"
+            (click)="toggleChart()"
+            role="switch"
+            [attr.aria-checked]="showChart()">
+            <span class="ct-thumb"></span>
+          </button>
+        </label>
+
+        <!-- Export -->
+        <button class="btn-export" (click)="exportActive()">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M19 9h-4V3H9v6H5l7 7 7-7zm-8 2V5h2v6h1.17L12 13.17 9.83 11H11zm-6 7h14v2H5v-2z"/></svg>
+          Export
+        </button>
+      </div>
+    </div>
+
+    <!-- Active report section -->
+    <div class="report-area" [class.no-chart]="!showChart()">
+      @switch (activeReport()) {
+        @case ('revenue')     { <app-revenue-trend /> }
+        @case ('movies')      { <app-top-movies /> }
+        @case ('users')       { <app-user-growth /> }
+        @case ('withdrawals') { <app-withdrawal-summary /> }
+        @case ('paying')      { <app-paying-users /> }
+      }
+    </div>
+
   </div>
 
 </div>

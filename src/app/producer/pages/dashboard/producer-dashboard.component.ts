@@ -4,6 +4,7 @@ import {
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
+import { RouterLink } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
 import {
   Chart, LineController, LineElement, PointElement,
@@ -14,14 +15,15 @@ Chart.register(LineController, LineElement, PointElement, LinearScale, CategoryS
 
 type Range       = '7D' | '14D' | '28D' | '1M' | '2M' | '3M' | '6M' | '1Y';
 type EarningsTab = 'earnings' | 'views';
+type MetricKey   = 'views' | 'watchTime' | 'earnings';
 
 const TREND = [
-  { label: 'Jan', views: 110_000, earnings: 1_820_000 },
-  { label: 'Feb', views: 135_000, earnings: 2_140_000 },
-  { label: 'Mar', views: 152_000, earnings: 2_480_000 },
-  { label: 'Apr', views: 172_000, earnings: 2_950_000 },
-  { label: 'May', views: 195_000, earnings: 3_380_000 },
-  { label: 'Jun', views: 215_000, earnings: 3_740_000 },
+  { label: 'Jan', views: 110_000, earnings: 1_820_000, watchTime:   550 },
+  { label: 'Feb', views: 135_000, earnings: 2_140_000, watchTime:   675 },
+  { label: 'Mar', views: 152_000, earnings: 2_480_000, watchTime:   760 },
+  { label: 'Apr', views: 172_000, earnings: 2_950_000, watchTime:   860 },
+  { label: 'May', views: 195_000, earnings: 3_380_000, watchTime:   975 },
+  { label: 'Jun', views: 215_000, earnings: 3_740_000, watchTime: 1_075 },
 ];
 
 // Monthly views per movie — sums match TREND.views each month
@@ -69,7 +71,7 @@ const MOCK = {
 @Component({
   selector: 'app-producer-dashboard',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, RouterLink],
   templateUrl: './producer-dashboard.component.html',
   styleUrl: './producer-dashboard.component.scss',
 })
@@ -84,6 +86,7 @@ export class ProducerDashboardComponent implements AfterViewInit, OnDestroy {
   readonly ranges: Range[] = ['7D', '14D', '28D', '1M', '2M', '3M', '6M', '1Y'];
 
   selectedRange  = signal<Range>('6M');
+  selectedMetric = signal<MetricKey>('views');
   earningsTab    = signal<EarningsTab>('earnings');
   expandedMovie  = signal<string | null>(null);
   isSaving       = signal(false);
@@ -108,9 +111,24 @@ export class ProducerDashboardComponent implements AfterViewInit, OnDestroy {
     this.buildEarningsChart();
   }
 
+  setMetric(m: MetricKey): void {
+    this.selectedMetric.set(m);
+    this.buildTrendChart();
+  }
+
   setEarningsTab(t: EarningsTab): void {
     this.earningsTab.set(t);
     this.buildEarningsChart();
+  }
+
+  metricSummary(): string {
+    const m    = this.selectedMetric();
+    const last = MOCK.trend[MOCK.trend.length - 1];
+    if (m === 'views')
+      return `In ${last.label}, your content was watched ${(last.views / 1_000).toFixed(0)}K times`;
+    if (m === 'watchTime')
+      return `In ${last.label}, viewers spent ${last.watchTime.toLocaleString()} hours watching your content`;
+    return `In ${last.label}, your estimated earnings were ${this.fmt(last.earnings)}`;
   }
 
   toggleMovieDetail(title: string): void {
@@ -165,21 +183,43 @@ export class ProducerDashboardComponent implements AfterViewInit, OnDestroy {
     const canvas = this.trendCanvas?.nativeElement;
     if (!canvas) return;
     this.trendChart?.destroy();
+
+    const metric = this.selectedMetric();
+    const color  = metric === 'watchTime' ? '#2dd4bf' : '#C8A84B';
+    const fill   = metric === 'watchTime'
+      ? 'rgba(45,212,191,0.12)' : 'rgba(200,168,75,0.12)';
+
+    const values = MOCK.trend.map(r =>
+      metric === 'earnings'  ? r.earnings  :
+      metric === 'watchTime' ? r.watchTime :
+      r.views
+    );
+
+    const yTickFmt = (v: unknown): string =>
+      metric === 'earnings'  ? 'RWF ' + ((v as number) / 1_000_000).toFixed(1) + 'M' :
+      metric === 'watchTime' ? (v as number / 1_000).toFixed(1) + 'K h' :
+      (v as number / 1_000).toFixed(0) + 'K';
+
+    const tooltipFmt = (ctx: { raw: unknown }): string =>
+      metric === 'earnings'  ? ` Earnings: ${this.fmt(ctx.raw as number)}` :
+      metric === 'watchTime' ? ` Watch Time: ${(ctx.raw as number).toLocaleString()}h` :
+      ` Views: ${((ctx.raw as number) / 1_000).toFixed(0)}K`;
+
     this.trendChart = new Chart(canvas, {
       type: 'line',
       data: {
         labels: MOCK.trend.map(r => r.label),
         datasets: [{
-          data: MOCK.trend.map(r => r.views),
-          borderColor: '#C8A84B',
-          backgroundColor: 'transparent',
+          data: values,
+          borderColor: color,
+          backgroundColor: fill,
           borderWidth: 2.5,
           pointRadius: 5,
-          pointBackgroundColor: '#C8A84B',
+          pointBackgroundColor: color,
           pointBorderColor: '#0d0d0d',
           pointBorderWidth: 2,
           tension: 0.35,
-          fill: false,
+          fill: true,
         }],
       },
       options: {
@@ -194,9 +234,7 @@ export class ProducerDashboardComponent implements AfterViewInit, OnDestroy {
             borderColor: '#333',
             borderWidth: 1,
             padding: 10,
-            callbacks: {
-              label: ctx => ` Views: ${(ctx.raw as number / 1000).toFixed(0)}K`,
-            },
+            callbacks: { label: tooltipFmt },
           },
         },
         scales: {
@@ -207,10 +245,7 @@ export class ProducerDashboardComponent implements AfterViewInit, OnDestroy {
           },
           y: {
             grid: { color: 'rgba(255,255,255,0.05)' },
-            ticks: {
-              color: '#666', font: { size: 11 },
-              callback: v => (v as number / 1000).toFixed(0) + 'K',
-            },
+            ticks: { color: '#666', font: { size: 11 }, callback: yTickFmt },
             border: { color: 'transparent' },
             beginAtZero: false,
           },

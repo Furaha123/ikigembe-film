@@ -1,47 +1,391 @@
+$gold:   #C8A84B;
+$teal:   #2dd4bf;
 $border: #222;
+$card:   #161616;
 $muted:  #555;
+$text:   #e5e5e5;
 
-.reports-page {
-  max-width: 1140px;
+$ctrl-width: 256px;
+
+/* ── Root layout ── */
+.adv-mode {
+  display: grid;
+  grid-template-columns: $ctrl-width 1fr;
+  gap: 0;
+  min-height: calc(100vh - 64px);
+  max-width: 1400px;
+  transition: grid-template-columns 0.2s ease;
+
+  &.sidebar-closed {
+    grid-template-columns: 0 1fr;
+
+    .ctrl-panel { opacity: 0; pointer-events: none; overflow: hidden; }
+  }
+}
+
+/* ── Controls sidebar ── */
+.ctrl-panel {
+  width: $ctrl-width;
+  border-right: 1px solid $border;
   display: flex;
   flex-direction: column;
   gap: 0;
+  overflow: hidden;
+  transition: opacity 0.15s;
+  flex-shrink: 0;
 }
 
-// ── Page header ────────────────────────────────────────
-.page-header {
+.ctrl-brand {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 1rem;
-  margin-bottom: 1.75rem;
-  flex-wrap: wrap;
-
-  h1 { font-size: 1.6rem; font-weight: 700; color: #fff; margin: 0 0 0.2rem; }
-  p  { font-size: 0.82rem; color: $muted; margin: 0; }
+  padding: 1.1rem 1rem 0.9rem;
+  border-bottom: 1px solid $border;
 }
 
-.header-right {
-  display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;
+.mode-label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #fff;
+
+  svg { width: 16px; height: 16px; color: $gold; flex-shrink: 0; }
 }
 
-// ── Sections stack ─────────────────────────────────────
-.sections {
+.admin-badge {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.65rem;
+  font-weight: 700;
+  padding: 0.18rem 0.5rem;
+  border-radius: 20px;
+  background: rgba(200,168,75,0.15);
+  color: $gold;
+  white-space: nowrap;
+
+  svg { width: 10px; height: 10px; }
+}
+
+/* ── Ctrl section ── */
+.ctrl-section {
+  padding: 1rem 1rem 0.75rem;
+  border-bottom: 1px solid $border;
+}
+
+.ctrl-section-label {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: $muted;
+  margin-bottom: 0.65rem;
+}
+
+.label-badge {
+  display: inline-flex;
+  align-items: center;
+  color: $gold;
+  svg { width: 11px; height: 11px; }
+}
+
+/* ── Report items ── */
+.report-item {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  width: 100%;
+  padding: 0.55rem 0.6rem;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  cursor: pointer;
+  text-align: left;
+  transition: background 0.12s;
+  margin-bottom: 0.15rem;
+
+  &:last-child { margin-bottom: 0; }
+
+  &:hover:not(.active) { background: rgba(255,255,255,0.04); }
+
+  &.active {
+    background: rgba(255,255,255,0.06);
+
+    .ri-label { color: #fff; }
+  }
+}
+
+.ri-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--dot-color, #555);
+  flex-shrink: 0;
+  transition: transform 0.15s;
+
+  .report-item.active & { transform: scale(1.25); }
+}
+
+.ri-text {
+  flex: 1;
+  min-width: 0;
+}
+
+.ri-label {
+  display: block;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #aaa;
+  transition: color 0.12s;
+}
+
+.ri-sub {
+  display: block;
+  font-size: 0.68rem;
+  color: $muted;
+  margin-top: 0.05rem;
+}
+
+.ri-check {
+  width: 14px;
+  height: 14px;
+  color: $gold;
+  flex-shrink: 0;
+}
+
+/* ── Admin metrics list ── */
+.metrics-list {
   display: flex;
   flex-direction: column;
-  gap: 1.25rem;
+  gap: 0.4rem;
 }
 
-@media (max-width: 600px) {
-  .page-header {
-    h1 { font-size: 1.3rem; }
-    p  { font-size: 0.78rem; }
+.metric-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.4rem;
+  font-size: 0.75rem;
+  color: $muted;
+  line-height: 1.35;
+
+  svg {
+    width: 12px;
+    height: 12px;
+    color: $gold;
+    flex-shrink: 0;
+    margin-top: 0.1rem;
   }
 }
 
-@media (max-width: 380px) {
-  .page-header {
-    h1 { font-size: 1.15rem; }
-    margin-bottom: 1.25rem;
+/* ── Main panel ── */
+.main-panel {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  overflow: hidden;
+}
+
+/* ── Main topbar ── */
+.main-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.8rem 1.25rem;
+  border-bottom: 1px solid $border;
+  gap: 1rem;
+  flex-wrap: wrap;
+  background: #0f0f0f;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.topbar-left {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.sidebar-toggle {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid $border;
+  border-radius: 7px;
+  background: transparent;
+  color: $muted;
+  cursor: pointer;
+  transition: border-color 0.12s, color 0.12s;
+  flex-shrink: 0;
+
+  svg { width: 16px; height: 16px; }
+  &:hover { border-color: #444; color: $text; }
+}
+
+.topbar-heading {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+}
+
+.report-tag {
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: $muted;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.report-name {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #fff;
+}
+
+.topbar-right {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+/* ── Show chart toggle ── */
+.chart-toggle {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  user-select: none;
+}
+
+.ct-label {
+  font-size: 0.78rem;
+  color: $muted;
+  font-weight: 500;
+}
+
+.ct-switch {
+  position: relative;
+  width: 36px;
+  height: 20px;
+  border: none;
+  border-radius: 20px;
+  background: #333;
+  cursor: pointer;
+  transition: background 0.2s;
+  padding: 0;
+  flex-shrink: 0;
+
+  &.on { background: $teal; }
+}
+
+.ct-thumb {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #fff;
+  transition: transform 0.2s;
+
+  .ct-switch.on & { transform: translateX(16px); }
+}
+
+/* ── Export button ── */
+.btn-export {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.45rem 1rem;
+  background: $gold;
+  color: #000;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: opacity 0.15s;
+
+  svg { width: 14px; height: 14px; }
+  &:hover { opacity: 0.85; }
+}
+
+/* ── Quick range presets ── */
+.range-presets {
+  display: flex;
+  gap: 0.2rem;
+  background: #111;
+  border-radius: 8px;
+  padding: 3px;
+  flex-shrink: 0;
+}
+
+.range-btn {
+  border: none;
+  background: transparent;
+  color: $muted;
+  padding: 0.28rem 0.55rem;
+  border-radius: 6px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.15s, color 0.15s;
+
+  &.active { background: #252525; color: #fff; }
+  &:hover:not(.active) { color: #aaa; }
+}
+
+/* ── Topbar vertical separator ── */
+.topbar-sep {
+  width: 1px;
+  height: 20px;
+  background: $border;
+  flex-shrink: 0;
+}
+
+/* ── Report area ── */
+.report-area {
+  flex: 1;
+  padding: 1.25rem;
+  overflow: auto;
+
+  /* Hide child export buttons & date pickers — topbar handles both */
+  ::ng-deep .btn-export           { display: none; }
+  ::ng-deep procurement-date-picker { display: none; }
+
+  /* Hide chart when toggled off */
+  &.no-chart ::ng-deep .chart-body { display: none !important; }
+}
+
+/* ── Responsive ── */
+@media (max-width: 1024px) {
+  .adv-mode {
+    grid-template-columns: 220px 1fr;
+    $ctrl-width: 220px;
   }
+}
+
+@media (max-width: 768px) {
+  .adv-mode {
+    grid-template-columns: 1fr;
+
+    .ctrl-panel {
+      width: 100%;
+      border-right: none;
+      border-bottom: 1px solid $border;
+    }
+  }
+
+  .main-topbar { flex-wrap: wrap; }
+  .report-area { padding: 0.75rem; }
 }

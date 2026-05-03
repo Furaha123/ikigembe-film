@@ -1,0 +1,75 @@
+<div class="auth-layout">
+
+  <!-- Left branding panel -->
+  <div class="brand-panel">
+    <img src="/assets/auth.bg.jpg" alt="" class="brand-bg" aria-hidden="true" />
+    <div class="brand-overlay"></div>
+    <div class="brand-inner">
+      <img src="/assets/ikigembe.log.png" alt="Ikigembe" class="brand-logo" />
+      <h2 class="brand-headline">Beyond the Passion,<br/>Their Purpose</h2>
+      <p class="brand-sub">Discover award-winning films, series and documentaries from across the continent.</p>
+    </div>
+  </div>
+
+  <!-- Right form panel -->
+  <div class="form-panel">
+    <div class="form-inner">
+      <img src="/assets/ikigembe.log.png" alt="Ikigembe" class="form-logo" />
+
+      @switch (status()) {
+
+        @case ('loading') {
+          <div class="status-state">
+            <span class="big-spinner"></span>
+            <h1>Verifying your email…</h1>
+            <p>Please wait a moment.</p>
+          </div>
+        }
+
+        @case ('success') {
+          <div class="status-state">
+            <div class="status-icon success-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <path d="M20 6L9 17l-5-5"/>
+              </svg>
+            </div>
+            <h1>Email verified</h1>
+            <p>Your account is now active. You can sign in and start watching.</p>
+            <a routerLink="/login" class="submit-btn">Sign In</a>
+          </div>
+        }
+
+        @case ('error') {
+          <div class="status-state">
+            <div class="status-icon error-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <circle cx="12" cy="12" r="10"/>
+                <path d="M12 8v4M12 16h.01"/>
+              </svg>
+            </div>
+            <h1>Verification failed</h1>
+            <p>{{ errorMessage() }}</p>
+            <a routerLink="/register" class="submit-btn">Back to Register</a>
+          </div>
+        }
+
+        @case ('invalid') {
+          <div class="status-state">
+            <div class="status-icon error-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <circle cx="12" cy="12" r="10"/>
+                <path d="M15 9l-6 6M9 9l6 6"/>
+              </svg>
+            </div>
+            <h1>Invalid link</h1>
+            <p>This verification link is missing a token. Please use the link from your email.</p>
+            <a routerLink="/register" class="submit-btn">Back to Register</a>
+          </div>
+        }
+
+      }
+
+    </div>
+  </div>
+
+</div>

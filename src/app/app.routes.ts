@@ -23,6 +23,10 @@ export const routes: Routes = [
     loadComponent: () => import('./pages/reset-password/reset-password.component').then(a => a.ResetPasswordComponent)
   },
   {
+    path: 'verify-email',
+    loadComponent: () => import('./pages/verify-email/verify-email.component').then(a => a.VerifyEmailComponent)
+  },
+  {
     path: 'browse',
     canActivate: [authGuard, viewerGuard],
     loadComponent: () => import('./pages/browse/browse.component').then(a => a.BrowseComponent)

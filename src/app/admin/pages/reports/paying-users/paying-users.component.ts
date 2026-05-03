@@ -39,6 +39,13 @@ export class PayingUsersComponent implements OnInit, OnDestroy {
     if (range.start && range.end) { this.page.set(1); this.load(); }
   }
 
+  setDateRange(from: string, to: string): void {
+    this.dateFrom.set(from);
+    this.dateTo.set(to);
+    this.page.set(1);
+    this.load();
+  }
+
   load(): void {
     this.sub?.unsubscribe();
     this.isLoading.set(true);
