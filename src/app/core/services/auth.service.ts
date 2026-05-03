@@ -188,6 +188,10 @@ export class AuthService {
     return this.http.post(`${this.baseUrl}/auth/reset-password/`, { token, new_password, confirm_password });
   }
 
+  verifyEmail(token: string): Observable<unknown> {
+    return this.http.post(`${this.baseUrl}/auth/verify-email/`, { token });
+  }
+
   private clearSession() {
     if (isPlatformBrowser(this.platformId)) {
       localStorage.removeItem(TOKEN_KEY);

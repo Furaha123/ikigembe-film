@@ -45,6 +45,8 @@ export class RegisterComponent implements AfterViewInit {
   serverErrors = signal<RegisterErrors>({});
   showPassword = signal(false);
   showConfirm = signal(false);
+  registered = signal(false);
+  registeredEmail = signal('');
 
   get first_name() { return this.form.get('first_name'); }
   get last_name() { return this.form.get('last_name'); }
@@ -118,7 +120,8 @@ export class RegisterComponent implements AfterViewInit {
     this.authService.register(payload).subscribe({
       next: () => {
         this.isLoading.set(false);
-        this.router.navigate(['/login']);
+        this.registeredEmail.set(payload.email);
+        this.registered.set(true);
       },
       error: (err) => {
         this.isLoading.set(false);
