@@ -1,4 +1,6 @@
-<app-header [userImg]="''" />
+@if (userRole() !== 'Producer') {
+  <app-header [userImg]="''" />
+}
 
 <div class="profile-page">
 
@@ -209,43 +211,112 @@
     </form>
   </section>
 
-  <!-- Payment History -->
-  <section class="card">
-    <h2 class="card-title">Payment History</h2>
-    <p class="card-desc">Movies you have purchased on Ikigembe.</p>
+  @if (userRole() === 'Producer') {
+    <section class="card">
+      <h2 class="card-title">Contract &amp; Agreement</h2>
+      <p class="card-desc">Your active producer agreement with Ikigembe Entertainment Ltd.</p>
 
-    @if (isLoadingPayments()) {
-      <div class="ph-loading">Loading...</div>
-    } @else if (payments().length === 0) {
-      <div class="ph-empty">No payments yet. Purchase a movie to see your history here.</div>
-    } @else {
-      <div class="ph-table-wrap">
-        <table class="ph-table">
-          <thead>
-            <tr>
-              <th>Movie</th>
-              <th>Amount</th>
-              <th>Status</th>
-              <th>Date</th>
-            </tr>
-          </thead>
-          <tbody>
-            @for (p of payments(); track p.deposit_id) {
-              <tr>
-                <td>{{ p.movie_title ?? '—' }}</td>
-                <td>RWF {{ p.amount | number }}</td>
-                <td>
-                  <span class="ph-badge" [class]="paymentStatusClass(p.status)">
-                    {{ p.status }}
-                  </span>
-                </td>
-                <td class="ph-muted">{{ p.created_at | date:'mediumDate' }}</td>
-              </tr>
-            }
-          </tbody>
-        </table>
+      <!-- Key terms summary -->
+      <div class="info-grid">
+        <div class="info-item">
+          <span class="info-label">Contract ID</span>
+          <span class="info-val">{{ producerContract.contractId }}</span>
+        </div>
+        <div class="info-item">
+          <span class="info-label">Status</span>
+          <span class="contract-status-badge">{{ producerContract.status }}</span>
+        </div>
+        <div class="info-item">
+          <span class="info-label">Effective Date</span>
+          <span class="info-val">{{ producerContract.effectiveDate | date:'d MMM yyyy' }}</span>
+        </div>
+        <div class="info-item">
+          <span class="info-label">Renewal Date</span>
+          <span class="info-val">{{ producerContract.renewalDate | date:'d MMM yyyy' }}</span>
+        </div>
+        <div class="info-item">
+          <span class="info-label">Your Revenue Share</span>
+          <span class="info-val contract-gold">{{ producerContract.revenueSplit.producer }}%</span>
+        </div>
+        <div class="info-item">
+          <span class="info-label">Platform Fee</span>
+          <span class="info-val">{{ producerContract.revenueSplit.platform }}%</span>
+        </div>
       </div>
-    }
-  </section>
+
+      <!-- Scrollable full contract -->
+      <div class="contract-body">
+        <div class="contract-header-bar">
+          <span class="contract-doc-title">PRODUCER AGREEMENT</span>
+          <span class="contract-parties">
+            Between <strong>Ikigembe Entertainment Ltd</strong> and
+            <strong>{{ producerContract.producerName }}</strong>
+          </span>
+        </div>
+        <div class="contract-scroll">
+          @for (clause of producerContract.clauses; track clause.title) {
+            <div class="contract-clause">
+              <h4 class="clause-title">{{ clause.title }}</h4>
+              <p class="clause-body">{{ clause.body }}</p>
+            </div>
+          }
+        </div>
+      </div>
+
+      @if (contractDownloadMsg()) {
+        <div class="success-msg">{{ contractDownloadMsg() }}</div>
+      }
+
+      <div class="card-actions">
+        <button type="button" class="btn gold" (click)="downloadContract()">
+          <svg viewBox="0 0 24 24" fill="currentColor" style="width:15px;height:15px;margin-right:6px">
+            <path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/>
+          </svg>
+          Download PDF
+        </button>
+      </div>
+    </section>
+  }
+
+  @if (userRole() !== 'Producer') {
+    <!-- Payment History -->
+    <section class="card">
+      <h2 class="card-title">Payment History</h2>
+      <p class="card-desc">Movies you have purchased on Ikigembe.</p>
+
+      @if (isLoadingPayments()) {
+        <div class="ph-loading">Loading...</div>
+      } @else if (payments().length === 0) {
+        <div class="ph-empty">No payments yet. Purchase a movie to see your history here.</div>
+      } @else {
+        <div class="ph-table-wrap">
+          <table class="ph-table">
+            <thead>
+              <tr>
+                <th>Movie</th>
+                <th>Amount</th>
+                <th>Status</th>
+                <th>Date</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (p of payments(); track p.deposit_id) {
+                <tr>
+                  <td>{{ p.movie_title ?? '—' }}</td>
+                  <td>RWF {{ p.amount | number }}</td>
+                  <td>
+                    <span class="ph-badge" [class]="paymentStatusClass(p.status)">
+                      {{ p.status }}
+                    </span>
+                  </td>
+                  <td class="ph-muted">{{ p.created_at | date:'mediumDate' }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      }
+    </section>
+  }
 
 </div>

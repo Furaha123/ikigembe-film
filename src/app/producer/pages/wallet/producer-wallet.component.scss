@@ -197,3 +197,77 @@ $muted: #888;
 @media (max-width: 380px) {
   .page-header h1 { font-size: 1.2rem; }
 }
+
+/* ── Payout invoice preview ── */
+.invoice-preview {
+  background: rgba(197,162,83,0.05);
+  border: 1px solid rgba(197,162,83,0.22);
+  border-radius: 10px;
+  padding: 1rem 1.25rem;
+  margin-bottom: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+}
+
+.invoice-header {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: $gold;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  margin-bottom: 0.15rem;
+  svg { width: 13px; height: 13px; flex-shrink: 0; }
+}
+
+.invoice-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.inv-label {
+  font-size: 0.82rem;
+  color: $muted;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.inv-badge {
+  padding: 0.1rem 0.45rem;
+  background: rgba(239,68,68,0.12);
+  color: #fca5a5;
+  border-radius: 4px;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.inv-val {
+  font-size: 0.875rem;
+  color: #e5e5e5;
+  font-weight: 600;
+  &.deduction { color: #f87171; }
+}
+
+.invoice-divider {
+  height: 1px;
+  background: rgba(255,255,255,0.07);
+  margin: 0.1rem 0;
+}
+
+.inv-label-total {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #e5e5e5;
+}
+
+.inv-val-total {
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: $gold;
+}

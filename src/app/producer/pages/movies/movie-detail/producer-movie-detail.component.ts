@@ -22,8 +22,41 @@ type Metric       = 'views' | 'watchTime' | 'revenue';
 type Breakdown    = 'Monthly' | 'Weekly' | 'Daily';
 type AdvChartType = 'line' | 'bar';
 
-const MONTHS  = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'];
-const WEIGHTS = [0.30, 0.22, 0.18, 0.13, 0.10, 0.07];
+interface RangeConfig {
+  labels:   string[];
+  weights:  number[];
+  fraction: number;
+}
+
+const RANGE_CONFIGS: Record<string, RangeConfig> = {
+  '7d': {
+    labels:   ['Sat', 'Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri'],
+    weights:  [0.16, 0.15, 0.11, 0.12, 0.13, 0.14, 0.19],
+    fraction: 0.02,
+  },
+  '28d': {
+    labels:   ['Week 1', 'Week 2', 'Week 3', 'Week 4'],
+    weights:  [0.23, 0.26, 0.24, 0.27],
+    fraction: 0.07,
+  },
+  '90d': {
+    labels:   ['Mar 26', 'Apr 26', 'May 26'],
+    weights:  [0.30, 0.34, 0.36],
+    fraction: 0.22,
+  },
+  '365d': {
+    labels:   ['Jun 25', 'Jul 25', 'Aug 25', 'Sep 25', 'Oct 25', 'Nov 25',
+               'Dec 25', 'Jan 26', 'Feb 26', 'Mar 26', 'Apr 26', 'May 26'],
+    weights:  [0.05, 0.06, 0.08, 0.07, 0.09, 0.09, 0.10, 0.07, 0.09, 0.10, 0.11, 0.09],
+    fraction: 0.85,
+  },
+  'Lifetime': {
+    labels:   ['Jun 25', 'Jul 25', 'Aug 25', 'Sep 25', 'Oct 25', 'Nov 25',
+               'Dec 25', 'Jan 26', 'Feb 26', 'Mar 26', 'Apr 26', 'May 26'],
+    weights:  [0.05, 0.06, 0.08, 0.07, 0.09, 0.09, 0.10, 0.07, 0.09, 0.10, 0.11, 0.09],
+    fraction: 1.0,
+  },
+};
 
 @Component({
   selector: 'app-producer-movie-detail',
@@ -58,28 +91,34 @@ export class ProducerMovieDetailComponent implements OnInit, OnDestroy {
   private mainChart: Chart | null = null;
   private advChart:  Chart | null = null;
 
-  monthlyData = computed(() => {
+  // Range-aware data for the main analytics chart
+  rangeData = computed(() => {
     const m = this.movie();
     if (!m) return [];
-    return MONTHS.map((label, i) => {
-      const views     = Math.round(m.views * WEIGHTS[i]);
-      const watchTime = +((views * ((m.duration_minutes ?? 90) / 60))).toFixed(1);
+    const cfg        = RANGE_CONFIGS[this.selectedRange()];
+    const totalViews = Math.round(m.views * cfg.fraction);
+    const dur        = m.duration_minutes ?? 90;
+    return cfg.labels.map((label, i) => {
+      const views     = Math.round(totalViews * cfg.weights[i]);
+      const watchTime = +((views * (dur / 60))).toFixed(1);
       const revenue   = Math.round(views * m.price * 0.7);
       return { label, views, watchTime, revenue };
     });
   });
 
+  // KPI totals for the selected range
+  rangeViews = computed(() =>
+    this.rangeData().reduce((s, d) => s + d.views, 0)
+  );
+
   estimatedWatchTime = computed(() => {
-    const m = this.movie();
-    if (!m) return '0.0';
-    const h = m.views * ((m.duration_minutes ?? 90) / 60);
-    return h >= 1_000 ? (h / 1_000).toFixed(1) + 'K' : h.toFixed(1);
+    const total = this.rangeData().reduce((s, d) => s + d.watchTime, 0);
+    return total >= 1_000 ? (total / 1_000).toFixed(1) + 'K' : total.toFixed(0);
   });
 
   estimatedRevenue = computed(() => {
-    const m = this.movie();
-    if (!m) return 'RWF 0';
-    return this.fmt(m.views * m.price * 0.7);
+    const total = this.rangeData().reduce((s, d) => s + d.revenue, 0);
+    return this.fmt(total);
   });
 
   advChartData = computed(() => {
@@ -103,31 +142,35 @@ export class ProducerMovieDetailComponent implements OnInit, OnDestroy {
       breakdown === 'Weekly'  ? Array.from({ length: count }, (_, i) => `Wk ${i + 1}`) :
                                 Array.from({ length: count }, (_, i) => `Day ${i + 1}`);
 
+    const cfg    = RANGE_CONFIGS[range];
+    const total  = Math.round(m.views * cfg.fraction);
     const weights = Array.from({ length: count }, (_, i) =>
       count > 1 ? 0.5 + (i / (count - 1)) * 0.5 : 1,
     );
     const totalW = weights.reduce((a, b) => a + b, 0);
 
+    const baseCompletion = Math.max(58, Math.min(82, 85 - Math.round((dur / 60) * 8)));
     return labels.map((label, i) => {
-      const w           = weights[i] / totalW;
-      const views       = Math.round(m.views * w);
-      const watchTime   = +((views * (dur / 60))).toFixed(1);
-      const revenue     = Math.round(views * m.price * 0.7);
-      const impressions = Math.round(views * 4.2);
-      const subscribers = Math.round(views * 0.008);
-      const ctr         = impressions > 0 ? +((views / impressions) * 100).toFixed(1) : 0;
-      return { label, views, watchTime, revenue, impressions, subscribers, ctr };
+      const w              = weights[i] / totalW;
+      const views          = Math.round(total * w);
+      const watchTime      = +((views * (dur / 60))).toFixed(1);
+      const revenue        = Math.round(views * m.price * 0.7);
+      const purchases      = Math.round(views * 0.025);
+      const completionRate = Math.min(95, Math.max(50, baseCompletion + (i % 5 - 2) * 2));
+      return { label, views, watchTime, revenue, purchases, completionRate };
     });
   });
 
   advTotals = computed(() => {
     const data = this.advChartData();
-    const views       = data.reduce((a, r) => a + r.views, 0);
-    const watchTime   = +data.reduce((a, r) => a + r.watchTime, 0).toFixed(1);
-    const subscribers = data.reduce((a, r) => a + r.subscribers, 0);
-    const impressions = data.reduce((a, r) => a + r.impressions, 0);
-    const ctr         = impressions > 0 ? +((views / impressions) * 100).toFixed(1) : 0;
-    return { views, watchTime, subscribers, impressions, ctr };
+    const views          = data.reduce((a, r) => a + r.views,    0);
+    const watchTime      = +data.reduce((a, r) => a + r.watchTime, 0).toFixed(1);
+    const purchases      = data.reduce((a, r) => a + r.purchases, 0);
+    const revenue        = data.reduce((a, r) => a + r.revenue,  0);
+    const completionRate = data.length
+      ? +(data.reduce((a, r) => a + r.completionRate, 0) / data.length).toFixed(1)
+      : 0;
+    return { views, watchTime, purchases, revenue, completionRate };
   });
 
   ngOnInit(): void {
@@ -157,11 +200,14 @@ export class ProducerMovieDetailComponent implements OnInit, OnDestroy {
     this.buildMainChart();
   }
 
-  setRange(r: string): void { this.selectedRange.set(r); }
+  setRange(r: string): void {
+    this.selectedRange.set(r);
+    this.buildMainChart();
+  }
 
-  setAdvRange(r: string): void     { this.advRange.set(r);                    this.buildAdvancedChart(); }
-  setAdvBreakdown(b: Breakdown): void { this.advBreakdown.set(b);              this.buildAdvancedChart(); }
-  setAdvChartType(t: AdvChartType): void { this.advChartType.set(t);           this.buildAdvancedChart(); }
+  setAdvRange(r: string): void       { this.advRange.set(r);         this.buildAdvancedChart(); }
+  setAdvBreakdown(b: Breakdown): void { this.advBreakdown.set(b);     this.buildAdvancedChart(); }
+  setAdvChartType(t: AdvChartType): void { this.advChartType.set(t);  this.buildAdvancedChart(); }
 
   toggleAdvMetric(key: Metric): void {
     this.advMetrics.update(m => ({ ...m, [key]: !m[key] }));
@@ -169,6 +215,7 @@ export class ProducerMovieDetailComponent implements OnInit, OnDestroy {
   }
 
   openAdvanced(): void {
+    this.advRange.set(this.selectedRange());
     this.showAdvanced.set(true);
     setTimeout(() => this.buildAdvancedChart(), 80);
   }
@@ -223,16 +270,19 @@ export class ProducerMovieDetailComponent implements OnInit, OnDestroy {
     if (!canvas) return;
     this.mainChart?.destroy();
 
-    const data  = this.monthlyData();
+    const data  = this.rangeData();
     const m     = this.metric();
     const color = m === 'revenue' ? '#C8A84B' : m === 'watchTime' ? '#2dd4bf' : '#4f9ef7';
     const values = data.map(d =>
       m === 'views' ? d.views : m === 'watchTime' ? d.watchTime : d.revenue,
     );
-    const yFmt = (v: unknown): string =>
-      m === 'revenue'   ? 'RWF ' + ((v as number) / 1_000).toFixed(0) + 'K' :
-      m === 'watchTime' ? (v as number).toFixed(0) + ' h' :
-      String(v);
+
+    const yFmt = (v: unknown): string => {
+      const n = v as number;
+      if (m === 'revenue')   return n >= 1_000_000 ? 'RWF ' + (n / 1_000_000).toFixed(1) + 'M' : 'RWF ' + (n / 1_000).toFixed(0) + 'K';
+      if (m === 'watchTime') return n.toFixed(0) + ' h';
+      return n >= 1_000 ? (n / 1_000).toFixed(0) + 'K' : String(Math.round(n));
+    };
 
     this.mainChart = new Chart(canvas, {
       type: 'line',
@@ -351,9 +401,9 @@ export class ProducerMovieDetailComponent implements OnInit, OnDestroy {
     if (!data.length || !movie) return;
 
     const t = this.advTotals();
-    const headers = ['Content', 'Period', 'Views', 'Watch time (hours)', 'Subscribers', 'Impressions', 'Impressions click-through rate (%)'];
-    const totalRow = [movie.title, 'Total', t.views, t.watchTime, t.subscribers, t.impressions, t.ctr + '%'];
-    const rows = data.map(r => [movie.title, r.label, r.views, r.watchTime, r.subscribers, r.impressions, r.ctr + '%']);
+    const headers = ['Content', 'Period', 'Views', 'Watch time (hours)', 'Purchases', 'Revenue (RWF)', 'Completion rate (%)'];
+    const totalRow = [movie.title, 'Total', t.views, t.watchTime, t.purchases, t.revenue, t.completionRate + '%'];
+    const rows = data.map(r => [movie.title, r.label, r.views, r.watchTime, r.purchases, r.revenue, r.completionRate + '%']);
 
     const csv = [headers, totalRow, ...rows]
       .map(row => row.map(v => `"${v}"`).join(','))

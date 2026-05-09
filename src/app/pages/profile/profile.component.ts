@@ -5,6 +5,38 @@ import { AuthService, UserProfile, NotificationPreferences } from '../../core/se
 import { PaymentService, PaymentHistoryItem } from '../../core/services/payment.service';
 import { HeaderComponent } from '../../core/components/header/header.component';
 
+interface ContractClause { title: string; body: string; }
+
+const PRODUCER_CONTRACT = {
+  contractId:    'IKG-PROD-2024-0042',
+  status:        'Active',
+  effectiveDate: '2024-01-15',
+  renewalDate:   '2025-01-14',
+  revenueSplit:  { producer: 70, platform: 30 },
+  clauses: [
+    {
+      title: '1. Content Ownership',
+      body: `The Producer retains full intellectual property rights to all submitted content. Ikigembe Entertainment Ltd is granted a non-exclusive, worldwide, royalty-bearing licence to host, stream, and distribute the content for the duration of this agreement. The Producer warrants that all submitted content is original and does not infringe any third-party rights.`,
+    },
+    {
+      title: '2. Revenue Share',
+      body: `Net streaming revenue is distributed as follows: seventy percent (70%) to the Producer and thirty percent (30%) to Ikigembe Entertainment Ltd as a platform service fee. Payments are processed on the 15th business day following the close of each calendar month.`,
+    },
+    {
+      title: '3. Content Standards',
+      body: `All content must comply with the Ikigembe Content Standards Policy. The platform reserves the right to remove content that violates these standards after written notice to the Producer, except in cases of clear and serious violation where immediate removal may occur.`,
+    },
+    {
+      title: '4. Payment Terms',
+      body: `Earnings are disbursed monthly via Mobile Money (MTN/Airtel) or bank transfer to the account on file. A minimum payout threshold of RWF 10,000 applies; balances below this threshold roll over to the following month.`,
+    },
+    {
+      title: '5. Termination',
+      body: `Either party may terminate this agreement with thirty (30) days written notice. Outstanding revenue owed at the time of termination will be paid within forty-five (45) days of the effective termination date.`,
+    },
+  ] as ContractClause[],
+};
+
 @Component({
   selector: 'app-profile',
   imports: [CommonModule, ReactiveFormsModule, HeaderComponent],
@@ -15,6 +47,8 @@ export class ProfileComponent implements OnInit {
   private readonly authService    = inject(AuthService);
   private readonly paymentService = inject(PaymentService);
   private readonly fb             = inject(FormBuilder);
+
+  readonly userRole = this.authService.userRole;
 
   profile = signal<UserProfile | null>(null);
   notifications = signal<NotificationPreferences | null>(null);
@@ -48,6 +82,22 @@ export class ProfileComponent implements OnInit {
     new_password:     ['', [Validators.required, Validators.minLength(8)]],
     confirm_password: ['', Validators.required],
   });
+
+  contractDownloadMsg = signal('');
+
+  get producerContract() {
+    const p = this.profile();
+    return {
+      ...PRODUCER_CONTRACT,
+      producerName: p ? `${p.first_name} ${p.last_name}`.trim() : 'Producer',
+    };
+  }
+
+  downloadContract(): void {
+    this.contractDownloadMsg.set('Opening print dialog — choose "Save as PDF" to download.');
+    window.print();
+    setTimeout(() => this.contractDownloadMsg.set(''), 4000);
+  }
 
   notifForm = this.fb.group({
     notify_new_trailers: [false],

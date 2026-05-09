@@ -84,6 +84,32 @@
         }
       </div>
 
+      <!-- Payout invoice preview -->
+      @if (taxBreakdown()) {
+        <div class="invoice-preview">
+          <div class="invoice-header">
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6zm-1 7V3.5L18.5 9H13z"/></svg>
+            Payout Summary
+          </div>
+          <div class="invoice-row">
+            <span class="inv-label">Amount to Withdraw</span>
+            <span class="inv-val">RWF {{ taxBreakdown()!.amount | number }}</span>
+          </div>
+          <div class="invoice-row">
+            <span class="inv-label">
+              Gov. Tax / RRA
+              <span class="inv-badge">30%</span>
+            </span>
+            <span class="inv-val deduction">+ RWF {{ taxBreakdown()!.govTax | number }}</span>
+          </div>
+          <div class="invoice-divider"></div>
+          <div class="invoice-row total">
+            <span class="inv-label-total">Total from Balance</span>
+            <span class="inv-val-total">RWF {{ taxBreakdown()!.totalDeducted | number }}</span>
+          </div>
+        </div>
+      }
+
       <!-- Payment method toggle -->
       <div class="field">
         <label>Payment Method</label>

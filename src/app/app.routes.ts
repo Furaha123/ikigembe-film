@@ -47,6 +47,10 @@ export const routes: Routes = [
     loadComponent: () => import('./pages/my-list/my-list.component').then(a => a.MyListComponent)
   },
   {
+    path: 'terms',
+    loadComponent: () => import('./pages/terms/terms.component').then(a => a.TermsComponent)
+  },
+  {
     path: 'producer',
     loadChildren: () => import('./producer/producer.routes').then(m => m.producerRoutes),
   },
