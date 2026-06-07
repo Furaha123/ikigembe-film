@@ -1,5 +1,21 @@
 <div class="producer-dash">
 
+  <!-- ── Upload CTA banner ── -->
+  <a routerLink="/producer/upload" class="upload-cta-banner">
+    <div class="upload-cta-icon">
+      <svg viewBox="0 0 24 24" fill="currentColor" width="28" height="28">
+        <path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM14 13v4h-4v-4H7l5-5 5 5h-3z"/>
+      </svg>
+    </div>
+    <div class="upload-cta-text">
+      <span class="upload-cta-title">Upload a Film</span>
+      <span class="upload-cta-sub">Submit your content for review — approved films go live on the platform</span>
+    </div>
+    <div class="upload-cta-arrow">
+      <svg viewBox="0 0 24 24" fill="currentColor" width="20" height="20"><path d="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8z"/></svg>
+    </div>
+  </a>
+
   <!-- ── Header ── -->
   <div class="dash-header">
     <div class="header-text">
@@ -101,6 +117,7 @@
           <button class="ev-tab" [class.active]="earningsTab() === 'views'"    (click)="setEarningsTab('views')">Views</button>
         </div>
       </div>
+
       <div class="earnings-chart-body">
         <canvas #earningsChart></canvas>
       </div>
@@ -115,7 +132,7 @@
 
       <div class="balance-card">
         <div class="balance-label">Available Balance</div>
-        <div class="balance-value">{{ fmt(data.wallet.balance) }}</div>
+        <div class="balance-value">{{ fmt(wallet()?.wallet_balance ?? 0) }}</div>
         <div class="balance-sub">Ready to withdraw</div>
       </div>
 
@@ -243,9 +260,9 @@
           <svg viewBox="0 0 24 24" fill="currentColor"><path d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11zM7 10h5v5H7z"/></svg>
           Recent Withdrawals
         </div>
-        @for (w of data.wallet.recentWithdrawals; track w.date) {
+        @for (w of recentWithdrawals(); track w.id) {
           <div class="rwd-item">
-            <span class="rwd-date">{{ w.date }}</span>
+            <span class="rwd-date">{{ formatDate(w.created_at) }}</span>
             <div class="rwd-right">
               <span class="rwd-amount">{{ fmt(w.amount) }}</span>
               <span class="rwd-status">✓ {{ w.status }}</span>
@@ -264,7 +281,7 @@
       <a class="see-more-btn" routerLink="/producer/movies">See All Content →</a>
     </div>
 
-    @for (m of data.movies; track m.title) {
+    @for (m of dashboardMovies(); track m.id) {
       <div class="movie-item" [class.expanded]="expandedMovie() === m.title">
         <div class="movie-thumb">
           <svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
@@ -277,7 +294,7 @@
           </div>
         </div>
         <div class="movie-right">
-          <span class="movie-earnings">{{ fmt(m.earnings) }}</span>
+          <span class="movie-earnings">{{ fmt(m.total_gross_revenue) }}</span>
           <button class="detail-btn" (click)="toggleMovieDetail(m.title)">
             {{ expandedMovie() === m.title ? 'Close' : 'View Details' }}
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
@@ -302,11 +319,11 @@
             </div>
             <div class="md-stat">
               <span class="md-stat-label">Gross Revenue</span>
-              <span class="md-stat-value">{{ fmt(movieStats(m.title).earnings) }}</span>
+              <span class="md-stat-value">{{ fmt(movieStats(m.title).total_gross_revenue) }}</span>
             </div>
             <div class="md-stat gold">
               <span class="md-stat-label">Your Share</span>
-              <span class="md-stat-value">{{ fmt(movieStats(m.title).share) }}</span>
+              <span class="md-stat-value">{{ fmt(movieStats(m.title).producer_share) }}</span>
             </div>
           </div>
           <div class="md-chart-wrap">
@@ -341,12 +358,12 @@
           </tr>
         </thead>
         <tbody>
-          @for (t of visibleTxns(); track t.date + t.buyer) {
+          @for (t of visibleTxns(); track t.id) {
             <tr>
-              <td class="t-bold">{{ t.movie }}</td>
-              <td>{{ t.buyer }}</td>
-              <td>{{ fmt(t.amount) }}</td>
-              <td class="t-gold">{{ fmt(t.share) }}</td>
+              <td class="t-bold">{{ t.movie_title }}</td>
+              <td>{{ t.buyer_name }}</td>
+              <td>{{ fmt(t.gross_amount) }}</td>
+              <td class="t-gold">{{ fmt(t.producer_earnings) }}</td>
               <td>
                 <span class="t-badge" [class.completed]="t.status === 'Completed'" [class.pending]="t.status === 'Pending'">
                   {{ t.status }}

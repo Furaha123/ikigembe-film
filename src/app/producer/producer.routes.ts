@@ -4,6 +4,11 @@ import { ProducerLayoutComponent } from './layout/producer-layout.component';
 
 export const producerRoutes: Routes = [
   {
+    path: 'onboarding',
+    canActivate: [producerGuard],
+    loadComponent: () => import('./pages/onboarding/producer-onboarding.component').then(m => m.ProducerOnboardingComponent),
+  },
+  {
     path: '',
     component: ProducerLayoutComponent,
     canActivate: [producerGuard],
@@ -12,6 +17,10 @@ export const producerRoutes: Routes = [
       {
         path: 'dashboard',
         loadComponent: () => import('./pages/dashboard/producer-dashboard.component').then(m => m.ProducerDashboardComponent),
+      },
+      {
+        path: 'upload',
+        loadComponent: () => import('./pages/upload/producer-upload.component').then(m => m.ProducerUploadComponent),
       },
       {
         path: 'movies',

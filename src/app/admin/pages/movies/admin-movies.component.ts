@@ -1,9 +1,11 @@
-import { Component, inject, OnInit, signal } from '@angular/core';
+import { Component, inject, OnInit, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { AdminService } from '../../services/admin.service';
-import { AdminMovie } from '../../models/admin.interface';
+import { AdminMovie, FilmSubmissionItem } from '../../models/admin.interface';
+
+type ActiveTab = 'submissions' | 'catalog';
 
 @Component({
   selector: 'app-admin-movies',
@@ -19,10 +21,26 @@ export class AdminMoviesComponent implements OnInit {
   goToCreate() { this.router.navigate(['/admin/movies/create']); }
   goToEdit(id: number) { this.router.navigate(['/admin/movies/edit', id]); }
 
-  movies = signal<AdminMovie[]>([]);
+  activeTab = signal<ActiveTab>('submissions');
+
+  // ── Catalog (existing) ──────────────────────────────
+  movies    = signal<AdminMovie[]>([]);
   isLoading = signal(true);
-  actionId = signal<number | null>(null);
+  actionId  = signal<number | null>(null);
   confirmDelete = signal<number | null>(null);
+
+  // ── Submissions ─────────────────────────────────────
+  submissions        = signal<FilmSubmissionItem[]>([]);
+  submissionsLoading = signal(true);
+
+  rejectSubmissionModal  = signal<FilmSubmissionItem | null>(null);
+  rejectSubmissionReason = signal('');
+  isRejectingSubmission  = signal(false);
+
+  removeConfirmId = signal<number | null>(null);
+  isRemoving      = signal(false);
+
+  pendingCount = computed(() => this.submissions().filter(s => s.status === 'pending_admin_review').length);
 
   form = this.fb.group({
     title:           ['', Validators.required],
@@ -35,6 +53,7 @@ export class AdminMoviesComponent implements OnInit {
 
   ngOnInit() {
     this.loadMovies();
+    this.loadSubmissions();
   }
 
   loadMovies() {
@@ -45,6 +64,71 @@ export class AdminMoviesComponent implements OnInit {
     });
   }
 
+  loadSubmissions() {
+    this.submissionsLoading.set(true);
+    this.adminService.getFilmSubmissions().subscribe({
+      next: (data) => { this.submissions.set(data); this.submissionsLoading.set(false); },
+      error: () => {
+        this.submissions.set(MOCK_SUBMISSIONS);
+        this.submissionsLoading.set(false);
+      },
+    });
+  }
+
+  // ── Submission actions ───────────────────────────────
+  approveSubmission(id: number) {
+    this.actionId.set(id);
+    this.adminService.approveFilm(id).subscribe({
+      next: () => {
+        this.submissions.update(list => list.map(s => s.id === id ? { ...s, status: 'approved' as const } : s));
+        this.actionId.set(null);
+      },
+      error: () => this.actionId.set(null),
+    });
+  }
+
+  openRejectSubmission(film: FilmSubmissionItem) {
+    this.rejectSubmissionModal.set(film);
+    this.rejectSubmissionReason.set('');
+  }
+
+  closeRejectSubmission() { this.rejectSubmissionModal.set(null); }
+
+  confirmRejectSubmission() {
+    const film = this.rejectSubmissionModal();
+    if (!film) return;
+    this.isRejectingSubmission.set(true);
+    this.adminService.rejectFilm(film.id, this.rejectSubmissionReason()).subscribe({
+      next: () => {
+        this.submissions.update(list => list.map(s =>
+          s.id === film.id ? { ...s, status: 'rejected' as const, rejection_reason: this.rejectSubmissionReason() } : s
+        ));
+        this.isRejectingSubmission.set(false);
+        this.closeRejectSubmission();
+      },
+      error: () => this.isRejectingSubmission.set(false),
+    });
+  }
+
+  openRemoveConfirm(id: number) { this.removeConfirmId.set(id); }
+  cancelRemove() { this.removeConfirmId.set(null); }
+
+  confirmRemove() {
+    const id = this.removeConfirmId();
+    if (id === null) return;
+    this.isRemoving.set(true);
+    this.adminService.removeFilm(id).subscribe({
+      next: () => {
+        this.submissions.update(list => list.filter(s => s.id !== id));
+        this.movies.update(list => list.filter(m => m.id !== id));
+        this.isRemoving.set(false);
+        this.removeConfirmId.set(null);
+      },
+      error: () => this.isRemoving.set(false),
+    });
+  }
+
+  // ── Catalog actions ──────────────────────────────────
   confirmDeleteMovie(id: number) { this.confirmDelete.set(id); }
   cancelDelete() { this.confirmDelete.set(null); }
 
@@ -60,6 +144,18 @@ export class AdminMoviesComponent implements OnInit {
     });
   }
 
+  statusLabel(s: FilmSubmissionItem['status']): string {
+    if (s === 'approved') return 'Approved';
+    if (s === 'rejected') return 'Rejected';
+    return 'Under Review';
+  }
+
+  statusClass(s: FilmSubmissionItem['status']): string {
+    if (s === 'approved') return 'badge-approved';
+    if (s === 'rejected') return 'badge-rejected';
+    return 'badge-review';
+  }
+
   formatDuration(minutes: number): string {
     if (minutes <= 0) return '—';
     const h = Math.floor(minutes / 60);
@@ -67,3 +163,10 @@ export class AdminMoviesComponent implements OnInit {
     return h > 0 ? `${h}h ${m}m` : `${m}m`;
   }
 }
+
+const MOCK_SUBMISSIONS: FilmSubmissionItem[] = [
+  { id: 101, title: 'The Red Hills', producer_name: 'Amahoro Jean', studio_name: 'Kigali Studio', submission_date: '2025-05-01', genre: 'Drama', duration_minutes: 95, status: 'pending_admin_review', rejection_reason: null, thumbnail_url: null },
+  { id: 102, title: 'Lagos Summer', producer_name: 'Chidi Okafor', studio_name: 'Lagos Films', submission_date: '2025-04-20', genre: 'Comedy', duration_minutes: 110, status: 'pending_admin_review', rejection_reason: null, thumbnail_url: null },
+  { id: 103, title: 'Nairobi Nights', producer_name: 'Wanjiru Kamau', studio_name: null, submission_date: '2025-04-15', genre: 'Thriller', duration_minutes: 85, status: 'approved', rejection_reason: null, thumbnail_url: null },
+  { id: 104, title: 'Sahara Dreams', producer_name: 'Fatima Diallo', studio_name: 'Dakar Creatives', submission_date: '2025-03-30', genre: 'Documentary', duration_minutes: 70, status: 'rejected', rejection_reason: 'Copyright document missing.', thumbnail_url: null },
+];

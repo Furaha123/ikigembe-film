@@ -1,28 +1,57 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, of } from 'rxjs';
+import { Observable, of, map } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { ALL_MOCK_MOVIES } from '../../shared/data/mock-movies.data';
 
 const BASE = environment.apiUrl;
 
 export interface ProducerWallet {
-  wallet_balance: number;
+  gross_revenue: number;
+  platform_commission: number;
   total_earnings: number;
-  total_withdrawn: number;
+  wallet_balance: number;
   pending_withdrawals: number;
+  total_withdrawn: number;
   producer_share_percentage: number;
 }
 
 export interface ProducerMovie {
   id: number;
   title: string;
+  overview: string | null;
+  thumbnail_url: string | null;
   price: number;
   views: number;
   rating: number;
   release_date: string;
+  duration_minutes: number | null;
   is_active: boolean;
-  thumbnail_url: string | null;
+  has_free_preview: boolean;
+  hls_status: 'not_started' | 'processing' | 'completed' | 'failed';
+  created_at: string;
+  genres: string[];
+}
+
+export interface FilmSubmissionMetadata {
+  title: string;
+  synopsis: string;
+  genre: string;
+  duration_minutes: number;
+  director: string;
+  writer: string;
+  cast: string;
+  release_year: number;
+  quality: string;
+}
+
+export interface FilmSubmission {
+  video_key: string;
+  copyright_key: string;
+  id_key: string;
+  terms_accepted: boolean;
+  terms_accepted_at: string;
+  metadata: FilmSubmissionMetadata;
 }
 
 export interface ProducerMovieDetail {
@@ -54,10 +83,24 @@ export interface ProducerMovieDetail {
 export interface ProducerWithdrawal {
   id: number;
   amount: number;
+  tax_amount: number;
+  amount_after_tax: number;
   status: string;
   payment_method: string | null;
+  bank_name: string | null;
+  account_number: string | null;
+  account_holder_name: string | null;
+  momo_number: string | null;
+  momo_provider: string | null;
   created_at: string;
   processed_at: string | null;
+}
+
+export interface ProducerWithdrawalPage {
+  page: number;
+  total_results: number;
+  total_pages: number;
+  results: ProducerWithdrawal[];
 }
 
 export interface WithdrawalRequest {
@@ -147,6 +190,60 @@ export interface ProducerTransactionResponse {
   withdrawals: ProducerPaginatedList<ProducerWithdrawalTransactionItem>;
 }
 
+export interface ProducerNotification {
+  id: number;
+  type: 'account_approved' | 'account_rejected' | 'film_approved' | 'film_rejected' | 'document_reminder';
+  message: string;
+  read: boolean;
+  created_at: string;
+}
+
+// ── Dashboard-specific interfaces ─────────────────────
+export interface DashboardMovie {
+  id: number;
+  title: string;
+  views: number;
+  purchases: number;
+  total_gross_revenue: number;
+  producer_share: number;
+  monthly_views: number[];  // last 6 months, oldest → newest
+}
+
+export interface DashboardTransaction {
+  id: number;
+  movie_title: string;
+  buyer_name: string;
+  gross_amount: number;
+  producer_earnings: number;
+  status: 'Completed' | 'Pending';
+  date: string;  // YYYY-MM-DD
+}
+
+export interface DashboardTransactionResponse {
+  page: number;
+  total_results: number;
+  total_pages: number;
+  results: DashboardTransaction[];
+}
+
+export interface AnalyticsTrendPoint {
+  label: string;
+  views: number;
+  earnings: number;
+  watch_time_hours: number;
+}
+
+export interface AnalyticsResponse {
+  trend: AnalyticsTrendPoint[];
+  totals: {
+    views: number;
+    earnings: number;
+    watch_time_hours: number;
+    views_growth_pct: number;
+    watch_time_growth_pct: number;
+  };
+}
+
 @Injectable({ providedIn: 'root' })
 export class ProducerService {
   private readonly http = inject(HttpClient);
@@ -156,51 +253,31 @@ export class ProducerService {
   }
 
   getMovies(): Observable<ProducerMovie[]> {
-    const movies: ProducerMovie[] = ALL_MOCK_MOVIES.map(m => ({
-      id:           m.id,
-      title:        m.title,
-      price:        m.price,
-      views:        m.views,
-      rating:       m.rating,
-      release_date: m.release_date,
-      is_active:    true,
-      thumbnail_url: m.thumbnail_url,
-    }));
-    return of(movies);
+    return this.http.get<{ results: ProducerMovie[]; total_results: number }>(
+      `${BASE}/producer/films/`
+    ).pipe(map(resp => resp.results));
+  }
+
+  getDashboardMovies(): Observable<DashboardMovie[]> {
+    return this.http.get<DashboardMovie[] | { results: DashboardMovie[] }>(
+      `${BASE}/producer/dashboard/movies/`
+    ).pipe(
+      map(resp => Array.isArray(resp) ? resp : (resp.results ?? []))
+    );
+  }
+
+  getAnalytics(range: string): Observable<AnalyticsResponse> {
+    return this.http.get<AnalyticsResponse>(`${BASE}/producer/dashboard/analytics/?range=${range}`);
   }
 
   getMovieDetail(id: number): Observable<ProducerMovieDetail> {
-    const m = ALL_MOCK_MOVIES.find(x => x.id === id) ?? ALL_MOCK_MOVIES[0];
-    const detail: ProducerMovieDetail = {
-      id:                       m.id,
-      title:                    m.title,
-      overview:                 m.overview,
-      thumbnail_url:            m.thumbnail_url,
-      backdrop_url:             m.backdrop_url,
-      trailer_url:              m.trailer_url,
-      trailer_duration_seconds: null,
-      video_url:                m.video_url,
-      hls_url:                  null,
-      hls_status:               'completed',
-      subtitles:                null,
-      price:                    m.price,
-      views:                    m.views,
-      rating:                   m.rating,
-      release_date:             m.release_date,
-      duration_minutes:         m.duration_minutes,
-      has_free_preview:         m.has_free_preview,
-      is_active:                true,
-      cast:                     null,
-      genres:                   null,
-      producer:                 null,
-      created_at:               '2024-01-01T00:00:00Z',
-      updated_at:               '2024-04-01T00:00:00Z',
-    };
-    return of(detail);
+    return this.http.get<ProducerMovieDetail>(`${BASE}/producer/dashboard/movies/${id}/`);
   }
 
-  getWithdrawals(): Observable<{ results: ProducerWithdrawal[] }> {
-    return this.http.get<{ results: ProducerWithdrawal[] }>(`${BASE}/producer/dashboard/withdrawals/`);
+  getWithdrawals(page = 1): Observable<ProducerWithdrawalPage> {
+    return this.http.get<ProducerWithdrawalPage>(
+      `${BASE}/producer/dashboard/withdrawals/?page=${page}`
+    );
   }
 
   requestWithdrawal(payload: WithdrawalRequest): Observable<ProducerWithdrawal> {
@@ -225,9 +302,41 @@ export class ProducerService {
     return this.http.get<ProducerEarningsReport>(url);
   }
 
-  getTransactions(page = 1): Observable<ProducerTransactionResponse> {
-    return this.http.get<ProducerTransactionResponse>(
+  getTransactions(page = 1): Observable<DashboardTransactionResponse> {
+    return this.http.get<DashboardTransactionResponse>(
       `${BASE}/producer/dashboard/transactions/?page=${page}`
     );
+  }
+
+  getPresignedUploadUrl(filename: string, contentType: string): Observable<{ url: string; key: string }> {
+    return this.http.post<{ url: string; key: string }>(
+      `${BASE}/producer/upload/presign/`, { filename, content_type: contentType }
+    );
+  }
+
+  submitFilm(payload: FilmSubmission): Observable<{ id: number; status: string }> {
+    return this.http.post<{ id: number; status: string }>(`${BASE}/producer/films/submit/`, payload);
+  }
+
+  updateFilm(id: number, payload: Partial<Pick<ProducerMovie, 'title' | 'overview' | 'genres' | 'price' | 'has_free_preview'>>): Observable<ProducerMovie> {
+    return this.http.patch<ProducerMovie>(`${BASE}/producer/films/${id}/`, payload);
+  }
+
+  deleteFilm(id: number): Observable<unknown> {
+    return this.http.delete(`${BASE}/producer/films/${id}/`);
+  }
+
+  getNotifications(): Observable<ProducerNotification[]> {
+    return this.http.get<ProducerNotification[] | { results: ProducerNotification[] }>(`${BASE}/producer/notifications/`).pipe(
+      map(data => Array.isArray(data) ? data : (data.results ?? []))
+    );
+  }
+
+  markNotificationRead(id: number): Observable<unknown> {
+    return this.http.patch(`${BASE}/producer/notifications/${id}/read/`, {});
+  }
+
+  markAllNotificationsRead(): Observable<unknown> {
+    return this.http.post(`${BASE}/producer/notifications/read-all/`, {});
   }
 }

@@ -15,6 +15,50 @@ $muted:   #666;
   gap: 1.25rem;
 }
 
+/* ── Upload CTA banner ── */
+.upload-cta-banner {
+  display: flex; align-items: center; gap: 1.25rem;
+  background: linear-gradient(135deg, rgba(200,168,75,0.14) 0%, rgba(200,168,75,0.06) 100%);
+  border: 1px solid rgba(200,168,75,0.3);
+  border-radius: 12px; padding: 1.1rem 1.5rem;
+  text-decoration: none;
+  transition: border-color 0.2s, background 0.2s;
+  cursor: pointer;
+
+  &:hover {
+    border-color: rgba(200,168,75,0.55);
+    background: linear-gradient(135deg, rgba(200,168,75,0.2) 0%, rgba(200,168,75,0.1) 100%);
+  }
+}
+
+.upload-cta-icon {
+  width: 52px; height: 52px; border-radius: 12px;
+  background: $gold; color: #000;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+
+.upload-cta-text {
+  flex: 1; display: flex; flex-direction: column; gap: 0.25rem;
+}
+
+.upload-cta-title {
+  font-size: 1rem; font-weight: 700; color: #fff;
+}
+
+.upload-cta-sub {
+  font-size: 0.82rem; color: $muted; line-height: 1.4;
+}
+
+.upload-cta-arrow {
+  color: $gold; flex-shrink: 0;
+}
+
+@media (max-width: 600px) {
+  .upload-cta-banner { padding: 0.9rem 1rem; }
+  .upload-cta-sub { display: none; }
+}
+
 /* ── Header ── */
 .dash-header {
   display: flex;

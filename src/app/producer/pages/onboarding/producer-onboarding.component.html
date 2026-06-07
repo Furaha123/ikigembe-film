@@ -1,0 +1,257 @@
+<div class="onboarding-page">
+
+  <!-- Left brand panel -->
+  <div class="ob-brand">
+    <img src="/assets/ikigembe.log.png" alt="Ikigembe" class="ob-logo" />
+    <div class="ob-brand-text">
+      <h2>Welcome to IKIGEMBE</h2>
+      <p>Complete your producer profile so viewers and our admin team can learn about you and your work.</p>
+    </div>
+    <div class="ob-steps-indicator">
+      @for (s of [1,2,3]; track s) {
+        <div class="ob-step-dot" [class.active]="currentStep() === s" [class.done]="currentStep() > s">
+          @if (currentStep() > s) {
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" width="12" height="12"><polyline points="20 6 9 17 4 12"/></svg>
+          } @else {
+            {{ s }}
+          }
+        </div>
+      }
+    </div>
+    <button class="skip-all-btn" (click)="skipAll()">Skip setup for now →</button>
+  </div>
+
+  <!-- Right form panel -->
+  <div class="ob-form-panel">
+
+    <!-- Progress bar -->
+    <div class="ob-progress">
+      <div class="ob-progress-fill" [style.width.%]="stepPercent()"></div>
+    </div>
+
+    <div class="ob-form-wrap">
+
+      <!-- ── STEP 1: Profile ── -->
+      @if (currentStep() === 1) {
+        <div class="ob-step">
+          <div class="step-label">Step 1 of 3</div>
+          <h1 class="step-title">Tell us about yourself</h1>
+          <p class="step-desc">Help viewers and IKIGEMBE's team understand who you are as a producer.</p>
+
+          <!-- Avatar -->
+          <div class="avatar-row">
+            <div class="avatar-preview" (click)="avatarInput.click()">
+              @if (avatarPreview()) {
+                <img [src]="avatarPreview()!" alt="Profile photo" />
+              } @else {
+                <div class="avatar-placeholder">
+                  <svg viewBox="0 0 24 24" fill="currentColor" width="32" height="32">
+                    <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+                  </svg>
+                </div>
+              }
+              <div class="avatar-overlay">
+                <svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34a1 1 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>
+              </div>
+            </div>
+            <div class="avatar-info">
+              <span class="avatar-label">Profile Photo</span>
+              <span class="avatar-hint">Optional. Click the circle to upload.</span>
+              <button type="button" class="btn-change-photo" (click)="avatarInput.click()">Choose photo</button>
+            </div>
+            <input #avatarInput type="file" accept="image/*" class="hidden-input" (change)="onAvatarSelect($event)" />
+          </div>
+
+          <form [formGroup]="profileForm" novalidate>
+
+            <!-- Country -->
+            <div class="field" [class.has-error]="country?.invalid && country?.touched">
+              <label for="ob-country">Country / Region *</label>
+              <select id="ob-country" formControlName="country">
+                <option value="">Select your country…</option>
+                @for (c of COUNTRIES; track c) {
+                  <option [value]="c">{{ c }}</option>
+                }
+              </select>
+              @if (country?.touched && country?.hasError('required')) {
+                <span class="field-error">Please select your country.</span>
+              }
+            </div>
+
+            <!-- Experience level -->
+            <div class="field" [class.has-error]="experience?.invalid && experience?.touched">
+              <label for="ob-exp">Experience Level *</label>
+              <select id="ob-exp" formControlName="experience">
+                <option value="">Select your experience…</option>
+                <option value="new">New to filmmaking (0–2 years)</option>
+                <option value="intermediate">Intermediate (3–5 years)</option>
+                <option value="experienced">Experienced (6–10 years)</option>
+                <option value="veteran">Veteran (10+ years)</option>
+              </select>
+              @if (experience?.touched && experience?.hasError('required')) {
+                <span class="field-error">Please select your experience level.</span>
+              }
+            </div>
+
+            <!-- Bio -->
+            <div class="field" [class.has-error]="bio?.invalid && bio?.touched">
+              <label for="ob-bio">
+                About You *
+                <span class="char-count">{{ bio?.value?.length ?? 0 }}/400</span>
+              </label>
+              <textarea id="ob-bio" formControlName="bio" rows="4"
+                        placeholder="Tell us about your background, the stories you love to tell, and what makes your films unique…"
+                        maxlength="400"></textarea>
+              @if (bio?.touched && bio?.hasError('required')) {
+                <span class="field-error">Please write a short bio.</span>
+              } @else if (bio?.touched && bio?.hasError('minlength')) {
+                <span class="field-error">Bio must be at least 20 characters.</span>
+              }
+            </div>
+
+          </form>
+
+          <div class="step-footer">
+            <div></div>
+            <button class="btn-next" (click)="goNext()">
+              Continue
+              <svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18"><path d="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8z"/></svg>
+            </button>
+          </div>
+        </div>
+      }
+
+      <!-- ── STEP 2: Genres ── -->
+      @if (currentStep() === 2) {
+        <div class="ob-step">
+          <div class="step-label">Step 2 of 3</div>
+          <h1 class="step-title">What do you create?</h1>
+          <p class="step-desc">Select the genres that best describe your films. Pick at least one.</p>
+
+          <div class="genre-grid">
+            @for (g of ALL_GENRES; track g) {
+              <button type="button" class="genre-chip" [class.selected]="isGenreSelected(g)" (click)="toggleGenre(g)">
+                @if (isGenreSelected(g)) {
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="14" height="14"><polyline points="20 6 9 17 4 12"/></svg>
+                }
+                {{ g }}
+              </button>
+            }
+          </div>
+
+          @if (!genresValid() && selectedGenres().size === 0) {
+            <p class="genre-hint-error">Please select at least one genre.</p>
+          }
+
+          <div class="selected-note">
+            @if (selectedGenres().size > 0) {
+              <span>{{ selectedGenres().size }} genre{{ selectedGenres().size !== 1 ? 's' : '' }} selected</span>
+            }
+          </div>
+
+          <div class="step-footer">
+            <button class="btn-back" (click)="goPrev()">
+              <svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
+              Back
+            </button>
+            <button class="btn-next" (click)="goNext()" [disabled]="!genresValid()">
+              Continue
+              <svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18"><path d="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8z"/></svg>
+            </button>
+          </div>
+        </div>
+      }
+
+      <!-- ── STEP 3: Payment ── -->
+      @if (currentStep() === 3) {
+        <div class="ob-step">
+          <div class="step-label">Step 3 of 3</div>
+          <h1 class="step-title">How would you like to receive payments?</h1>
+          <p class="step-desc">Enter your payment details so we can send your earnings when they're ready. You can update these later in Settings.</p>
+
+          <!-- Method toggle -->
+          <div class="method-toggle">
+            <button type="button" class="method-btn" [class.active]="paymentMethod() === 'momo'" (click)="paymentMethod.set('momo')">
+              <svg viewBox="0 0 24 24" fill="currentColor" width="20" height="20"><path d="M17 1.01L7 1c-1.1 0-2 .9-2 2v18c0 1.1.9 2 2 2h10c1.1 0 2-.9 2-2V3c0-1.1-.9-1.99-2-1.99zM17 19H7V5h10v14z"/></svg>
+              Mobile Money
+            </button>
+            <button type="button" class="method-btn" [class.active]="paymentMethod() === 'bank'" (click)="paymentMethod.set('bank')">
+              <svg viewBox="0 0 24 24" fill="currentColor" width="20" height="20"><path d="M4 10v7h3v-7H4zm6 0v7h3v-7h-3zM2 22h19v-3H2v3zm14-12v7h3v-7h-3zM11.5 1L2 6v2h19V6l-9.5-5z"/></svg>
+              Bank Transfer
+            </button>
+          </div>
+
+          <!-- MoMo form -->
+          @if (paymentMethod() === 'momo') {
+            <form [formGroup]="momoForm" novalidate>
+              <div class="field" [class.has-error]="momoForm.get('momo_provider')?.invalid && momoForm.get('momo_provider')?.touched">
+                <label>Mobile Money Provider *</label>
+                <select formControlName="momo_provider">
+                  @for (p of MOMO_PROVIDERS; track p) {
+                    <option [value]="p">{{ p }}</option>
+                  }
+                </select>
+              </div>
+              <div class="field" [class.has-error]="momoForm.get('momo_number')?.invalid && momoForm.get('momo_number')?.touched">
+                <label>Mobile Money Number *</label>
+                <input type="tel" formControlName="momo_number" placeholder="+250 7XX XXX XXX" />
+                @if (momoForm.get('momo_number')?.touched && momoForm.get('momo_number')?.hasError('required')) {
+                  <span class="field-error">Phone number is required.</span>
+                } @else if (momoForm.get('momo_number')?.touched && momoForm.get('momo_number')?.hasError('pattern')) {
+                  <span class="field-error">Enter a valid phone number.</span>
+                }
+              </div>
+            </form>
+          }
+
+          <!-- Bank form -->
+          @if (paymentMethod() === 'bank') {
+            <form [formGroup]="bankForm" novalidate>
+              <div class="field" [class.has-error]="bankForm.get('bank_name')?.invalid && bankForm.get('bank_name')?.touched">
+                <label>Bank Name *</label>
+                <input type="text" formControlName="bank_name" placeholder="e.g. Bank of Kigali" />
+                @if (bankForm.get('bank_name')?.touched && bankForm.get('bank_name')?.hasError('required')) {
+                  <span class="field-error">Bank name is required.</span>
+                }
+              </div>
+              <div class="field" [class.has-error]="bankForm.get('account_number')?.invalid && bankForm.get('account_number')?.touched">
+                <label>Account Number *</label>
+                <input type="text" formControlName="account_number" placeholder="Enter your account number" />
+                @if (bankForm.get('account_number')?.touched && bankForm.get('account_number')?.hasError('required')) {
+                  <span class="field-error">Account number is required.</span>
+                }
+              </div>
+              <div class="field" [class.has-error]="bankForm.get('account_holder_name')?.invalid && bankForm.get('account_holder_name')?.touched">
+                <label>Account Holder Name *</label>
+                <input type="text" formControlName="account_holder_name" placeholder="Full name on the account" />
+                @if (bankForm.get('account_holder_name')?.touched && bankForm.get('account_holder_name')?.hasError('required')) {
+                  <span class="field-error">Account holder name is required.</span>
+                }
+              </div>
+            </form>
+          }
+
+          @if (saveError()) {
+            <div class="save-error">{{ saveError() }}</div>
+          }
+
+          <div class="step-footer">
+            <button class="btn-back" (click)="goPrev()">
+              <svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
+              Back
+            </button>
+            <button class="btn-finish" (click)="complete()" [disabled]="isSaving()">
+              @if (isSaving()) {
+                <span class="spinner"></span>Saving…
+              } @else {
+                Complete Setup
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="18" height="18"><polyline points="20 6 9 17 4 12"/></svg>
+              }
+            </button>
+          </div>
+        </div>
+      }
+
+    </div>
+  </div>
+</div>

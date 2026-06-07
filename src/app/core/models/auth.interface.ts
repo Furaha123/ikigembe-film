@@ -8,7 +8,21 @@ export interface RegisterPayload {
   password_confirm: string;
   first_name: string;
   last_name: string;
+  role?: string;
+  phone_number?: string;
+  studio_name?: string;
 }
+
+export interface ProducerRegisterPayload {
+  full_name: string;
+  phone_number: string;
+  studio_name?: string;
+  email: string;
+  password: string;
+  password_confirm: string;
+}
+
+export type AccountStatus = 'pending_approval' | 'approved' | 'suspended';
 
 export interface RegisterErrors {
   email?: string[];
@@ -16,6 +30,10 @@ export interface RegisterErrors {
   password_confirm?: string[];
   first_name?: string[];
   last_name?: string[];
+  phone_number?: string[];
+  studio_name?: string[];
+  full_name?: string[];
+  non_field_errors?: string[];
 }
 
 export interface RegisterResponse {

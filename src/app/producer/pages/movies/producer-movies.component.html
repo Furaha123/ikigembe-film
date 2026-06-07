@@ -3,20 +3,28 @@
   <!-- ── Header ── -->
   <div class="page-header">
     <div class="header-text">
-      <h1>My Content</h1>
-      <p>All films you've uploaded to the platform</p>
+      <h1>My Films</h1>
+      <p>All films you have submitted to the platform</p>
     </div>
-    <div class="search-wrap">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
-      </svg>
-      <input type="text" placeholder="Search movies…"
-             [ngModel]="search()" (ngModelChange)="search.set($event)" />
-      @if (search()) {
-        <button class="clear-search" (click)="search.set('')">
-          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
-        </button>
-      }
+    <div class="header-actions">
+      <div class="search-wrap">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+        </svg>
+        <input type="text" placeholder="Search films…"
+               [ngModel]="search()" (ngModelChange)="search.set($event)" />
+        @if (search()) {
+          <button class="clear-search" (click)="search.set('')">
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+          </button>
+        }
+      </div>
+      <button class="btn-upload" (click)="goToUpload()">
+        <svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16">
+          <path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM14 13v4h-4v-4H7l5-5 5 5h-3z"/>
+        </svg>
+        Upload Film
+      </button>
     </div>
   </div>
 
@@ -35,7 +43,7 @@
       }
     </div>
     <span class="movie-count">
-      {{ filtered().length }} movie{{ filtered().length !== 1 ? 's' : '' }}
+      {{ filtered().length }} film{{ filtered().length !== 1 ? 's' : '' }}
     </span>
   </div>
 
@@ -60,7 +68,10 @@
         <rect x="2" y="2" width="20" height="20" rx="2"/>
         <path d="M10 8l6 4-6 4V8z"/>
       </svg>
-      <p>{{ search() ? 'No movies match your search.' : 'You have no movies uploaded yet.' }}</p>
+      <p>{{ search() ? 'No films match your search.' : 'You have no films submitted yet.' }}</p>
+      @if (!search()) {
+        <button class="btn-upload-empty" (click)="goToUpload()">Upload your first film</button>
+      }
     </div>
 
   <!-- ── Table ── -->
@@ -71,37 +82,24 @@
           <tr>
             <th class="th-movie" (click)="setSort('title')"
                 [class.sorted]="sortCol() === 'title'">
-              Movie
+              Film
               <svg class="sort-arrow" viewBox="0 0 24 24" fill="currentColor"
                    [class.asc]="sortCol() === 'title' && sortDir() === 'asc'">
                 <path d="M7 10l5 5 5-5H7z"/>
               </svg>
             </th>
             <th class="th-status">Status</th>
-            <th class="th-date sortable" (click)="setSort('release_date')"
-                [class.sorted]="sortCol() === 'release_date'">
-              Date
+            <th class="th-genre">Genre</th>
+            <th class="th-date sortable" (click)="setSort('created_at')"
+                [class.sorted]="sortCol() === 'created_at'">
+              Submitted
               <svg class="sort-arrow" viewBox="0 0 24 24" fill="currentColor"
-                   [class.asc]="sortCol() === 'release_date' && sortDir() === 'asc'">
+                   [class.asc]="sortCol() === 'created_at' && sortDir() === 'asc'">
                 <path d="M7 10l5 5 5-5H7z"/>
               </svg>
             </th>
-            <th class="th-views sortable" (click)="setSort('views')"
-                [class.sorted]="sortCol() === 'views'">
-              Views
-              <svg class="sort-arrow" viewBox="0 0 24 24" fill="currentColor"
-                   [class.asc]="sortCol() === 'views' && sortDir() === 'asc'">
-                <path d="M7 10l5 5 5-5H7z"/>
-              </svg>
-            </th>
-            <th class="th-price sortable" (click)="setSort('price')"
-                [class.sorted]="sortCol() === 'price'">
-              Price
-              <svg class="sort-arrow" viewBox="0 0 24 24" fill="currentColor"
-                   [class.asc]="sortCol() === 'price' && sortDir() === 'asc'">
-                <path d="M7 10l5 5 5-5H7z"/>
-              </svg>
-            </th>
+            <th class="th-duration">Duration</th>
+            <th class="th-actions">Actions</th>
           </tr>
         </thead>
 
@@ -129,31 +127,37 @@
                   </div>
                   <div class="movie-info">
                     <span class="movie-title">{{ movie.title }}</span>
-                  </div>
+                    </div>
                 </div>
               </td>
 
               <!-- Status column -->
-              <td class="td-status">
-                <div class="status-cell" [class.is-active]="movie.is_active" [class.is-inactive]="!movie.is_active">
-                  <span class="status-dot"></span>
-                  {{ movie.is_active ? 'Active' : 'Inactive' }}
-                </div>
+              <td class="td-status" (click)="$event.stopPropagation()">
+                <span class="status-chip" [class]="statusClass(movie)">
+                  {{ statusLabel(movie) }}
+                </span>
               </td>
 
-              <!-- Date column -->
-              <td class="td-date">
-                <div class="date-cell">
-                  <span>{{ movie.release_date | date:'d MMM yyyy' }}</span>
-                  <span class="date-sub">{{ movie.is_active ? 'Published' : 'Inactive' }}</span>
-                </div>
+              <!-- Genre column -->
+              <td class="td-genre">{{ genreLabel(movie) }}</td>
+
+              <!-- Submitted date column -->
+              <td class="td-date">{{ movie.created_at | date:'d MMM yyyy' }}</td>
+
+              <!-- Duration column -->
+              <td class="td-duration">
+                {{ movie.duration_minutes ? movie.duration_minutes + ' min' : '—' }}
               </td>
 
-              <!-- Views column -->
-              <td class="td-views">{{ fmtNum(movie.views) }}</td>
-
-              <!-- Price column -->
-              <td class="td-price">{{ formatCurrency(movie.price) }}</td>
+              <!-- Actions column -->
+              <td class="td-actions" (click)="$event.stopPropagation()">
+                <button class="btn-edit" (click)="openEdit(movie, $event)" title="Edit film details">
+                  <svg viewBox="0 0 24 24" fill="currentColor" width="14" height="14">
+                    <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04a1 1 0 0 0 0-1.41l-2.34-2.34a1 1 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/>
+                  </svg>
+                  Edit
+                </button>
+              </td>
 
             </tr>
           }
@@ -166,3 +170,82 @@
   }
 
 </div>
+
+<!-- ── Edit Film Modal ── -->
+@if (editMovie()) {
+  <div class="modal-overlay" (click)="closeEdit()">
+    <div class="modal-box edit-modal" (click)="$event.stopPropagation()">
+
+      <div class="modal-header">
+        <h3>Edit Film</h3>
+        <button class="modal-close" (click)="closeEdit()">
+          <svg viewBox="0 0 24 24" fill="currentColor" width="20" height="20">
+            <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+          </svg>
+        </button>
+      </div>
+
+      <div class="modal-body" [formGroup]="editForm">
+
+        <div class="edit-note">
+          The video file, duration, and release date cannot be changed after submission.
+        </div>
+
+        <!-- Title -->
+        <div class="edit-field">
+          <label class="edit-label">Title</label>
+          <input class="edit-input" type="text" formControlName="title" placeholder="Film title" />
+          @if (editForm.get('title')?.invalid && editForm.get('title')?.touched) {
+            <span class="edit-error">Title is required</span>
+          }
+        </div>
+
+        <!-- Overview -->
+        <div class="edit-field">
+          <label class="edit-label">Overview / Synopsis</label>
+          <textarea class="edit-textarea" formControlName="overview" rows="3"
+                    placeholder="Short description of the film"></textarea>
+        </div>
+
+        <!-- Price -->
+        <div class="edit-field">
+          <label class="edit-label">Price (RWF)</label>
+          <input class="edit-input" type="number" formControlName="price" min="0" placeholder="0" />
+        </div>
+
+        <!-- Free preview toggle -->
+        <div class="edit-field edit-field--row">
+          <label class="edit-label">Free Preview</label>
+          <label class="toggle-switch">
+            <input type="checkbox" formControlName="has_free_preview" />
+            <span class="toggle-track"></span>
+          </label>
+        </div>
+
+        <!-- Genres -->
+        <div class="edit-field">
+          <label class="edit-label">Genres</label>
+          <div class="genre-grid">
+            @for (g of ALL_GENRES; track g) {
+              <button type="button" class="genre-chip"
+                      [class.selected]="editGenres().has(g)"
+                      (click)="toggleEditGenre(g)">{{ g }}</button>
+            }
+          </div>
+        </div>
+
+        @if (saveError()) {
+          <p class="edit-error-msg">{{ saveError() }}</p>
+        }
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn-close-modal" (click)="closeEdit()" [disabled]="isSaving()">Cancel</button>
+        <button class="btn-save-modal" (click)="saveEdit()" [disabled]="editForm.invalid || isSaving()">
+          @if (isSaving()) { Saving… } @else { Save Changes }
+        </button>
+      </div>
+
+    </div>
+  </div>
+}

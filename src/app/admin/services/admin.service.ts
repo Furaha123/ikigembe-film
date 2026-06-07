@@ -14,6 +14,8 @@ import {
   TransactionHistory,
   WithdrawalItem,
   AdminMovie,
+  FilmSubmissionItem,
+  ProducerDocuments,
   RevenueTrendItem,
   TopMovieItem,
   UserGrowthItem,
@@ -59,8 +61,16 @@ export class AdminService {
     return this.http.post(`${BASE}/admin/dashboard/producers/${id}/approve/`, {});
   }
 
-  suspendProducer(id: number): Observable<unknown> {
-    return this.http.post(`${BASE}/admin/dashboard/producers/${id}/suspend/`, {});
+  rejectProducer(id: number, reason: string): Observable<unknown> {
+    return this.http.post(`${BASE}/admin/dashboard/producers/${id}/reject/`, { reason });
+  }
+
+  suspendProducer(id: number, reason?: string): Observable<unknown> {
+    return this.http.post(`${BASE}/admin/dashboard/producers/${id}/suspend/`, { reason: reason ?? '' });
+  }
+
+  getProducerDocuments(id: number): Observable<ProducerDocuments> {
+    return this.http.get<ProducerDocuments>(`${BASE}/admin/dashboard/producers/${id}/documents/`);
   }
 
   // Transactions & withdrawals
@@ -86,11 +96,28 @@ export class AdminService {
     return this.http.post(`${BASE}/admin/dashboard/withdrawals/${id}/complete/`, {});
   }
 
-  // Movies
+  // Movies catalog
   getMovies(): Observable<AdminMovie[]> {
     return this.http.get<{ results: AdminMovie[] }>(`${BASE}/movies/discover/`).pipe(
       map(res => res.results)
     );
+  }
+
+  // Film submissions (from producers)
+  getFilmSubmissions(): Observable<FilmSubmissionItem[]> {
+    return this.http.get<FilmSubmissionItem[]>(`${BASE}/admin/dashboard/films/submissions/`);
+  }
+
+  approveFilm(id: number): Observable<unknown> {
+    return this.http.post(`${BASE}/admin/dashboard/films/${id}/approve/`, {});
+  }
+
+  rejectFilm(id: number, reason: string): Observable<unknown> {
+    return this.http.post(`${BASE}/admin/dashboard/films/${id}/reject/`, { reason });
+  }
+
+  removeFilm(id: number): Observable<unknown> {
+    return this.http.delete(`${BASE}/admin/dashboard/films/${id}/remove/`);
   }
 
   createMovie(formData: FormData): Observable<unknown> {
