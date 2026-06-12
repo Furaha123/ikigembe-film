@@ -1,0 +1,64 @@
+<div class="flow-page">
+  <div class="flow-card accept-card">
+
+    <div class="step-indicator">
+      <span class="step done"></span>
+      <span class="step done"></span>
+      <span class="step done"></span>
+      <span class="step done"></span>
+      <span class="step active"></span>
+    </div>
+
+    <div class="icon-wrap">
+      <svg viewBox="0 0 24 24" fill="currentColor" width="32" height="32">
+        <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34a.9959.9959 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/>
+      </svg>
+    </div>
+
+    <h1 class="flow-title">Sign the Agreement</h1>
+    <p class="flow-subtitle">Your typed name serves as your legal signature.</p>
+
+    <div class="accept-form">
+
+      <div class="field-group">
+        <label class="field-label" for="sigName">Full Legal Name *</label>
+        <input
+          id="sigName"
+          type="text"
+          class="field-input"
+          placeholder="Enter your full legal name"
+          [value]="signatureInput()"
+          (input)="onSignatureChange($any($event.target).value)"
+          autocomplete="name"
+        />
+        @if (signatureInput().trim().length > 0) {
+          <div class="sig-preview" [style.font-family]="'Georgia, serif'">
+            {{ signatureInput() }}
+          </div>
+        }
+      </div>
+
+      <label class="checkbox-row">
+        <input
+          type="checkbox"
+          class="checkbox-input"
+          [checked]="agreed()"
+          (change)="agreed.set($any($event.target).checked)"
+        />
+        <span class="checkbox-label">
+          I have read and fully agree to the
+          <strong>Producer Distribution Agreement</strong> and all its terms.
+        </span>
+      </label>
+
+    </div>
+
+    <div class="flow-actions">
+      <button class="btn-outline" (click)="back()">Back</button>
+      <button class="btn-gold" (click)="accept()" [disabled]="!isValid()">
+        Accept &amp; Continue
+      </button>
+    </div>
+
+  </div>
+</div>

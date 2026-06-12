@@ -1,0 +1,189 @@
+@keyframes spin { to { transform: rotate(360deg); } }
+
+$gold:    #C8A84B;
+$gold-bg: rgba(200, 168, 75, 0.12);
+$border:  #252525;
+$card:    #161616;
+$surface: #141414;
+$muted:   #888;
+
+.contracts-page {
+  max-width: 860px;
+  padding: 2rem;
+
+  @media (max-width: 600px) { padding: 1.25rem 1rem; }
+}
+
+// ── Header ──────────────────────────────────────────────────
+.page-header { margin-bottom: 2rem; }
+
+.page-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #fff;
+  margin: 0 0 .35rem;
+}
+
+.page-subtitle {
+  font-size: .875rem;
+  color: $muted;
+  margin: 0;
+}
+
+// ── Loading / error ──────────────────────────────────────────
+.contracts-loading {
+  display: flex;
+  align-items: center;
+  gap: .75rem;
+  color: $muted;
+  font-size: .875rem;
+  padding: 2rem 0;
+}
+
+.spinner {
+  width: 18px; height: 18px;
+  border: 2px solid $border;
+  border-top-color: $gold;
+  border-radius: 50%;
+  animation: spin .8s linear infinite;
+}
+
+.contracts-error {
+  color: #f87171;
+  background: rgba(239, 68, 68, .08);
+  border: 1px solid rgba(239, 68, 68, .2);
+  border-radius: 8px;
+  padding: 1rem 1.25rem;
+  font-size: .875rem;
+}
+
+// ── Status card ──────────────────────────────────────────────
+.status-card {
+  background: $card;
+  border: 1px solid $border;
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+
+  &--active   { border-left: 4px solid #4ade80; }
+  &--expiring { border-left: 4px solid #f59e0b; }
+  &--expired  { border-left: 4px solid #f87171; }
+  &--none     { border-left: 4px solid $gold; }
+}
+
+.status-card-header {
+  display: flex;
+  align-items: center;
+  gap: .75rem;
+  margin-bottom: 1.25rem;
+}
+
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: .35rem;
+  font-size: .78rem;
+  font-weight: 600;
+  padding: .3rem .75rem;
+  border-radius: 999px;
+
+  &--active   { background: rgba(74, 222, 128, .1);  color: #4ade80; }
+  &--expiring { background: rgba(245, 158, 11, .1);  color: #f59e0b; }
+  &--expired  { background: rgba(248, 113, 113, .1); color: #f87171; }
+  &--none     { background: $gold-bg;                color: $gold;   }
+}
+
+.days-chip {
+  font-size: .78rem;
+  color: $muted;
+  background: $surface;
+  border: 1px solid $border;
+  border-radius: 999px;
+  padding: .25rem .65rem;
+}
+
+.contract-details {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: .75rem 1.5rem;
+  margin: 0 0 1rem;
+}
+
+.detail-row {
+  dt {
+    font-size: .72rem;
+    color: $muted;
+    text-transform: uppercase;
+    letter-spacing: .05em;
+    margin-bottom: .2rem;
+  }
+  dd {
+    font-size: .95rem;
+    color: #fff;
+    font-weight: 500;
+    margin: 0;
+  }
+}
+
+.status-desc {
+  font-size: .875rem;
+  color: $muted;
+  margin: 0 0 1.25rem;
+  line-height: 1.55;
+}
+
+// ── CTA buttons ──────────────────────────────────────────────
+.cta-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: .45rem;
+  padding: .65rem 1.35rem;
+  border-radius: 8px;
+  font-size: .875rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: opacity .15s;
+
+  &:hover { opacity: .85; }
+
+  &--primary { background: $gold;    color: #000; }
+  &--warning { background: #d97706;  color: #fff; }
+  &--danger  { background: #dc2626;  color: #fff; }
+}
+
+// ── Info grid ────────────────────────────────────────────────
+.info-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 1rem;
+}
+
+.info-card {
+  background: $card;
+  border: 1px solid $border;
+  border-radius: 10px;
+  padding: 1.25rem;
+
+  h3 {
+    font-size: .9rem;
+    font-weight: 600;
+    color: #fff;
+    margin: .6rem 0 .4rem;
+  }
+  p {
+    font-size: .82rem;
+    color: $muted;
+    line-height: 1.5;
+    margin: 0;
+  }
+}
+
+.info-icon {
+  width: 40px; height: 40px;
+  border-radius: 10px;
+  background: $gold-bg;
+  color: $gold;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}

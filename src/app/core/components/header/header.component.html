@@ -95,12 +95,61 @@
       }
     </div>
 
-    <button class="icon-btn notification-btn">
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-        <path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.63-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.64 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2zm-2 1H8v-6c0-2.48 1.51-4.5 4-4.5s4 2.02 4 4.5v6z"/>
-      </svg>
-      <span class="notification-badge">3</span>
-    </button>
+    <!-- ── Inbox bell ── -->
+    <div class="inbox-wrapper">
+      <button class="icon-btn notification-btn" [class.active]="showInbox()"
+              (click)="toggleInbox($event)" aria-label="Notifications">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.63-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.64 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2zm-2 1H8v-6c0-2.48 1.51-4.5 4-4.5s4 2.02 4 4.5v6z"/>
+        </svg>
+        @if (unreadCount() > 0) {
+          <span class="notification-badge">{{ unreadCount() > 9 ? '9+' : unreadCount() }}</span>
+        }
+      </button>
+
+      @if (showInbox()) {
+        <div class="inbox-dropdown">
+          <div class="inbox-header">
+            <span class="inbox-title">Notifications</span>
+            @if (unreadCount() > 0) {
+              <button class="inbox-mark-all" (click)="markAllInboxRead($event)">Mark all read</button>
+            }
+          </div>
+
+          @if (inboxItems().length === 0) {
+            <div class="inbox-empty">No notifications yet.</div>
+          } @else {
+            <div class="inbox-list">
+              @for (n of inboxItems(); track n.id) {
+                <button class="inbox-item" [class.unread]="!n.read" (click)="onNotifClick(n)">
+                  @if (notifTypeIcon(n.type) === 'check') {
+                    <svg class="inbox-type-icon inbox-type-icon--check" viewBox="0 0 24 24" fill="currentColor" width="18" height="18" aria-hidden="true">
+                      <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 14.5l-4-4 1.41-1.41L10 13.67l6.59-6.59L18 8.5l-8 8z"/>
+                    </svg>
+                  } @else if (notifTypeIcon(n.type) === 'warning') {
+                    <svg class="inbox-type-icon inbox-type-icon--warning" viewBox="0 0 24 24" fill="currentColor" width="18" height="18" aria-hidden="true">
+                      <path d="M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z"/>
+                    </svg>
+                  } @else if (notifTypeIcon(n.type) === 'play') {
+                    <svg class="inbox-type-icon inbox-type-icon--play" viewBox="0 0 24 24" fill="currentColor" width="18" height="18" aria-hidden="true">
+                      <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 14.5v-9l6 4.5-6 4.5z"/>
+                    </svg>
+                  } @else {
+                    <svg class="inbox-type-icon inbox-type-icon--film" viewBox="0 0 24 24" fill="currentColor" width="18" height="18" aria-hidden="true">
+                      <path d="M18 4l2 4h-3l-2-4h-2l2 4h-3l-2-4H8l2 4H7L5 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V4h-4z"/>
+                    </svg>
+                  }
+                  <div class="inbox-body">
+                    <p class="inbox-message">{{ n.message }}</p>
+                    <span class="inbox-time">{{ relativeTime(n.created_at) }}</span>
+                  </div>
+                </button>
+              }
+            </div>
+          }
+        </div>
+      }
+    </div>
     <div class="user-menu">
       <button class="user-menu-trigger" (click)="toggleDropdown($event)" type="button">
         <div class="avatar">{{ initials() }}</div>

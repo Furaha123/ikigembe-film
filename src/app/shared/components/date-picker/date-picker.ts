@@ -21,8 +21,10 @@ export interface DateRange {
   imports: []
 })
 export class DatePickerComponent {
-  public disabled   = input(false);
-  public dateChange = output<DateRange>();
+  public disabled        = input(false);
+  public singleMode      = input(false);
+  public dateChange      = output<DateRange>();
+  public singleDateChange = output<Date>();
 
   protected open        = signal(false);
   protected viewYear    = signal(new Date().getFullYear());
@@ -61,6 +63,7 @@ export class DatePickerComponent {
 
   protected label = computed(() => {
     const s = this.startDate(), e = this.endDate();
+    if (this.singleMode()) return s ? this.fmt(s) : 'Select date';
     if (s && e) return `${this.fmt(s)}  →  ${this.fmt(e)}`;
     if (s)      return `${this.fmt(s)}  →  …`;
     return 'Select date range';
@@ -82,16 +85,23 @@ export class DatePickerComponent {
   // ── Day selection ──────────────────────────────────────
   protected selectDay(day: Date | null) {
     if (!day) return;
+
+    if (this.singleMode()) {
+      this.startDate.set(day);
+      this.endDate.set(null);
+      this.open.set(false);
+      this.singleDateChange.emit(day);
+      return;
+    }
+
     const s = this.startDate(), e = this.endDate();
 
     if (!s || (s && e)) {
-      // fresh pick
       this.startDate.set(day);
       this.endDate.set(null);
       return;
     }
 
-    // second pick — ensure start <= end
     if (day < s) {
       this.endDate.set(s);
       this.startDate.set(day);

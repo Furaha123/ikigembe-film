@@ -303,6 +303,15 @@ $sidebar-collapsed-w: 64px;
   background: transparent; flex-shrink: 0; margin-top: 0.35rem;
 }
 
+.notif-type-icon {
+  flex-shrink: 0; margin-top: 0.1rem;
+  &--check    { color: #4ade80; }
+  &--cross    { color: #f87171; }
+  &--contract { color: #C8A84B; }
+}
+
+.notif-item { cursor: pointer; }
+
 .notif-body { flex: 1; min-width: 0; }
 
 .notif-message {

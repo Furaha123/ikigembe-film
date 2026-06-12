@@ -1,0 +1,42 @@
+@import '../_contract-flow';
+
+.verify-card {
+  gap: 20px;
+  padding-bottom: 48px;
+}
+
+.spinner-wrap {
+  margin-bottom: 8px;
+}
+
+.spinner {
+  width: 52px;
+  height: 52px;
+  border: 3px solid $border;
+  border-top-color: $gold;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.verify-title {
+  font-size: 20px;
+  font-weight: 700;
+  color: $text;
+  margin: 0;
+}
+
+.verify-sub {
+  font-size: 14px;
+  color: $muted;
+  margin: 0;
+}
+
+.error-icon {
+  background: rgba(248, 113, 113, 0.12);
+  border-color: rgba(248, 113, 113, 0.3);
+  color: #f87171;
+}

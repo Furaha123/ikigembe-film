@@ -1,0 +1,27 @@
+@if (state() !== 'none') {
+  <div class="widget" [class]="'widget--' + state()">
+
+    @if (state() === 'active') {
+      <div class="widget-chip chip--green">
+        <span class="chip-dot"></span> Agreement Active
+      </div>
+      <span class="widget-meta">Expires in {{ status().days_remaining }} day{{ status().days_remaining === 1 ? '' : 's' }}</span>
+    }
+
+    @if (state() === 'expiring') {
+      <div class="widget-chip chip--amber">
+        <span class="chip-dot"></span> Expiring Soon
+      </div>
+      <span class="widget-meta">{{ status().days_remaining }} days remaining</span>
+      <a routerLink="/producer/contracts/start" class="widget-action">Renew</a>
+    }
+
+    @if (state() === 'expired') {
+      <div class="widget-chip chip--red">
+        <span class="chip-dot"></span> Expired
+      </div>
+      <a routerLink="/producer/contracts/start" class="widget-action">Renew Now</a>
+    }
+
+  </div>
+}

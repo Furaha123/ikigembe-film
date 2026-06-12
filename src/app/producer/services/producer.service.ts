@@ -29,6 +29,8 @@ export interface ProducerMovie {
   is_active: boolean;
   has_free_preview: boolean;
   hls_status: 'not_started' | 'processing' | 'completed' | 'failed';
+  approval_status: 'pending_review' | 'approved' | 'rejected' | 'approved_pending_contract';
+  rejection_reason: string | null;
   created_at: string;
   genres: string[];
 }
@@ -43,6 +45,10 @@ export interface FilmSubmissionMetadata {
   cast: string;
   release_year: number;
   quality: string;
+  price?: number;
+  release_date?: string;
+  has_free_preview?: boolean;
+  thumbnail_key?: string;
 }
 
 export interface FilmSubmission {
@@ -192,7 +198,15 @@ export interface ProducerTransactionResponse {
 
 export interface ProducerNotification {
   id: number;
-  type: 'account_approved' | 'account_rejected' | 'film_approved' | 'film_rejected' | 'document_reminder';
+  type:
+    | 'account_approved'
+    | 'account_rejected'
+    | 'film_approved'
+    | 'film_rejected'
+    | 'document_reminder'
+    | 'contract_required'
+    | 'contract_expiring'
+    | 'contract_expired';
   message: string;
   read: boolean;
   created_at: string;
@@ -266,8 +280,11 @@ export class ProducerService {
     );
   }
 
-  getAnalytics(range: string): Observable<AnalyticsResponse> {
-    return this.http.get<AnalyticsResponse>(`${BASE}/producer/dashboard/analytics/?range=${range}`);
+  getAnalytics(range: string, startDate?: string, endDate?: string): Observable<AnalyticsResponse> {
+    let url = `${BASE}/producer/dashboard/analytics/?range=${range}`;
+    if (startDate) url += `&start_date=${startDate}`;
+    if (endDate)   url += `&end_date=${endDate}`;
+    return this.http.get<AnalyticsResponse>(url);
   }
 
   getMovieDetail(id: number): Observable<ProducerMovieDetail> {
@@ -316,6 +333,43 @@ export class ProducerService {
 
   submitFilm(payload: FilmSubmission): Observable<{ id: number; status: string }> {
     return this.http.post<{ id: number; status: string }>(`${BASE}/producer/films/submit/`, payload);
+  }
+
+  submitMovie(formData: FormData): Observable<unknown> {
+    return this.http.post(`${BASE}/movies/create/`, formData);
+  }
+
+  initiateUpload(
+    fileName: string,
+    fileType: string,
+    fieldName: 'video_file' | 'trailer_file',
+  ): Observable<{ upload_id: string; file_key: string }> {
+    return this.http.post<{ upload_id: string; file_key: string }>(
+      `${BASE}/movies/upload/initiate/`,
+      { file_name: fileName, file_type: fileType, field_name: fieldName },
+    );
+  }
+
+  signPart(
+    uploadId: string,
+    fileKey: string,
+    partNumber: number,
+  ): Observable<{ url: string }> {
+    return this.http.post<{ url: string }>(
+      `${BASE}/movies/upload/sign-part/`,
+      { upload_id: uploadId, file_key: fileKey, part_number: partNumber },
+    );
+  }
+
+  completeUpload(
+    uploadId: string,
+    fileKey: string,
+    parts: { PartNumber: number; ETag: string }[],
+  ): Observable<{ status: string }> {
+    return this.http.post<{ status: string }>(
+      `${BASE}/movies/upload/complete/`,
+      { upload_id: uploadId, file_key: fileKey, parts },
+    );
   }
 
   updateFilm(id: number, payload: Partial<Pick<ProducerMovie, 'title' | 'overview' | 'genres' | 'price' | 'has_free_preview'>>): Observable<ProducerMovie> {

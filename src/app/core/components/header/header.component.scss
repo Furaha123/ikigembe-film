@@ -380,8 +380,15 @@ header {
 }
 
 header .right {
+    // ── Inbox wrapper & bell ──────────────────────────
+    .inbox-wrapper {
+      position: relative;
+    }
+
     .notification-btn {
       position: relative;
+
+      &.active { color: #C5A253; }
 
       .notification-badge {
         position: absolute;
@@ -396,6 +403,108 @@ header .right {
         min-width: 18px;
         text-align: center;
       }
+    }
+
+    // ── Inbox dropdown ────────────────────────────────
+    .inbox-dropdown {
+      position: absolute;
+      top: calc(100% + 10px);
+      right: 0;
+      width: 340px;
+      background: #1a1a1a;
+      border: 1px solid #2a2a2a;
+      border-radius: 8px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.7);
+      z-index: 200;
+      overflow: hidden;
+
+      @media (max-width: 480px) {
+        width: calc(100vw - 2rem);
+        right: -0.5rem;
+      }
+    }
+
+    .inbox-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.85rem 1rem;
+      border-bottom: 1px solid #2a2a2a;
+    }
+
+    .inbox-title {
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: #e5e5e5;
+    }
+
+    .inbox-mark-all {
+      background: none;
+      border: none;
+      color: #C5A253;
+      font-size: 0.75rem;
+      cursor: pointer;
+      padding: 0;
+      font-family: inherit;
+      &:hover { text-decoration: underline; }
+    }
+
+    .inbox-empty {
+      padding: 2rem 1rem;
+      text-align: center;
+      color: #666;
+      font-size: 0.85rem;
+    }
+
+    .inbox-list {
+      max-height: 360px;
+      overflow-y: auto;
+    }
+
+    .inbox-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.75rem;
+      width: 100%;
+      background: none;
+      border: none;
+      border-bottom: 1px solid rgba(255,255,255,0.04);
+      padding: 0.85rem 1rem;
+      cursor: pointer;
+      text-align: left;
+      font-family: inherit;
+      transition: background 0.15s;
+
+      &:last-child { border-bottom: none; }
+      &:hover { background: rgba(255,255,255,0.04); }
+      &.unread { background: rgba(197,162,83,0.06); }
+      &.unread:hover { background: rgba(197,162,83,0.1); }
+    }
+
+    .inbox-type-icon {
+      flex-shrink: 0;
+      margin-top: 0.1rem;
+      color: #888;
+
+      &--check   { color: #4ade80; }
+      &--warning { color: #f87171; }
+      &--play    { color: #60a5fa; }
+      &--film    { color: #C5A253; }
+    }
+
+    .inbox-body { flex: 1; min-width: 0; }
+
+    .inbox-message {
+      font-size: 0.82rem;
+      color: #d4d4d4;
+      line-height: 1.4;
+      margin: 0 0 0.25rem;
+      word-break: break-word;
+    }
+
+    .inbox-time {
+      font-size: 0.72rem;
+      color: #555;
     }
 
     .user-menu {

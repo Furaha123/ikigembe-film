@@ -1,0 +1,155 @@
+// Shared styles for all contract flow steps
+$gold:    #C8A84B;
+$gold-bg: rgba(200, 168, 75, 0.10);
+$green:   #4ade80;
+$amber:   #f59e0b;
+$red:     #f87171;
+$bg:      #0C0C0C;
+$surface: #141414;
+$card:    #161616;
+$border:  #252525;
+$text:    #e5e5e5;
+$muted:   #888;
+
+.flow-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: $bg;
+  padding: 24px 16px;
+}
+
+.flow-card {
+  width: 100%;
+  max-width: 540px;
+  background: $card;
+  border: 1px solid $border;
+  border-radius: 16px;
+  padding: 40px 40px 32px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.step-indicator {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 32px;
+
+  .step {
+    width: 32px;
+    height: 4px;
+    border-radius: 2px;
+    background: $border;
+    transition: background 0.2s;
+
+    &.active {
+      background: $gold;
+    }
+
+    &.done {
+      background: rgba(200, 168, 75, 0.4);
+    }
+  }
+}
+
+.icon-wrap {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  background: $gold-bg;
+  border: 1px solid rgba(200, 168, 75, 0.25);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: $gold;
+  margin-bottom: 24px;
+}
+
+.flow-title {
+  margin: 0 0 8px;
+  font-size: 26px;
+  font-weight: 800;
+  color: $text;
+}
+
+.flow-subtitle {
+  margin: 0 0 28px;
+  font-size: 14px;
+  color: $muted;
+  line-height: 1.6;
+}
+
+.info-box {
+  background: $surface;
+  border: 1px solid $border;
+  border-radius: 10px;
+  padding: 20px;
+  margin-bottom: 32px;
+  text-align: left;
+  width: 100%;
+
+  p {
+    margin: 0 0 12px;
+    font-size: 14px;
+    color: $muted;
+    line-height: 1.6;
+
+    &:last-child { margin-bottom: 0; }
+
+    strong {
+      color: $gold;
+      font-weight: 600;
+    }
+  }
+}
+
+.flow-actions {
+  display: flex;
+  gap: 12px;
+  width: 100%;
+  justify-content: flex-end;
+  margin-top: auto;
+
+  &.centered { justify-content: center; }
+  &.full-width button, &.full-width a {
+    flex: 1;
+    justify-content: center;
+  }
+}
+
+.btn-gold {
+  background: $gold;
+  color: #0a0a0a;
+  border: none;
+  border-radius: 8px;
+  padding: 11px 28px;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: opacity 0.15s;
+
+  &:hover:not(:disabled) { opacity: 0.88; }
+  &:disabled { opacity: 0.4; cursor: not-allowed; }
+}
+
+.btn-outline {
+  background: transparent;
+  color: $muted;
+  border: 1px solid $border;
+  border-radius: 8px;
+  padding: 11px 24px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: border-color 0.15s, color 0.15s;
+
+  &:hover { border-color: #555; color: $text; }
+}
+
+@media (max-width: 500px) {
+  .flow-card { padding: 28px 20px 24px; }
+  .flow-title { font-size: 22px; }
+}

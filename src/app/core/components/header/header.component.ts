@@ -8,6 +8,7 @@ import { Subject, Subscription } from 'rxjs';
 import { debounceTime, distinctUntilChanged, switchMap, catchError, of, filter } from 'rxjs';
 import { AuthService } from '../../services/auth.service';
 import { MovieService } from '../../../shared/services/movie.service';
+import { InboxService, UserNotification } from '../../services/inbox.service';
 import { IVideoContent } from '../../../shared/models/video-content.interface';
 
 @Component({
@@ -22,6 +23,7 @@ export class HeaderComponent implements OnInit, OnDestroy {
   private readonly authService  = inject(AuthService);
   private readonly router       = inject(Router);
   private readonly movieService = inject(MovieService);
+  private readonly inboxService = inject(InboxService);
 
   readonly initials = this.authService.initials;
 
@@ -34,6 +36,11 @@ export class HeaderComponent implements OnInit, OnDestroy {
   searchLoading = signal(false);
   searchResults = signal<IVideoContent[]>([]);
   searchQuery   = '';
+
+  // ── Inbox ──────────────────────────────────────────
+  showInbox   = signal(false);
+  inboxItems  = signal<UserNotification[]>([]);
+  unreadCount = signal(0);
 
   @ViewChild('searchInput') searchInput!: ElementRef<HTMLInputElement>;
 
@@ -63,6 +70,8 @@ export class HeaderComponent implements OnInit, OnDestroy {
       this.searchLoading.set(false);
       if (res) this.searchResults.set(res.results ?? []);
     });
+
+    this.loadInbox();
   }
 
   @HostListener('window:scroll')
@@ -82,15 +91,22 @@ export class HeaderComponent implements OnInit, OnDestroy {
     if (!target.closest('.mobile-drawer') && !target.closest('.hamburger-btn')) {
       this.mobileMenuOpen.set(false);
     }
+    if (!target.closest('.inbox-wrapper')) {
+      this.showInbox.set(false);
+    }
   }
 
   @HostListener('document:keydown.escape')
-  onEscape() { this.closeSearch(); }
+  onEscape() {
+    this.closeSearch();
+    this.showInbox.set(false);
+  }
 
   toggleMobileMenu() {
     this.mobileMenuOpen.update(v => !v);
     if (this.mobileMenuOpen()) {
       this.showDropdown.set(false);
+      this.showInbox.set(false);
       this.closeSearch();
     }
   }
@@ -102,6 +118,7 @@ export class HeaderComponent implements OnInit, OnDestroy {
   toggleDropdown(event: Event) {
     event.stopPropagation();
     this.showDropdown.update(v => !v);
+    if (this.showDropdown()) this.showInbox.set(false);
   }
 
   toggleSearch(event: Event) {
@@ -109,6 +126,7 @@ export class HeaderComponent implements OnInit, OnDestroy {
     if (this.searchOpen()) {
       this.closeSearch();
     } else {
+      this.showInbox.set(false);
       this.searchOpen.set(true);
       setTimeout(() => this.searchInput?.nativeElement.focus(), 50);
     }
@@ -123,6 +141,65 @@ export class HeaderComponent implements OnInit, OnDestroy {
     event.stopPropagation();
     this.closeSearch();
     this.router.navigate(['/movie', movie.id]);
+  }
+
+  // ── Inbox ──────────────────────────────────────────
+  loadInbox(): void {
+    this.inboxService.getInbox().subscribe({
+      next: (resp) => {
+        this.inboxItems.set(resp.results);
+        this.unreadCount.set(resp.unread_count);
+      },
+      error: () => {},
+    });
+  }
+
+  toggleInbox(event: Event): void {
+    event.stopPropagation();
+    this.showInbox.update(v => !v);
+    if (this.showInbox()) {
+      this.showDropdown.set(false);
+      this.closeSearch();
+    }
+  }
+
+  onNotifClick(n: UserNotification): void {
+    if (!n.read) {
+      this.inboxService.markRead(n.id).subscribe();
+      this.inboxItems.update(list =>
+        list.map(item => item.id === n.id ? { ...item, read: true } : item)
+      );
+      this.unreadCount.update(c => Math.max(0, c - 1));
+    }
+    this.showInbox.set(false);
+    if (n.movie_id !== null) {
+      this.router.navigate(['/movie', n.movie_id]);
+    }
+  }
+
+  markAllInboxRead(event: Event): void {
+    event.stopPropagation();
+    this.inboxService.markAllRead().subscribe(() => {
+      this.inboxItems.update(list => list.map(n => ({ ...n, read: true })));
+      this.unreadCount.set(0);
+    });
+  }
+
+  notifTypeIcon(type: UserNotification['type']): string {
+    if (type === 'payment_confirmed') return 'check';
+    if (type === 'payment_failed')    return 'warning';
+    if (type === 'new_trailer')       return 'play';
+    return 'film';
+  }
+
+  relativeTime(isoDate: string): string {
+    const diff = Date.now() - new Date(isoDate).getTime();
+    const mins = Math.floor(diff / 60000);
+    if (mins < 1) return 'just now';
+    if (mins < 60) return `${mins}m ago`;
+    const hrs = Math.floor(mins / 60);
+    if (hrs < 24) return `${hrs}h ago`;
+    return `${Math.floor(hrs / 24)}d ago`;
   }
 
   private closeSearch() {

@@ -9,8 +9,11 @@ import { Subscription } from 'rxjs';
 import { AuthService } from '../../../core/services/auth.service';
 import {
   ProducerService, ProducerWallet, DashboardMovie, DashboardTransaction,
-  AnalyticsResponse, ProducerWithdrawal, WithdrawalRequest,
+  AnalyticsResponse, ProducerWithdrawal, WithdrawalRequest, ProducerMovie,
 } from '../../services/producer.service';
+import { ContractService, ContractStatus } from '../../services/contract.service';
+import { MovieApprovalContractNotificationComponent } from '../contracts/movie-approval-notification/movie-approval-contract-notification.component';
+import { ContractStatusWidgetComponent } from '../contracts/status-widget/contract-status-widget.component';
 import {
   Chart, LineController, LineElement, PointElement,
   LinearScale, CategoryScale, Filler, Tooltip,
@@ -34,7 +37,11 @@ const MONTHLY_LABELS = ['Dec 25', 'Jan 26', 'Feb 26', 'Mar 26', 'Apr 26', 'May 2
 @Component({
   selector: 'app-producer-dashboard',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterLink],
+  imports: [
+    CommonModule, ReactiveFormsModule, RouterLink,
+    MovieApprovalContractNotificationComponent,
+    ContractStatusWidgetComponent,
+  ],
   templateUrl: './producer-dashboard.component.html',
   styleUrl: './producer-dashboard.component.scss',
 })
@@ -43,9 +50,10 @@ export class ProducerDashboardComponent implements OnInit, AfterViewInit, OnDest
   @ViewChild('earningsChart')    earningsCanvas!:    ElementRef<HTMLCanvasElement>;
   @ViewChild('movieDetailChart') movieDetailCanvas?: ElementRef<HTMLCanvasElement>;
 
-  private readonly authService     = inject(AuthService);
-  private readonly producerService = inject(ProducerService);
-  readonly fb                      = inject(FormBuilder);
+  private readonly authService      = inject(AuthService);
+  private readonly producerService  = inject(ProducerService);
+  private readonly contractService  = inject(ContractService);
+  readonly fb                       = inject(FormBuilder);
   readonly ranges: Range[]         = ['7D', '14D', '28D', '1M', '2M', '3M', '6M', '1Y'];
 
   // ── Server data signals ──────────────────────────────
@@ -54,6 +62,8 @@ export class ProducerDashboardComponent implements OnInit, AfterViewInit, OnDest
   analyticsResponse = signal<AnalyticsResponse | null>(null);
   dashboardMovies   = signal<DashboardMovie[]>([]);
   allTransactions   = signal<DashboardTransaction[]>([]);
+  movies            = signal<ProducerMovie[]>([]);
+  contractStatus    = signal<ContractStatus | null>(null);
 
   // ── UI state ─────────────────────────────────────────
   selectedRange  = signal<Range>('6M');
@@ -93,6 +103,18 @@ export class ProducerDashboardComponent implements OnInit, AfterViewInit, OnDest
   visibleTxns = computed(() =>
     this.showAllTxns() ? this.allTransactions() : this.allTransactions().slice(0, 5)
   );
+
+  showContractRequired = computed(() =>
+    this.movies().some(m => m.approval_status === 'approved_pending_contract')
+  );
+
+  contractWarningState = computed<'expiring' | 'expired' | null>(() => {
+    const s = this.contractStatus();
+    if (!s) return null;
+    if (!s.has_active_contract && s.contract_id) return 'expired';
+    if (s.has_active_contract && s.days_remaining !== null && s.days_remaining <= 30) return 'expiring';
+    return null;
+  });
 
   withdrawForm = this.fb.group({
     amount:              [null as number | null, [Validators.required, Validators.min(5000)]],
@@ -139,6 +161,16 @@ export class ProducerDashboardComponent implements OnInit, AfterViewInit, OnDest
       next: (resp) => this.allTransactions.set(resp.results),
       error: (e) => console.error('[Dashboard] transactions error:', e),
     });
+
+    this.producerService.getMovies().subscribe({
+      next: (m) => this.movies.set(m),
+      error: () => {},
+    });
+
+    this.contractService.getStatus().subscribe({
+      next: (s) => this.contractStatus.set(s),
+      error: () => {},
+    });
   }
 
   ngAfterViewInit(): void {
@@ -184,6 +216,20 @@ export class ProducerDashboardComponent implements OnInit, AfterViewInit, OnDest
   setEarningsTab(t: EarningsTab): void {
     this.earningsTab.set(t);
     this.buildEarningsChart();
+  }
+
+  onCustomRange(start: string, end: string): void {
+    if (!start || !end) return;
+    this.selectedRange.set('' as Range);
+    this.analyticsSub?.unsubscribe();
+    this.analyticsSub = this.producerService.getAnalytics('custom', start, end).subscribe({
+      next: (resp) => {
+        this.analyticsResponse.set(resp);
+        this.buildTrendChart();
+        this.buildEarningsChart();
+      },
+      error: (err) => console.error('[Dashboard] custom range error:', err),
+    });
   }
 
   metricSummary(): string {
@@ -379,11 +425,19 @@ export class ProducerDashboardComponent implements OnInit, AfterViewInit, OnDest
     const fill   = metric === 'watchTime' ? 'rgba(45,212,191,0.12)' : 'rgba(200,168,75,0.12)';
     const trend  = this.trendData();
 
-    const values = trend.map(r =>
+    let rawValues = trend.map(r =>
       metric === 'earnings'  ? r.earnings  :
       metric === 'watchTime' ? r.watchTime :
       r.views
     );
+
+    // Pad to at least 2 points so Chart.js draws a line, not a lone dot
+    const labels = trend.length === 1
+      ? ['', trend[0].label]
+      : trend.map(r => r.label);
+    const values = trend.length === 1
+      ? [rawValues[0], rawValues[0]]
+      : rawValues;
 
     const yTickFmt = (v: unknown): string =>
       metric === 'earnings'  ? this.fmt(v as number) :
@@ -398,7 +452,7 @@ export class ProducerDashboardComponent implements OnInit, AfterViewInit, OnDest
     this.trendChart = new Chart(canvas, {
       type: 'line',
       data: {
-        labels: trend.map(r => r.label),
+        labels,
         datasets: [{
           data: values,
           borderColor: color,
@@ -450,16 +504,32 @@ export class ProducerDashboardComponent implements OnInit, AfterViewInit, OnDest
     this.earningsChart?.destroy();
     const isEarnings = this.earningsTab() === 'earnings';
     const trend  = this.trendData();
-    const values = isEarnings ? trend.map(r => r.earnings) : trend.map(r => r.views);
+    const rawValues = isEarnings ? trend.map(r => r.earnings) : trend.map(r => r.views);
+
+    const labels = trend.length === 1
+      ? ['', trend[0].label]
+      : trend.map(r => r.label);
+    const values = trend.length === 1
+      ? [rawValues[0], rawValues[0]]
+      : rawValues;
+
+    const gradientFn = (context: { chart: Chart }): CanvasGradient | string => {
+      const { ctx, chartArea } = context.chart;
+      if (!chartArea) return 'rgba(200,168,75,0.15)';
+      const gradient = ctx.createLinearGradient(0, chartArea.top, 0, chartArea.bottom);
+      gradient.addColorStop(0, 'rgba(200,168,75,0.55)');
+      gradient.addColorStop(1, 'rgba(200,168,75,0)');
+      return gradient;
+    };
 
     this.earningsChart = new Chart(canvas, {
       type: 'line',
       data: {
-        labels: trend.map(r => r.label),
+        labels,
         datasets: [{
           data: values,
           borderColor: '#C8A84B',
-          backgroundColor: 'rgba(200,168,75,0.15)',
+          backgroundColor: gradientFn as never,
           borderWidth: 2,
           pointRadius: 0,
           tension: 0.4,

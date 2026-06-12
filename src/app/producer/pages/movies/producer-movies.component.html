@@ -28,23 +28,20 @@
     </div>
   </div>
 
-  <!-- ── Toolbar ── -->
-  <div class="table-toolbar">
-    <div class="toolbar-left">
-      <svg class="filter-icon" viewBox="0 0 24 24" fill="currentColor">
-        <path d="M10 18h4v-2h-4v2zM3 6v2h18V6H3zm3 7h12v-2H6v2z"/>
-      </svg>
-      <span class="filter-label">Filter</span>
-      @if (search()) {
-        <span class="search-chip">
-          "{{ search() }}"
-          <button (click)="search.set('')">×</button>
-        </span>
-      }
-    </div>
-    <span class="movie-count">
-      {{ filtered().length }} film{{ filtered().length !== 1 ? 's' : '' }}
-    </span>
+  <!-- ── Status Tabs ── -->
+  <div class="status-tabs">
+    <button class="tab-btn" [class.active]="activeTab() === 'all'" (click)="setTab('all')">
+      All <span class="tab-count">{{ tabCounts().all }}</span>
+    </button>
+    <button class="tab-btn" [class.active]="activeTab() === 'live'" (click)="setTab('live')">
+      Live <span class="tab-count tab-count--live">{{ tabCounts().live }}</span>
+    </button>
+    <button class="tab-btn" [class.active]="activeTab() === 'pending'" (click)="setTab('pending')">
+      Pending <span class="tab-count tab-count--amber">{{ tabCounts().pending }}</span>
+    </button>
+    <button class="tab-btn" [class.active]="activeTab() === 'rejected'" (click)="setTab('rejected')">
+      Rejected <span class="tab-count tab-count--red">{{ tabCounts().rejected }}</span>
+    </button>
   </div>
 
   <!-- ── Loading ── -->
@@ -82,36 +79,41 @@
           <tr>
             <th class="th-movie" (click)="setSort('title')"
                 [class.sorted]="sortCol() === 'title'">
-              Film
+              Movie
               <svg class="sort-arrow" viewBox="0 0 24 24" fill="currentColor"
                    [class.asc]="sortCol() === 'title' && sortDir() === 'asc'">
                 <path d="M7 10l5 5 5-5H7z"/>
               </svg>
             </th>
             <th class="th-status">Status</th>
-            <th class="th-genre">Genre</th>
+            <th class="th-type">Type</th>
             <th class="th-date sortable" (click)="setSort('created_at')"
                 [class.sorted]="sortCol() === 'created_at'">
-              Submitted
+              Date Submitted
               <svg class="sort-arrow" viewBox="0 0 24 24" fill="currentColor"
                    [class.asc]="sortCol() === 'created_at' && sortDir() === 'asc'">
                 <path d="M7 10l5 5 5-5H7z"/>
               </svg>
             </th>
-            <th class="th-duration">Duration</th>
-            <th class="th-actions">Actions</th>
+            <th class="th-release sortable" (click)="setSort('release_date')"
+                [class.sorted]="sortCol() === 'release_date'">
+              Release Date
+              <svg class="sort-arrow" viewBox="0 0 24 24" fill="currentColor"
+                   [class.asc]="sortCol() === 'release_date' && sortDir() === 'asc'">
+                <path d="M7 10l5 5 5-5H7z"/>
+              </svg>
+            </th>
+            <th class="th-actions">Action</th>
           </tr>
         </thead>
 
         <tbody>
           @for (movie of filtered(); track movie.id) {
-            <tr class="movie-row" (click)="viewDetail(movie.id)"
-                role="button" tabindex="0"
-                (keydown.enter)="viewDetail(movie.id)"
-                (keydown.space)="viewDetail(movie.id)">
+            <tr class="movie-row">
 
               <!-- Movie column -->
-              <td class="td-movie">
+              <td class="td-movie" (click)="viewDetail(movie.id)" role="button" tabindex="0"
+                  (keydown.enter)="viewDetail(movie.id)">
                 <div class="movie-cell">
                   <div class="movie-thumb">
                     @if (movie.thumbnail_url) {
@@ -127,36 +129,55 @@
                   </div>
                   <div class="movie-info">
                     <span class="movie-title">{{ movie.title }}</span>
-                    </div>
+                    @if (movie.genres?.length) {
+                      <span class="movie-genre-tag">{{ movie.genres[0] }}</span>
+                    }
+                  </div>
                 </div>
               </td>
 
               <!-- Status column -->
-              <td class="td-status" (click)="$event.stopPropagation()">
+              <td class="td-status">
                 <span class="status-chip" [class]="statusClass(movie)">
                   {{ statusLabel(movie) }}
                 </span>
+                @if (movie.approval_status === 'rejected' && movie.rejection_reason) {
+                  <button class="view-reason-btn"
+                          (click)="toggleReason(movie.id, $event)">
+                    {{ expandedReasons().has(movie.id) ? 'Hide reason' : 'View reason' }}
+                  </button>
+                  @if (expandedReasons().has(movie.id)) {
+                    <p class="rejection-inline-note">{{ movie.rejection_reason }}</p>
+                  }
+                }
               </td>
 
-              <!-- Genre column -->
-              <td class="td-genre">{{ genreLabel(movie) }}</td>
+              <!-- Type column -->
+              <td class="td-type">
+                <span class="type-chip" [class.type-paid]="movie.price > 0">
+                  {{ movieType(movie) }}
+                </span>
+              </td>
 
               <!-- Submitted date column -->
               <td class="td-date">{{ movie.created_at | date:'d MMM yyyy' }}</td>
 
-              <!-- Duration column -->
-              <td class="td-duration">
-                {{ movie.duration_minutes ? movie.duration_minutes + ' min' : '—' }}
+              <!-- Release date column -->
+              <td class="td-release">
+                {{ movie.release_date ? (movie.release_date | date:'d MMM yyyy') : '—' }}
               </td>
 
               <!-- Actions column -->
               <td class="td-actions" (click)="$event.stopPropagation()">
-                <button class="btn-edit" (click)="openEdit(movie, $event)" title="Edit film details">
-                  <svg viewBox="0 0 24 24" fill="currentColor" width="14" height="14">
-                    <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04a1 1 0 0 0 0-1.41l-2.34-2.34a1 1 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/>
-                  </svg>
-                  Edit
-                </button>
+                <div class="action-btns">
+                  @if (isEditable(movie)) {
+                    <button class="btn-action btn-action--edit" (click)="openEdit(movie, $event)">Edit</button>
+                  }
+                  <button class="btn-action btn-action--view" (click)="viewDetail(movie.id)">View</button>
+                  @if (isLive(movie)) {
+                    <button class="btn-action btn-action--analytics" (click)="viewDetail(movie.id)">Analytics</button>
+                  }
+                </div>
               </td>
 
             </tr>

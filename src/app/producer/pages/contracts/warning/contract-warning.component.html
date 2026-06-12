@@ -1,0 +1,83 @@
+<div class="flow-page">
+  <div class="flow-card warn-card">
+
+    <div class="step-indicator">
+      <span class="step done"></span>
+      <span class="step done"></span>
+      <span class="step done"></span>
+      <span class="step active"></span>
+      <span class="step"></span>
+    </div>
+
+    <div class="icon-wrap warn-icon">
+      <svg viewBox="0 0 24 24" fill="currentColor" width="34" height="34">
+        <path d="M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z"/>
+      </svg>
+    </div>
+
+    <h1 class="flow-title warn-title">ICYITONDERWA / WARNING</h1>
+    <p class="flow-subtitle">
+      Aya massezerano agomba kwemezwa mu gihe kitarenze amasaha 78
+      (iminsi 3 n'amasaha 6) kuva yoherejwe.
+    </p>
+
+    <div class="warn-box">
+      <p class="warn-box-label">Niba atemewe mu gihe cy'amasaha 78, film izasubikwa mu:</p>
+      <ul class="warn-list">
+        <li>
+          <span class="bullet"></span>
+          Contract ifite isezerana.
+        </li>
+        <li>
+          <span class="bullet"></span>
+          Film isubukwa muri status ya Pending Submission.
+        </li>
+        <li>
+          <span class="bullet"></span>
+          Ubusobanuro bwose kongera gutangira inzira yo kuyemeza.
+        </li>
+      </ul>
+      <p class="warn-box-sublabel">
+        This agreement must be accepted within <strong>78 hours</strong> from the time it was sent.
+        If not accepted within 78 hours:
+      </p>
+      <ul class="warn-list">
+        <li><span class="bullet"></span>The contract will be canceled.</li>
+        <li><span class="bullet"></span>The movie will be returned to Pending Submission.</li>
+        <li><span class="bullet"></span>The Producer will be required to restart the process.</li>
+      </ul>
+    </div>
+
+    <!-- ── Countdown ── -->
+    <div class="countdown-wrap">
+      <p class="countdown-label">Time remaining / Igihe gisigaye</p>
+      <div class="countdown">
+        <div class="countdown-unit">
+          <span class="countdown-val">{{ pad(timeLeft().days) }}</span>
+          <span class="countdown-name">Days</span>
+        </div>
+        <span class="countdown-sep">:</span>
+        <div class="countdown-unit">
+          <span class="countdown-val">{{ pad(timeLeft().hours) }}</span>
+          <span class="countdown-name">Hours</span>
+        </div>
+        <span class="countdown-sep">:</span>
+        <div class="countdown-unit">
+          <span class="countdown-val">{{ pad(timeLeft().minutes) }}</span>
+          <span class="countdown-name">Minutes</span>
+        </div>
+        <span class="countdown-sep">:</span>
+        <div class="countdown-unit">
+          <span class="countdown-val">{{ pad(timeLeft().seconds) }}</span>
+          <span class="countdown-name">Seconds</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="flow-actions">
+      <button class="btn-outline" (click)="back()">Back</button>
+      <button class="btn-gold" (click)="continue()">I Understand — Continue</button>
+    </div>
+
+  </div>
+</div>

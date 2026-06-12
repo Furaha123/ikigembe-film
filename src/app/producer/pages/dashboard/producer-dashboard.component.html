@@ -16,11 +16,50 @@
     </div>
   </a>
 
+  <!-- ── Contract: movie approved, needs contract ── -->
+  @if (showContractRequired()) {
+    <app-movie-approval-contract-notification />
+  }
+
+  <!-- ── Contract: expiry warning ── -->
+  @if (contractWarningState() === 'expiring') {
+    <div class="contract-warning-card contract-warning-card--amber">
+      <div class="cw-icon">
+        <svg viewBox="0 0 24 24" fill="currentColor" width="22" height="22">
+          <path d="M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z"/>
+        </svg>
+      </div>
+      <div class="cw-body">
+        <strong>Agreement Expiring Soon</strong>
+        <span>Your agreement expires in {{ contractStatus()?.days_remaining }} days. Renew now to avoid interruptions.</span>
+      </div>
+      <a routerLink="/producer/contracts/start" class="cw-btn">Renew Agreement</a>
+    </div>
+  }
+
+  @if (contractWarningState() === 'expired') {
+    <div class="contract-warning-card contract-warning-card--red">
+      <div class="cw-icon">
+        <svg viewBox="0 0 24 24" fill="currentColor" width="22" height="22">
+          <path d="M12 2C6.47 2 2 6.47 2 12s4.47 10 10 10 10-4.47 10-10S17.53 2 12 2zm5 13.59L15.59 17 12 13.41 8.41 17 7 15.59 10.59 12 7 8.41 8.41 7 12 10.59 15.59 7 17 8.41 13.41 12 17 15.59z"/>
+        </svg>
+      </div>
+      <div class="cw-body">
+        <strong>Agreement Expired</strong>
+        <span>Please renew your Producer Distribution Agreement. Distribution of newly approved content will be paused until renewal.</span>
+      </div>
+      <a routerLink="/producer/contracts/start" class="cw-btn cw-btn--red">Renew Now</a>
+    </div>
+  }
+
   <!-- ── Header ── -->
   <div class="dash-header">
     <div class="header-text">
       <h1>Producer Dashboard</h1>
       <p>Track your earnings and manage your content</p>
+      @if (contractStatus()) {
+        <app-contract-status-widget [status]="contractStatus()!" style="margin-top:10px;display:inline-flex;" />
+      }
     </div>
     <div class="date-controls">
       <span class="date-label">Date Range</span>
@@ -30,9 +69,9 @@
         }
       </div>
       <div class="custom-range">
-        <input type="date" />
+        <input type="date" #startDate (change)="onCustomRange(startDate.value, endDate.value)" />
         <span class="to-sep">to</span>
-        <input type="date" />
+        <input type="date" #endDate (change)="onCustomRange(startDate.value, endDate.value)" />
       </div>
     </div>
   </div>

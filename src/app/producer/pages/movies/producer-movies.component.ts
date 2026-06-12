@@ -5,6 +5,7 @@ import { Router } from '@angular/router';
 import { ProducerService, ProducerMovie } from '../../services/producer.service';
 
 type SortCol = 'title' | 'views' | 'price' | 'release_date' | 'created_at';
+type StatusTab = 'all' | 'live' | 'pending' | 'rejected';
 
 const ALL_GENRES = [
   'Action', 'Adventure', 'Animation', 'Comedy', 'Crime',
@@ -28,11 +29,13 @@ export class ProducerMoviesComponent implements OnInit {
   movies    = signal<ProducerMovie[]>([]);
   isLoading = signal(true);
   search    = signal('');
+  activeTab = signal<StatusTab>('all');
   sortCol   = signal<SortCol>('created_at');
   sortDir   = signal<'asc' | 'desc'>('desc');
 
   // ── Edit modal ────────────────────────────────────────
-  editMovie   = signal<ProducerMovie | null>(null);
+  editMovie        = signal<ProducerMovie | null>(null);
+  expandedReasons  = signal<Set<number>>(new Set());
   isSaving    = signal(false);
   saveError   = signal<string | null>(null);
   editGenres  = signal<Set<string>>(new Set());
@@ -44,11 +47,25 @@ export class ProducerMoviesComponent implements OnInit {
     has_free_preview: [false],
   });
 
+  tabCounts = computed(() => {
+    const all = this.movies();
+    return {
+      all:      all.length,
+      live:     all.filter(m => m.approval_status === 'approved').length,
+      pending:  all.filter(m => m.approval_status === 'pending_review' || m.approval_status === 'approved_pending_contract').length,
+      rejected: all.filter(m => m.approval_status === 'rejected').length,
+    };
+  });
+
   filtered = computed(() => {
-    const q = this.search().toLowerCase().trim();
-    const list = q
-      ? this.movies().filter(m => m.title.toLowerCase().includes(q))
-      : this.movies();
+    const tab = this.activeTab();
+    const q   = this.search().toLowerCase().trim();
+
+    let list = this.movies();
+    if (tab === 'live')     list = list.filter(m => m.approval_status === 'approved');
+    if (tab === 'pending')  list = list.filter(m => m.approval_status === 'pending_review' || m.approval_status === 'approved_pending_contract');
+    if (tab === 'rejected') list = list.filter(m => m.approval_status === 'rejected');
+    if (q) list = list.filter(m => m.title.toLowerCase().includes(q));
 
     const col = this.sortCol();
     const dir = this.sortDir();
@@ -141,19 +158,39 @@ export class ProducerMoviesComponent implements OnInit {
     });
   }
 
+  toggleReason(id: number, event: Event): void {
+    event.stopPropagation();
+    this.expandedReasons.update(set => {
+      const next = new Set(set);
+      if (next.has(id)) next.delete(id); else next.add(id);
+      return next;
+    });
+  }
+
+  setTab(tab: StatusTab): void { this.activeTab.set(tab); }
+
   // ── Status helpers ────────────────────────────────────
   statusLabel(m: ProducerMovie): string {
-    if (!m.is_active) return 'Inactive';
-    if (m.hls_status === 'processing') return 'Processing';
-    if (m.hls_status === 'failed') return 'Processing Failed';
-    return 'Active';
+    if (m.approval_status === 'rejected') return 'Rejected';
+    if (m.approval_status === 'approved') return 'Now Live';
+    if (m.approval_status === 'approved_pending_contract') return 'Pending Contract';
+    return 'Pending Review';
   }
 
   statusClass(m: ProducerMovie): string {
-    if (!m.is_active) return 'status-review';
-    if (m.hls_status === 'failed') return 'status-rejected';
-    if (m.hls_status === 'processing') return 'status-review';
-    return 'status-approved';
+    if (m.approval_status === 'rejected') return 'status-rejected';
+    if (m.approval_status === 'approved') return 'status-live';
+    if (m.approval_status === 'approved_pending_contract') return 'status-contract';
+    return 'status-review';
+  }
+
+  movieType(m: ProducerMovie): string {
+    return m.price > 0 ? 'Paid' : 'Free';
+  }
+
+  isLive(m: ProducerMovie): boolean { return m.approval_status === 'approved'; }
+  isEditable(m: ProducerMovie): boolean {
+    return m.approval_status === 'pending_review' || m.approval_status === 'rejected';
   }
 
   genreLabel(m: ProducerMovie): string {

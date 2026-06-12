@@ -43,6 +43,7 @@ export class ProducerLayoutComponent implements OnInit {
     { label: 'Wallet',      path: '/producer/wallet',      icon: 'wallet' },
     { label: 'Withdrawals', path: '/producer/withdrawals', icon: 'withdrawals' },
     { label: 'Reports',     path: '/producer/reports',     icon: 'reports' },
+    { label: 'Contracts',   path: '/producer/contracts',   icon: 'contracts' },
     { label: 'Settings',    path: '/producer/settings',    icon: 'settings' },
   ];
 
@@ -125,7 +126,20 @@ export class ProducerLayoutComponent implements OnInit {
   notifIcon(type: ProducerNotification['type']): string {
     if (type === 'film_approved' || type === 'account_approved') return 'check';
     if (type === 'film_rejected' || type === 'account_rejected') return 'cross';
+    if (type === 'contract_required' || type === 'contract_expiring' || type === 'contract_expired') return 'contract';
     return 'bell';
+  }
+
+  onNotifClick(n: ProducerNotification, event: Event) {
+    event.stopPropagation();
+    if (!n.read) {
+      this.notifications.update(list => list.map(x => x.id === n.id ? { ...x, read: true } : x));
+      this.producerService.markNotificationRead(n.id).subscribe();
+    }
+    this.showNotifDropdown.set(false);
+    if (n.type === 'contract_required' || n.type === 'contract_expiring' || n.type === 'contract_expired') {
+      this.router.navigate(['/producer/contracts/start']);
+    }
   }
 
   relativeTime(isoDate: string): string {
