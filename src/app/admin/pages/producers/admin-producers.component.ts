@@ -6,6 +6,7 @@ import {
   ProducerItem,
   ProducerReport,
   MoviePurchaseItem,
+  ProducerDocuments,
 } from '../../models/admin.interface';
 
 interface FieldErrors {
@@ -138,15 +139,85 @@ export class AdminProducersComponent implements OnInit {
     this.actionId.set(id);
     this.adminService.approveProducer(id).subscribe({
       next: () => {
-        this.producers.update(list => list.map(p => p.id === id ? { ...p, is_active: true } : p));
-        if (this.detailReport()?.producer.id === id) {
-          // refresh detail so status badge updates
-          this.openDetail(id);
-        }
+        this.producers.update(list => list.map(p => p.id === id ? { ...p, is_active: true, status: 'approved' } : p));
+        if (this.detailReport()?.producer.id === id) this.openDetail(id);
         this.actionId.set(null);
       },
       error: () => this.actionId.set(null),
     });
+  }
+
+  // ── Reject with reason ─────────────────────────────────
+  rejectModal    = signal<number | null>(null);
+  rejectReason   = signal('');
+  isRejecting    = signal(false);
+
+  openRejectModal(id: number) { this.closeMenu(); this.rejectModal.set(id); this.rejectReason.set(''); }
+  closeRejectModal() { this.rejectModal.set(null); this.rejectReason.set(''); }
+
+  confirmReject() {
+    const id = this.rejectModal();
+    if (id === null) return;
+    this.isRejecting.set(true);
+    this.adminService.rejectProducer(id, this.rejectReason()).subscribe({
+      next: () => {
+        this.producers.update(list => list.map(p => p.id === id ? { ...p, is_active: false, status: 'pending' } : p));
+        this.isRejecting.set(false);
+        this.closeRejectModal();
+      },
+      error: () => this.isRejecting.set(false),
+    });
+  }
+
+  // ── Suspend with reason ────────────────────────────────
+  suspendModal   = signal<number | null>(null);
+  suspendReason  = signal('');
+  isSuspending   = signal(false);
+
+  openSuspendModal(id: number) { this.closeMenu(); this.suspendModal.set(id); this.suspendReason.set(''); }
+  closeSuspendModal() { this.suspendModal.set(null); this.suspendReason.set(''); }
+
+  confirmSuspend() {
+    const id = this.suspendModal();
+    if (id === null) return;
+    this.isSuspending.set(true);
+    this.adminService.suspendProducer(id, this.suspendReason()).subscribe({
+      next: () => {
+        this.producers.update(list => list.map(p => p.id === id ? { ...p, is_active: false, status: 'suspended', suspension_reason: this.suspendReason() } : p));
+        this.isSuspending.set(false);
+        this.closeSuspendModal();
+      },
+      error: () => this.isSuspending.set(false),
+    });
+  }
+
+  // ── View Documents ─────────────────────────────────────
+  docsModal      = signal<{ producerId: number; producerName: string } | null>(null);
+  producerDocs   = signal<ProducerDocuments | null>(null);
+  docsLoading    = signal(false);
+
+  openDocsModal(id: number, name: string) {
+    this.closeMenu();
+    this.docsModal.set({ producerId: id, producerName: name });
+    this.producerDocs.set(null);
+    this.docsLoading.set(true);
+    this.adminService.getProducerDocuments(id).subscribe({
+      next: (docs) => { this.producerDocs.set(docs); this.docsLoading.set(false); },
+      error: () => { this.producerDocs.set({ copyright_url: null, id_url: null }); this.docsLoading.set(false); },
+    });
+  }
+
+  closeDocsModal() { this.docsModal.set(null); this.producerDocs.set(null); }
+
+  producerStatus(p: ProducerItem): 'pending' | 'approved' | 'suspended' {
+    if (p.status) return p.status;
+    return p.is_active ? 'approved' : 'pending';
+  }
+
+  menuProducerName(): string {
+    const id = this.menuProducer()?.id;
+    if (id === undefined) return '';
+    return this.producers().find(p => p.id === id)?.name ?? '';
   }
 
   getInitials(name: string): string {

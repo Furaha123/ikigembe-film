@@ -49,7 +49,37 @@
             </div>
             <h1>Verification failed</h1>
             <p>{{ errorMessage() }}</p>
-            <a routerLink="/register" class="submit-btn">Back to Register</a>
+
+            <div class="resend-section">
+              <p class="resend-label">Request a new verification link</p>
+              <input class="resend-input" type="email" placeholder="Enter your email address"
+                     [ngModel]="resendEmail()"
+                     (ngModelChange)="resendEmail.set($event)" />
+
+              @if (resendSuccess()) {
+                <p class="resend-success">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="15" height="15">
+                    <path d="M20 6L9 17l-5-5"/>
+                  </svg>
+                  New link sent! Check your inbox.
+                </p>
+              }
+              @if (resendError()) {
+                <p class="resend-err">{{ resendError() }}</p>
+              }
+
+              <button class="resend-btn"
+                      [disabled]="!resendEmail().trim() || isResending() || resendCooldown() > 0"
+                      (click)="requestNewLink()">
+                @if (isResending()) {
+                  <span class="btn-spinner"></span> Sending…
+                } @else if (resendCooldown() > 0) {
+                  Resend in {{ resendCooldown() }}s
+                } @else {
+                  Send new link
+                }
+              </button>
+            </div>
           </div>
         }
 

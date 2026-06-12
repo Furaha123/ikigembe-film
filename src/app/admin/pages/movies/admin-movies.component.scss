@@ -65,15 +65,64 @@ $muted: #888;
 
 .actions { display: flex; gap: 0.5rem; }
 
+/* ── Tabs ── */
+.tabs {
+  display: flex; gap: 0; margin-bottom: 1.25rem;
+  border-bottom: 1px solid $border;
+}
+
+.tab {
+  display: flex; align-items: center; gap: 0.5rem;
+  background: none; border: none; padding: 0.65rem 1.25rem;
+  font-size: 0.875rem; font-weight: 600; color: $muted;
+  cursor: pointer; border-bottom: 2px solid transparent;
+  transition: color 0.15s, border-color 0.15s;
+  margin-bottom: -1px;
+
+  &:hover { color: $text; }
+  &.active { color: $gold; border-bottom-color: $gold; }
+}
+
+.tab-badge {
+  background: #ef4444; color: #fff; border-radius: 9px;
+  min-width: 18px; height: 18px; padding: 0 4px;
+  font-size: 0.62rem; font-weight: 800; line-height: 18px;
+  text-align: center;
+}
+
+/* ── Status badges ── */
+.badge {
+  display: inline-flex; align-items: center;
+  padding: 0.2rem 0.55rem; border-radius: 20px;
+  font-size: 0.72rem; font-weight: 600;
+  &.badge-approved { background: #1a2c21; color: #86efac; }
+  &.badge-rejected { background: #2e1a1a; color: #fca5a5; }
+  &.badge-review   { background: #2a2316; color: #fde68a; }
+}
+
+/* ── Action buttons ── */
 .action-btn {
   padding: 0.35rem 0.85rem; border-radius: 6px; font-size: 0.8rem; font-weight: 600;
   border: none; cursor: pointer; transition: opacity 0.2s;
   &:disabled { opacity: 0.45; cursor: not-allowed; }
   &.edit    { background: rgba(59,130,246,0.18); color: #93c5fd; }
   &.danger  { background: rgba(239,68,68,0.18); color: #fca5a5; }
+  &.reject  { background: rgba(239,68,68,0.18); color: #fca5a5; }
+  &.approve { background: rgba(74,222,128,0.18); color: #86efac; }
   &.neutral { background: rgba(255,255,255,0.06); color: $text; }
   &.save    { background: $gold; color: #000; }
   &:hover:not(:disabled) { opacity: 0.75; }
+}
+
+/* ── Dialog textarea ── */
+.dialog-textarea {
+  background: #111; border: 1px solid $border;
+  border-radius: 8px; padding: 0.65rem 0.85rem;
+  color: $text; font-size: 0.875rem; outline: none;
+  width: 100%; box-sizing: border-box; resize: vertical;
+  font-family: inherit; transition: border-color 0.2s;
+  &::placeholder { color: #555; }
+  &:focus { border-color: $gold; }
 }
 
 /* Modal */
@@ -101,7 +150,7 @@ $muted: #888;
 }
 
 .field {
-  display: flex; flex-direction: column; gap: 0.4rem;
+  display: flex; flex-direction: column; gap: 0.4rem; margin-bottom: 0.75rem;
   label { font-size: 0.75rem; font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase; color: $muted; }
   input {
     background: #111; border: 1px solid $border; border-radius: 8px;

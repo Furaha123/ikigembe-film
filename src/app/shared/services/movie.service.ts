@@ -9,6 +9,14 @@ import {
   MovieCreditsResponse,
   SimilarMoviesResponse
 } from '../models/movie-api.interface';
+import {
+  ALL_MOCK_MOVIES,
+  MOCK_DISCOVER,
+  MOCK_NOW_PLAYING,
+  MOCK_POPULAR,
+  MOCK_TOP_RATED,
+  MOCK_UPCOMING
+} from '../data/mock-movies.data';
 
 @Injectable({
   providedIn: 'root'
@@ -18,7 +26,7 @@ export class MovieService {
   private readonly baseUrl = `${environment.apiUrl}/movies`;
 
   getMovies() {
-    return this.http.get<MovieListResponse>(`${this.baseUrl}/discover/`);
+    return of(MOCK_DISCOVER);
   }
 
   getTvShows() {
@@ -38,31 +46,33 @@ export class MovieService {
   }
 
   getPopularMovies() {
-    return this.http.get<MovieListResponse>(`${this.baseUrl}/popular/`);
+    return of(MOCK_POPULAR);
   }
 
   getNowPlayingMovies() {
-    return this.http.get<MovieListResponse>(`${this.baseUrl}/now-playing/`);
+    return of(MOCK_NOW_PLAYING);
   }
 
   getUpcomingMovies() {
-    return this.http.get<MovieListResponse>(`${this.baseUrl}/upcoming/`);
+    return of(MOCK_UPCOMING);
   }
 
   getTopRated() {
-    return this.http.get<MovieListResponse>(`${this.baseUrl}/top-rated/`);
+    return of(MOCK_TOP_RATED);
   }
 
   getMovieDetails(id: number) {
-    return this.http.get<MovieDetailResponse>(`${this.baseUrl}/${id}/`);
+    const movie = ALL_MOCK_MOVIES.find(m => m.id === id) ?? ALL_MOCK_MOVIES[0];
+    return of(movie as MovieDetailResponse);
   }
 
   getMovieCredits(_id: number) {
     return of<MovieCreditsResponse>({ cast: [] });
   }
 
-  getSimilarMovies(_id: number) {
-    return of<SimilarMoviesResponse>({ results: [] });
+  getSimilarMovies(id: number) {
+    const results = ALL_MOCK_MOVIES.filter(m => m.id !== id).slice(0, 6);
+    return of<SimilarMoviesResponse>({ results });
   }
 
   getMovieStream(id: number) {
@@ -81,7 +91,11 @@ export class MovieService {
   }
 
   search(query: string) {
-    return this.http.get<MovieListResponse>(`${this.baseUrl}/search/?q=${encodeURIComponent(query)}`);
+    const q = query.toLowerCase();
+    const results = ALL_MOCK_MOVIES.filter(
+      m => m.title.toLowerCase().includes(q) || m.overview.toLowerCase().includes(q)
+    );
+    return of<MovieListResponse>({ page: 1, results, total_results: results.length, total_pages: 1 });
   }
 }
 

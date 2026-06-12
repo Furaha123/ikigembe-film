@@ -1,0 +1,705 @@
+@keyframes spin { to { transform: rotate(360deg); } }
+
+$gold:   #C8A84B;
+$border: #252525;
+$card:   #161616;
+$muted:  #666;
+$green:  #4ade80;
+$red:    #f87171;
+
+// ── Page wrapper ───────────────────────────────────────
+.upload-page {
+  max-width: 680px;
+  margin: 0 auto;
+}
+
+// ── Success screen ─────────────────────────────────────
+.success-screen {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 5rem 2rem;
+  gap: 1.25rem;
+
+  .success-icon {
+    width: 84px;
+    height: 84px;
+    border-radius: 50%;
+    background: rgba(74, 222, 128, 0.1);
+    border: 2px solid rgba(74, 222, 128, 0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: $green;
+    svg { width: 38px; height: 38px; }
+  }
+
+  h2 { font-size: 2rem; font-weight: 700; color: #fff; margin: 0; }
+  p  { color: $muted; font-size: 0.95rem; max-width: 420px; line-height: 1.75; margin: 0; }
+}
+
+// ── Rules page ─────────────────────────────────────────
+.rules-page {
+  padding: 0.5rem 0;
+}
+
+.rules-card {
+  background: $card;
+  border: 1px solid $border;
+  border-radius: 16px;
+  padding: 2.5rem;
+}
+
+.rules-header {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.rules-logo {
+  width: 52px;
+  height: 52px;
+  border-radius: 12px;
+  background: rgba(200, 168, 75, 0.12);
+  border: 1px solid rgba(200, 168, 75, 0.25);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: $gold;
+  margin: 0 auto 1rem;
+}
+
+.rules-header h2 {
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: #fff;
+  margin: 0 0 0.5rem;
+}
+
+.rules-header p {
+  color: $muted;
+  font-size: 0.875rem;
+  line-height: 1.6;
+  margin: 0;
+}
+
+.rules-list {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+
+  li {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.7rem;
+    font-size: 0.875rem;
+    color: #ccc;
+    line-height: 1.5;
+  }
+}
+
+.rule-check {
+  width: 18px;
+  height: 18px;
+  color: $green;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.rules-cta-text {
+  text-align: center;
+  color: $muted;
+  font-size: 0.875rem;
+  line-height: 1.7;
+  margin: 0 0 1.5rem;
+}
+
+.btn-start {
+  display: block;
+  width: 100%;
+  padding: 0.875rem;
+  background: $green;
+  color: #000;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.15s;
+  &:hover { background: #36d66b; }
+}
+
+// ── Wizard layout ──────────────────────────────────────
+.wizard-page {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+// ── Stepper ────────────────────────────────────────────
+.stepper {
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 0.25rem 0;
+}
+
+.stepper-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.45rem;
+  min-width: 72px;
+
+  span {
+    font-size: 0.75rem;
+    color: $muted;
+    font-weight: 500;
+    white-space: nowrap;
+  }
+
+  &.active span { color: $gold; font-weight: 600; }
+  &.done  span  { color: $green; }
+}
+
+.stepper-dot {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  border: 2px solid $border;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: $muted;
+  transition: all 0.25s;
+  background: $card;
+  svg { width: 14px; height: 14px; }
+
+  .stepper-item.active & {
+    border-color: $gold;
+    color: $gold;
+    background: rgba(200, 168, 75, 0.08);
+  }
+  .stepper-item.done & {
+    border-color: $green;
+    color: #000;
+    background: $green;
+  }
+}
+
+.stepper-line {
+  flex: 1;
+  height: 2px;
+  background: $border;
+  min-width: 60px;
+  margin: 0 4px;
+  margin-top: 17px; // vertically centers with dot
+  transition: background 0.3s;
+  &.done { background: $green; }
+}
+
+// ── Step card ──────────────────────────────────────────
+.step-card {
+  background: $card;
+  border: 1px solid $border;
+  border-radius: 16px;
+  padding: 2rem 2.25rem;
+}
+
+.step-card-header {
+  margin-bottom: 1.75rem;
+  h2 { font-size: 1.2rem; font-weight: 700; color: #fff; margin: 0 0 0.35rem; }
+  p  { color: $muted; font-size: 0.875rem; margin: 0; }
+}
+
+// ── Form fields ────────────────────────────────────────
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  margin-bottom: 1.25rem;
+
+  label {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #999;
+  }
+
+  input, textarea {
+    background: #1a1a1a;
+    border: 1px solid $border;
+    border-radius: 8px;
+    color: #e5e5e5;
+    font-size: 0.875rem;
+    padding: 0.7rem 0.9rem;
+    outline: none;
+    width: 100%;
+    box-sizing: border-box;
+    transition: border-color 0.15s;
+    font-family: inherit;
+    &::placeholder { color: #555; }
+    &:focus { border-color: rgba(200, 168, 75, 0.45); }
+  }
+
+  textarea { resize: vertical; min-height: 90px; }
+  &.has-error input, &.has-error textarea { border-color: $red; }
+}
+
+.required { color: $red; margin-left: 2px; }
+.optional  { color: $muted; font-weight: 400; font-size: 0.72rem; }
+.field-error { font-size: 0.775rem; color: $red; }
+
+.release-date-picker {
+  display: block;
+  width: 100%;
+  .dp-trigger {
+    width: 100%;
+    justify-content: flex-start;
+    height: 2.4rem;
+    background: #1a1a1a;
+    border-color: #252525;
+    font-size: 0.875rem;
+  }
+  .dp-panel { width: 100%; min-width: 260px; }
+}
+
+// ── Two-column field row ───────────────────────────────
+.field-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  margin-bottom: 0;
+
+  .field { margin-bottom: 1.25rem; }
+
+  @media (max-width: 480px) { grid-template-columns: 1fr; }
+}
+
+// ── Checkbox field ─────────────────────────────────────
+.field-check {
+  margin-bottom: 1.25rem;
+}
+
+.check-label {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  cursor: pointer;
+  font-size: 0.875rem;
+  color: #ccc;
+
+  input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+    accent-color: $gold;
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+}
+
+// ── Genre chips ────────────────────────────────────────
+.field-section {
+  margin-bottom: 1.5rem;
+}
+
+.section-label {
+  display: block;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #999;
+  margin-bottom: 0.6rem;
+}
+
+.genre-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 0.4rem;
+}
+
+.genre-chip {
+  padding: 0.4rem 0.9rem;
+  border-radius: 99px;
+  border: 1px solid $border;
+  background: #1a1a1a;
+  color: #888;
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: all 0.15s;
+
+  &:hover { border-color: rgba(200, 168, 75, 0.4); color: #ccc; }
+
+  &.selected {
+    border-color: $gold;
+    background: rgba(200, 168, 75, 0.12);
+    color: $gold;
+    font-weight: 600;
+  }
+}
+
+// ── Thumbnail upload ───────────────────────────────────
+.thumbnail-drop {
+  border: 2px dashed $border;
+  border-radius: 10px;
+  padding: 1.75rem 1rem;
+  text-align: center;
+  cursor: pointer;
+  transition: border-color 0.2s, background 0.2s;
+  margin-bottom: 0.4rem;
+
+  &:hover, &:focus-visible {
+    border-color: rgba(200, 168, 75, 0.45);
+    background: rgba(200, 168, 75, 0.03);
+    outline: none;
+  }
+
+  svg {
+    width: 36px;
+    height: 36px;
+    color: $muted;
+    margin: 0 auto 0.65rem;
+    display: block;
+  }
+
+  p { font-size: 0.875rem; color: #ccc; margin: 0 0 0.25rem; font-weight: 500; }
+  span { font-size: 0.78rem; color: $muted; }
+}
+
+.thumbnail-preview {
+  position: relative;
+  display: inline-flex;
+  margin-bottom: 0.4rem;
+
+  img {
+    width: 160px;
+    height: 100px;
+    object-fit: cover;
+    border-radius: 8px;
+    border: 1px solid $border;
+    display: block;
+  }
+}
+
+.thumb-remove {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: #1a1a1a;
+  border: 1px solid $border;
+  color: $muted;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  padding: 0;
+  transition: border-color 0.15s, color 0.15s;
+
+  svg { width: 12px; height: 12px; }
+  &:hover { border-color: $red; color: $red; }
+}
+
+// ── Upload zone ────────────────────────────────────────
+.upload-zone {
+  border: 2px dashed $border;
+  border-radius: 12px;
+  padding: 2.5rem 1.5rem;
+  text-align: center;
+  margin-bottom: 1.25rem;
+  outline: none;
+  transition: border-color 0.2s, background 0.2s;
+
+  &.clickable { cursor: pointer; }
+  &.clickable:hover,
+  &.clickable:focus-visible {
+    border-color: rgba(200, 168, 75, 0.5);
+    background: rgba(200, 168, 75, 0.03);
+  }
+  &.dragging {
+    border-color: $gold;
+    background: rgba(200, 168, 75, 0.06);
+  }
+  &.zone-error {
+    border-color: rgba(248, 113, 113, 0.5);
+    background: rgba(248, 113, 113, 0.03);
+  }
+}
+
+.upload-icon {
+  width: 44px;
+  height: 44px;
+  color: $muted;
+  margin: 0 auto 0.85rem;
+  display: block;
+  &.icon-error { color: $red; }
+}
+
+.upload-label {
+  font-size: 0.95rem;
+  color: #e5e5e5;
+  font-weight: 600;
+  margin: 0 0 0.45rem;
+}
+
+.upload-hint {
+  font-size: 0.78rem;
+  color: $muted;
+  margin: 0 0 0.2rem;
+  &:last-of-type { margin-bottom: 0; }
+}
+
+.btn-choose {
+  margin-top: 1rem;
+  background: none;
+  border: 1px solid #3a3a3a;
+  color: #bbb;
+  border-radius: 6px;
+  padding: 0.5rem 1.4rem;
+  font-size: 0.825rem;
+  cursor: pointer;
+  transition: border-color 0.15s, color 0.15s;
+  &:hover { border-color: #666; color: #fff; }
+}
+
+
+// ── File done state ────────────────────────────────────
+.file-done {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.file-icon-svg {
+  width: 36px;
+  height: 36px;
+  color: $gold;
+  flex-shrink: 0;
+}
+
+.file-meta { text-align: left; }
+.file-name { font-size: 0.875rem; color: #e5e5e5; font-weight: 500; margin: 0 0 0.2rem; }
+.file-size { font-size: 0.78rem; color: $muted; margin: 0; }
+
+.uploaded-badge {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  color: $green;
+  font-size: 0.82rem;
+  font-weight: 600;
+  svg { width: 16px; height: 16px; }
+}
+
+.uploading-badge {
+  font-size: 0.82rem;
+  color: $gold;
+  font-weight: 600;
+}
+
+.btn-retry {
+  background: none;
+  border: 1px solid rgba(248, 113, 113, 0.4);
+  color: #fca5a5;
+  border-radius: 6px;
+  padding: 0.35rem 0.85rem;
+  font-size: 0.78rem;
+  cursor: pointer;
+  transition: border-color 0.15s, color 0.15s;
+  &:hover { border-color: $red; color: $red; }
+}
+
+// ── Upload progress bar ────────────────────────────────
+.upload-progress {
+  margin-top: 0.85rem;
+}
+
+.progress-bar {
+  height: 4px;
+  background: #2a2a2a;
+  border-radius: 99px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  background: $gold;
+  border-radius: 99px;
+  transition: width 0.2s ease;
+}
+
+.hidden-input { display: none; }
+
+// ── Error boxes ────────────────────────────────────────
+.error-box {
+  border-radius: 8px;
+  margin-bottom: 1rem;
+
+  &.single {
+    background: rgba(248, 113, 113, 0.1);
+    border: 1px solid rgba(248, 113, 113, 0.3);
+    padding: 0.65rem 0.9rem;
+    color: #fca5a5;
+    font-size: 0.85rem;
+  }
+
+  &.list {
+    background: rgba(248, 113, 113, 0.08);
+    border: 1px solid rgba(248, 113, 113, 0.3);
+    padding: 0.75rem 1rem;
+
+    .error-title {
+      color: #fca5a5;
+      font-size: 0.85rem;
+      font-weight: 600;
+      margin: 0 0 0.5rem;
+    }
+
+    ul {
+      margin: 0;
+      padding-left: 1.25rem;
+      li {
+        color: #fca5a5;
+        font-size: 0.82rem;
+        line-height: 1.65;
+      }
+    }
+  }
+}
+
+// ── Review sections ────────────────────────────────────
+.review-section {
+  background: #1a1a1a;
+  border: 1px solid $border;
+  border-radius: 10px;
+  padding: 1.25rem;
+  margin-bottom: 1rem;
+  &:last-of-type { margin-bottom: 0; }
+}
+
+.review-section-title {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: $gold;
+  margin: 0 0 1rem;
+}
+
+.review-row {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 0.55rem;
+  &:last-child { margin-bottom: 0; }
+}
+
+.review-key {
+  font-size: 0.82rem;
+  color: $muted;
+  min-width: 90px;
+  flex-shrink: 0;
+}
+
+.review-val {
+  font-size: 0.82rem;
+  color: #e5e5e5;
+  word-break: break-word;
+  line-height: 1.5;
+}
+
+// ── Step actions ───────────────────────────────────────
+.step-actions {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+  justify-content: flex-end;
+  margin-top: 1.75rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid $border;
+}
+
+.btn-back {
+  background: none;
+  border: 1px solid $border;
+  color: $muted;
+  border-radius: 7px;
+  padding: 0.6rem 1.25rem;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: border-color 0.15s, color 0.15s;
+  &:hover { border-color: #555; color: #ccc; }
+}
+
+.btn-next-step {
+  background: $gold;
+  color: #000;
+  border: none;
+  border-radius: 7px;
+  padding: 0.65rem 2rem;
+  font-size: 0.875rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.15s, opacity 0.15s;
+  &:hover:not(:disabled) { background: #a88740; }
+  &:disabled { opacity: 0.45; cursor: not-allowed; }
+}
+
+.btn-submit-main {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: $gold;
+  color: #000;
+  border: none;
+  border-radius: 7px;
+  padding: 0.7rem 2rem;
+  font-size: 0.9rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.15s, opacity 0.15s;
+  &:hover:not(:disabled) { background: #a88740; }
+  &:disabled { opacity: 0.45; cursor: not-allowed; }
+}
+
+.btn-primary {
+  background: $green;
+  color: #000;
+  border: none;
+  border-radius: 8px;
+  padding: 0.8rem 2rem;
+  font-size: 0.95rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.15s;
+  &:hover { background: #36d66b; }
+}
+
+// ── Spinner ────────────────────────────────────────────
+.spinner {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+  border: 2px solid rgba(0, 0, 0, 0.3);
+  border-top-color: #000;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+
+// ── Responsive ─────────────────────────────────────────
+@media (max-width: 640px) {
+  .step-card  { padding: 1.5rem; }
+  .rules-card { padding: 1.5rem; }
+  .stepper-line { min-width: 28px; }
+  .stepper-item {
+    min-width: 55px;
+    span { font-size: 0.68rem; }
+  }
+}

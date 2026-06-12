@@ -1,0 +1,615 @@
+<div class="upload-page">
+
+  <!-- ── Success ── -->
+  @if (submitSuccess()) {
+    <div class="success-screen">
+      <div class="success-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <polyline points="20 6 9 17 4 12"/>
+        </svg>
+      </div>
+      <h2>Thank You!</h2>
+      <p>Your movie has been submitted successfully. We will review your movie and get back to you soon.</p>
+      <button class="btn-primary" (click)="goToDashboard()">Go to Dashboard</button>
+    </div>
+  }
+
+  <!-- ── Rules / Welcome ── -->
+  @else if (currentStep() === 'rules') {
+    <div class="rules-page">
+      <div class="rules-card">
+        <div class="rules-header">
+          <div class="rules-logo">
+            <svg viewBox="0 0 24 24" fill="currentColor" width="28" height="28">
+              <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 14.5v-9l6 4.5-6 4.5z"/>
+            </svg>
+          </div>
+          <h2>Welcome to Ikigembe Film Arts</h2>
+          <p>Please read and follow the rules and requirements before uploading your film.</p>
+        </div>
+
+        <ul class="rules-list">
+          @for (rule of RULES; track rule) {
+            <li>
+              <svg class="rule-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <polyline points="20 6 9 17 4 12"/>
+              </svg>
+              <span>{{ rule }}</span>
+            </li>
+          }
+        </ul>
+
+        <p class="rules-cta-text">
+          Ready to upload your movie?<br>
+          Click the button below to get started.
+        </p>
+        <button class="btn-start" (click)="startUpload()">Start Upload</button>
+      </div>
+    </div>
+  }
+
+  <!-- ── Wizard ── -->
+  @else {
+    <div class="wizard-page">
+
+      <!-- Progress stepper -->
+      <div class="stepper">
+        <div class="stepper-item" [class.active]="stepIndex() === 0" [class.done]="stepIndex() > 0">
+          <div class="stepper-dot">
+            @if (stepIndex() > 0) {
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                <polyline points="20 6 9 17 4 12"/>
+              </svg>
+            } @else { 1 }
+          </div>
+          <span>Details</span>
+        </div>
+
+        <div class="stepper-line" [class.done]="stepIndex() > 0"></div>
+
+        <div class="stepper-item" [class.active]="stepIndex() === 1" [class.done]="stepIndex() > 1">
+          <div class="stepper-dot">
+            @if (stepIndex() > 1) {
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                <polyline points="20 6 9 17 4 12"/>
+              </svg>
+            } @else { 2 }
+          </div>
+          <span>Trailer</span>
+        </div>
+
+        <div class="stepper-line" [class.done]="stepIndex() > 1"></div>
+
+        <div class="stepper-item" [class.active]="stepIndex() === 2" [class.done]="stepIndex() > 2">
+          <div class="stepper-dot">
+            @if (stepIndex() > 2) {
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                <polyline points="20 6 9 17 4 12"/>
+              </svg>
+            } @else { 3 }
+          </div>
+          <span>Full Movie</span>
+        </div>
+
+        <div class="stepper-line" [class.done]="stepIndex() > 2"></div>
+
+        <div class="stepper-item" [class.active]="stepIndex() === 3" [class.done]="stepIndex() > 3">
+          <div class="stepper-dot">
+            @if (stepIndex() > 3) {
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                <polyline points="20 6 9 17 4 12"/>
+              </svg>
+            } @else { 4 }
+          </div>
+          <span>Copyright</span>
+        </div>
+      </div>
+
+      <!-- ── Step 1: Details ── -->
+      @if (currentStep() === 'details') {
+        <div class="step-card">
+          <div class="step-card-header">
+            <h2>Movie Details</h2>
+            <p>Fill in all information about your movie before uploading files.</p>
+          </div>
+
+          <form [formGroup]="detailsForm" novalidate>
+
+            <!-- Title -->
+            <div class="field" [class.has-error]="title?.invalid && title?.touched">
+              <label>Title <span class="required">*</span></label>
+              <input type="text" formControlName="title" placeholder="Enter movie title" />
+              @if (title?.touched && title?.hasError('required')) {
+                <span class="field-error">Title is required.</span>
+              }
+            </div>
+
+            <!-- Longline -->
+            <div class="field" [class.has-error]="longline?.invalid && longline?.touched">
+              <label>Longline <span class="required">*</span></label>
+              <input type="text" formControlName="longline" placeholder="One-line tagline for your movie" />
+              @if (longline?.touched && longline?.hasError('required')) {
+                <span class="field-error">Longline is required.</span>
+              } @else if (longline?.touched && longline?.hasError('minlength')) {
+                <span class="field-error">Longline must be at least 10 characters.</span>
+              }
+            </div>
+
+            <!-- Synopsis -->
+            <div class="field" [class.has-error]="synopsis?.invalid && synopsis?.touched">
+              <label>Synopsis <span class="required">*</span></label>
+              <textarea formControlName="synopsis" rows="4" placeholder="Write a brief synopsis of your movie"></textarea>
+              @if (synopsis?.touched && synopsis?.hasError('required')) {
+                <span class="field-error">Synopsis is required.</span>
+              } @else if (synopsis?.touched && synopsis?.hasError('minlength')) {
+                <span class="field-error">Synopsis must be at least 20 characters.</span>
+              }
+            </div>
+
+            <!-- Release Date + Price -->
+            <div class="field-row">
+              <div class="field" [class.has-error]="releaseDate?.invalid && releaseDate?.touched">
+                <label>Release Date <span class="required">*</span></label>
+                <procurement-date-picker
+                  [singleMode]="true"
+                  (singleDateChange)="onReleaseDateChange($event)"
+                  class="release-date-picker"
+                />
+                @if (releaseDate?.touched && releaseDate?.hasError('required')) {
+                  <span class="field-error">Release date is required.</span>
+                }
+              </div>
+
+              <div class="field" [class.has-error]="price?.invalid && price?.touched">
+                <label>Price (RWF) <span class="required">*</span></label>
+                <input type="number" formControlName="price" placeholder="e.g. 2000" min="0" />
+                @if (price?.touched && price?.hasError('required')) {
+                  <span class="field-error">Price is required.</span>
+                } @else if (price?.touched && price?.hasError('min')) {
+                  <span class="field-error">Price cannot be negative.</span>
+                }
+              </div>
+            </div>
+
+            <!-- Duration -->
+            <div class="field">
+              <label>Duration (minutes) <span class="optional">(Optional)</span></label>
+              <input type="number" formControlName="duration_minutes" placeholder="e.g. 25" min="1" />
+              @if (durationMinutes?.touched && durationMinutes?.hasError('min')) {
+                <span class="field-error">Duration must be at least 1 minute.</span>
+              }
+            </div>
+
+            <!-- Director + Writer -->
+            <div class="field-row">
+              <div class="field">
+                <label>Director <span class="optional">(Optional)</span></label>
+                <input type="text" formControlName="director" placeholder="e.g. John Doe" />
+              </div>
+              <div class="field">
+                <label>Writer <span class="optional">(Optional)</span></label>
+                <input type="text" formControlName="writer" placeholder="e.g. Jane Doe" />
+              </div>
+            </div>
+
+            <!-- Cast -->
+            <div class="field">
+              <label>Cast <span class="optional">(Optional — comma separated)</span></label>
+              <input type="text" formControlName="cast" placeholder="e.g. Actor A, Actor B, Actor C" />
+            </div>
+
+            <!-- Free Preview -->
+            <div class="field-check">
+              <label class="check-label">
+                <input type="checkbox" formControlName="has_free_preview" />
+                <span>Allow free preview for this movie</span>
+              </label>
+            </div>
+
+          </form>
+
+          <!-- Genres -->
+          <div class="field-section">
+            <label class="section-label">Genres <span class="required">*</span></label>
+            <div class="genre-chips">
+              @for (genre of ALL_GENRES; track genre) {
+                <button type="button"
+                        class="genre-chip"
+                        [class.selected]="isGenreSelected(genre)"
+                        (click)="toggleGenre(genre)">
+                  {{ genre }}
+                </button>
+              }
+            </div>
+            @if (selectedGenres().size === 0 && detailsForm.touched) {
+              <span class="field-error">Select at least one genre.</span>
+            }
+          </div>
+
+          <!-- Thumbnail -->
+          <div class="field-section">
+            <label class="section-label">Thumbnail Image <span class="required">*</span></label>
+
+            @if (!thumbnailFile()) {
+              <div class="thumbnail-drop"
+                   (click)="thumbInput.click()"
+                   role="button" tabindex="0"
+                   (keydown.enter)="thumbInput.click()">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                  <rect x="3" y="3" width="18" height="18" rx="2"/>
+                  <circle cx="8.5" cy="8.5" r="1.5"/>
+                  <polyline points="21 15 16 10 5 21"/>
+                </svg>
+                <p>Click to upload thumbnail</p>
+                <span>JPG, PNG, WebP — max 5 MB</span>
+              </div>
+            } @else {
+              <div class="thumbnail-preview">
+                <img [src]="thumbnailPreview()" alt="Thumbnail preview" />
+                <button type="button" class="thumb-remove" (click)="removeThumbnail()">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                    <line x1="18" y1="6" x2="6" y2="18"/>
+                    <line x1="6" y1="6" x2="18" y2="18"/>
+                  </svg>
+                </button>
+              </div>
+            }
+
+            <input #thumbInput type="file" accept="image/*"
+                   class="hidden-input" (change)="onThumbnailSelect($event)" />
+
+            @if (thumbnailError()) {
+              <span class="field-error">{{ thumbnailError() }}</span>
+            }
+          </div>
+
+          <div class="step-actions">
+            <button class="btn-back" (click)="goBack()">Cancel</button>
+            <button class="btn-next-step" (click)="nextFromDetails()">Next</button>
+          </div>
+        </div>
+      }
+
+      <!-- ── Step 2: Trailer ── -->
+      @else if (currentStep() === 'trailer') {
+        <div class="step-card">
+          <div class="step-card-header">
+            <h2>Upload Trailer</h2>
+            <p>Upload your movie trailer. Maximum duration: 30 seconds.</p>
+          </div>
+
+          <div class="upload-zone"
+               [class.dragging]="isDraggingTrailer()"
+               [class.has-file]="!!trailerFile()"
+               [class.clickable]="!trailerFile()"
+               (dragover)="onTrailerDragOver($event)"
+               (dragleave)="onTrailerDragLeave()"
+               (drop)="onTrailerDrop($event)"
+               (click)="!trailerFile() && trailerInput.click()"
+               role="button" tabindex="0"
+               (keydown.enter)="!trailerFile() && trailerInput.click()">
+
+            @if (!trailerFile()) {
+              <svg class="upload-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                <polyline points="17 8 12 3 7 8"/>
+                <line x1="12" y1="3" x2="12" y2="15"/>
+              </svg>
+              <p class="upload-label">Upload Trailer Video</p>
+              <p class="upload-hint">Max duration: 30 seconds | Max size: 100 MB</p>
+              <button class="btn-choose" type="button" (click)="$event.stopPropagation(); trailerInput.click()">
+                Choose File
+              </button>
+            } @else {
+              <div class="file-done">
+                <svg class="file-icon-svg" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M18 4l2 4h-3l-2-4h-2l2 4h-3l-2-4H8l2 4H7L5 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V4h-4z"/>
+                </svg>
+                <div class="file-meta">
+                  <p class="file-name">{{ trailerFile()!.name }}</p>
+                  <p class="file-size">{{ formatFileSize(trailerFile()!.size) }}</p>
+                </div>
+                @if (isUploadingTrailer()) {
+                  <div class="uploading-badge">Uploading… {{ trailerUploadPct() }}%</div>
+                } @else if (trailerKey()) {
+                  <div class="uploaded-badge">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                      <polyline points="20 6 9 17 4 12"/>
+                    </svg>
+                    Uploaded
+                  </div>
+                } @else if (trailerUploadError()) {
+                  <button class="btn-retry" type="button" (click)="$event.stopPropagation(); retryTrailer()">Retry</button>
+                }
+              </div>
+              @if (isUploadingTrailer()) {
+                <div class="upload-progress">
+                  <div class="progress-bar">
+                    <div class="progress-fill" [style.width.%]="trailerUploadPct()"></div>
+                  </div>
+                </div>
+              }
+            }
+
+            <input #trailerInput type="file" accept=".mp4,.mov,video/mp4,video/quicktime"
+                   class="hidden-input" (change)="onTrailerSelect($event)" />
+          </div>
+
+          @if (trailerUploadError()) {
+            <div class="error-box single">{{ trailerUploadError() }}</div>
+          }
+
+          <div class="step-actions">
+            <button class="btn-back" (click)="goBack()">Back</button>
+            <button class="btn-next-step" (click)="nextFromTrailer()">Next</button>
+          </div>
+        </div>
+      }
+
+      <!-- ── Step 3: Full Movie ── -->
+      @else if (currentStep() === 'movie') {
+        <div class="step-card">
+          <div class="step-card-header">
+            <h2>Upload Full Movie</h2>
+            <p>Upload the full movie file. Duration must be between 10 and 30 minutes.</p>
+          </div>
+
+          <div class="upload-zone"
+               [class.dragging]="isDraggingMovie()"
+               [class.has-file]="!!movieFile()"
+               [class.clickable]="!movieFile()"
+               [class.zone-error]="movieErrors().length > 0"
+               (dragover)="onMovieDragOver($event)"
+               (dragleave)="onMovieDragLeave()"
+               (drop)="onMovieDrop($event)"
+               (click)="!movieFile() && movieInput.click()"
+               role="button" tabindex="0"
+               (keydown.enter)="!movieFile() && movieInput.click()">
+
+            @if (!movieFile()) {
+              <svg class="upload-icon" [class.icon-error]="movieErrors().length > 0"
+                   viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                <polyline points="17 8 12 3 7 8"/>
+                <line x1="12" y1="3" x2="12" y2="15"/>
+              </svg>
+              <p class="upload-label">Upload Full Movie</p>
+              <p class="upload-hint">Min duration: 10 minutes | Max duration: 30 minutes</p>
+              <p class="upload-hint">Max size: 100 MB | Formats: MP4, MOV</p>
+              <button class="btn-choose" type="button" (click)="$event.stopPropagation(); movieInput.click()">
+                Choose File
+              </button>
+            } @else {
+              <div class="file-done">
+                <svg class="file-icon-svg" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M18 4l2 4h-3l-2-4h-2l2 4h-3l-2-4H8l2 4H7L5 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V4h-4z"/>
+                </svg>
+                <div class="file-meta">
+                  <p class="file-name">{{ movieFile()!.name }}</p>
+                  <p class="file-size">{{ formatFileSize(movieFile()!.size) }}</p>
+                </div>
+                @if (isUploadingMovie()) {
+                  <div class="uploading-badge">Uploading… {{ movieUploadPct() }}%</div>
+                } @else if (movieKey()) {
+                  <div class="uploaded-badge">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                      <polyline points="20 6 9 17 4 12"/>
+                    </svg>
+                    Uploaded
+                  </div>
+                } @else if (movieUploadError()) {
+                  <button class="btn-retry" type="button" (click)="$event.stopPropagation(); retryMovie()">Retry</button>
+                }
+              </div>
+              @if (isUploadingMovie()) {
+                <div class="upload-progress">
+                  <div class="progress-bar">
+                    <div class="progress-fill" [style.width.%]="movieUploadPct()"></div>
+                  </div>
+                </div>
+              }
+            }
+
+            <input #movieInput type="file" accept=".mp4,.mov,video/mp4,video/quicktime"
+                   class="hidden-input" (change)="onMovieSelect($event)" />
+          </div>
+
+          @if (movieErrors().length > 0) {
+            <div class="error-box list">
+              <p class="error-title">Please fix the following errors:</p>
+              <ul>
+                @for (err of movieErrors(); track err) {
+                  <li>{{ err }}</li>
+                }
+              </ul>
+            </div>
+          }
+
+          <div class="step-actions">
+            <button class="btn-back" (click)="goBack()">Back</button>
+            <button class="btn-next-step" [disabled]="!movieReady() || isUploadingMovie()" (click)="nextFromMovie()">Next</button>
+          </div>
+        </div>
+      }
+
+      <!-- ── Step 4: Copyright ── -->
+      @else if (currentStep() === 'copyright') {
+        <div class="step-card">
+          <div class="step-card-header">
+            <h2>Copyright Proof</h2>
+            <p>Upload proof of copyright ownership for your movie. Accepted formats: PDF, JPG, PNG (max 10 MB).</p>
+          </div>
+
+          <div class="upload-zone"
+               [class.has-file]="!!copyrightFile()"
+               [class.clickable]="!copyrightFile()"
+               [class.zone-error]="!!copyrightError()"
+               (dragover)="onCopyrightDragOver($event)"
+               (drop)="onCopyrightDrop($event)"
+               (click)="!copyrightFile() && copyrightInput.click()"
+               role="button" tabindex="0"
+               (keydown.enter)="!copyrightFile() && copyrightInput.click()">
+
+            @if (!copyrightFile()) {
+              <svg class="upload-icon" [class.icon-error]="!!copyrightError()"
+                   viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                <polyline points="14 2 14 8 20 8"/>
+                <line x1="12" y1="18" x2="12" y2="12"/>
+                <line x1="9" y1="15" x2="15" y2="15"/>
+              </svg>
+              <p class="upload-label">Upload Copyright Document</p>
+              <p class="upload-hint">PDF, JPG, or PNG — max 10 MB</p>
+              <button class="btn-choose" type="button" (click)="$event.stopPropagation(); copyrightInput.click()">
+                Choose File
+              </button>
+            } @else {
+              <div class="file-done">
+                <svg class="file-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                  <polyline points="14 2 14 8 20 8"/>
+                </svg>
+                <div class="file-meta">
+                  <p class="file-name">{{ copyrightFile()!.name }}</p>
+                  <p class="file-size">{{ formatFileSize(copyrightFile()!.size) }}</p>
+                </div>
+                <button class="btn-retry" type="button" (click)="$event.stopPropagation(); removeCopyright()">
+                  Remove
+                </button>
+              </div>
+            }
+
+            <input #copyrightInput type="file" accept=".pdf,.jpg,.jpeg,.png,application/pdf,image/jpeg,image/png"
+                   class="hidden-input" (change)="onCopyrightSelect($event)" />
+          </div>
+
+          @if (copyrightError()) {
+            <div class="error-box single">{{ copyrightError() }}</div>
+          }
+
+          <div class="step-actions">
+            <button class="btn-back" (click)="goBack()">Back</button>
+            <button class="btn-next-step" (click)="nextFromCopyright()">Review &amp; Submit</button>
+          </div>
+        </div>
+      }
+
+      <!-- ── Review & Submit ── -->
+      @else if (currentStep() === 'review') {
+        <div class="step-card">
+          <div class="step-card-header">
+            <h2>Review Your Submission</h2>
+            <p>Please review all information before submitting.</p>
+          </div>
+
+          <div class="review-section">
+            <h3 class="review-section-title">Movie Details</h3>
+            <div class="review-row">
+              <span class="review-key">Title:</span>
+              <span class="review-val">{{ detailsForm.value.title || '—' }}</span>
+            </div>
+            <div class="review-row">
+              <span class="review-key">Longline:</span>
+              <span class="review-val">{{ detailsForm.value.longline || '—' }}</span>
+            </div>
+            <div class="review-row">
+              <span class="review-key">Synopsis:</span>
+              <span class="review-val">{{ detailsForm.value.synopsis || '—' }}</span>
+            </div>
+            <div class="review-row">
+              <span class="review-key">Genres:</span>
+              <span class="review-val">{{ genresDisplay() || '—' }}</span>
+            </div>
+            <div class="review-row">
+              <span class="review-key">Release Date:</span>
+              <span class="review-val">{{ detailsForm.value.release_date || '—' }}</span>
+            </div>
+            <div class="review-row">
+              <span class="review-key">Price:</span>
+              <span class="review-val">{{ detailsForm.value.price != null ? 'RWF ' + detailsForm.value.price : '—' }}</span>
+            </div>
+            <div class="review-row">
+              <span class="review-key">Duration:</span>
+              <span class="review-val">{{ detailsForm.value.duration_minutes ? detailsForm.value.duration_minutes + ' min' : '—' }}</span>
+            </div>
+            @if (detailsForm.value.director) {
+              <div class="review-row">
+                <span class="review-key">Director:</span>
+                <span class="review-val">{{ detailsForm.value.director }}</span>
+              </div>
+            }
+            @if (detailsForm.value.writer) {
+              <div class="review-row">
+                <span class="review-key">Writer:</span>
+                <span class="review-val">{{ detailsForm.value.writer }}</span>
+              </div>
+            }
+            @if (detailsForm.value.cast) {
+              <div class="review-row">
+                <span class="review-key">Cast:</span>
+                <span class="review-val">{{ detailsForm.value.cast }}</span>
+              </div>
+            }
+            <div class="review-row">
+              <span class="review-key">Free Preview:</span>
+              <span class="review-val">{{ detailsForm.value.has_free_preview ? 'Yes' : 'No' }}</span>
+            </div>
+          </div>
+
+          <div class="review-section">
+            <h3 class="review-section-title">Thumbnail</h3>
+            <div class="review-row">
+              <span class="review-key">Image:</span>
+              <span class="review-val">{{ thumbnailFile()?.name ?? '—' }}</span>
+            </div>
+          </div>
+
+          <div class="review-section">
+            <h3 class="review-section-title">Trailer</h3>
+            <div class="review-row">
+              <span class="review-key">Trailer File:</span>
+              <span class="review-val">{{ trailerFile()?.name ?? '—' }}</span>
+            </div>
+          </div>
+
+          <div class="review-section">
+            <h3 class="review-section-title">Full Movie</h3>
+            <div class="review-row">
+              <span class="review-key">Movie File:</span>
+              <span class="review-val">{{ movieFile()?.name ?? '—' }}</span>
+            </div>
+            <div class="review-row">
+              <span class="review-key">Size:</span>
+              <span class="review-val">{{ movieFile() ? formatFileSize(movieFile()!.size) : '—' }}</span>
+            </div>
+          </div>
+
+          <div class="review-section">
+            <h3 class="review-section-title">Copyright</h3>
+            <div class="review-row">
+              <span class="review-key">Document:</span>
+              <span class="review-val">{{ copyrightFile()?.name ?? '—' }}</span>
+            </div>
+          </div>
+
+          @if (submitError()) {
+            <div class="error-box single">{{ submitError() }}</div>
+          }
+
+          <div class="step-actions">
+            <button class="btn-back" (click)="goBack()">Back</button>
+            <button class="btn-submit-main" [disabled]="isSubmitting()" (click)="submit()">
+              @if (isSubmitting()) {
+                <span class="spinner"></span>Submitting…
+              } @else {
+                Submit Your Movie
+              }
+            </button>
+          </div>
+        </div>
+      }
+
+    </div>
+  }
+
+</div>

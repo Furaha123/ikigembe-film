@@ -1,5 +1,5 @@
 import { Component, inject, OnInit, signal, computed } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { CommonModule, DecimalPipe } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { ProducerService, ProducerWallet } from '../../services/producer.service';
 
@@ -32,10 +32,24 @@ export class ProducerWalletComponent implements OnInit {
   paymentMethod = signal<'Bank' | 'MoMo'>('Bank');
   isBank = computed(() => this.paymentMethod() === 'Bank');
 
+  withdrawAmount = signal<number>(0);
+
+  taxBreakdown = computed(() => {
+    const amount = this.withdrawAmount();
+    if (!amount || amount <= 0) return null;
+    const govTax        = Math.round(amount * 0.30);
+    const totalDeducted = amount + govTax;
+    return { amount, govTax, totalDeducted };
+  });
+
   ngOnInit() {
     this.producerService.getWallet().subscribe({
       next: (data) => { this.wallet.set(data); this.isLoading.set(false); },
       error: () => this.isLoading.set(false),
+    });
+
+    this.form.get('amount')!.valueChanges.subscribe(v => {
+      this.withdrawAmount.set(v ?? 0);
     });
   }
 

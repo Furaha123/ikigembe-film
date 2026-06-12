@@ -1,10 +1,65 @@
 <div class="producer-dash">
 
+  <!-- ── Upload CTA banner ── -->
+  <a routerLink="/producer/upload" class="upload-cta-banner">
+    <div class="upload-cta-icon">
+      <svg viewBox="0 0 24 24" fill="currentColor" width="28" height="28">
+        <path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM14 13v4h-4v-4H7l5-5 5 5h-3z"/>
+      </svg>
+    </div>
+    <div class="upload-cta-text">
+      <span class="upload-cta-title">Upload a Film</span>
+      <span class="upload-cta-sub">Submit your content for review — approved films go live on the platform</span>
+    </div>
+    <div class="upload-cta-arrow">
+      <svg viewBox="0 0 24 24" fill="currentColor" width="20" height="20"><path d="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8z"/></svg>
+    </div>
+  </a>
+
+  <!-- ── Contract: movie approved, needs contract ── -->
+  @if (showContractRequired()) {
+    <app-movie-approval-contract-notification />
+  }
+
+  <!-- ── Contract: expiry warning ── -->
+  @if (contractWarningState() === 'expiring') {
+    <div class="contract-warning-card contract-warning-card--amber">
+      <div class="cw-icon">
+        <svg viewBox="0 0 24 24" fill="currentColor" width="22" height="22">
+          <path d="M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z"/>
+        </svg>
+      </div>
+      <div class="cw-body">
+        <strong>Agreement Expiring Soon</strong>
+        <span>Your agreement expires in {{ contractStatus()?.days_remaining }} days. Renew now to avoid interruptions.</span>
+      </div>
+      <a routerLink="/producer/contracts/start" class="cw-btn">Renew Agreement</a>
+    </div>
+  }
+
+  @if (contractWarningState() === 'expired') {
+    <div class="contract-warning-card contract-warning-card--red">
+      <div class="cw-icon">
+        <svg viewBox="0 0 24 24" fill="currentColor" width="22" height="22">
+          <path d="M12 2C6.47 2 2 6.47 2 12s4.47 10 10 10 10-4.47 10-10S17.53 2 12 2zm5 13.59L15.59 17 12 13.41 8.41 17 7 15.59 10.59 12 7 8.41 8.41 7 12 10.59 15.59 7 17 8.41 13.41 12 17 15.59z"/>
+        </svg>
+      </div>
+      <div class="cw-body">
+        <strong>Agreement Expired</strong>
+        <span>Please renew your Producer Distribution Agreement. Distribution of newly approved content will be paused until renewal.</span>
+      </div>
+      <a routerLink="/producer/contracts/start" class="cw-btn cw-btn--red">Renew Now</a>
+    </div>
+  }
+
   <!-- ── Header ── -->
   <div class="dash-header">
     <div class="header-text">
       <h1>Producer Dashboard</h1>
       <p>Track your earnings and manage your content</p>
+      @if (contractStatus()) {
+        <app-contract-status-widget [status]="contractStatus()!" style="margin-top:10px;display:inline-flex;" />
+      }
     </div>
     <div class="date-controls">
       <span class="date-label">Date Range</span>
@@ -14,9 +69,9 @@
         }
       </div>
       <div class="custom-range">
-        <input type="date" />
+        <input type="date" #startDate (change)="onCustomRange(startDate.value, endDate.value)" />
         <span class="to-sep">to</span>
-        <input type="date" />
+        <input type="date" #endDate (change)="onCustomRange(startDate.value, endDate.value)" />
       </div>
     </div>
   </div>
@@ -33,10 +88,10 @@
       </div>
       <div class="kpi-body">
         <div class="kpi-label">Views</div>
-        <div class="kpi-value">{{ fmtNum(data.stats.views) }}</div>
+        <div class="kpi-value">{{ fmtNum(rangeStats().views) }}</div>
         <div class="kpi-growth">
           <svg viewBox="0 0 24 24" fill="currentColor" class="arrow-up"><path d="M16 6l2.29 2.29-4.88 4.88-4-4L2 16.59 3.41 18l6-6 4 4 6.3-6.29L22 12V6h-6z"/></svg>
-          +{{ data.stats.viewsGrowth }}% vs last period
+          +{{ rangeStats().viewsGrowth }}% vs last period
         </div>
       </div>
     </div>
@@ -50,10 +105,10 @@
       </div>
       <div class="kpi-body">
         <div class="kpi-label">Watch Time (hours)</div>
-        <div class="kpi-value">{{ fmtNum(data.stats.watchTime) }}h</div>
+        <div class="kpi-value">{{ fmtNum(rangeStats().watchTime) }}h</div>
         <div class="kpi-growth kpi-growth--teal">
           <svg viewBox="0 0 24 24" fill="currentColor" class="arrow-up"><path d="M16 6l2.29 2.29-4.88 4.88-4-4L2 16.59 3.41 18l6-6 4 4 6.3-6.29L22 12V6h-6z"/></svg>
-          +{{ data.stats.watchGrowth }}% vs last period
+          +{{ rangeStats().watchGrowth }}% vs last period
         </div>
       </div>
     </div>
@@ -67,7 +122,7 @@
       </div>
       <div class="kpi-body">
         <div class="kpi-label">Your Estimated Revenue</div>
-        <div class="kpi-value">{{ fmt(data.stats.earnings) }}</div>
+        <div class="kpi-value">{{ fmt(rangeStats().earnings) }}</div>
         <div class="kpi-sub">Total from all content</div>
       </div>
     </div>
@@ -101,6 +156,7 @@
           <button class="ev-tab" [class.active]="earningsTab() === 'views'"    (click)="setEarningsTab('views')">Views</button>
         </div>
       </div>
+
       <div class="earnings-chart-body">
         <canvas #earningsChart></canvas>
       </div>
@@ -115,7 +171,7 @@
 
       <div class="balance-card">
         <div class="balance-label">Available Balance</div>
-        <div class="balance-value">{{ fmt(data.wallet.balance) }}</div>
+        <div class="balance-value">{{ fmt(wallet()?.wallet_balance ?? 0) }}</div>
         <div class="balance-sub">Ready to withdraw</div>
       </div>
 
@@ -124,12 +180,110 @@
       }
 
       <form [formGroup]="withdrawForm" (ngSubmit)="submitWithdrawal()">
+
+        <!-- Amount -->
         <div class="wp-field-label">Amount to Withdraw</div>
         <div class="wp-input-wrap">
           <span class="currency-sym">RWF</span>
-          <input type="number" formControlName="amount" placeholder="0.00" min="1" />
+          <input type="number" formControlName="amount" placeholder="0.00" min="5000" />
         </div>
         <div class="wp-hint">Min: RWF 5,000 • Processing: 3–5 business days</div>
+
+        <!-- Payout invoice preview -->
+        @if (taxBreakdown()) {
+          <div class="wd-invoice">
+            <div class="wdi-header">
+              <svg viewBox="0 0 24 24" fill="currentColor"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6zm-1 7V3.5L18.5 9H13z"/></svg>
+              Payout Summary
+            </div>
+            <div class="wdi-row">
+              <span class="wdi-label">Amount to Withdraw</span>
+              <span class="wdi-val">RWF {{ taxBreakdown()!.amount | number }}</span>
+            </div>
+            <div class="wdi-row">
+              <span class="wdi-label">
+                Gov. Tax / RRA
+                <span class="wdi-badge">30%</span>
+              </span>
+              <span class="wdi-val wdi-deduct">+ RWF {{ taxBreakdown()!.govTax | number }}</span>
+            </div>
+            <div class="wdi-divider"></div>
+            <div class="wdi-row">
+              <span class="wdi-label-total">Total from Balance</span>
+              <span class="wdi-val-total">RWF {{ taxBreakdown()!.totalDeducted | number }}</span>
+            </div>
+          </div>
+        }
+
+        <!-- Payment method toggle -->
+        <div class="wp-field-label" style="margin-top:0.5rem">Payment Method</div>
+        <div class="pm-toggle">
+          <button type="button" class="pm-btn" [class.active]="paymentMethod() === 'MoMo'"
+                  (click)="selectMethod('MoMo')">
+            <svg viewBox="0 0 24 24" fill="currentColor">
+              <path d="M17 1.01L7 1c-1.1 0-2 .9-2 2v18c0 1.1.9 2 2 2h10c1.1 0 2-.9 2-2V3c0-1.1-.9-1.99-2-1.99zM17 19H7V5h10v14zm-4.2-5.78v1.75l3.2-2.99L12.8 9v1.7c-3.11.43-4.35 2.56-4.8 4.7 1.11-1.47 2.59-2.14 4.8-2.18z"/>
+            </svg>
+            Mobile Money
+          </button>
+          <button type="button" class="pm-btn" [class.active]="paymentMethod() === 'Bank'"
+                  (click)="selectMethod('Bank')">
+            <svg viewBox="0 0 24 24" fill="currentColor">
+              <path d="M4 10v7h3v-7H4zm6 0v7h3v-7h-3zm-8 12h19v-3H2v3zm14-12v7h3v-7h-3zM11.5 1L2 6v2h19V6l-9.5-5z"/>
+            </svg>
+            Bank Transfer
+          </button>
+        </div>
+
+        <!-- Mobile Money fields -->
+        @if (paymentMethod() === 'MoMo') {
+          <div class="wp-fields-group">
+            <div class="wp-field">
+              <div class="wp-field-label">Provider</div>
+              <div class="wp-select-wrap">
+                <select formControlName="momo_provider">
+                  <option value="MTN">MTN MoMo</option>
+                  <option value="Airtel">Airtel Money</option>
+                </select>
+              </div>
+            </div>
+            <div class="wp-field">
+              <div class="wp-field-label">Phone Number</div>
+              <div class="wp-input-wrap">
+                <span class="currency-sym">+250</span>
+                <input type="tel" formControlName="momo_number"
+                       placeholder="07X XXX XXXX" maxlength="10" />
+              </div>
+            </div>
+          </div>
+        }
+
+        <!-- Bank Transfer fields -->
+        @if (paymentMethod() === 'Bank') {
+          <div class="wp-fields-group">
+            <div class="wp-field">
+              <div class="wp-field-label">Bank Name</div>
+              <div class="wp-input-wrap">
+                <input type="text" formControlName="bank_name"
+                       placeholder="e.g. Bank of Kigali" />
+              </div>
+            </div>
+            <div class="wp-field">
+              <div class="wp-field-label">Account Number</div>
+              <div class="wp-input-wrap">
+                <input type="text" formControlName="account_number"
+                       placeholder="Enter account number" />
+              </div>
+            </div>
+            <div class="wp-field">
+              <div class="wp-field-label">Account Holder Name</div>
+              <div class="wp-input-wrap">
+                <input type="text" formControlName="account_holder_name"
+                       placeholder="Full name as on account" />
+              </div>
+            </div>
+          </div>
+        }
+
         <button type="submit" class="wp-submit" [disabled]="withdrawForm.invalid || isSaving()">
           @if (isSaving()) {
             <span class="w-spin"></span>Submitting…
@@ -145,9 +299,9 @@
           <svg viewBox="0 0 24 24" fill="currentColor"><path d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11zM7 10h5v5H7z"/></svg>
           Recent Withdrawals
         </div>
-        @for (w of data.wallet.recentWithdrawals; track w.date) {
+        @for (w of recentWithdrawals(); track w.id) {
           <div class="rwd-item">
-            <span class="rwd-date">{{ w.date }}</span>
+            <span class="rwd-date">{{ formatDate(w.created_at) }}</span>
             <div class="rwd-right">
               <span class="rwd-amount">{{ fmt(w.amount) }}</span>
               <span class="rwd-status">✓ {{ w.status }}</span>
@@ -166,7 +320,7 @@
       <a class="see-more-btn" routerLink="/producer/movies">See All Content →</a>
     </div>
 
-    @for (m of data.movies; track m.title) {
+    @for (m of dashboardMovies(); track m.id) {
       <div class="movie-item" [class.expanded]="expandedMovie() === m.title">
         <div class="movie-thumb">
           <svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
@@ -179,7 +333,7 @@
           </div>
         </div>
         <div class="movie-right">
-          <span class="movie-earnings">{{ fmt(m.earnings) }}</span>
+          <span class="movie-earnings">{{ fmt(m.total_gross_revenue) }}</span>
           <button class="detail-btn" (click)="toggleMovieDetail(m.title)">
             {{ expandedMovie() === m.title ? 'Close' : 'View Details' }}
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
@@ -204,11 +358,11 @@
             </div>
             <div class="md-stat">
               <span class="md-stat-label">Gross Revenue</span>
-              <span class="md-stat-value">{{ fmt(movieStats(m.title).earnings) }}</span>
+              <span class="md-stat-value">{{ fmt(movieStats(m.title).total_gross_revenue) }}</span>
             </div>
             <div class="md-stat gold">
               <span class="md-stat-label">Your Share</span>
-              <span class="md-stat-value">{{ fmt(movieStats(m.title).share) }}</span>
+              <span class="md-stat-value">{{ fmt(movieStats(m.title).producer_share) }}</span>
             </div>
           </div>
           <div class="md-chart-wrap">
@@ -226,7 +380,9 @@
   <div class="txn-section">
     <div class="txn-header">
       <h2>Recent Transactions</h2>
-      <button class="see-more-btn">View All ▾</button>
+      <button class="see-more-btn" (click)="toggleTxns()">
+        {{ showAllTxns() ? 'Show Less ▴' : 'View All ▾' }}
+      </button>
     </div>
     <div class="txn-table-wrap">
       <table>
@@ -241,12 +397,12 @@
           </tr>
         </thead>
         <tbody>
-          @for (t of data.transactions; track t.date + t.buyer) {
+          @for (t of visibleTxns(); track t.id) {
             <tr>
-              <td class="t-bold">{{ t.movie }}</td>
-              <td>{{ t.buyer }}</td>
-              <td>{{ fmt(t.amount) }}</td>
-              <td class="t-gold">{{ fmt(t.share) }}</td>
+              <td class="t-bold">{{ t.movie_title }}</td>
+              <td>{{ t.buyer_name }}</td>
+              <td>{{ fmt(t.gross_amount) }}</td>
+              <td class="t-gold">{{ fmt(t.producer_earnings) }}</td>
               <td>
                 <span class="t-badge" [class.completed]="t.status === 'Completed'" [class.pending]="t.status === 'Pending'">
                   {{ t.status }}

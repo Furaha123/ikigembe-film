@@ -5,6 +5,7 @@ import { AuthService, UserProfile, NotificationPreferences } from '../../core/se
 import { PaymentService, PaymentHistoryItem } from '../../core/services/payment.service';
 import { HeaderComponent } from '../../core/components/header/header.component';
 
+
 @Component({
   selector: 'app-profile',
   imports: [CommonModule, ReactiveFormsModule, HeaderComponent],
@@ -15,6 +16,8 @@ export class ProfileComponent implements OnInit {
   private readonly authService    = inject(AuthService);
   private readonly paymentService = inject(PaymentService);
   private readonly fb             = inject(FormBuilder);
+
+  readonly userRole = this.authService.userRole;
 
   profile = signal<UserProfile | null>(null);
   notifications = signal<NotificationPreferences | null>(null);

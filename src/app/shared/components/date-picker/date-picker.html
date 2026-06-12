@@ -57,12 +57,20 @@
 
     <!-- Footer hint -->
     <div class="dp-footer">
-      @if (!startDate()) {
-        <span>Click to set start date</span>
-      } @else if (!endDate()) {
-        <span>Click to set end date</span>
+      @if (singleMode()) {
+        @if (startDate()) {
+          <button type="button" class="dp-clear" (click)="startDate.set(null)">Clear</button>
+        } @else {
+          <span>Click a day to select</span>
+        }
       } @else {
-        <button type="button" class="dp-clear" (click)="startDate.set(null); endDate.set(null)">Clear</button>
+        @if (!startDate()) {
+          <span>Click to set start date</span>
+        } @else if (!endDate()) {
+          <span>Click to set end date</span>
+        } @else {
+          <button type="button" class="dp-clear" (click)="startDate.set(null); endDate.set(null)">Clear</button>
+        }
       }
     </div>
 

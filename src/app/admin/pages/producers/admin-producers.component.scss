@@ -177,8 +177,16 @@ $muted:   #888;
   font-size: .72rem;
   font-weight: 600;
   &.approved  { background: #1a2c21; color: #86efac; }
+  &.pending   { background: #2a2316; color: #fde68a; }
   &.suspended { background: #2e1a1a; color: #fecaca; }
 }
+
+.producer-name-info {
+  display: flex; flex-direction: column; gap: 0.1rem;
+}
+.producer-name  { font-size: .875rem; color: $text; font-weight: 500; }
+.producer-email { font-size: .75rem; color: $muted; }
+.muted-cell     { font-size: .82rem; color: $muted; }
 
 .actions { text-align: right; }
 
@@ -225,6 +233,31 @@ $muted:   #888;
   &:disabled { opacity: .4; cursor: not-allowed; }
   &.success  { color: #86efac; }
   &.danger   { color: #fca5a5; &:hover { background: #2e1a1a; } }
+  &.warn     { color: #fde68a; &:hover { background: #2a2316; } }
+}
+
+/* ── Documents list ── */
+.docs-list { display: flex; flex-direction: column; gap: 0.75rem; margin-bottom: 1rem; }
+
+.doc-row {
+  display: flex; align-items: center; justify-content: space-between;
+  background: #111; border: 1px solid $border;
+  border-radius: 8px; padding: 0.75rem 1rem;
+}
+
+.doc-label   { font-size: 0.875rem; color: $text; font-weight: 500; }
+.doc-link    { color: $gold; font-size: 0.82rem; text-decoration: none; font-weight: 600; &:hover { text-decoration: underline; } }
+.doc-missing { color: $muted; font-size: 0.82rem; }
+
+/* ── Modal textarea ── */
+.modal-textarea {
+  background: #111; border: 1px solid $border;
+  border-radius: 8px; padding: 0.6rem 0.85rem;
+  color: $text; font-size: 0.875rem; outline: none;
+  width: 100%; box-sizing: border-box; resize: vertical;
+  font-family: inherit; transition: border-color 0.2s;
+  &::placeholder { color: #555; }
+  &:focus { border-color: rgba(197,162,83,0.6); }
 }
 
 .kd-divider { border: none; border-top: 1px solid #2e2e2e; margin: .2rem 0; }

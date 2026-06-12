@@ -5,8 +5,8 @@ import { CommonModule } from '@angular/common';
 import { Subscription } from 'rxjs';
 import {
   ProducerService,
-  ProducerPaymentItem,
-  ProducerWithdrawalTransactionItem,
+  DashboardTransaction,
+  ProducerWithdrawal,
 } from '../../../services/producer.service';
 import * as XLSX from 'xlsx';
 
@@ -22,8 +22,8 @@ export class ProducerTransactionsComponent implements OnInit, OnDestroy {
 
   activeTab = signal<'payments' | 'withdrawals'>('payments');
 
-  payments     = signal<ProducerPaymentItem[]>([]);
-  withdrawals  = signal<ProducerWithdrawalTransactionItem[]>([]);
+  payments     = signal<DashboardTransaction[]>([]);
+  withdrawals  = signal<ProducerWithdrawal[]>([]);
   isLoading    = signal(true);
   hasError     = signal(false);
 
@@ -47,23 +47,30 @@ export class ProducerTransactionsComponent implements OnInit, OnDestroy {
     this.sub?.unsubscribe();
     this.isLoading.set(true);
     this.hasError.set(false);
-    const page = this.activeTab() === 'payments' ? this.payPage() : this.withdrawPage();
-    this.sub = this.producerService.getTransactions(page).subscribe({
-      next: (data) => {
-        const p = data.payments;
-        const w = data.withdrawals;
-        this.payments.set(p?.results ?? []);
-        this.payPage.set(p?.page ?? 1);
-        this.payTotalPages.set(p?.total_pages ?? 1);
-        this.payTotal.set(p?.total_results ?? 0);
-        this.withdrawals.set(w?.results ?? []);
-        this.withdrawPage.set(w?.page ?? 1);
-        this.withdrawTotalPages.set(w?.total_pages ?? 1);
-        this.withdrawTotal.set(w?.total_results ?? 0);
-        this.isLoading.set(false);
-      },
-      error: () => { this.isLoading.set(false); this.hasError.set(true); },
-    });
+
+    if (this.activeTab() === 'payments') {
+      this.sub = this.producerService.getTransactions(this.payPage()).subscribe({
+        next: (data) => {
+          this.payments.set(data.results);
+          this.payPage.set(data.page);
+          this.payTotalPages.set(data.total_pages);
+          this.payTotal.set(data.total_results);
+          this.isLoading.set(false);
+        },
+        error: () => { this.isLoading.set(false); this.hasError.set(true); },
+      });
+    } else {
+      this.sub = this.producerService.getWithdrawals(this.withdrawPage()).subscribe({
+        next: (data) => {
+          this.withdrawals.set(data.results);
+          this.withdrawPage.set(data.page);
+          this.withdrawTotalPages.set(data.total_pages);
+          this.withdrawTotal.set(data.total_results);
+          this.isLoading.set(false);
+        },
+        error: () => { this.isLoading.set(false); this.hasError.set(true); },
+      });
+    }
   }
 
   goToPage(p: number): void {
@@ -140,7 +147,7 @@ export class ProducerTransactionsComponent implements OnInit, OnDestroy {
     return 'RWF ' + n.toLocaleString();
   }
 
-  accountInfo(w: ProducerWithdrawalTransactionItem): string {
+  accountInfo(w: ProducerWithdrawal): string {
     if (w.payment_method === 'MoMo') {
       return `${w.momo_provider ?? ''} ${w.momo_number ?? ''}`.trim();
     }

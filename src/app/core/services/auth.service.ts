@@ -3,7 +3,7 @@ import { isPlatformBrowser } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { tap } from 'rxjs/operators';
-import { RegisterPayload, RegisterResponse, LoginResponse, GoogleAuthPayload, LoginUser } from '../models/auth.interface';
+import { RegisterPayload, RegisterResponse, LoginResponse, GoogleAuthPayload, LoginUser, AccountStatus } from '../models/auth.interface';
 import { environment } from '../../../environments/environment';
 
 export interface UserProfile {
@@ -16,6 +16,9 @@ export interface UserProfile {
   is_active: boolean;
   is_staff: boolean;
   date_joined: string;
+  account_status?: string;
+  studio_name?: string;
+  suspension_reason?: string;
 }
 
 export interface NotificationPreferences {
@@ -26,12 +29,16 @@ export interface NotificationPreferences {
 
 export type { RegisterPayload, RegisterErrors } from '../models/auth.interface';
 
-const TOKEN_KEY    = 'ikigembe_token';
-const REFRESH_KEY  = 'ikigembe_refresh';
-const NAME_KEY     = 'ikigembe_name';
-const EMAIL_KEY    = 'ikigembe_email';
-const IS_STAFF_KEY = 'ikigembe_is_staff';
-const ROLE_KEY     = 'ikigembe_role';
+const TOKEN_KEY       = 'ikigembe_token';
+const REFRESH_KEY     = 'ikigembe_refresh';
+const NAME_KEY        = 'ikigembe_name';
+const EMAIL_KEY       = 'ikigembe_email';
+const IS_STAFF_KEY    = 'ikigembe_is_staff';
+const ROLE_KEY        = 'ikigembe_role';
+const ACCT_STATUS_KEY = 'ikigembe_account_status';
+const SUSPENSION_KEY  = 'ikigembe_suspension_reason';
+
+function onboardingKey(email: string) { return `ikigembe_onboarding_done_${email}`; }
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
@@ -59,6 +66,22 @@ export class AuthService {
     isPlatformBrowser(this.platformId) ? (localStorage.getItem(ROLE_KEY) ?? 'Viewer') : 'Viewer'
   );
 
+  readonly accountStatus = signal<AccountStatus>(
+    isPlatformBrowser(this.platformId)
+      ? ((localStorage.getItem(ACCT_STATUS_KEY) as AccountStatus) ?? 'approved')
+      : 'approved'
+  );
+
+  readonly suspensionReason = signal<string>(
+    isPlatformBrowser(this.platformId) ? (localStorage.getItem(SUSPENSION_KEY) ?? '') : ''
+  );
+
+  readonly onboardingComplete = signal<boolean>(
+    isPlatformBrowser(this.platformId)
+      ? localStorage.getItem(onboardingKey(localStorage.getItem(EMAIL_KEY) ?? '')) === '1'
+      : false
+  );
+
   readonly initials = computed(() => {
     const name = this.userName().trim();
     if (name) {
@@ -81,6 +104,50 @@ export class AuthService {
         this.userName.set(name);
       })
     );
+  }
+
+  registerProducer(payload: {
+    full_name: string; phone_number: string; studio_name?: string;
+    email: string; password: string; password_confirm: string;
+  }): Observable<LoginResponse> {
+    const [first_name, ...rest] = payload.full_name.trim().split(/\s+/);
+    const last_name = rest.join(' ') || first_name;
+    const body: RegisterPayload = {
+      first_name,
+      last_name,
+      email: payload.email,
+      password: payload.password,
+      password_confirm: payload.password_confirm,
+      role: 'Producer',
+      phone_number: payload.phone_number,
+      studio_name: payload.studio_name,
+    };
+    return this.http.post<LoginResponse>(`${this.baseUrl}/auth/register/`, body).pipe(
+      tap((res) => {
+        this.storeSession(res, payload.email);
+        if (isPlatformBrowser(this.platformId)) {
+          localStorage.setItem(ACCT_STATUS_KEY, 'pending_approval');
+        }
+        this.accountStatus.set('pending_approval');
+      })
+    );
+  }
+
+  completeOnboarding() {
+    if (isPlatformBrowser(this.platformId)) {
+      localStorage.setItem(onboardingKey(this.userEmail()), '1');
+    }
+    this.onboardingComplete.set(true);
+  }
+
+  setAccountStatus(status: AccountStatus, reason?: string) {
+    if (isPlatformBrowser(this.platformId)) {
+      localStorage.setItem(ACCT_STATUS_KEY, status);
+      if (reason) localStorage.setItem(SUSPENSION_KEY, reason);
+      else localStorage.removeItem(SUSPENSION_KEY);
+    }
+    this.accountStatus.set(status);
+    this.suspensionReason.set(reason ?? '');
   }
 
   login(identifier: string, password: string) {
@@ -133,6 +200,9 @@ export class AuthService {
     if (resolvedEmail && isPlatformBrowser(this.platformId)) {
       localStorage.setItem(EMAIL_KEY, resolvedEmail);
       this.userEmail.set(resolvedEmail);
+      if (localStorage.getItem(onboardingKey(resolvedEmail)) === '1') {
+        this.onboardingComplete.set(true);
+      }
     }
 
     const isStaff = u?.is_staff ?? false;
@@ -146,6 +216,12 @@ export class AuthService {
       localStorage.setItem(ROLE_KEY, role);
     }
     this.userRole.set(role);
+
+    const status = ((res as any)?.user?.account_status ?? (res as any)?.account_status) as AccountStatus | undefined;
+    if (status && isPlatformBrowser(this.platformId)) {
+      localStorage.setItem(ACCT_STATUS_KEY, status);
+      this.accountStatus.set(status);
+    }
   }
 
   logout(onDone?: () => void) {
@@ -192,6 +268,10 @@ export class AuthService {
     return this.http.post(`${this.baseUrl}/auth/verify-email/`, { token });
   }
 
+  resendVerification(email: string): Observable<unknown> {
+    return this.http.post(`${this.baseUrl}/auth/resend-verification/`, { email });
+  }
+
   private clearSession() {
     if (isPlatformBrowser(this.platformId)) {
       localStorage.removeItem(TOKEN_KEY);
@@ -200,11 +280,16 @@ export class AuthService {
       localStorage.removeItem(EMAIL_KEY);
       localStorage.removeItem(IS_STAFF_KEY);
       localStorage.removeItem(ROLE_KEY);
+      localStorage.removeItem(ACCT_STATUS_KEY);
+      localStorage.removeItem(SUSPENSION_KEY);
     }
     this.isLoggedIn.set(false);
     this.isAdmin.set(false);
     this.userRole.set('Viewer');
     this.userName.set('');
     this.userEmail.set('');
+    this.accountStatus.set('approved');
+    this.suspensionReason.set('');
+    this.onboardingComplete.set(false);
   }
 }

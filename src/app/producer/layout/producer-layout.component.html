@@ -7,10 +7,15 @@
 
     <nav class="sidebar-nav">
       @for (item of navItems; track item.path) {
-        <a [routerLink]="item.path" routerLinkActive="active" class="nav-item" (click)="closeSidebarOnMobile()">
+        <a [routerLink]="item.path" routerLinkActive="active"
+           class="nav-item" [class.upload-nav-item]="item.icon === 'upload'"
+           (click)="closeSidebarOnMobile()">
           <span class="nav-icon">
             @if (item.icon === 'dashboard') {
               <svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z"/></svg>
+            }
+            @if (item.icon === 'upload') {
+              <svg viewBox="0 0 24 24" fill="currentColor"><path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM14 13v4h-4v-4H7l5-5 5 5h-3z"/></svg>
             }
             @if (item.icon === 'movies') {
               <svg viewBox="0 0 24 24" fill="currentColor"><path d="M18 4l2 4h-3l-2-4h-2l2 4h-3l-2-4H8l2 4H7L5 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V4h-4z"/></svg>
@@ -24,14 +29,27 @@
             @if (item.icon === 'reports') {
               <svg viewBox="0 0 24 24" fill="currentColor"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 14H7v-2h5v2zm5-4H7v-2h10v2zm0-4H7V7h10v2z"/></svg>
             }
+            @if (item.icon === 'contracts') {
+              <svg viewBox="0 0 24 24" fill="currentColor"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6zm-1 1.5L18.5 9H13V3.5zM6 20V4h5v7h7v9H6zm2-5h8v2H8v-2zm0-3h8v2H8v-2zm0-3h5v2H8V9z"/></svg>
+            }
             @if (item.icon === 'settings') {
               <svg viewBox="0 0 24 24" fill="currentColor"><path d="M19.14 12.94c.04-.3.06-.61.06-.94s-.02-.64-.07-.94l2.03-1.58a.49.49 0 0 0 .12-.61l-1.92-3.32a.49.49 0 0 0-.59-.22l-2.39.96a7.02 7.02 0 0 0-1.62-.94l-.36-2.54a.484.484 0 0 0-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96a.48.48 0 0 0-.59.22L2.74 8.87a.47.47 0 0 0 .12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58a.49.49 0 0 0-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32a.47.47 0 0 0-.12-.61l-2.01-1.58zM12 15.6a3.6 3.6 0 1 1 0-7.2 3.6 3.6 0 0 1 0 7.2z"/></svg>
             }
           </span>
           <span class="nav-label">{{ item.label }}</span>
+          @if (item.icon === 'movies') {
+            <span class="nav-count">{{ movieCount() }}</span>
+          }
         </a>
       }
     </nav>
+
+    <a routerLink="/terms" class="sidebar-terms" (click)="closeSidebarOnMobile()">
+      <span class="nav-icon">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6zm-1 1.5L18.5 9H13V3.5zM6 20V4h5v7h7v9H6zm2-5h8v2H8v-2zm0-3h8v2H8V12z"/></svg>
+      </span>
+      <span class="nav-label">Terms &amp; Conditions</span>
+    </a>
 
     <button class="sidebar-logout" (click)="logout()" [disabled]="isLoggingOut()">
       @if (isLoggingOut()) {
@@ -53,11 +71,72 @@
       <button class="toggle-btn" [class.is-open]="sidebarOpen()" (click)="toggleSidebar()" aria-label="Toggle sidebar">
         <svg class="icon-burger" viewBox="0 0 24 24" fill="currentColor"><path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"/></svg>
         <svg class="icon-x" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-          <line x1="18" y1="6" x2="6" y2="18"/>
-          <line x1="6" y1="6" x2="18" y2="18"/>
+          <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
         </svg>
       </button>
+
       <div class="topbar-right">
+
+        <!-- ── Upload shortcut (topbar) ── -->
+        <a routerLink="/producer/upload" class="topbar-upload-btn" aria-label="Upload Film">
+          <svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16">
+            <path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM14 13v4h-4v-4H7l5-5 5 5h-3z"/>
+          </svg>
+          <span class="upload-btn-label">Upload Film</span>
+        </a>
+
+        <!-- ── Notification bell ── -->
+        <div class="notif-menu">
+          <button class="notif-btn" (click)="toggleNotifDropdown($event)" aria-label="Notifications">
+            <svg viewBox="0 0 24 24" fill="currentColor" width="22" height="22">
+              <path d="M12 22c1.1 0 2-.9 2-2h-4a2 2 0 0 0 2 2zm6-6V11c0-3.07-1.63-5.64-4.5-6.32V4a1.5 1.5 0 1 0-3 0v.68C7.64 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"/>
+            </svg>
+            @if (unreadCount() > 0) {
+              <span class="notif-badge">{{ unreadCount() > 9 ? '9+' : unreadCount() }}</span>
+            }
+          </button>
+
+          @if (showNotifDropdown()) {
+            <div class="notif-dropdown">
+              <div class="notif-header">
+                <span class="notif-title">Notifications</span>
+                @if (unreadCount() > 0) {
+                  <button class="mark-all-read" (click)="markAllRead($event)">Mark all read</button>
+                }
+              </div>
+
+              @if (notifications().length === 0) {
+                <div class="notif-empty">No notifications yet.</div>
+              } @else {
+                @for (n of notifications(); track n.id) {
+                  <div class="notif-item" [class.unread]="!n.read" (click)="onNotifClick(n, $event)">
+                    @if (notifIcon(n.type) === 'check') {
+                      <svg class="notif-type-icon notif-type-icon--check" viewBox="0 0 24 24" fill="currentColor" width="16" height="16" aria-hidden="true">
+                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 14.5l-4-4 1.41-1.41L10 13.67l6.59-6.59L18 8.5l-8 8z"/>
+                      </svg>
+                    } @else if (notifIcon(n.type) === 'cross') {
+                      <svg class="notif-type-icon notif-type-icon--cross" viewBox="0 0 24 24" fill="currentColor" width="16" height="16" aria-hidden="true">
+                        <path d="M12 2C6.47 2 2 6.47 2 12s4.47 10 10 10 10-4.47 10-10S17.53 2 12 2zm5 13.59L15.59 17 12 13.41 8.41 17 7 15.59 10.59 12 7 8.41 8.41 7 12 10.59 15.59 7 17 8.41 13.41 12 17 15.59z"/>
+                      </svg>
+                    } @else if (notifIcon(n.type) === 'contract') {
+                      <svg class="notif-type-icon notif-type-icon--contract" viewBox="0 0 24 24" fill="currentColor" width="16" height="16" aria-hidden="true">
+                        <path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/>
+                      </svg>
+                    } @else {
+                      <div class="notif-dot"></div>
+                    }
+                    <div class="notif-body">
+                      <p class="notif-message">{{ n.message }}</p>
+                      <span class="notif-time">{{ relativeTime(n.created_at) }}</span>
+                    </div>
+                  </div>
+                }
+              }
+            </div>
+          }
+        </div>
+
+        <!-- ── User dropdown ── -->
         <div class="topbar-user-menu">
           <button class="topbar-trigger" (click)="toggleUserDropdown($event)" type="button">
             <div class="topbar-avatar">{{ initials() }}</div>
@@ -74,13 +153,11 @@
             <div class="topbar-dropdown">
               <button class="topbar-dropdown-item logout" (click)="logout()" [disabled]="isLoggingOut()">
                 @if (isLoggingOut()) {
-                  <span class="logout-spin"></span>
-                  Signing out...
+                  <span class="logout-spin"></span>Signing out…
                 } @else {
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
                     <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
-                    <polyline points="16 17 21 12 16 7"/>
-                    <line x1="21" y1="12" x2="9" y2="12"/>
+                    <polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/>
                   </svg>
                   Sign Out
                 }
@@ -90,6 +167,37 @@
         </div>
       </div>
     </header>
+
+    <!-- ── Account Status Banners ── -->
+    @if (!statusBannerDismissed()) {
+      @if (accountStatus() === 'pending_approval') {
+        <div class="status-banner pending">
+          <svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18">
+            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/>
+          </svg>
+          <span><strong>Your account is under review.</strong> You can prepare submissions but nothing goes live until approved.</span>
+          <button class="banner-dismiss" (click)="dismissBanner()" aria-label="Dismiss">
+            <svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+          </button>
+        </div>
+      }
+
+      @if (accountStatus() === 'suspended') {
+        <div class="status-banner suspended">
+          <svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18">
+            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zM4 12c0-4.42 3.58-8 8-8 1.85 0 3.55.63 4.9 1.68L5.68 16.9A7.902 7.902 0 0 1 4 12zm8 8c-1.85 0-3.55-.63-4.9-1.68L18.32 7.1A7.902 7.902 0 0 1 20 12c0 4.42-3.58 8-8 8z"/>
+          </svg>
+          <span>
+            <strong>Your account has been suspended.</strong>
+            @if (suspensionReason()) { {{ suspensionReason() }} }
+            All upload, submit, and film management actions are blocked.
+          </span>
+          <button class="banner-dismiss" (click)="dismissBanner()" aria-label="Dismiss">
+            <svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+          </button>
+        </div>
+      }
+    }
 
     <main class="producer-content">
       <router-outlet />

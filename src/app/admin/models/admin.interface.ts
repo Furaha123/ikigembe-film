@@ -41,6 +41,7 @@ export interface ProducerItem {
   name: string;
   email: string;
   phone_number: string | null;
+  studio_name?: string | null;
   movies_uploaded: number;
   total_earnings: number;
   balance: number;
@@ -48,6 +49,26 @@ export interface ProducerItem {
   total_withdrawn: number;
   is_active: boolean;
   date_joined: string;
+  status?: 'pending' | 'approved' | 'suspended';
+  suspension_reason?: string | null;
+}
+
+export interface FilmSubmissionItem {
+  id: number;
+  title: string;
+  producer_name: string;
+  studio_name: string | null;
+  submission_date: string;
+  genre: string | null;
+  duration_minutes: number | null;
+  status: 'pending_admin_review' | 'approved' | 'rejected';
+  rejection_reason: string | null;
+  thumbnail_url: string | null;
+}
+
+export interface ProducerDocuments {
+  copyright_url: string | null;
+  id_url: string | null;
 }
 
 export interface PaymentItem {
@@ -92,9 +113,13 @@ export interface AdminMovie {
   id: number;
   title: string;
   producer: string;
+  studio_name?: string | null;
   duration_minutes: number;
   price: number;
   release_date: string;
+  submission_date?: string;
+  status?: 'pending_admin_review' | 'approved' | 'rejected';
+  rejection_reason?: string | null;
   trailer_url: string | null;
   thumbnail_url: string | null;
 }

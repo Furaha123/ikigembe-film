@@ -14,6 +14,10 @@ export const routes: Routes = [
     loadComponent: () => import('./pages/register/register.component').then(a => a.RegisterComponent)
   },
   {
+    path: 'register/producer',
+    redirectTo: '/register?role=producer',
+  },
+  {
     path: 'forgot-password',
     canActivate: [guestGuard],
     loadComponent: () => import('./pages/forgot-password/forgot-password.component').then(a => a.ForgotPasswordComponent)
@@ -45,6 +49,10 @@ export const routes: Routes = [
     path: 'my-list',
     canActivate: [authGuard, viewerGuard],
     loadComponent: () => import('./pages/my-list/my-list.component').then(a => a.MyListComponent)
+  },
+  {
+    path: 'terms',
+    loadComponent: () => import('./pages/terms/terms.component').then(a => a.TermsComponent)
   },
   {
     path: 'producer',

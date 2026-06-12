@@ -229,7 +229,7 @@
                      [class.active]="metric() === 'views'"
                      (click)="setMetric('views')">
                   <div class="kpi-tile-label">Views</div>
-                  <div class="kpi-tile-value">{{ fmtNum(movie()!.views) }}</div>
+                  <div class="kpi-tile-value">{{ fmtNum(rangeViews()) }}</div>
                 </div>
                 <div class="kpi-tile"
                      [class.active]="metric() === 'watchTime'"
@@ -250,7 +250,7 @@
                 <canvas #analyticsChart></canvas>
               </div>
 
-              <button class="see-more-link">See more</button>
+              <button class="see-more-link" (click)="openAdvanced()">See more →</button>
             </div>
 
           </div>
@@ -268,7 +268,7 @@
               <div class="rt-value">{{ movie()!.views }}</div>
               <div class="rt-sub">Views · Since published</div>
               <div class="rt-divider"></div>
-              <button class="see-more-link rt-see-more">See more</button>
+              <button class="see-more-link rt-see-more" (click)="openAdvanced()">See more →</button>
             </div>
           </div>
 
@@ -414,9 +414,9 @@
                     </svg>
                   </th>
                   <th>Watch time (hours)</th>
-                  <th>Subscribers</th>
-                  <th>Impressions</th>
-                  <th>Impressions click-through rate (%)</th>
+                  <th>Purchases</th>
+                  <th>Revenue (RWF)</th>
+                  <th>Completion rate (%)</th>
                 </tr>
               </thead>
               <tfoot>
@@ -424,9 +424,9 @@
                   <td>Total</td>
                   <td>{{ fmtNum(advTotals().views) }}</td>
                   <td>{{ advTotals().watchTime }}</td>
-                  <td>{{ fmtNum(advTotals().subscribers) }}</td>
-                  <td>{{ fmtNum(advTotals().impressions) }}</td>
-                  <td>{{ advTotals().ctr }}%</td>
+                  <td>{{ fmtNum(advTotals().purchases) }}</td>
+                  <td>{{ fmt(advTotals().revenue) }}</td>
+                  <td>{{ advTotals().completionRate }}%</td>
                 </tr>
               </tfoot>
               <tbody>
@@ -438,9 +438,9 @@
                     </td>
                     <td>{{ fmtNum(row.views) }}</td>
                     <td>{{ row.watchTime }}</td>
-                    <td>{{ fmtNum(row.subscribers) }}</td>
-                    <td>{{ fmtNum(row.impressions) }}</td>
-                    <td>{{ row.ctr }}%</td>
+                    <td>{{ fmtNum(row.purchases) }}</td>
+                    <td>{{ fmt(row.revenue) }}</td>
+                    <td>{{ row.completionRate }}%</td>
                   </tr>
                 }
               </tbody>

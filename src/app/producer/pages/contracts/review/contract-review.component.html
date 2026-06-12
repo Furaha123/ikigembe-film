@@ -1,0 +1,45 @@
+<div class="review-page">
+
+  <div class="review-header">
+    <div class="step-indicator">
+      <span class="step done"></span>
+      <span class="step done"></span>
+      <span class="step active"></span>
+      <span class="step"></span>
+      <span class="step"></span>
+    </div>
+    <h1 class="flow-title">Producer Distribution Agreement</h1>
+    <p class="flow-subtitle">
+      Please read the full agreement carefully before proceeding.
+      Scroll to the bottom to continue.
+    </p>
+    <button class="download-btn" (click)="downloadPdf()" type="button">
+      <svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16">
+        <path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/>
+      </svg>
+      Download PDF
+    </button>
+  </div>
+
+  <div class="agreement-scroll" #scrollBody (scroll)="onScroll($event)">
+    @for (section of contractText; track section.title) {
+      <div class="agreement-section">
+        <h2 class="section-title">{{ section.title }}</h2>
+        <p class="section-body">{{ section.body }}</p>
+      </div>
+    }
+    <div class="scroll-anchor"></div>
+  </div>
+
+  @if (!hasScrolledToBottom()) {
+    <p class="scroll-hint">↓ Scroll to the bottom to enable Continue</p>
+  }
+
+  <div class="review-actions">
+    <button class="btn-outline" (click)="back()">Back</button>
+    <button class="btn-gold" (click)="continue()" [disabled]="!hasScrolledToBottom()">
+      I've Read This — Continue
+    </button>
+  </div>
+
+</div>
