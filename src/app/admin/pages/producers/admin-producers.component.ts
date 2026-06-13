@@ -27,8 +27,18 @@ export class AdminProducersComponent implements OnInit {
   private readonly fb = inject(FormBuilder);
 
   producers     = signal<ProducerItem[]>([]);
+  statusFilter  = signal<'all' | 'pending' | 'approved' | 'suspended'>('all');
   isLoading     = signal(true);
   actionId      = signal<number | null>(null);
+
+  filteredProducers = computed(() => {
+    const filter = this.statusFilter();
+    if (filter === 'all') return this.producers();
+    return this.producers().filter(p => this.producerStatus(p) === filter);
+  });
+
+  filterCount = (f: 'pending' | 'approved' | 'suspended') =>
+    this.producers().filter(p => this.producerStatus(p) === f).length;
   showAddModal  = signal(false);
   isSaving      = signal(false);
   apiErrors     = signal<FieldErrors>({});
@@ -244,6 +254,12 @@ export class AdminProducersComponent implements OnInit {
   // ── Detail panel ───────────────────────────────────────
   detailReport  = signal<ProducerReport | null>(null);
   detailLoading = signal(false);
+
+  detailProducerItem = computed(() => {
+    const id = this.detailReport()?.producer.id;
+    if (id === undefined) return null;
+    return this.producers().find(p => p.id === id) ?? null;
+  });
 
   openDetail(id: number) {
     this.closeMenu();

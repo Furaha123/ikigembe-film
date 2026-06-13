@@ -16,6 +16,7 @@ import {
   AdminMovie,
   FilmSubmissionItem,
   ProducerDocuments,
+  ProducerContractItem,
   RevenueTrendItem,
   TopMovieItem,
   UserGrowthItem,
@@ -110,6 +111,14 @@ export class AdminService {
 
   approveFilm(id: number): Observable<unknown> {
     return this.http.post(`${BASE}/admin/dashboard/films/${id}/approve/`, {});
+  }
+
+  approveFilmRequiringContract(id: number): Observable<unknown> {
+    return this.http.post(`${BASE}/admin/dashboard/films/${id}/approve-pending-contract/`, {});
+  }
+
+  getProducerContracts(): Observable<ProducerContractItem[]> {
+    return this.http.get<ProducerContractItem[]>(`${BASE}/admin/dashboard/contracts/`);
   }
 
   rejectFilm(id: number, reason: string): Observable<unknown> {
