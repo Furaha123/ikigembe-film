@@ -64,7 +64,7 @@ export interface FilmSubmissionItem {
   submission_date: string;
   genre: string | null;
   duration_minutes: number | null;
-  status: 'pending_admin_review' | 'approved' | 'rejected' | 'approved_pending_contract';
+  status: 'pending_review' | 'pending_admin_review' | 'approved' | 'rejected' | 'approved_pending_contract';
   rejection_reason: string | null;
   thumbnail_url: string | null;
   synopsis?: string | null;

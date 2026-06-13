@@ -57,7 +57,7 @@
                   <span class="badge" [class]="statusClass(s.status)">{{ statusLabel(s.status) }}</span>
                 </td>
                 <td class="actions" (click)="$event.stopPropagation()">
-                  @if (s.status === 'pending_admin_review') {
+                  @if (s.status === 'pending_review' || s.status === 'pending_admin_review') {
                     <button class="action-btn approve" (click)="approveSubmission(s.id)" [disabled]="actionId() === s.id">
                       {{ actionId() === s.id && !isApprovingContract() ? '…' : 'Approve' }}
                     </button>
@@ -210,7 +210,7 @@
             </a>
           }
 
-          @if (s.status === 'pending_admin_review') {
+          @if (s.status === 'pending_review' || s.status === 'pending_admin_review') {
             <div class="detail-actions">
               <button class="action-btn approve full" (click)="approveSubmission(s.id); closeSubmissionDetail()" [disabled]="actionId() === s.id">
                 Approve

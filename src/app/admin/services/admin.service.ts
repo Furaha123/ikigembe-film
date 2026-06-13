@@ -2,6 +2,7 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
+import { map } from 'rxjs/operators';
 import {
   DashboardOverview,
   ViewerItem,
@@ -106,7 +107,9 @@ export class AdminService {
 
   // Film submissions (from producers)
   getFilmSubmissions(): Observable<FilmSubmissionItem[]> {
-    return this.http.get<FilmSubmissionItem[]>(`${BASE}/admin/dashboard/films/submissions/`);
+    return this.http.get<{ submissions: FilmSubmissionItem[] } | FilmSubmissionItem[]>(
+      `${BASE}/admin/dashboard/films/submissions/`
+    ).pipe(map(r => Array.isArray(r) ? r : r.submissions));
   }
 
   approveFilm(id: number): Observable<unknown> {

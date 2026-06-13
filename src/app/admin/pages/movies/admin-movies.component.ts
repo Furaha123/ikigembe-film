@@ -40,7 +40,7 @@ export class AdminMoviesComponent implements OnInit {
   removeConfirmId = signal<number | null>(null);
   isRemoving      = signal(false);
 
-  pendingCount = computed(() => this.submissions().filter(s => s.status === 'pending_admin_review').length);
+  pendingCount = computed(() => this.submissions().filter(s => s.status === 'pending_review' || s.status === 'pending_admin_review').length);
 
   selectedSubmission = signal<FilmSubmissionItem | null>(null);
   isApprovingContract = signal(false);
@@ -169,7 +169,7 @@ export class AdminMoviesComponent implements OnInit {
     if (s === 'approved') return 'Approved';
     if (s === 'rejected') return 'Rejected';
     if (s === 'approved_pending_contract') return 'Pending Contract';
-    return 'Under Review';
+    return 'Under Review'; // pending_review | pending_admin_review
   }
 
   statusClass(s: FilmSubmissionItem['status']): string {
