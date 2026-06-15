@@ -1,0 +1,348 @@
+$gold:   #C8A84B;
+$dark:   #0e0e0e;
+$card:   #161616;
+$border: #252525;
+$muted:  #888;
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ─── Header ─────────────────────────────────────────────── */
+.preview-header {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 2rem;
+  height: 60px;
+  background: rgba(14, 14, 14, 0.92);
+  backdrop-filter: blur(8px);
+  border-bottom: 1px solid $border;
+}
+
+.preview-logo {
+  height: 36px;
+  width: auto;
+  display: block;
+}
+
+.preview-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.preview-link {
+  color: #ccc;
+  text-decoration: none;
+  font-size: 0.875rem;
+  font-weight: 500;
+  &:hover { color: #fff; }
+}
+
+.preview-btn-register {
+  background: $gold;
+  color: #000;
+  padding: 0.45rem 1.1rem;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  font-weight: 700;
+  text-decoration: none;
+  transition: opacity 0.15s;
+  &:hover { opacity: 0.85; }
+}
+
+/* ─── Loading / Not-found ─────────────────────────────────── */
+.preview-loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 60vh;
+}
+
+.preview-spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid $border;
+  border-top-color: $gold;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+.preview-not-found {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  padding: 6rem 1rem;
+  color: $muted;
+  text-align: center;
+
+  h2 { font-size: 1.4rem; color: #fff; }
+  p  { max-width: 420px; line-height: 1.6; }
+}
+
+/* ─── Hero ────────────────────────────────────────────────── */
+.preview-hero {
+  position: relative;
+  height: min(55vw, 480px);
+  background: #111 center / cover no-repeat;
+}
+
+.preview-hero-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to bottom, rgba(0,0,0,0.25) 0%, rgba(14,14,14,0.85) 100%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+}
+
+.preview-play-btn {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background: rgba(200, 168, 75, 0.92);
+  border: none;
+  color: #000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: transform 0.15s, background 0.15s;
+  box-shadow: 0 6px 28px rgba(0,0,0,0.5);
+
+  &:hover { transform: scale(1.08); background: $gold; }
+}
+
+.preview-play-label {
+  font-size: 0.85rem;
+  color: rgba(255,255,255,0.85);
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+/* ─── Info section ────────────────────────────────────────── */
+.preview-info {
+  background: $dark;
+  padding: 2.5rem 2rem 3rem;
+}
+
+.preview-info-layout {
+  max-width: 1100px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 200px 1fr;
+  gap: 2.5rem;
+  align-items: start;
+}
+
+.preview-poster {
+  width: 200px;
+  border-radius: 12px;
+  object-fit: cover;
+  aspect-ratio: 2/3;
+  box-shadow: 0 12px 40px rgba(0,0,0,0.6);
+  margin-top: -80px;
+  position: relative;
+  z-index: 1;
+  border: 2px solid $border;
+}
+
+.preview-details { padding-top: 0.5rem; }
+
+.preview-title {
+  font-size: 2rem;
+  font-weight: 800;
+  color: #fff;
+  margin: 0 0 0.75rem;
+  line-height: 1.2;
+}
+
+.preview-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.preview-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  background: $card;
+  border: 1px solid $border;
+  color: #ccc;
+  padding: 0.25rem 0.65rem;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 500;
+}
+
+/* ─── CTA buttons ─────────────────────────────────────────── */
+.preview-cta-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+}
+
+.preview-btn-trailer {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  background: rgba(255,255,255,0.1);
+  border: 1px solid rgba(255,255,255,0.2);
+  color: #fff;
+  padding: 0.65rem 1.35rem;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s;
+  &:hover { background: rgba(255,255,255,0.18); }
+}
+
+.preview-btn-watch {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  background: $gold;
+  color: #000;
+  padding: 0.65rem 1.35rem;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 700;
+  text-decoration: none;
+  transition: opacity 0.15s;
+  &:hover { opacity: 0.87; }
+}
+
+/* ─── Overview + detail rows ──────────────────────────────── */
+.preview-overview {
+  color: #aaa;
+  line-height: 1.7;
+  font-size: 0.95rem;
+  margin: 0 0 1.5rem;
+  max-width: 640px;
+}
+
+.preview-detail-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.preview-detail-row {
+  display: flex;
+  gap: 1rem;
+  font-size: 0.875rem;
+}
+
+.preview-detail-label {
+  color: $muted;
+  min-width: 70px;
+  flex-shrink: 0;
+}
+
+.preview-detail-value { color: #ddd; }
+
+/* ─── Sign-up banner ──────────────────────────────────────── */
+.preview-signup-banner {
+  background: linear-gradient(135deg, #1a1400 0%, #0e0e0e 100%);
+  border-top: 1px solid rgba(200, 168, 75, 0.2);
+  padding: 3rem 2rem;
+}
+
+.preview-signup-inner {
+  max-width: 1100px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 2rem;
+  flex-wrap: wrap;
+}
+
+.preview-signup-title {
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: #fff;
+  margin: 0 0 0.35rem;
+}
+
+.preview-signup-sub {
+  color: $muted;
+  font-size: 0.9rem;
+  margin: 0;
+}
+
+.preview-banner-btn {
+  background: $gold;
+  color: #000;
+  padding: 0.75rem 1.75rem;
+  border-radius: 10px;
+  font-size: 0.95rem;
+  font-weight: 800;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: opacity 0.15s;
+  flex-shrink: 0;
+  &:hover { opacity: 0.87; }
+}
+
+/* ─── Player overlay ──────────────────────────────────────── */
+.preview-player-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.9);
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+}
+
+.preview-player-wrap {
+  position: relative;
+  width: 100%;
+  max-width: 900px;
+}
+
+.preview-player-close {
+  position: absolute;
+  top: -44px;
+  right: 0;
+  background: none;
+  border: none;
+  color: #fff;
+  cursor: pointer;
+  opacity: 0.8;
+  &:hover { opacity: 1; }
+}
+
+/* ─── Responsive ──────────────────────────────────────────── */
+@media (max-width: 768px) {
+  .preview-header { padding: 0 1rem; }
+
+  .preview-info { padding: 1.5rem 1rem 2rem; }
+
+  .preview-info-layout {
+    grid-template-columns: 1fr;
+    gap: 1.25rem;
+  }
+
+  .preview-poster {
+    width: 130px;
+    margin-top: -50px;
+  }
+
+  .preview-title { font-size: 1.4rem; }
+
+  .preview-signup-inner { flex-direction: column; text-align: center; }
+  .preview-banner-btn   { width: 100%; text-align: center; }
+}
