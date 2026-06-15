@@ -1,0 +1,77 @@
+<div class="admin-page">
+  <div class="page-header">
+    <div>
+      <h1>Contracts</h1>
+      <p>Monitor producer distribution agreement status across the platform.</p>
+    </div>
+  </div>
+
+  <!-- Filter tabs -->
+  <div class="filter-tabs">
+    <button class="filter-tab" [class.active]="filter() === 'all'" (click)="filter.set('all')">
+      All <span class="filter-count">{{ filterCount('all') }}</span>
+    </button>
+    <button class="filter-tab" [class.active]="filter() === 'active'" (click)="filter.set('active')">
+      Active <span class="filter-count active">{{ filterCount('active') }}</span>
+    </button>
+    <button class="filter-tab" [class.active]="filter() === 'expiring'" (click)="filter.set('expiring')">
+      Expiring Soon <span class="filter-count expiring">{{ filterCount('expiring') }}</span>
+    </button>
+    <button class="filter-tab" [class.active]="filter() === 'expired'" (click)="filter.set('expired')">
+      Expired <span class="filter-count expired">{{ filterCount('expired') }}</span>
+    </button>
+    <button class="filter-tab" [class.active]="filter() === 'none'" (click)="filter.set('none')">
+      Not Signed <span class="filter-count none-count">{{ filterCount('none') }}</span>
+    </button>
+  </div>
+
+  @if (loading()) {
+    <div class="table-skeleton">
+      @for (i of [1,2,3,4,5]; track i) { <div class="row-skeleton"></div> }
+    </div>
+  } @else if (error()) {
+    <div class="error-banner">{{ error() }}</div>
+  } @else if (filtered().length === 0) {
+    <div class="empty-state">No producers match this filter.</div>
+  } @else {
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Producer</th>
+            <th>Studio</th>
+            <th>Status</th>
+            <th>Signed On</th>
+            <th>Expires On</th>
+            <th>Days Left</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (c of filtered(); track c.producer_id) {
+            <tr>
+              <td class="name-cell">
+                <div class="producer-avatar">{{ getInitials(c.producer_name) }}</div>
+                <span class="producer-name">{{ c.producer_name }}</span>
+              </td>
+              <td class="muted-cell">{{ c.studio_name ?? '—' }}</td>
+              <td>
+                <span class="badge" [class]="stateClass(contractState(c))">
+                  {{ stateLabel(contractState(c)) }}
+                </span>
+              </td>
+              <td class="muted-cell">{{ formatDate(c.signed_at) }}</td>
+              <td class="muted-cell">{{ formatDate(c.expires_at) }}</td>
+              <td class="muted-cell">
+                @if (c.status === 'active') {
+                  <span [class.text-warning]="daysRemaining(c) <= 30">{{ daysRemaining(c) }}d</span>
+                } @else {
+                  —
+                }
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+</div>

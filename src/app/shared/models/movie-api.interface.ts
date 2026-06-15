@@ -28,3 +28,21 @@ export interface CastMember {
 export interface SimilarMoviesResponse {
   results: IVideoContent[];
 }
+
+export interface MoviePreview {
+  id: number;
+  title: string;
+  overview: string;
+  genre: string;
+  genres: string[];
+  thumbnail_url: string | null;
+  backdrop_url: string | null;
+  trailer_url: string | null;
+  duration_minutes: number;
+  release_date: string;
+  rating: number;
+  price: number;
+  has_free_preview: boolean;
+  producer_name: string;
+  studio_name: string;
+}

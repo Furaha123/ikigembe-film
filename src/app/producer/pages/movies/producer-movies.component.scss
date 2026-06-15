@@ -367,6 +367,7 @@ tbody tr.movie-row {
   &:hover { opacity: 0.8; }
 
   &--edit      { background: rgba(200,168,75,0.1); border-color: rgba(200,168,75,0.3); color: $gold; }
+  &--contract  { background: rgba(200,168,75,0.15); border-color: $gold; color: $gold; font-weight: 700; }
   &--view      { background: rgba(255,255,255,0.06); border-color: #333; color: #ccc; }
   &--analytics { background: rgba(74,222,128,0.08); border-color: rgba(74,222,128,0.25); color: $green; }
 }

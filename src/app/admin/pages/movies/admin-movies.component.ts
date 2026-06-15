@@ -40,7 +40,12 @@ export class AdminMoviesComponent implements OnInit {
   removeConfirmId = signal<number | null>(null);
   isRemoving      = signal(false);
 
-  pendingCount = computed(() => this.submissions().filter(s => s.status === 'pending_admin_review').length);
+  pendingCount = computed(() => this.submissions().filter(s => s.status === 'pending_review' || s.status === 'pending_admin_review').length);
+
+  selectedSubmission = signal<FilmSubmissionItem | null>(null);
+
+  openSubmissionDetail(s: FilmSubmissionItem) { this.selectedSubmission.set(s); }
+  closeSubmissionDetail() { this.selectedSubmission.set(null); }
 
   form = this.fb.group({
     title:           ['', Validators.required],
@@ -79,8 +84,11 @@ export class AdminMoviesComponent implements OnInit {
   approveSubmission(id: number) {
     this.actionId.set(id);
     this.adminService.approveFilm(id).subscribe({
-      next: () => {
-        this.submissions.update(list => list.map(s => s.id === id ? { ...s, status: 'approved' as const } : s));
+      next: (res: any) => {
+        const newStatus = res?.approval_status ?? 'approved';
+        this.submissions.update(list => list.map(s =>
+          s.id === id ? { ...s, status: newStatus } : s
+        ));
         this.actionId.set(null);
       },
       error: () => this.actionId.set(null),
@@ -147,12 +155,14 @@ export class AdminMoviesComponent implements OnInit {
   statusLabel(s: FilmSubmissionItem['status']): string {
     if (s === 'approved') return 'Approved';
     if (s === 'rejected') return 'Rejected';
-    return 'Under Review';
+    if (s === 'approved_pending_contract') return 'Pending Contract';
+    return 'Under Review'; // pending_review | pending_admin_review
   }
 
   statusClass(s: FilmSubmissionItem['status']): string {
     if (s === 'approved') return 'badge-approved';
     if (s === 'rejected') return 'badge-rejected';
+    if (s === 'approved_pending_contract') return 'badge-contract';
     return 'badge-review';
   }
 

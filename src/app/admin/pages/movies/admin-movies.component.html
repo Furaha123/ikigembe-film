@@ -46,7 +46,7 @@
           </thead>
           <tbody>
             @for (s of submissions(); track s.id) {
-              <tr>
+              <tr class="submission-row" (click)="openSubmissionDetail(s)">
                 <td class="title-cell">{{ s.title }}</td>
                 <td class="muted">{{ s.producer_name }}</td>
                 <td class="muted">{{ s.studio_name ?? '—' }}</td>
@@ -56,8 +56,8 @@
                 <td>
                   <span class="badge" [class]="statusClass(s.status)">{{ statusLabel(s.status) }}</span>
                 </td>
-                <td class="actions">
-                  @if (s.status === 'pending_admin_review') {
+                <td class="actions" (click)="$event.stopPropagation()">
+                  @if (s.status === 'pending_review' || s.status === 'pending_admin_review') {
                     <button class="action-btn approve" (click)="approveSubmission(s.id)" [disabled]="actionId() === s.id">
                       {{ actionId() === s.id ? '…' : 'Approve' }}
                     </button>
@@ -148,6 +148,76 @@
             {{ isRemoving() ? 'Removing...' : 'Yes, Remove' }}
           </button>
         </div>
+      </div>
+    </div>
+  }
+
+  <!-- Submission detail panel -->
+  @if (selectedSubmission()) {
+    <div class="overlay" (click)="closeSubmissionDetail()" (keydown.escape)="closeSubmissionDetail()">
+      <div class="side-panel side-panel--detail" (click)="$event.stopPropagation()" (keydown)="$event.stopPropagation()">
+        <div class="panel-header">
+          <h3>Film Details</h3>
+          <button class="close-btn" (click)="closeSubmissionDetail()">
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+          </button>
+        </div>
+
+        @if (selectedSubmission(); as s) {
+          @if (s.thumbnail_url) {
+            <div class="sub-thumbnail-wrap">
+              <img [src]="s.thumbnail_url" [alt]="s.title" class="sub-thumbnail" />
+            </div>
+          }
+
+          <div class="detail-rows">
+            <div class="detail-row"><span class="detail-label">Title</span><span class="detail-value">{{ s.title }}</span></div>
+            <div class="detail-row"><span class="detail-label">Producer</span><span class="detail-value">{{ s.producer_name }}</span></div>
+            <div class="detail-row"><span class="detail-label">Studio</span><span class="detail-value">{{ s.studio_name ?? '—' }}</span></div>
+            <div class="detail-row"><span class="detail-label">Genre</span><span class="detail-value">{{ s.genre ?? '—' }}</span></div>
+            @if (s.genres) {
+              <div class="detail-row"><span class="detail-label">All Genres</span><span class="detail-value">{{ s.genres }}</span></div>
+            }
+            <div class="detail-row"><span class="detail-label">Duration</span><span class="detail-value">{{ formatDuration(s.duration_minutes ?? 0) }}</span></div>
+            <div class="detail-row"><span class="detail-label">Submitted</span><span class="detail-value">{{ s.submission_date | date:'d MMM yyyy' }}</span></div>
+            <div class="detail-row"><span class="detail-label">Status</span>
+              <span class="badge" [class]="statusClass(s.status)">{{ statusLabel(s.status) }}</span>
+            </div>
+            @if (s.free_preview !== undefined) {
+              <div class="detail-row"><span class="detail-label">Free Preview</span><span class="detail-value">{{ s.free_preview ? 'Yes' : 'No' }}</span></div>
+            }
+            @if (s.hls_status) {
+              <div class="detail-row"><span class="detail-label">Video Processing</span><span class="detail-value">{{ s.hls_status }}</span></div>
+            }
+            @if (s.cast) {
+              <div class="detail-row detail-row--bio"><span class="detail-label">Cast</span><span class="detail-value">{{ s.cast }}</span></div>
+            }
+            @if (s.synopsis) {
+              <div class="detail-row detail-row--bio"><span class="detail-label">Synopsis</span><span class="detail-value detail-bio">{{ s.synopsis }}</span></div>
+            }
+            @if (s.rejection_reason) {
+              <div class="detail-row detail-row--bio"><span class="detail-label">Rejection Reason</span><span class="detail-value" style="color:#f87171">{{ s.rejection_reason }}</span></div>
+            }
+          </div>
+
+          @if (s.copyright_url) {
+            <a [href]="s.copyright_url" target="_blank" rel="noopener" class="doc-link-btn">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+              View Copyright Document
+            </a>
+          }
+
+          @if (s.status === 'pending_review' || s.status === 'pending_admin_review') {
+            <div class="detail-actions">
+              <button class="action-btn approve full" (click)="approveSubmission(s.id); closeSubmissionDetail()" [disabled]="actionId() === s.id">
+                {{ actionId() === s.id ? 'Approving…' : 'Approve' }}
+              </button>
+              <button class="action-btn reject full" (click)="openRejectSubmission(s); closeSubmissionDetail()">
+                Reject
+              </button>
+            </div>
+          }
+        }
       </div>
     </div>
   }

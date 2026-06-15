@@ -95,9 +95,10 @@ $muted: #888;
   display: inline-flex; align-items: center;
   padding: 0.2rem 0.55rem; border-radius: 20px;
   font-size: 0.72rem; font-weight: 600;
-  &.badge-approved { background: #1a2c21; color: #86efac; }
-  &.badge-rejected { background: #2e1a1a; color: #fca5a5; }
-  &.badge-review   { background: #2a2316; color: #fde68a; }
+  &.badge-approved  { background: #1a2c21; color: #86efac; }
+  &.badge-rejected  { background: #2e1a1a; color: #fca5a5; }
+  &.badge-review    { background: #2a2316; color: #fde68a; }
+  &.badge-contract  { background: rgba(245,158,11,.1); color: #f59e0b; }
 }
 
 /* ── Action buttons ── */
@@ -105,13 +106,73 @@ $muted: #888;
   padding: 0.35rem 0.85rem; border-radius: 6px; font-size: 0.8rem; font-weight: 600;
   border: none; cursor: pointer; transition: opacity 0.2s;
   &:disabled { opacity: 0.45; cursor: not-allowed; }
-  &.edit    { background: rgba(59,130,246,0.18); color: #93c5fd; }
-  &.danger  { background: rgba(239,68,68,0.18); color: #fca5a5; }
-  &.reject  { background: rgba(239,68,68,0.18); color: #fca5a5; }
-  &.approve { background: rgba(74,222,128,0.18); color: #86efac; }
-  &.neutral { background: rgba(255,255,255,0.06); color: $text; }
-  &.save    { background: $gold; color: #000; }
+  &.edit     { background: rgba(59,130,246,0.18);  color: #93c5fd; }
+  &.danger   { background: rgba(239,68,68,0.18);   color: #fca5a5; }
+  &.reject   { background: rgba(239,68,68,0.18);   color: #fca5a5; }
+  &.approve  { background: rgba(74,222,128,0.18);  color: #86efac; }
+  &.contract { background: rgba(245,158,11,0.15);  color: #f59e0b; }
+  &.neutral  { background: rgba(255,255,255,0.06); color: $text; }
+  &.save     { background: $gold; color: #000; }
+  &.full     { width: 100%; justify-content: center; }
   &:hover:not(:disabled) { opacity: 0.75; }
+}
+
+/* ── Submission row (clickable) ── */
+.submission-row {
+  cursor: pointer;
+  &:hover td { background: rgba(255,255,255,0.025) !important; }
+}
+
+/* ── Submission detail side panel ── */
+.side-panel {
+  position: fixed; top: 0; right: 0; bottom: 0;
+  background: #141414; border-left: 1px solid $border;
+  display: flex; flex-direction: column;
+  z-index: 200; overflow-y: auto;
+  width: min(460px, 100vw);
+
+  &--detail { }
+}
+
+.panel-header {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 1.25rem 1.5rem; border-bottom: 1px solid $border; flex-shrink: 0;
+  h3 { font-size: 1rem; font-weight: 700; color: #fff; margin: 0; }
+}
+
+.close-btn {
+  background: none; border: none; cursor: pointer; color: $muted; padding: .25rem;
+  display: flex; align-items: center; justify-content: center; border-radius: 6px;
+  svg { width: 18px; height: 18px; }
+  &:hover { color: #fff; background: #2a2a2a; }
+}
+
+.sub-thumbnail-wrap { padding: 1.25rem 1.5rem 0; }
+.sub-thumbnail {
+  width: 100%; border-radius: 8px; object-fit: cover; max-height: 180px;
+  display: block;
+}
+
+.detail-rows { padding: .5rem 0; border-bottom: 1px solid $border; }
+.detail-row {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: .6rem 1.5rem; gap: 1rem;
+  &--bio { align-items: flex-start; }
+  &:hover { background: rgba(255,255,255,.02); }
+}
+.detail-label { font-size: .78rem; color: $muted; font-weight: 500; flex-shrink: 0; }
+.detail-value { font-size: .85rem; color: #e5e5e5; font-weight: 500; text-align: right; }
+.detail-bio { text-align: left; font-size: .82rem; line-height: 1.5; color: #ccc; }
+
+.doc-link-btn {
+  display: inline-flex; align-items: center; gap: .4rem;
+  margin: 1rem 1.5rem 0;
+  color: $gold; font-size: .82rem; font-weight: 600; text-decoration: none;
+  &:hover { text-decoration: underline; }
+}
+
+.detail-actions {
+  padding: 1.25rem 1.5rem; display: flex; flex-direction: column; gap: .6rem;
 }
 
 /* ── Dialog textarea ── */

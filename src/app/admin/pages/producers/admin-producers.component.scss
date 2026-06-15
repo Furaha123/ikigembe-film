@@ -55,6 +55,42 @@ $muted:   #888;
   &:hover { opacity: .85; }
 }
 
+// ── Filter tabs ───────────────────────────────────────
+.filter-tabs {
+  display: flex;
+  gap: .35rem;
+  margin-bottom: 1.25rem;
+  flex-wrap: wrap;
+}
+
+.filter-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: .4rem;
+  background: none;
+  border: 1px solid $border;
+  color: $muted;
+  border-radius: 8px;
+  padding: .4rem .85rem;
+  font-size: .82rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: border-color .15s, color .15s;
+  &:hover { border-color: #555; color: #ccc; }
+  &.active { border-color: $gold; color: $gold; }
+}
+
+.filter-count {
+  font-size: .72rem;
+  font-weight: 700;
+  background: rgba(255,255,255,.06);
+  border-radius: 999px;
+  padding: .1rem .45rem;
+  &.pending  { background: rgba(253,230,138,.1); color: #fde68a; }
+  &.approved { background: rgba(134,239,172,.1); color: #86efac; }
+  &.suspended{ background: rgba(252,165,165,.1); color: #fca5a5; }
+}
+
 // ── Password banner ────────────────────────────────────
 .pw-banner {
   display: flex;
@@ -350,7 +386,7 @@ $muted:   #888;
   &:hover { background: rgba(255, 255, 255, .02); }
 }
 
-.detail-label { font-size: .78rem; color: $muted; font-weight: 500; }
+.detail-label { font-size: .78rem; color: $muted; font-weight: 500; flex-shrink: 0; }
 .detail-value {
   font-size: .85rem;
   color: $text;
@@ -358,6 +394,19 @@ $muted:   #888;
   text-align: right;
   &.gold { color: $gold; }
   &.mono { font-family: monospace; letter-spacing: .03em; }
+}
+
+.detail-row--bio {
+  align-items: flex-start;
+  .detail-label { padding-top: .1rem; }
+}
+.detail-bio {
+  text-align: left;
+  font-size: .82rem;
+  font-weight: 400;
+  color: #ccc;
+  line-height: 1.5;
+  white-space: pre-wrap;
 }
 
 .panel-section-header {

@@ -37,7 +37,7 @@ $sidebar-collapsed-w: 64px;
 .sidebar-brand {
   display: flex; align-items: center; justify-content: center;
   padding: 1rem 1.25rem; border-bottom: 1px solid $border;
-  .brand-logo { width: 100%; height: auto; max-height: 56px; object-fit: contain; }
+  .brand-logo { width: 100%; height: 120px; max-height: none; object-fit: contain; }
 }
 
 .sidebar-nav { flex: 1; padding: 1rem 0; display: flex; flex-direction: column; gap: 0.25rem; }

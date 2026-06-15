@@ -210,4 +210,5 @@ export class ProducerMoviesComponent implements OnInit {
   }
 
   goToUpload() { this.router.navigate(['/producer/upload']); }
+  goToContract() { this.router.navigate(['/producer/contracts/start']); }
 }

@@ -42,6 +42,10 @@ export const adminRoutes: Routes = [
         loadComponent: () => import('./pages/withdrawals/admin-withdrawals.component').then(m => m.AdminWithdrawalsComponent),
       },
       {
+        path: 'contracts',
+        loadComponent: () => import('./pages/contracts/admin-contracts.component').then(m => m.AdminContractsComponent),
+      },
+      {
         path: 'reports',
         loadComponent: () => import('./pages/reports/admin-reports.component').then(m => m.AdminReportsComponent),
       },

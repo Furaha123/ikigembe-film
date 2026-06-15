@@ -51,6 +51,9 @@ export interface ProducerItem {
   date_joined: string;
   status?: 'pending' | 'approved' | 'suspended';
   suspension_reason?: string | null;
+  country?: string | null;
+  bio?: string | null;
+  years_of_experience?: number | null;
 }
 
 export interface FilmSubmissionItem {
@@ -61,9 +64,30 @@ export interface FilmSubmissionItem {
   submission_date: string;
   genre: string | null;
   duration_minutes: number | null;
-  status: 'pending_admin_review' | 'approved' | 'rejected';
+  status: 'pending_review' | 'pending_admin_review' | 'approved' | 'rejected' | 'approved_pending_contract';
   rejection_reason: string | null;
   thumbnail_url: string | null;
+  synopsis?: string | null;
+  cast?: string | null;
+  genres?: string | null;
+  hls_status?: string | null;
+  free_preview?: boolean;
+  copyright_url?: string | null;
+}
+
+export interface ProducerContractItem {
+  id: number;
+  producer_id: number;
+  producer_email: string;
+  producer_name: string;
+  studio_name: string | null;
+  version: number;
+  status: 'active' | 'expired';
+  signed_at: string;
+  expires_at: string;
+  signature_name: string;
+  ip_address: string;
+  created_at: string;
 }
 
 export interface ProducerDocuments {

@@ -40,6 +40,22 @@
     </div>
   }
 
+  <!-- Status filter tabs -->
+  <div class="filter-tabs">
+    <button class="filter-tab" [class.active]="statusFilter() === 'all'" (click)="statusFilter.set('all')">
+      All <span class="filter-count">{{ producers().length }}</span>
+    </button>
+    <button class="filter-tab" [class.active]="statusFilter() === 'pending'" (click)="statusFilter.set('pending')">
+      Pending <span class="filter-count pending">{{ filterCount('pending') }}</span>
+    </button>
+    <button class="filter-tab" [class.active]="statusFilter() === 'approved'" (click)="statusFilter.set('approved')">
+      Approved <span class="filter-count approved">{{ filterCount('approved') }}</span>
+    </button>
+    <button class="filter-tab" [class.active]="statusFilter() === 'suspended'" (click)="statusFilter.set('suspended')">
+      Suspended <span class="filter-count suspended">{{ filterCount('suspended') }}</span>
+    </button>
+  </div>
+
   @if (isLoading()) {
     <div class="table-skeleton">
       @for (i of [1,2,3,4]; track i) { <div class="row-skeleton"></div> }
@@ -57,7 +73,7 @@
           </tr>
         </thead>
         <tbody>
-          @for (p of producers(); track p.id) {
+          @for (p of filteredProducers(); track p.id) {
             <tr>
               <td class="name-cell">
                 <div class="producer-avatar">{{ getInitials(p.name) }}</div>
@@ -250,6 +266,17 @@
               <div class="detail-row"><span class="detail-label">Phone</span><span class="detail-value">{{ report.producer.phone_number || '—' }}</span></div>
               <div class="detail-row"><span class="detail-label">Address</span><span class="detail-value">{{ report.producer.address || '—' }}</span></div>
               <div class="detail-row"><span class="detail-label">Copyright Code</span><span class="detail-value mono">{{ report.producer.copyright_code || '—' }}</span></div>
+              @if (detailProducerItem(); as p) {
+                @if (p.country) {
+                  <div class="detail-row"><span class="detail-label">Country</span><span class="detail-value">{{ p.country }}</span></div>
+                }
+                @if (p.years_of_experience !== null && p.years_of_experience !== undefined) {
+                  <div class="detail-row"><span class="detail-label">Experience</span><span class="detail-value">{{ p.years_of_experience }} yr{{ p.years_of_experience === 1 ? '' : 's' }}</span></div>
+                }
+                @if (p.bio) {
+                  <div class="detail-row detail-row--bio"><span class="detail-label">Bio</span><span class="detail-value detail-bio">{{ p.bio }}</span></div>
+                }
+              }
               <div class="detail-row"><span class="detail-label">Total Earnings</span><span class="detail-value gold">RWF {{ report.producer.total_earnings | number }}</span></div>
               <div class="detail-row"><span class="detail-label">Balance</span><span class="detail-value gold">RWF {{ report.producer.balance | number }}</span></div>
               <div class="detail-row"><span class="detail-label">Total Withdrawn</span><span class="detail-value">RWF {{ report.producer.total_withdrawn | number }}</span></div>

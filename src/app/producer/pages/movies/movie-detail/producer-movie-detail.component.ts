@@ -1,8 +1,8 @@
 import {
   Component, inject, signal, computed,
-  OnInit, OnDestroy, ElementRef, ViewChild,
+  OnInit, OnDestroy, ElementRef, ViewChild, PLATFORM_ID,
 } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ProducerService, ProducerMovieDetail } from '../../../services/producer.service';
 import {
@@ -72,6 +72,7 @@ export class ProducerMovieDetailComponent implements OnInit, OnDestroy {
   private readonly route           = inject(ActivatedRoute);
   private readonly router          = inject(Router);
   private readonly producerService = inject(ProducerService);
+  private readonly platformId      = inject(PLATFORM_ID);
 
   readonly ranges     = ['7d', '28d', '90d', '365d', 'Lifetime'];
   readonly breakdowns: Breakdown[] = ['Monthly', 'Weekly', 'Daily'];
@@ -87,9 +88,12 @@ export class ProducerMovieDetailComponent implements OnInit, OnDestroy {
   advRange       = signal(this.ranges[1]);
   advBreakdown   = signal<Breakdown>('Monthly');
   advChartType   = signal<AdvChartType>('line');
+  isShareOpen    = signal(false);
+  copiedFlash    = signal(false);
 
-  private mainChart: Chart | null = null;
-  private advChart:  Chart | null = null;
+  private mainChart:   Chart | null = null;
+  private advChart:    Chart | null = null;
+  private copiedTimer: ReturnType<typeof setTimeout> | null = null;
 
   // Range-aware data for the main analytics chart
   rangeData = computed(() => {
@@ -420,8 +424,36 @@ export class ProducerMovieDetailComponent implements OnInit, OnDestroy {
     URL.revokeObjectURL(url);
   }
 
+  openShare()  { this.isShareOpen.set(true); }
+  closeShare() { this.isShareOpen.set(false); this.copiedFlash.set(false); }
+
+  previewUrl(): string {
+    const id = this.movie()?.id;
+    if (!id || !isPlatformBrowser(this.platformId)) return '';
+    return `${window.location.origin}/preview/${id}`;
+  }
+
+  copyTrailerLink(): void {
+    const url = this.previewUrl();
+    if (!url) return;
+    navigator.clipboard.writeText(url).then(() => {
+      this.copiedFlash.set(true);
+      if (this.copiedTimer) clearTimeout(this.copiedTimer);
+      this.copiedTimer = setTimeout(() => this.copiedFlash.set(false), 2500);
+    }).catch(() => {});
+  }
+
+  shareOnWhatsApp(): void {
+    const url   = this.previewUrl();
+    const title = this.movie()?.title ?? 'this movie';
+    if (!url) return;
+    const text = encodeURIComponent(`Watch the trailer for "${title}" on Ikigembe: ${url}`);
+    window.open(`https://wa.me/?text=${text}`, '_blank', 'noopener,noreferrer');
+  }
+
   ngOnDestroy(): void {
     this.mainChart?.destroy();
     this.advChart?.destroy();
+    if (this.copiedTimer) clearTimeout(this.copiedTimer);
   }
 }
