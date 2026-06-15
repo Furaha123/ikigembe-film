@@ -222,6 +222,38 @@ $muted: #888;
   }
 }
 
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  padding: 1rem 0 0.5rem;
+
+  .page-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    background: #1c1c1c;
+    border: 1px solid $border;
+    border-radius: 6px;
+    color: $muted;
+    cursor: pointer;
+    transition: color 0.2s, border-color 0.2s;
+
+    &:hover:not(:disabled) { color: $text; border-color: #444; }
+    &:disabled { opacity: 0.35; cursor: not-allowed; }
+  }
+
+  .page-info {
+    font-size: 0.8rem;
+    color: $muted;
+    min-width: 60px;
+    text-align: center;
+  }
+}
+
 @media (max-width: 600px) {
   .page-header {
     h1 { font-size: 1.35rem; }

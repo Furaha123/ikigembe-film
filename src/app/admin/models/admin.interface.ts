@@ -13,6 +13,7 @@ export interface DashboardOverview {
   total_producers: number;
   total_movies: number;
   total_views: number;
+  pending_submissions: number;
   financials: DashboardFinancials;
 }
 
