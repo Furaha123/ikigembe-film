@@ -173,6 +173,9 @@
                   @if (isEditable(movie)) {
                     <button class="btn-action btn-action--edit" (click)="openEdit(movie, $event)">Edit</button>
                   }
+                  @if (movie.approval_status === 'approved_pending_contract') {
+                    <button class="btn-action btn-action--contract" (click)="goToContract()">Sign Contract</button>
+                  }
                   <button class="btn-action btn-action--view" (click)="viewDetail(movie.id)">View</button>
                   @if (isLive(movie)) {
                     <button class="btn-action btn-action--analytics" (click)="viewDetail(movie.id)">Analytics</button>

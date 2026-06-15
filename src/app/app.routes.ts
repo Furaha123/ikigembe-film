@@ -55,6 +55,10 @@ export const routes: Routes = [
     loadComponent: () => import('./pages/terms/terms.component').then(a => a.TermsComponent)
   },
   {
+    path: 'preview/:id',
+    loadComponent: () => import('./pages/preview/preview.component').then(a => a.PreviewComponent)
+  },
+  {
     path: 'producer',
     loadChildren: () => import('./producer/producer.routes').then(m => m.producerRoutes),
   },

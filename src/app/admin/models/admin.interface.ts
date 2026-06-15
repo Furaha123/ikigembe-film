@@ -76,14 +76,18 @@ export interface FilmSubmissionItem {
 }
 
 export interface ProducerContractItem {
+  id: number;
   producer_id: number;
+  producer_email: string;
   producer_name: string;
   studio_name: string | null;
-  has_active_contract: boolean;
-  contract_id: number | null;
-  signed_at: string | null;
-  expires_at: string | null;
-  days_remaining: number | null;
+  version: number;
+  status: 'active' | 'expired';
+  signed_at: string;
+  expires_at: string;
+  signature_name: string;
+  ip_address: string;
+  created_at: string;
 }
 
 export interface ProducerDocuments {

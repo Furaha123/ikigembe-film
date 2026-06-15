@@ -38,9 +38,15 @@ export class AdminContractsComponent implements OnInit {
     });
   }
 
+  daysRemaining(c: ProducerContractItem): number {
+    return Math.ceil((new Date(c.expires_at).getTime() - Date.now()) / 86400000);
+  }
+
   contractState(c: ProducerContractItem): 'active' | 'expiring' | 'expired' | 'none' {
-    if (!c.has_active_contract) return c.contract_id ? 'expired' : 'none';
-    if (c.days_remaining !== null && c.days_remaining <= 30) return 'expiring';
+    if (c.status === 'expired') return 'expired';
+    const days = this.daysRemaining(c);
+    if (days <= 0) return 'expired';
+    if (days <= 30) return 'expiring';
     return 'active';
   }
 

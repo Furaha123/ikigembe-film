@@ -7,7 +7,8 @@ import {
   MovieDetailResponse,
   TrailerResponse,
   MovieCreditsResponse,
-  SimilarMoviesResponse
+  SimilarMoviesResponse,
+  MoviePreview,
 } from '../../shared/models/movie-api.interface';
 
 @Injectable({
@@ -51,6 +52,10 @@ export class MovieService {
 
   getMovieDetails(id: number) {
     return this.http.get<MovieDetailResponse>(`${this.baseUrl}/${id}/`);
+  }
+
+  getMoviePreview(id: number) {
+    return this.http.get<MoviePreview>(`${this.baseUrl}/${id}/preview/`);
   }
 
   getMovieCredits(_id: number) {

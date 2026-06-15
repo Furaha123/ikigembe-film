@@ -59,10 +59,7 @@
                 <td class="actions" (click)="$event.stopPropagation()">
                   @if (s.status === 'pending_review' || s.status === 'pending_admin_review') {
                     <button class="action-btn approve" (click)="approveSubmission(s.id)" [disabled]="actionId() === s.id">
-                      {{ actionId() === s.id && !isApprovingContract() ? '…' : 'Approve' }}
-                    </button>
-                    <button class="action-btn contract" (click)="approveRequiringContract(s.id)" [disabled]="actionId() === s.id" title="Approve but require contract before publishing">
-                      {{ actionId() === s.id && isApprovingContract() ? '…' : '+ Contract' }}
+                      {{ actionId() === s.id ? '…' : 'Approve' }}
                     </button>
                     <button class="action-btn reject" (click)="openRejectSubmission(s)">Reject</button>
                   }
@@ -213,10 +210,7 @@
           @if (s.status === 'pending_review' || s.status === 'pending_admin_review') {
             <div class="detail-actions">
               <button class="action-btn approve full" (click)="approveSubmission(s.id); closeSubmissionDetail()" [disabled]="actionId() === s.id">
-                Approve
-              </button>
-              <button class="action-btn contract full" (click)="approveRequiringContract(s.id); closeSubmissionDetail()" [disabled]="actionId() === s.id">
-                Approve (Contract Required)
+                {{ actionId() === s.id ? 'Approving…' : 'Approve' }}
               </button>
               <button class="action-btn reject full" (click)="openRejectSubmission(s); closeSubmissionDetail()">
                 Reject

@@ -62,8 +62,8 @@
               <td class="muted-cell">{{ formatDate(c.signed_at) }}</td>
               <td class="muted-cell">{{ formatDate(c.expires_at) }}</td>
               <td class="muted-cell">
-                @if (c.days_remaining !== null && c.has_active_contract) {
-                  <span [class.text-warning]="c.days_remaining <= 30">{{ c.days_remaining }}d</span>
+                @if (c.status === 'active') {
+                  <span [class.text-warning]="daysRemaining(c) <= 30">{{ daysRemaining(c) }}d</span>
                 } @else {
                   —
                 }

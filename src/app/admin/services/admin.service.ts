@@ -2,7 +2,6 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
-import { map } from 'rxjs/operators';
 import {
   DashboardOverview,
   ViewerItem,
@@ -112,16 +111,16 @@ export class AdminService {
     ).pipe(map(r => Array.isArray(r) ? r : r.submissions));
   }
 
-  approveFilm(id: number): Observable<unknown> {
-    return this.http.post(`${BASE}/admin/dashboard/films/${id}/approve/`, {});
-  }
-
-  approveFilmRequiringContract(id: number): Observable<unknown> {
-    return this.http.post(`${BASE}/admin/dashboard/films/${id}/approve-pending-contract/`, {});
+  approveFilm(id: number): Observable<{ detail: string; approval_status: FilmSubmissionItem['status'] }> {
+    return this.http.post<{ detail: string; approval_status: FilmSubmissionItem['status'] }>(
+      `${BASE}/admin/dashboard/movies/${id}/approve/`, {}
+    );
   }
 
   getProducerContracts(): Observable<ProducerContractItem[]> {
-    return this.http.get<ProducerContractItem[]>(`${BASE}/admin/dashboard/contracts/`);
+    return this.http
+      .get<{ count: number; contracts: ProducerContractItem[] }>(`${BASE}/admin/dashboard/contracts/`)
+      .pipe(map(r => r.contracts));
   }
 
   rejectFilm(id: number, reason: string): Observable<unknown> {
