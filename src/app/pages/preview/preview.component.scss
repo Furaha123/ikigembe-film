@@ -22,9 +22,11 @@ $muted:  #888;
 }
 
 .preview-logo {
-  height: 36px;
+  height: 52px;
   width: auto;
   display: block;
+  flex-shrink: 0;
+  object-fit: contain;
 }
 
 .preview-header-actions {
