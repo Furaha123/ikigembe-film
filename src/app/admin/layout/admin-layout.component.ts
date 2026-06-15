@@ -1,7 +1,9 @@
-import { Component, HostListener, inject, signal, PLATFORM_ID } from '@angular/core';
+import { Component, HostListener, inject, signal, PLATFORM_ID, OnInit, OnDestroy } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
+import { Subscription } from 'rxjs';
 import { AuthService } from '../../core/services/auth.service';
+import { AdminService } from '../services/admin.service';
 
 @Component({
   selector: 'app-admin-layout',
@@ -9,22 +11,37 @@ import { AuthService } from '../../core/services/auth.service';
   templateUrl: './admin-layout.component.html',
   styleUrl: './admin-layout.component.scss'
 })
-export class AdminLayoutComponent {
-  private readonly authService = inject(AuthService);
-  private readonly router      = inject(Router);
-  private readonly platformId  = inject(PLATFORM_ID);
+export class AdminLayoutComponent implements OnInit, OnDestroy {
+  private readonly authService  = inject(AuthService);
+  private readonly router       = inject(Router);
+  private readonly platformId   = inject(PLATFORM_ID);
+  private readonly adminService = inject(AdminService);
+
+  private overviewSub?: Subscription;
 
   readonly initials = this.authService.initials;
   readonly userName = this.authService.userName;
   readonly userRole = this.authService.userRole;
 
-  isLoggingOut     = signal(false);
-  showUserDropdown = signal(false);
+  isLoggingOut       = signal(false);
+  showUserDropdown   = signal(false);
+  pendingSubmissions = signal(0);
 
   // Start sidebar closed on mobile so it doesn't push content
   sidebarOpen = signal(
     isPlatformBrowser(this.platformId) ? window.innerWidth > 768 : true
   );
+
+  ngOnInit(): void {
+    this.overviewSub = this.adminService.getOverview().subscribe({
+      next: (d) => this.pendingSubmissions.set(d.pending_submissions ?? 0),
+      error: () => {},
+    });
+  }
+
+  ngOnDestroy(): void {
+    this.overviewSub?.unsubscribe();
+  }
 
   @HostListener('document:click', ['$event'])
   onDocumentClick(event: Event) {

@@ -105,10 +105,15 @@ export class AdminService {
   }
 
   // Film submissions (from producers)
-  getFilmSubmissions(): Observable<FilmSubmissionItem[]> {
-    return this.http.get<{ submissions: FilmSubmissionItem[] } | FilmSubmissionItem[]>(
-      `${BASE}/admin/dashboard/films/submissions/`
-    ).pipe(map(r => Array.isArray(r) ? r : r.submissions));
+  getFilmSubmissions(page = 1): Observable<{ submissions: FilmSubmissionItem[]; total_results: number; total_pages: number }> {
+    return this.http.get<{ page: number; total_results: number; total_pages: number; submissions: FilmSubmissionItem[] } | FilmSubmissionItem[]>(
+      `${BASE}/admin/dashboard/films/submissions/?page=${page}`
+    ).pipe(
+      map(r => Array.isArray(r)
+        ? { submissions: r, total_results: r.length, total_pages: 1 }
+        : { submissions: r.submissions ?? [], total_results: r.total_results ?? 0, total_pages: r.total_pages ?? 1 }
+      )
+    );
   }
 
   approveFilm(id: number): Observable<{ detail: string; approval_status: FilmSubmissionItem['status'] }> {
@@ -124,7 +129,7 @@ export class AdminService {
   }
 
   rejectFilm(id: number, reason: string): Observable<unknown> {
-    return this.http.post(`${BASE}/admin/dashboard/films/${id}/reject/`, { reason });
+    return this.http.post(`${BASE}/admin/dashboard/movies/${id}/reject/`, { reason });
   }
 
   removeFilm(id: number): Observable<unknown> {

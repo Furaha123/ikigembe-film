@@ -33,6 +33,8 @@ $sidebar-collapsed-w: 64px;
 
   .nav-label { display: none; }
   .nav-item, .sidebar-logout { justify-content: center; padding: 0.85rem; }
+  .nav-badge { display: none; }
+  .nav-badge-dot { display: block; }
 }
 
 .sidebar-brand {
@@ -72,10 +74,36 @@ $sidebar-collapsed-w: 64px;
 
   .nav-icon {
     flex-shrink: 0;
+    position: relative;
     svg { width: 20px; height: 20px; display: block; }
   }
 
   .nav-label { white-space: nowrap; }
+
+  .nav-badge {
+    margin-left: auto;
+    background: #ef4444;
+    color: #fff;
+    font-size: 0.65rem;
+    font-weight: 700;
+    border-radius: 10px;
+    padding: 0.1rem 0.4rem;
+    min-width: 18px;
+    text-align: center;
+    line-height: 1.4;
+  }
+
+  .nav-badge-dot {
+    display: none;
+    position: absolute;
+    top: -3px;
+    right: -3px;
+    width: 8px;
+    height: 8px;
+    background: #ef4444;
+    border-radius: 50%;
+    border: 2px solid $surface;
+  }
 
   &:hover {
     color: $text;

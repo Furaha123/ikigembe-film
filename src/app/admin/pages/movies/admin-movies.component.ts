@@ -30,8 +30,11 @@ export class AdminMoviesComponent implements OnInit {
   confirmDelete = signal<number | null>(null);
 
   // ── Submissions ─────────────────────────────────────
-  submissions        = signal<FilmSubmissionItem[]>([]);
-  submissionsLoading = signal(true);
+  submissions          = signal<FilmSubmissionItem[]>([]);
+  submissionsLoading   = signal(true);
+  submissionsPage      = signal(1);
+  submissionsTotalPages = signal(1);
+  submissionsTotalCount = signal(0);
 
   rejectSubmissionModal  = signal<FilmSubmissionItem | null>(null);
   rejectSubmissionReason = signal('');
@@ -69,15 +72,29 @@ export class AdminMoviesComponent implements OnInit {
     });
   }
 
-  loadSubmissions() {
+  loadSubmissions(page = 1) {
     this.submissionsLoading.set(true);
-    this.adminService.getFilmSubmissions().subscribe({
-      next: (data) => { this.submissions.set(data); this.submissionsLoading.set(false); },
+    this.adminService.getFilmSubmissions(page).subscribe({
+      next: ({ submissions, total_results, total_pages }) => {
+        this.submissions.set(submissions);
+        this.submissionsPage.set(page);
+        this.submissionsTotalPages.set(total_pages);
+        this.submissionsTotalCount.set(total_results);
+        this.submissionsLoading.set(false);
+      },
       error: () => {
         this.submissions.set(MOCK_SUBMISSIONS);
         this.submissionsLoading.set(false);
       },
     });
+  }
+
+  prevSubmissionsPage() {
+    if (this.submissionsPage() > 1) this.loadSubmissions(this.submissionsPage() - 1);
+  }
+
+  nextSubmissionsPage() {
+    if (this.submissionsPage() < this.submissionsTotalPages()) this.loadSubmissions(this.submissionsPage() + 1);
   }
 
   // ── Submission actions ───────────────────────────────
