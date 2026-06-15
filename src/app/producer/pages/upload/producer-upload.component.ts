@@ -209,8 +209,8 @@ export class ProducerUploadComponent {
       this.trailerUploadError.set('Only .mp4 and .mov formats are accepted.');
       return;
     }
-    if (file.size > 100 * 1024 * 1024) {
-      this.trailerUploadError.set('File size must not exceed 100 MB.');
+    if (file.size > 200 * 1024 * 1024) {
+      this.trailerUploadError.set('File size must not exceed 200 MB.');
       return;
     }
     this.trailerFile.set(file);
@@ -243,7 +243,7 @@ export class ProducerUploadComponent {
   private handleMovieFile(file: File) {
     const errors: string[] = [];
     if (!file.name.match(/\.(mp4|mov)$/i)) errors.push('Only .mp4 and .mov formats are accepted.');
-    if (file.size > 100 * 1024 * 1024) errors.push('File size must not exceed 100 MB.');
+    if (file.size > 200 * 1024 * 1024) errors.push('File size must not exceed 200 MB.');
     if (errors.length) { this.movieErrors.set(errors); return; }
     this.movieErrors.set([]);
     this.movieFile.set(file);
