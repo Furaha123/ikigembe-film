@@ -1,0 +1,149 @@
+<!-- ── Minimal public header ── -->
+<header class="preview-header">
+  <span class="preview-logo">Ikigembe</span>
+  <div class="preview-header-actions">
+    <a routerLink="/login" class="preview-link">Sign In</a>
+    <a routerLink="/register" class="preview-btn-register">Join Free</a>
+  </div>
+</header>
+
+<!-- ── Loading ── -->
+@if (isLoading()) {
+  <div class="preview-loading">
+    <div class="preview-spinner"></div>
+  </div>
+}
+
+<!-- ── Not found ── -->
+@else if (notFound()) {
+  <div class="preview-not-found">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="48" height="48">
+      <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+    </svg>
+    <h2>Movie not available</h2>
+    <p>This preview link is no longer active or the movie has not been published yet.</p>
+    <a routerLink="/register" class="preview-btn-register">Explore Ikigembe</a>
+  </div>
+}
+
+<!-- ── Preview page ── -->
+@else {
+@if (movie(); as m) {
+
+  <!-- Hero -->
+  <section class="preview-hero"
+           [style.background-image]="m.backdrop_url ? 'url(' + m.backdrop_url + ')' : (m.thumbnail_url ? 'url(' + m.thumbnail_url + ')' : 'none')">
+    <div class="preview-hero-overlay">
+      @if (m.trailer_url) {
+        <button class="preview-play-btn" (click)="playTrailer()" aria-label="Play trailer">
+          <svg viewBox="0 0 24 24" fill="currentColor" width="52" height="52"><path d="M8 5v14l11-7z"/></svg>
+        </button>
+        <span class="preview-play-label">Watch Trailer</span>
+      }
+    </div>
+  </section>
+
+  <!-- Info section -->
+  <section class="preview-info">
+    <div class="preview-info-layout">
+
+      <!-- Poster -->
+      @if (m.thumbnail_url) {
+        <img [src]="m.thumbnail_url" [alt]="m.title" class="preview-poster" />
+      }
+
+      <!-- Details -->
+      <div class="preview-details">
+        <h1 class="preview-title">{{ m.title }}</h1>
+
+        <div class="preview-meta">
+          @if (m.rating) {
+            <span class="preview-badge">
+              <svg viewBox="0 0 24 24" fill="#ffc107" width="14" height="14"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87L18.18 22 12 18.56 5.82 22 7 14.14l-5-4.87 6.91-1.01z"/></svg>
+              {{ m.rating.toFixed(1) }}
+            </span>
+          }
+          @if (m.duration_minutes) {
+            <span class="preview-badge">{{ fmtDuration(m.duration_minutes) }}</span>
+          }
+          @if (m.genre) {
+            <span class="preview-badge">{{ m.genre }}</span>
+          }
+          @if (m.release_date) {
+            <span class="preview-badge">{{ m.release_date | date:'yyyy' }}</span>
+          }
+        </div>
+
+        <!-- CTA block -->
+        <div class="preview-cta-row">
+          @if (m.trailer_url) {
+            <button class="preview-btn-trailer" (click)="playTrailer()">
+              <svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16"><path d="M8 5v14l11-7z"/></svg>
+              Watch Trailer
+            </button>
+          }
+          <a routerLink="/register" class="preview-btn-watch">
+            <svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16">
+              <path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"/>
+            </svg>
+            Watch Full Movie on Ikigembe
+            @if (m.price > 0) {
+              &nbsp;&mdash; RWF {{ m.price | number }}
+            }
+          </a>
+        </div>
+
+        @if (m.overview) {
+          <p class="preview-overview">{{ m.overview }}</p>
+        }
+
+        <div class="preview-detail-rows">
+          @if (m.producer_name) {
+            <div class="preview-detail-row">
+              <span class="preview-detail-label">Producer</span>
+              <span class="preview-detail-value">{{ m.producer_name }}</span>
+            </div>
+          }
+          @if (m.studio_name) {
+            <div class="preview-detail-row">
+              <span class="preview-detail-label">Studio</span>
+              <span class="preview-detail-value">{{ m.studio_name }}</span>
+            </div>
+          }
+          @if (m.genres?.length) {
+            <div class="preview-detail-row">
+              <span class="preview-detail-label">Genres</span>
+              <span class="preview-detail-value">{{ m.genres.join(', ') }}</span>
+            </div>
+          }
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Sign-up banner -->
+  <div class="preview-signup-banner">
+    <div class="preview-signup-inner">
+      <div>
+        <h2 class="preview-signup-title">Watch the full movie on Ikigembe</h2>
+        <p class="preview-signup-sub">Join thousands of viewers streaming African cinema.</p>
+      </div>
+      <a routerLink="/register" class="preview-banner-btn">Create Free Account</a>
+    </div>
+  </div>
+
+  <!-- Trailer player overlay -->
+  @if (isPlaying() && videoSrc()) {
+    <div class="preview-player-backdrop" (click)="closePlayer()">
+      <div class="preview-player-wrap" (click)="$event.stopPropagation()">
+        <button class="preview-player-close" (click)="closePlayer()" aria-label="Close">
+          <svg viewBox="0 0 24 24" fill="currentColor" width="26" height="26">
+            <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+          </svg>
+        </button>
+        <app-video-player [src]="videoSrc()" [poster]="m.thumbnail_url ?? ''" accentColor="#c9a84c" />
+      </div>
+    </div>
+  }
+}
+}

@@ -10,10 +10,7 @@ $border: #252525;
 $card:   #161616;
 $muted:  #666;
 
-/* ─────────────────────────────────────────────────────────── */
-/*  Page layout                                                */
-/* ─────────────────────────────────────────────────────────── */
-
+/* Page layout */
 .detail-page {
   display: grid;
   grid-template-columns: 220px 1fr;
@@ -221,10 +218,7 @@ $muted:  #666;
   &:hover { border-color: #444; color: #fff; }
 }
 
-/* ─────────────────────────────────────────────────────────── */
-/*  DETAILS VIEW                                               */
-/* ─────────────────────────────────────────────────────────── */
-
+/* DETAILS VIEW */
 .details-layout {
   display: grid;
   grid-template-columns: 1fr 300px;
@@ -350,10 +344,7 @@ $muted:  #666;
   &.hls-failed     { background: rgba(248,113,113,0.12); color: $red; }
 }
 
-/* ─────────────────────────────────────────────────────────── */
-/*  ANALYTICS VIEW                                             */
-/* ─────────────────────────────────────────────────────────── */
-
+/* ANALYTICS VIEW */
 .analytics-view-header {
   align-items: flex-start !important;
   flex-wrap: wrap;
@@ -592,10 +583,7 @@ $muted:  #666;
 
 .rt-see-more { padding-left: 0; border-top: none; }
 
-/* ─────────────────────────────────────────────────────────── */
-/*  ADVANCED MODE OVERLAY                                      */
-/* ─────────────────────────────────────────────────────────── */
-
+/* ADVANCED MODE OVERLAY */
 .advanced-overlay {
   position: fixed;
   inset: 0;
@@ -990,4 +978,147 @@ tfoot .adv-total-row {
   .details-layout { grid-template-columns: 1fr; }
   .adv-body { grid-template-columns: 1fr; }
   .adv-controls { border-right: none; border-bottom: 1px solid $border; }
+}
+
+/* SHARE TRAILER SHEET */
+@keyframes sheet-up {
+  from { opacity: 0; transform: translateY(16px) scale(0.97); }
+  to   { opacity: 1; transform: translateY(0)    scale(1);    }
+}
+
+.view-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+}
+
+.btn-share {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  background: none;
+  border: 1px solid $border;
+  color: #ccc;
+  padding: 0.55rem 1.1rem;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: border-color 0.15s, color 0.15s, background 0.15s;
+
+  &:hover {
+    border-color: $gold;
+    color: $gold;
+    background: rgba(200, 168, 75, 0.07);
+  }
+}
+
+.share-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.72);
+  z-index: 1100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+}
+
+.share-sheet {
+  background: #1a1a1a;
+  border: 1px solid $border;
+  border-radius: 16px;
+  width: 100%;
+  max-width: 420px;
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.65);
+  animation: sheet-up 0.18s ease-out both;
+  overflow: hidden;
+}
+
+.share-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.1rem 1.25rem 0.85rem;
+  border-bottom: 1px solid $border;
+}
+
+.share-title {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #fff;
+}
+
+.share-close {
+  background: none;
+  border: none;
+  color: #666;
+  cursor: pointer;
+  padding: 0.3rem;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  transition: background 0.15s, color 0.15s;
+  &:hover { background: rgba(255,255,255,0.08); color: #fff; }
+}
+
+.share-movie-name {
+  font-size: 0.82rem;
+  color: #666;
+  margin: 0.85rem 1.25rem 0.5rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.share-url-row {
+  margin: 0 1.25rem 1rem;
+  background: #111;
+  border: 1px solid $border;
+  border-radius: 8px;
+  padding: 0.65rem 0.85rem;
+}
+
+.share-url-text {
+  font-size: 0.72rem;
+  color: #666;
+  word-break: break-all;
+  display: block;
+  font-family: monospace;
+  line-height: 1.5;
+}
+
+.share-actions {
+  display: flex;
+  gap: 0.65rem;
+  padding: 0 1.25rem 1.25rem;
+}
+
+.share-btn {
+  flex: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  border: none;
+  border-radius: 9px;
+  padding: 0.65rem 0.5rem;
+  font-size: 0.85rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: opacity 0.15s, background 0.15s;
+
+  &--copy {
+    background: $gold;
+    color: #000;
+    &:hover { opacity: 0.87; }
+    &.copied { background: $green; color: #000; }
+  }
+
+  &--whatsapp {
+    background: #25d366;
+    color: #fff;
+    &:hover { opacity: 0.88; }
+  }
 }

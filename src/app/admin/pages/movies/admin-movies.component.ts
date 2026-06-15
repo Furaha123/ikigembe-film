@@ -43,7 +43,6 @@ export class AdminMoviesComponent implements OnInit {
   pendingCount = computed(() => this.submissions().filter(s => s.status === 'pending_review' || s.status === 'pending_admin_review').length);
 
   selectedSubmission = signal<FilmSubmissionItem | null>(null);
-  isApprovingContract = signal(false);
 
   openSubmissionDetail(s: FilmSubmissionItem) { this.selectedSubmission.set(s); }
   closeSubmissionDetail() { this.selectedSubmission.set(null); }
@@ -82,26 +81,14 @@ export class AdminMoviesComponent implements OnInit {
   }
 
   // ── Submission actions ───────────────────────────────
-  approveRequiringContract(id: number) {
-    this.actionId.set(id);
-    this.isApprovingContract.set(true);
-    this.adminService.approveFilmRequiringContract(id).subscribe({
-      next: () => {
-        this.submissions.update(list => list.map(s =>
-          s.id === id ? { ...s, status: 'approved_pending_contract' as const } : s
-        ));
-        this.actionId.set(null);
-        this.isApprovingContract.set(false);
-      },
-      error: () => { this.actionId.set(null); this.isApprovingContract.set(false); },
-    });
-  }
-
   approveSubmission(id: number) {
     this.actionId.set(id);
     this.adminService.approveFilm(id).subscribe({
-      next: () => {
-        this.submissions.update(list => list.map(s => s.id === id ? { ...s, status: 'approved' as const } : s));
+      next: (res: any) => {
+        const newStatus = res?.approval_status ?? 'approved';
+        this.submissions.update(list => list.map(s =>
+          s.id === id ? { ...s, status: newStatus } : s
+        ));
         this.actionId.set(null);
       },
       error: () => this.actionId.set(null),
