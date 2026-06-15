@@ -1,8 +1,9 @@
-import { Component, inject, signal, PLATFORM_ID, AfterViewInit, ElementRef, viewChild } from '@angular/core';
+import { Component, inject, signal, PLATFORM_ID, AfterViewInit, OnInit, ElementRef, viewChild } from '@angular/core';
 import { isPlatformBrowser, CommonModule } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
+import { SeoService } from '../../core/services/seo.service';
 
 declare const google: {
   accounts: {
@@ -28,11 +29,12 @@ interface LoginErrors {
   templateUrl: './login.component.html',
   styleUrl: './login.component.scss'
 })
-export class LoginComponent implements AfterViewInit {
+export class LoginComponent implements AfterViewInit, OnInit {
   private readonly fb = inject(FormBuilder);
   private readonly authService = inject(AuthService);
   private readonly router = inject(Router);
   private readonly platformId = inject(PLATFORM_ID);
+  private readonly seo = inject(SeoService);
 
   googleBtnContainer = viewChild<ElementRef>('googleBtn');
 
@@ -48,6 +50,10 @@ export class LoginComponent implements AfterViewInit {
 
   get identifier() { return this.form.get('identifier'); }
   get password() { return this.form.get('password'); }
+
+  ngOnInit() {
+    this.seo.set({ title: 'Sign In', noIndex: true });
+  }
 
   ngAfterViewInit() {
     if (isPlatformBrowser(this.platformId)) {

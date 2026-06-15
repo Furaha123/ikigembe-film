@@ -1,0 +1,18 @@
+User-agent: *
+Allow: /
+Allow: /preview/
+Allow: /terms
+
+Disallow: /browse
+Disallow: /movie/
+Disallow: /profile
+Disallow: /my-list
+Disallow: /producer/
+Disallow: /admin/
+Disallow: /login
+Disallow: /register
+Disallow: /forgot-password
+Disallow: /reset-password
+Disallow: /verify-email
+
+Sitemap: https://ikigembe.com/sitemap.xml
