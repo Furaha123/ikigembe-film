@@ -1,6 +1,7 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, inject, signal, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
+import { SeoService } from '../../core/services/seo.service';
 import { forkJoin } from 'rxjs';
 import { MovieService } from '../../shared/services/movie.service';
 import { FooterComponent } from '../../core/components/footer/footer.component';
@@ -17,11 +18,12 @@ import { PaymentService } from '../../core/services/payment.service';
   templateUrl: './movie-detail.component.html',
   styleUrls: ['./movie-detail.component.scss']
 })
-export class MovieDetailComponent implements OnInit {
+export class MovieDetailComponent implements OnInit, OnDestroy {
   private readonly route          = inject(ActivatedRoute);
   private readonly router         = inject(Router);
   private readonly movieService   = inject(MovieService);
   private readonly paymentService = inject(PaymentService);
+  private readonly seo            = inject(SeoService);
 
   movie            = signal<any>(null);
   cast             = signal<any[]>([]);
@@ -52,6 +54,14 @@ export class MovieDetailComponent implements OnInit {
       this.fullVideoUrl = details.video_url || '';
       this.videoSrc.set(details.trailer_url || '');
       this.purchased.set(this.paymentService.hasPurchased(id));
+      this.seo.set({
+        title: details.title,
+        description: details.overview || `Watch ${details.title} on Ikigembe.`,
+        image: details.thumbnail_url ?? undefined,
+        type: 'video.movie',
+        noIndex: true,
+      });
+      this.seo.setMovieJsonLd(details);
     });
   }
 
@@ -96,6 +106,8 @@ export class MovieDetailComponent implements OnInit {
     this.isPlaying.set(false);
     this.router.navigate(['/movie', id]);
   }
+
+  ngOnDestroy() { this.seo.removeJsonLd(); }
 
   goBack() {
     this.router.navigate(['/']);

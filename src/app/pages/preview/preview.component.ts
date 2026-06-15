@@ -4,6 +4,7 @@ import { ActivatedRoute, RouterLink } from '@angular/router';
 import { MovieService } from '../../core/services/movie.service';
 import { VideoPlayerComponent } from '../../shared/components/video-player/video-player.component';
 import { MoviePreview } from '../../shared/models/movie-api.interface';
+import { SeoService } from '../../core/services/seo.service';
 
 @Component({
   selector: 'app-preview',
@@ -13,9 +14,10 @@ import { MoviePreview } from '../../shared/models/movie-api.interface';
   styleUrl: './preview.component.scss',
 })
 export class PreviewComponent implements OnInit {
-  private readonly route       = inject(ActivatedRoute);
-  private readonly movieService= inject(MovieService);
-  private readonly platformId  = inject(PLATFORM_ID);
+  private readonly route        = inject(ActivatedRoute);
+  private readonly movieService = inject(MovieService);
+  private readonly seo          = inject(SeoService);
+  private readonly platformId   = inject(PLATFORM_ID);
 
   movie      = signal<MoviePreview | null>(null);
   isLoading  = signal(true);
@@ -26,7 +28,17 @@ export class PreviewComponent implements OnInit {
   ngOnInit() {
     const id = +this.route.snapshot.paramMap.get('id')!;
     this.movieService.getMoviePreview(id).subscribe({
-      next: (data) => { this.movie.set(data); this.isLoading.set(false); },
+      next: (data) => {
+        this.movie.set(data);
+        this.isLoading.set(false);
+        this.seo.set({
+          title: data.title,
+          description: data.overview || `Watch ${data.title} on Ikigembe — African cinema streaming.`,
+          image: data.thumbnail_url ?? undefined,
+          type: 'video.movie',
+        });
+        this.seo.setMovieJsonLd(data);
+      },
       error: () => { this.notFound.set(true); this.isLoading.set(false); },
     });
   }

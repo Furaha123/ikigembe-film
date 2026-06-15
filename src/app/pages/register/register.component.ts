@@ -6,6 +6,7 @@ import { isPlatformBrowser, CommonModule } from '@angular/common';
 import { AbstractControl, FormBuilder, ReactiveFormsModule, ValidationErrors, Validators } from '@angular/forms';
 import { Router, RouterLink, ActivatedRoute } from '@angular/router';
 import { AuthService, RegisterErrors } from '../../core/services/auth.service';
+import { SeoService } from '../../core/services/seo.service';
 import { Subscription } from 'rxjs';
 
 declare const google: {
@@ -31,6 +32,7 @@ export class RegisterComponent implements OnInit, AfterViewInit, OnDestroy {
   private readonly router      = inject(Router);
   private readonly route       = inject(ActivatedRoute);
   private readonly platformId  = inject(PLATFORM_ID);
+  private readonly seo         = inject(SeoService);
 
   private routeSub?:    Subscription;
   private cooldownTimer?: ReturnType<typeof setInterval>;
@@ -99,6 +101,7 @@ export class RegisterComponent implements OnInit, AfterViewInit, OnDestroy {
 
   // ── Lifecycle ────────────────────────────────────────────
   ngOnInit(): void {
+    this.seo.set({ title: 'Create Account', noIndex: true });
     this.routeSub = this.route.queryParamMap.subscribe(params => {
       if (params.get('role') === 'producer') {
         this.tab.set('producer');
