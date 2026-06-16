@@ -138,11 +138,11 @@
       "movieTitle": "Izina *",
       "titleRequired": "Izina rirakenewe.",
       "longline": "Interuro Nkuru *",
-      "longlineHint": "Interuro imwe ivuga iby'ifilime yawe",
+      "longlineHint": "Interuro ngufi z'imashini yawe (imirongo 2)",
       "longlineRequired": "Interuro nkuru irakenewe.",
       "longlineMin": "Interuro nkuru igomba kuba nibura inyuguti 10.",
       "synopsis": "Incamake *",
-      "synopsisHint": "Andika incamake ngufi y'ifilime yawe",
+      "synopsisHint": "Andika incamake ngufi (ntarengera interuro 5–6)",
       "synopsisRequired": "Incamake irakenewe.",
       "synopsisMin": "Incamake igomba kuba nibura inyuguti 20.",
       "releaseDate": "Itariki yo Gutangaza *",
@@ -164,13 +164,15 @@
       "genresRequired": "Hitamo nibura ubwoko bumwe.",
       "thumbnail": "Ifoto Nshingiro *",
       "thumbnailUpload": "Kanda kohereza ifoto nshingiro",
-      "thumbnailHint": "JPG, PNG, WebP — ntarengwa 5 MB"
+      "thumbnailHint": "JPG, PNG, WebP — ntarengwa 5 MB",
+      "longlineMax": "Longline ntirengere inyuguti 200.",
+      "synopsisMax": "Synopsis ntirengere inyuguti 600."
     },
     "trailer": {
       "title": "Ohereza Trailer",
       "subtitle": "Ohereza trailer y'ifilime yawe. Ntarengwa: amasegonda 30.",
       "zone": "Ohereza Videwo ya Trailer",
-      "hint": "Ntarengwa: amasegonda 30 | Ingano ntarengwa: 200 MB",
+      "hint": "Igihe ntarengere: amasegonda 30 | Ingano ntarengere: 100 MB",
       "chooseFile": "Hitamo Dosiye"
     },
     "movie": {

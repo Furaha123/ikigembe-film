@@ -138,11 +138,11 @@
       "movieTitle": "Title *",
       "titleRequired": "Title is required.",
       "longline": "Longline *",
-      "longlineHint": "One-line tagline for your movie",
+      "longlineHint": "Short 2-sentence tagline for your movie",
       "longlineRequired": "Longline is required.",
       "longlineMin": "Longline must be at least 10 characters.",
       "synopsis": "Synopsis *",
-      "synopsisHint": "Write a brief synopsis of your movie",
+      "synopsisHint": "Write a brief synopsis (max 5–6 sentences)",
       "synopsisRequired": "Synopsis is required.",
       "synopsisMin": "Synopsis must be at least 20 characters.",
       "releaseDate": "Release Date *",
@@ -164,13 +164,15 @@
       "genresRequired": "Select at least one genre.",
       "thumbnail": "Thumbnail Image *",
       "thumbnailUpload": "Click to upload thumbnail",
-      "thumbnailHint": "JPG, PNG, WebP — max 5 MB"
+      "thumbnailHint": "JPG, PNG, WebP — max 5 MB",
+      "longlineMax": "Longline must not exceed 200 characters.",
+      "synopsisMax": "Synopsis must not exceed 600 characters."
     },
     "trailer": {
       "title": "Upload Trailer",
       "subtitle": "Upload your movie trailer. Maximum duration: 30 seconds.",
       "zone": "Upload Trailer Video",
-      "hint": "Max duration: 30 seconds | Max size: 200 MB",
+      "hint": "Max duration: 30 seconds | Max size: 100 MB",
       "chooseFile": "Choose File"
     },
     "movie": {

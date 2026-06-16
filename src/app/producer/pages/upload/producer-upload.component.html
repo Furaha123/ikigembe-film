@@ -124,22 +124,28 @@
             <!-- Longline -->
             <div class="field" [class.has-error]="longline?.invalid && longline?.touched">
               <label>{{ 'upload.details.longline' | translate }} <span class="required">*</span></label>
-              <input type="text" formControlName="longline" [placeholder]="'upload.details.longlineHint' | translate" />
+              <input type="text" formControlName="longline" maxlength="200" [placeholder]="'upload.details.longlineHint' | translate" />
+              <span class="char-count" [class.near-limit]="(longline?.value?.length || 0) > 160">{{ longline?.value?.length || 0 }}/200</span>
               @if (longline?.touched && longline?.hasError('required')) {
                 <span class="field-error">{{ 'upload.details.longlineRequired' | translate }}</span>
               } @else if (longline?.touched && longline?.hasError('minlength')) {
                 <span class="field-error">{{ 'upload.details.longlineMin' | translate }}</span>
+              } @else if (longline?.touched && longline?.hasError('maxlength')) {
+                <span class="field-error">{{ 'upload.details.longlineMax' | translate }}</span>
               }
             </div>
 
             <!-- Synopsis -->
             <div class="field" [class.has-error]="synopsis?.invalid && synopsis?.touched">
               <label>{{ 'upload.details.synopsis' | translate }} <span class="required">*</span></label>
-              <textarea formControlName="synopsis" rows="4" [placeholder]="'upload.details.synopsisHint' | translate"></textarea>
+              <textarea formControlName="synopsis" rows="4" maxlength="600" [placeholder]="'upload.details.synopsisHint' | translate"></textarea>
+              <span class="char-count" [class.near-limit]="(synopsis?.value?.length || 0) > 480">{{ synopsis?.value?.length || 0 }}/600</span>
               @if (synopsis?.touched && synopsis?.hasError('required')) {
                 <span class="field-error">{{ 'upload.details.synopsisRequired' | translate }}</span>
               } @else if (synopsis?.touched && synopsis?.hasError('minlength')) {
                 <span class="field-error">{{ 'upload.details.synopsisMin' | translate }}</span>
+              } @else if (synopsis?.touched && synopsis?.hasError('maxlength')) {
+                <span class="field-error">{{ 'upload.details.synopsisMax' | translate }}</span>
               }
             </div>
 
