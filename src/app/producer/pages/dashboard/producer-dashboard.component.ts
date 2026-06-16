@@ -2,7 +2,7 @@ import {
   Component, inject, signal, computed,
   AfterViewInit, OnDestroy, OnInit, ElementRef, ViewChild,
 } from '@angular/core';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe, TranslateDirective } from '@ngx-translate/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { RouterLink } from '@angular/router';
@@ -38,7 +38,7 @@ const MONTHLY_LABELS = ['Dec 25', 'Jan 26', 'Feb 26', 'Mar 26', 'Apr 26', 'May 2
 @Component({
   selector: 'app-producer-dashboard',
   standalone: true,
-  imports: [TranslateModule, 
+  imports: [TranslatePipe, TranslateDirective, 
     CommonModule, ReactiveFormsModule, RouterLink,
     MovieApprovalContractNotificationComponent,
     ContractStatusWidgetComponent,

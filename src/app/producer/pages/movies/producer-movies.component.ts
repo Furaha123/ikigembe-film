@@ -1,5 +1,5 @@
 import { Component, inject, OnInit, signal, computed } from '@angular/core';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe, TranslateDirective } from '@ngx-translate/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -16,7 +16,7 @@ const ALL_GENRES = [
 
 @Component({
   selector: 'app-producer-movies',
-  imports: [TranslateModule, CommonModule, FormsModule, ReactiveFormsModule],
+  imports: [TranslatePipe, TranslateDirective, CommonModule, FormsModule, ReactiveFormsModule],
   templateUrl: './producer-movies.component.html',
   styleUrl: './producer-movies.component.scss',
 })

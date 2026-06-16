@@ -1,13 +1,13 @@
 import { Component, inject, signal, OnInit, PLATFORM_ID } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe, TranslateDirective } from '@ngx-translate/core';
 import { ContractFlowService } from '../contract-flow.service';
 
 @Component({
   selector: 'app-contract-success',
   standalone: true,
-  imports: [RouterLink, TranslateModule],
+  imports: [RouterLink, TranslatePipe, TranslateDirective],
   templateUrl: './contract-success.component.html',
   styleUrl: './contract-success.component.scss',
 })

@@ -14,7 +14,6 @@ export class LanguageService {
 
   constructor() {
     this.translate.addLangs(['en', 'rw']);
-    this.translate.setDefaultLang('en');
     this.translate.use(this.currentLang());
   }
 

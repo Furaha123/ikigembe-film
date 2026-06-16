@@ -2,14 +2,14 @@ import { Component, HostListener, inject, signal, PLATFORM_ID, OnInit, computed 
 import { isPlatformBrowser } from '@angular/common';
 import { CommonModule } from '@angular/common';
 import { Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe, TranslateDirective } from '@ngx-translate/core';
 import { AuthService } from '../../core/services/auth.service';
 import { LanguageService } from '../../core/services/language.service';
 import { ProducerService, ProducerNotification } from '../services/producer.service';
 
 @Component({
   selector: 'app-producer-layout',
-  imports: [RouterOutlet, RouterLink, RouterLinkActive, CommonModule, TranslateModule],
+  imports: [RouterOutlet, RouterLink, RouterLinkActive, CommonModule, TranslatePipe, TranslateDirective],
   templateUrl: './producer-layout.component.html',
   styleUrl: './producer-layout.component.scss'
 })

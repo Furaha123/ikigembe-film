@@ -1,12 +1,12 @@
 import { Component, inject, signal, OnInit } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe, TranslateDirective } from '@ngx-translate/core';
 import { ProducerService } from '../../../services/producer.service';
 
 @Component({
   selector: 'app-contract-welcome',
   standalone: true,
-  imports: [TranslateModule, RouterLink],
+  imports: [TranslatePipe, TranslateDirective, RouterLink],
   templateUrl: './contract-welcome.component.html',
   styleUrl: './contract-welcome.component.scss',
 })

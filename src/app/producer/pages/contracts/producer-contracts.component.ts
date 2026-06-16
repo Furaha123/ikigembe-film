@@ -1,14 +1,14 @@
 import { Component, inject, signal, computed, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe, TranslateDirective } from '@ngx-translate/core';
 import { ContractService, ContractStatus } from '../../services/contract.service';
 import { ProducerService } from '../../services/producer.service';
 
 @Component({
   selector: 'app-producer-contracts',
   standalone: true,
-  imports: [CommonModule, RouterLink, TranslateModule],
+  imports: [CommonModule, RouterLink, TranslatePipe, TranslateDirective],
   templateUrl: './producer-contracts.component.html',
   styleUrl: './producer-contracts.component.scss',
 })

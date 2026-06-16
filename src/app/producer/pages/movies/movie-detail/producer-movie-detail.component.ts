@@ -2,7 +2,7 @@ import {
   Component, inject, signal, computed,
   OnInit, OnDestroy, ElementRef, ViewChild, PLATFORM_ID,
 } from '@angular/core';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe, TranslateDirective } from '@ngx-translate/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ProducerService, ProducerMovieDetail } from '../../../services/producer.service';
@@ -62,7 +62,7 @@ const RANGE_CONFIGS: Record<string, RangeConfig> = {
 @Component({
   selector: 'app-producer-movie-detail',
   standalone: true,
-  imports: [TranslateModule, CommonModule],
+  imports: [TranslatePipe, TranslateDirective, CommonModule],
   templateUrl: './producer-movie-detail.component.html',
   styleUrl: './producer-movie-detail.component.scss',
 })
