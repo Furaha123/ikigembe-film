@@ -12,7 +12,7 @@ const CHUNK_SIZE = 10 * 1024 * 1024; // 10 MB
 
 const UPLOAD_RULES = [
   'Movie must be between 10 and 30 minutes.',
-  'File size must not exceed 100 MB per file.',
+  'File size must not exceed 200 MB per file.',
   'Video quality must be 4K or HD.',
   'Good sound quality and clear visuals are required.',
   'Your movie must have subtitles.',
