@@ -8,9 +8,9 @@
           <polyline points="20 6 9 17 4 12"/>
         </svg>
       </div>
-      <h2>Thank You!</h2>
-      <p>Your movie has been submitted successfully. We will review your movie and get back to you soon.</p>
-      <button class="btn-primary" (click)="goToDashboard()">Go to Dashboard</button>
+      <h2>{{ 'upload.success.title' | translate }}</h2>
+      <p>{{ 'upload.success.message' | translate }}</p>
+      <button class="btn-primary" (click)="goToDashboard()">{{ 'upload.success.dashboardBtn' | translate }}</button>
     </div>
   }
 
@@ -24,8 +24,8 @@
               <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 14.5v-9l6 4.5-6 4.5z"/>
             </svg>
           </div>
-          <h2>Welcome to Ikigembe Film Arts</h2>
-          <p>Please read and follow the rules and requirements before uploading your film.</p>
+          <h2>{{ 'upload.rulesTitle' | translate }}</h2>
+          <p>{{ 'upload.rulesSubtitle' | translate }}</p>
         </div>
 
         <ul class="rules-list">
@@ -39,11 +39,8 @@
           }
         </ul>
 
-        <p class="rules-cta-text">
-          Ready to upload your movie?<br>
-          Click the button below to get started.
-        </p>
-        <button class="btn-start" (click)="startUpload()">Start Upload</button>
+        <p class="rules-cta-text">{{ 'upload.readyText' | translate }}</p>
+        <button class="btn-start" (click)="startUpload()">{{ 'upload.startBtn' | translate }}</button>
       </div>
     </div>
   }
@@ -62,7 +59,7 @@
               </svg>
             } @else { 1 }
           </div>
-          <span>Details</span>
+          <span>{{ 'upload.steps.details' | translate }}</span>
         </div>
 
         <div class="stepper-line" [class.done]="stepIndex() > 0"></div>
@@ -75,7 +72,7 @@
               </svg>
             } @else { 2 }
           </div>
-          <span>Trailer</span>
+          <span>{{ 'upload.steps.trailer' | translate }}</span>
         </div>
 
         <div class="stepper-line" [class.done]="stepIndex() > 1"></div>
@@ -88,7 +85,7 @@
               </svg>
             } @else { 3 }
           </div>
-          <span>Full Movie</span>
+          <span>{{ 'upload.steps.movie' | translate }}</span>
         </div>
 
         <div class="stepper-line" [class.done]="stepIndex() > 2"></div>
@@ -101,7 +98,7 @@
               </svg>
             } @else { 4 }
           </div>
-          <span>Copyright</span>
+          <span>{{ 'upload.steps.copyright' | translate }}</span>
         </div>
       </div>
 
@@ -109,72 +106,72 @@
       @if (currentStep() === 'details') {
         <div class="step-card">
           <div class="step-card-header">
-            <h2>Movie Details</h2>
-            <p>Fill in all information about your movie before uploading files.</p>
+            <h2>{{ 'upload.details.title' | translate }}</h2>
+            <p>{{ 'upload.details.subtitle' | translate }}</p>
           </div>
 
           <form [formGroup]="detailsForm" novalidate>
 
             <!-- Title -->
             <div class="field" [class.has-error]="title?.invalid && title?.touched">
-              <label>Title <span class="required">*</span></label>
+              <label>{{ 'upload.details.movieTitle' | translate }} <span class="required">*</span></label>
               <input type="text" formControlName="title" placeholder="Enter movie title" />
               @if (title?.touched && title?.hasError('required')) {
-                <span class="field-error">Title is required.</span>
+                <span class="field-error">{{ 'upload.details.titleRequired' | translate }}</span>
               }
             </div>
 
             <!-- Longline -->
             <div class="field" [class.has-error]="longline?.invalid && longline?.touched">
-              <label>Longline <span class="required">*</span></label>
-              <input type="text" formControlName="longline" placeholder="One-line tagline for your movie" />
+              <label>{{ 'upload.details.longline' | translate }} <span class="required">*</span></label>
+              <input type="text" formControlName="longline" [placeholder]="'upload.details.longlineHint' | translate" />
               @if (longline?.touched && longline?.hasError('required')) {
-                <span class="field-error">Longline is required.</span>
+                <span class="field-error">{{ 'upload.details.longlineRequired' | translate }}</span>
               } @else if (longline?.touched && longline?.hasError('minlength')) {
-                <span class="field-error">Longline must be at least 10 characters.</span>
+                <span class="field-error">{{ 'upload.details.longlineMin' | translate }}</span>
               }
             </div>
 
             <!-- Synopsis -->
             <div class="field" [class.has-error]="synopsis?.invalid && synopsis?.touched">
-              <label>Synopsis <span class="required">*</span></label>
-              <textarea formControlName="synopsis" rows="4" placeholder="Write a brief synopsis of your movie"></textarea>
+              <label>{{ 'upload.details.synopsis' | translate }} <span class="required">*</span></label>
+              <textarea formControlName="synopsis" rows="4" [placeholder]="'upload.details.synopsisHint' | translate"></textarea>
               @if (synopsis?.touched && synopsis?.hasError('required')) {
-                <span class="field-error">Synopsis is required.</span>
+                <span class="field-error">{{ 'upload.details.synopsisRequired' | translate }}</span>
               } @else if (synopsis?.touched && synopsis?.hasError('minlength')) {
-                <span class="field-error">Synopsis must be at least 20 characters.</span>
+                <span class="field-error">{{ 'upload.details.synopsisMin' | translate }}</span>
               }
             </div>
 
             <!-- Release Date + Price -->
             <div class="field-row">
               <div class="field" [class.has-error]="releaseDate?.invalid && releaseDate?.touched">
-                <label>Release Date <span class="required">*</span></label>
+                <label>{{ 'upload.details.releaseDate' | translate }} <span class="required">*</span></label>
                 <procurement-date-picker
                   [singleMode]="true"
                   (singleDateChange)="onReleaseDateChange($event)"
                   class="release-date-picker"
                 />
                 @if (releaseDate?.touched && releaseDate?.hasError('required')) {
-                  <span class="field-error">Release date is required.</span>
+                  <span class="field-error">{{ 'upload.details.releaseDateRequired' | translate }}</span>
                 }
               </div>
 
               <div class="field" [class.has-error]="price?.invalid && price?.touched">
-                <label>Price (RWF) <span class="required">*</span></label>
-                <input type="number" formControlName="price" placeholder="e.g. 2000" min="0" />
+                <label>{{ 'upload.details.price' | translate }} <span class="required">*</span></label>
+                <input type="number" formControlName="price" [placeholder]="'upload.details.pricePlaceholder' | translate" min="0" />
                 @if (price?.touched && price?.hasError('required')) {
-                  <span class="field-error">Price is required.</span>
+                  <span class="field-error">{{ 'upload.details.priceRequired' | translate }}</span>
                 } @else if (price?.touched && price?.hasError('min')) {
-                  <span class="field-error">Price cannot be negative.</span>
+                  <span class="field-error">{{ 'upload.details.priceNegative' | translate }}</span>
                 }
               </div>
             </div>
 
             <!-- Duration -->
             <div class="field">
-              <label>Duration (minutes) <span class="optional">(Optional)</span></label>
-              <input type="number" formControlName="duration_minutes" placeholder="e.g. 25" min="1" />
+              <label>{{ 'upload.details.duration' | translate }} <span class="optional">(Optional)</span></label>
+              <input type="number" formControlName="duration_minutes" [placeholder]="'upload.details.durationHint' | translate" min="1" />
               @if (durationMinutes?.touched && durationMinutes?.hasError('min')) {
                 <span class="field-error">Duration must be at least 1 minute.</span>
               }
@@ -183,26 +180,26 @@
             <!-- Director + Writer -->
             <div class="field-row">
               <div class="field">
-                <label>Director <span class="optional">(Optional)</span></label>
-                <input type="text" formControlName="director" placeholder="e.g. John Doe" />
+                <label>{{ 'upload.details.director' | translate }} <span class="optional">(Optional)</span></label>
+                <input type="text" formControlName="director" [placeholder]="'upload.details.directorHint' | translate" />
               </div>
               <div class="field">
-                <label>Writer <span class="optional">(Optional)</span></label>
-                <input type="text" formControlName="writer" placeholder="e.g. Jane Doe" />
+                <label>{{ 'upload.details.writer' | translate }} <span class="optional">(Optional)</span></label>
+                <input type="text" formControlName="writer" [placeholder]="'upload.details.writerHint' | translate" />
               </div>
             </div>
 
             <!-- Cast -->
             <div class="field">
-              <label>Cast <span class="optional">(Optional — comma separated)</span></label>
-              <input type="text" formControlName="cast" placeholder="e.g. Actor A, Actor B, Actor C" />
+              <label>{{ 'upload.details.cast' | translate }} <span class="optional">(Optional — comma separated)</span></label>
+              <input type="text" formControlName="cast" [placeholder]="'upload.details.castHint' | translate" />
             </div>
 
             <!-- Free Preview -->
             <div class="field-check">
               <label class="check-label">
                 <input type="checkbox" formControlName="has_free_preview" />
-                <span>Allow free preview for this movie</span>
+                <span>{{ 'upload.details.freePreview' | translate }}</span>
               </label>
             </div>
 
@@ -210,7 +207,7 @@
 
           <!-- Genres -->
           <div class="field-section">
-            <label class="section-label">Genres <span class="required">*</span></label>
+            <label class="section-label">{{ 'upload.details.genres' | translate }} <span class="required">*</span></label>
             <div class="genre-chips">
               @for (genre of ALL_GENRES; track genre) {
                 <button type="button"
@@ -222,13 +219,13 @@
               }
             </div>
             @if (selectedGenres().size === 0 && detailsForm.touched) {
-              <span class="field-error">Select at least one genre.</span>
+              <span class="field-error">{{ 'upload.details.genresRequired' | translate }}</span>
             }
           </div>
 
           <!-- Thumbnail -->
           <div class="field-section">
-            <label class="section-label">Thumbnail Image <span class="required">*</span></label>
+            <label class="section-label">{{ 'upload.details.thumbnail' | translate }} <span class="required">*</span></label>
 
             @if (!thumbnailFile()) {
               <div class="thumbnail-drop"
@@ -240,8 +237,8 @@
                   <circle cx="8.5" cy="8.5" r="1.5"/>
                   <polyline points="21 15 16 10 5 21"/>
                 </svg>
-                <p>Click to upload thumbnail</p>
-                <span>JPG, PNG, WebP — max 5 MB</span>
+                <p>{{ 'upload.details.thumbnailUpload' | translate }}</p>
+                <span>{{ 'upload.details.thumbnailHint' | translate }}</span>
               </div>
             } @else {
               <div class="thumbnail-preview">
@@ -264,8 +261,8 @@
           </div>
 
           <div class="step-actions">
-            <button class="btn-back" (click)="goBack()">Cancel</button>
-            <button class="btn-next-step" (click)="nextFromDetails()">Next</button>
+            <button class="btn-back" (click)="goBack()">{{ 'upload.cancel' | translate }}</button>
+            <button class="btn-next-step" (click)="nextFromDetails()">{{ 'upload.next' | translate }}</button>
           </div>
         </div>
       }
@@ -274,8 +271,8 @@
       @else if (currentStep() === 'trailer') {
         <div class="step-card">
           <div class="step-card-header">
-            <h2>Upload Trailer</h2>
-            <p>Upload your movie trailer. Maximum duration: 30 seconds.</p>
+            <h2>{{ 'upload.trailer.title' | translate }}</h2>
+            <p>{{ 'upload.trailer.subtitle' | translate }}</p>
           </div>
 
           <div class="upload-zone"
@@ -295,10 +292,10 @@
                 <polyline points="17 8 12 3 7 8"/>
                 <line x1="12" y1="3" x2="12" y2="15"/>
               </svg>
-              <p class="upload-label">Upload Trailer Video</p>
-              <p class="upload-hint">Max duration: 30 seconds | Max size: 100 MB</p>
+              <p class="upload-label">{{ 'upload.trailer.zone' | translate }}</p>
+              <p class="upload-hint">{{ 'upload.trailer.hint' | translate }}</p>
               <button class="btn-choose" type="button" (click)="$event.stopPropagation(); trailerInput.click()">
-                Choose File
+                {{ 'upload.trailer.chooseFile' | translate }}
               </button>
             } @else {
               <div class="file-done">
@@ -310,16 +307,16 @@
                   <p class="file-size">{{ formatFileSize(trailerFile()!.size) }}</p>
                 </div>
                 @if (isUploadingTrailer()) {
-                  <div class="uploading-badge">Uploading… {{ trailerUploadPct() }}%</div>
+                  <div class="uploading-badge">{{ 'upload.uploading' | translate: { percent: trailerUploadPct() } }}</div>
                 } @else if (trailerKey()) {
                   <div class="uploaded-badge">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
                       <polyline points="20 6 9 17 4 12"/>
                     </svg>
-                    Uploaded
+                    {{ 'upload.uploaded' | translate }}
                   </div>
                 } @else if (trailerUploadError()) {
-                  <button class="btn-retry" type="button" (click)="$event.stopPropagation(); retryTrailer()">Retry</button>
+                  <button class="btn-retry" type="button" (click)="$event.stopPropagation(); retryTrailer()">{{ 'upload.retry' | translate }}</button>
                 }
               </div>
               @if (isUploadingTrailer()) {
@@ -340,8 +337,8 @@
           }
 
           <div class="step-actions">
-            <button class="btn-back" (click)="goBack()">Back</button>
-            <button class="btn-next-step" (click)="nextFromTrailer()">Next</button>
+            <button class="btn-back" (click)="goBack()">{{ 'upload.back' | translate }}</button>
+            <button class="btn-next-step" (click)="nextFromTrailer()">{{ 'upload.next' | translate }}</button>
           </div>
         </div>
       }
@@ -350,8 +347,8 @@
       @else if (currentStep() === 'movie') {
         <div class="step-card">
           <div class="step-card-header">
-            <h2>Upload Full Movie</h2>
-            <p>Upload the full movie file. Duration must be between 10 and 30 minutes.</p>
+            <h2>{{ 'upload.movie.title' | translate }}</h2>
+            <p>{{ 'upload.movie.subtitle' | translate }}</p>
           </div>
 
           <div class="upload-zone"
@@ -373,11 +370,10 @@
                 <polyline points="17 8 12 3 7 8"/>
                 <line x1="12" y1="3" x2="12" y2="15"/>
               </svg>
-              <p class="upload-label">Upload Full Movie</p>
-              <p class="upload-hint">Min duration: 10 minutes | Max duration: 30 minutes</p>
-              <p class="upload-hint">Max size: 100 MB | Formats: MP4, MOV</p>
+              <p class="upload-label">{{ 'upload.movie.zone' | translate }}</p>
+              <p class="upload-hint">{{ 'upload.movie.hint' | translate }}</p>
               <button class="btn-choose" type="button" (click)="$event.stopPropagation(); movieInput.click()">
-                Choose File
+                {{ 'upload.trailer.chooseFile' | translate }}
               </button>
             } @else {
               <div class="file-done">
@@ -389,16 +385,16 @@
                   <p class="file-size">{{ formatFileSize(movieFile()!.size) }}</p>
                 </div>
                 @if (isUploadingMovie()) {
-                  <div class="uploading-badge">Uploading… {{ movieUploadPct() }}%</div>
+                  <div class="uploading-badge">{{ 'upload.uploading' | translate: { percent: movieUploadPct() } }}</div>
                 } @else if (movieKey()) {
                   <div class="uploaded-badge">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
                       <polyline points="20 6 9 17 4 12"/>
                     </svg>
-                    Uploaded
+                    {{ 'upload.uploaded' | translate }}
                   </div>
                 } @else if (movieUploadError()) {
-                  <button class="btn-retry" type="button" (click)="$event.stopPropagation(); retryMovie()">Retry</button>
+                  <button class="btn-retry" type="button" (click)="$event.stopPropagation(); retryMovie()">{{ 'upload.retry' | translate }}</button>
                 }
               </div>
               @if (isUploadingMovie()) {
@@ -416,7 +412,7 @@
 
           @if (movieErrors().length > 0) {
             <div class="error-box list">
-              <p class="error-title">Please fix the following errors:</p>
+              <p class="error-title">{{ 'upload.movie.errorsHeader' | translate }}</p>
               <ul>
                 @for (err of movieErrors(); track err) {
                   <li>{{ err }}</li>
@@ -426,8 +422,8 @@
           }
 
           <div class="step-actions">
-            <button class="btn-back" (click)="goBack()">Back</button>
-            <button class="btn-next-step" [disabled]="!movieReady() || isUploadingMovie()" (click)="nextFromMovie()">Next</button>
+            <button class="btn-back" (click)="goBack()">{{ 'upload.back' | translate }}</button>
+            <button class="btn-next-step" [disabled]="!movieReady() || isUploadingMovie()" (click)="nextFromMovie()">{{ 'upload.next' | translate }}</button>
           </div>
         </div>
       }
@@ -436,8 +432,8 @@
       @else if (currentStep() === 'copyright') {
         <div class="step-card">
           <div class="step-card-header">
-            <h2>Copyright Proof</h2>
-            <p>Upload proof of copyright ownership for your movie. Accepted formats: PDF, JPG, PNG (max 10 MB).</p>
+            <h2>{{ 'upload.copyright.title' | translate }}</h2>
+            <p>{{ 'upload.copyright.subtitle' | translate }}</p>
           </div>
 
           <div class="upload-zone"
@@ -458,10 +454,10 @@
                 <line x1="12" y1="18" x2="12" y2="12"/>
                 <line x1="9" y1="15" x2="15" y2="15"/>
               </svg>
-              <p class="upload-label">Upload Copyright Document</p>
-              <p class="upload-hint">PDF, JPG, or PNG — max 10 MB</p>
+              <p class="upload-label">{{ 'upload.copyright.zone' | translate }}</p>
+              <p class="upload-hint">{{ 'upload.copyright.hint' | translate }}</p>
               <button class="btn-choose" type="button" (click)="$event.stopPropagation(); copyrightInput.click()">
-                Choose File
+                {{ 'upload.trailer.chooseFile' | translate }}
               </button>
             } @else {
               <div class="file-done">
@@ -474,7 +470,7 @@
                   <p class="file-size">{{ formatFileSize(copyrightFile()!.size) }}</p>
                 </div>
                 <button class="btn-retry" type="button" (click)="$event.stopPropagation(); removeCopyright()">
-                  Remove
+                  {{ 'upload.remove' | translate }}
                 </button>
               </div>
             }
@@ -488,8 +484,8 @@
           }
 
           <div class="step-actions">
-            <button class="btn-back" (click)="goBack()">Back</button>
-            <button class="btn-next-step" (click)="nextFromCopyright()">Review &amp; Submit</button>
+            <button class="btn-back" (click)="goBack()">{{ 'upload.back' | translate }}</button>
+            <button class="btn-next-step" (click)="nextFromCopyright()">{{ 'upload.reviewSubmit' | translate }}</button>
           </div>
         </div>
       }
@@ -498,96 +494,96 @@
       @else if (currentStep() === 'review') {
         <div class="step-card">
           <div class="step-card-header">
-            <h2>Review Your Submission</h2>
-            <p>Please review all information before submitting.</p>
+            <h2>{{ 'upload.review.title' | translate }}</h2>
+            <p>{{ 'upload.review.subtitle' | translate }}</p>
           </div>
 
           <div class="review-section">
-            <h3 class="review-section-title">Movie Details</h3>
+            <h3 class="review-section-title">{{ 'upload.review.sections.details' | translate }}</h3>
             <div class="review-row">
-              <span class="review-key">Title:</span>
+              <span class="review-key">{{ 'upload.review.labels.title' | translate }}</span>
               <span class="review-val">{{ detailsForm.value.title || '—' }}</span>
             </div>
             <div class="review-row">
-              <span class="review-key">Longline:</span>
+              <span class="review-key">{{ 'upload.review.labels.longline' | translate }}</span>
               <span class="review-val">{{ detailsForm.value.longline || '—' }}</span>
             </div>
             <div class="review-row">
-              <span class="review-key">Synopsis:</span>
+              <span class="review-key">{{ 'upload.review.labels.synopsis' | translate }}</span>
               <span class="review-val">{{ detailsForm.value.synopsis || '—' }}</span>
             </div>
             <div class="review-row">
-              <span class="review-key">Genres:</span>
+              <span class="review-key">{{ 'upload.review.labels.genres' | translate }}</span>
               <span class="review-val">{{ genresDisplay() || '—' }}</span>
             </div>
             <div class="review-row">
-              <span class="review-key">Release Date:</span>
+              <span class="review-key">{{ 'upload.review.labels.releaseDate' | translate }}</span>
               <span class="review-val">{{ detailsForm.value.release_date || '—' }}</span>
             </div>
             <div class="review-row">
-              <span class="review-key">Price:</span>
+              <span class="review-key">{{ 'upload.review.labels.price' | translate }}</span>
               <span class="review-val">{{ detailsForm.value.price != null ? 'RWF ' + detailsForm.value.price : '—' }}</span>
             </div>
             <div class="review-row">
-              <span class="review-key">Duration:</span>
+              <span class="review-key">{{ 'upload.review.labels.duration' | translate }}</span>
               <span class="review-val">{{ detailsForm.value.duration_minutes ? detailsForm.value.duration_minutes + ' min' : '—' }}</span>
             </div>
             @if (detailsForm.value.director) {
               <div class="review-row">
-                <span class="review-key">Director:</span>
+                <span class="review-key">{{ 'upload.review.labels.director' | translate }}</span>
                 <span class="review-val">{{ detailsForm.value.director }}</span>
               </div>
             }
             @if (detailsForm.value.writer) {
               <div class="review-row">
-                <span class="review-key">Writer:</span>
+                <span class="review-key">{{ 'upload.review.labels.writer' | translate }}</span>
                 <span class="review-val">{{ detailsForm.value.writer }}</span>
               </div>
             }
             @if (detailsForm.value.cast) {
               <div class="review-row">
-                <span class="review-key">Cast:</span>
+                <span class="review-key">{{ 'upload.review.labels.cast' | translate }}</span>
                 <span class="review-val">{{ detailsForm.value.cast }}</span>
               </div>
             }
             <div class="review-row">
-              <span class="review-key">Free Preview:</span>
+              <span class="review-key">{{ 'upload.review.labels.freePreview' | translate }}</span>
               <span class="review-val">{{ detailsForm.value.has_free_preview ? 'Yes' : 'No' }}</span>
             </div>
           </div>
 
           <div class="review-section">
-            <h3 class="review-section-title">Thumbnail</h3>
+            <h3 class="review-section-title">{{ 'upload.review.sections.thumbnail' | translate }}</h3>
             <div class="review-row">
-              <span class="review-key">Image:</span>
+              <span class="review-key">{{ 'upload.review.labels.image' | translate }}</span>
               <span class="review-val">{{ thumbnailFile()?.name ?? '—' }}</span>
             </div>
           </div>
 
           <div class="review-section">
-            <h3 class="review-section-title">Trailer</h3>
+            <h3 class="review-section-title">{{ 'upload.review.sections.trailer' | translate }}</h3>
             <div class="review-row">
-              <span class="review-key">Trailer File:</span>
+              <span class="review-key">{{ 'upload.review.labels.trailerFile' | translate }}</span>
               <span class="review-val">{{ trailerFile()?.name ?? '—' }}</span>
             </div>
           </div>
 
           <div class="review-section">
-            <h3 class="review-section-title">Full Movie</h3>
+            <h3 class="review-section-title">{{ 'upload.review.sections.movie' | translate }}</h3>
             <div class="review-row">
-              <span class="review-key">Movie File:</span>
+              <span class="review-key">{{ 'upload.review.labels.movieFile' | translate }}</span>
               <span class="review-val">{{ movieFile()?.name ?? '—' }}</span>
             </div>
             <div class="review-row">
-              <span class="review-key">Size:</span>
+              <span class="review-key">{{ 'upload.review.labels.size' | translate }}</span>
               <span class="review-val">{{ movieFile() ? formatFileSize(movieFile()!.size) : '—' }}</span>
             </div>
           </div>
 
           <div class="review-section">
-            <h3 class="review-section-title">Copyright</h3>
+            <h3 class="review-section-title">{{ 'upload.review.sections.copyright' | translate }}</h3>
             <div class="review-row">
-              <span class="review-key">Document:</span>
+              <span class="review-key">{{ 'upload.review.labels.document' | translate }}</span>
               <span class="review-val">{{ copyrightFile()?.name ?? '—' }}</span>
             </div>
           </div>
@@ -597,12 +593,12 @@
           }
 
           <div class="step-actions">
-            <button class="btn-back" (click)="goBack()">Back</button>
+            <button class="btn-back" (click)="goBack()">{{ 'upload.review.back' | translate }}</button>
             <button class="btn-submit-main" [disabled]="isSubmitting()" (click)="submit()">
               @if (isSubmitting()) {
-                <span class="spinner"></span>Submitting…
+                <span class="spinner"></span>{{ 'upload.review.submitting' | translate }}
               } @else {
-                Submit Your Movie
+                {{ 'upload.review.submitBtn' | translate }}
               }
             </button>
           </div>

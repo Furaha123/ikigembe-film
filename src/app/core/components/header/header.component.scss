@@ -74,6 +74,28 @@ header {
     align-items: center;
     gap: 1.25rem;
 
+    .dashboard-btn {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      padding: 0.35rem 0.85rem;
+      border: 1px solid rgba(201, 168, 76, 0.6);
+      border-radius: 20px;
+      color: #c9a84c;
+      text-decoration: none;
+      font-size: 0.8rem;
+      font-weight: 500;
+      white-space: nowrap;
+      transition: background 0.2s, border-color 0.2s;
+
+      &:hover {
+        background: rgba(201, 168, 76, 0.12);
+        border-color: #c9a84c;
+      }
+
+      svg { flex-shrink: 0; }
+    }
+
     .icon-btn {
       background: transparent;
       border: none;

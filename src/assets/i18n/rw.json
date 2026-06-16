@@ -1,0 +1,499 @@
+{
+  "nav": {
+    "dashboard": "Ikibaho",
+    "upload": "Ohereza Filime",
+    "movies": "Filime Zanjye",
+    "wallet": "Imari",
+    "withdrawals": "Gukura Amafaranga",
+    "reports": "Raporo",
+    "contracts": "Amasezerano",
+    "settings": "Igenamiterere",
+    "terms": "Amabwiriza n'Ibisabwa",
+    "signOut": "Sohoka",
+    "signingOut": "Gusohoka…"
+  },
+  "topbar": {
+    "uploadFilm": "Ohereza Filime"
+  },
+  "notifications": {
+    "title": "Amakuru Mashya",
+    "markAllRead": "Shyira byose nk'ibisomwe",
+    "empty": "Nta makuru mashya."
+  },
+  "statusBanner": {
+    "pending": "Konti yawe igeragezwa. Urashobora gutegura ibizohererezwa ariko nta kintu kizabonetse kugeza kemejwe.",
+    "suspended": "Konti yawe ihagaritswe. Ibikorwa byose byo kohereza no gucunga filime bihagaritswe."
+  },
+  "dashboard": {
+    "title": "Ikibaho cy'Umukora wa Filime",
+    "subtitle": "Kurikirana inyungu zawe kandi ugenzure ibiri gusesengura",
+    "uploadCta": {
+      "title": "Ohereza Filime",
+      "subtitle": "Ohereza ibiri gusesengura — filime zemejwe zizagaragara ku rubuga"
+    },
+    "dateRange": "Ibihe by'Amakuru",
+    "contractWarning": {
+      "expiringTitle": "Amasezerano Ashira Vuba",
+      "expiringMessage": "Amasezerano yawe ashira mu minsi {{days}}. Yongerera nonaha kugirango wirinde ibibazo.",
+      "renewBtn": "Ongerera Amasezerano",
+      "expiredTitle": "Amasezerano Ashe",
+      "expiredMessage": "Nyamuneka ongerera Amasezerano y'Uwohereza Filime. Gukwirakwiza ibizashya byemejwe bizahagarikwa kugeza yongerejwe.",
+      "renewNowBtn": "Ongerera Nonaha"
+    },
+    "kpi": {
+      "views": "Ibyabanywe",
+      "watchTime": "Igihe cyo Kureba (amasaha)",
+      "revenue": "Inyungu Zawe Zetekerezwa",
+      "revenueSubtitle": "Iyungurwa ry'ibiri byose"
+    },
+    "tabs": {
+      "views": "Ibyabanywe",
+      "watchTime": "Igihe cyo Kureba",
+      "revenue": "Inyungu",
+      "earnings": "Amafaranga Yinjiye"
+    },
+    "earningsOverview": "Incamake y'Amafaranga Yinjiye",
+    "withdraw": {
+      "title": "Gukura Inyungu",
+      "balance": "Amafaranga Aboneka",
+      "balanceSubtitle": "Yiteguye gukurwa",
+      "amount": "Ingano y'Amafaranga Gukurwa",
+      "amountHint": "Ntarengwa: RWF 5,000 • Igihe: Iminsi 3–5 y'akazi",
+      "method": "Uburyo bwo Kwishyura",
+      "mobileMoney": "Amafaranga ya Telefone",
+      "bankTransfer": "Ohereza kuri Banki",
+      "provider": "Umukoresha",
+      "phone": "Nimero ya Telefone",
+      "bankName": "Izina rya Banki",
+      "accountNumber": "Nimero y'Konti",
+      "accountHolder": "Amazina y'Nyir'Konti",
+      "summary": "Incamake y'Inyungu",
+      "summaryAmount": "Ingano y'Amafaranga Gukurwa",
+      "summaryTax": "Umusoro wa leta / RRA (30%)",
+      "summaryTotal": "Igiteranyo cy'Amafaranga",
+      "btn": "Saba Gukura Amafaranga",
+      "submitting": "Ohereza…"
+    },
+    "recentWithdrawals": "Gukura Amafaranga Bishya",
+    "performance": {
+      "title": "Imikorere y'Ibiri Gusesengura",
+      "seeAll": "Reba Ibiri Byose"
+    },
+    "transactions": {
+      "title": "Ibikorwa Bishya",
+      "showLess": "Erekana Bike",
+      "viewAll": "Reba Byose",
+      "movie": "Filime",
+      "buyer": "Umuguzi",
+      "amount": "Ingano",
+      "share": "Igice Cyawe",
+      "status": "Imimerere",
+      "date": "Itariki",
+      "completed": "Byarangiye",
+      "pending": "Bitegerejwe"
+    }
+  },
+  "onboarding": {
+    "welcome": "Murakaza Neza kuri IKIGEMBE",
+    "subtitle": "Uzuza umwirondoro wawe w'uwohereza filime kugirango abareba n'itsinda ryacu bazagukunde.",
+    "skip": "Simbuka ubu",
+    "stepTitle": "Tubwire iby'ubwawe",
+    "stepDesc": "Nifasha abareba n'itsinda rya IKIGEMBE kumenya uwo uri we nk'uwohereza filime.",
+    "photo": "Ifoto y'Umwirondoro",
+    "photoHint": "Si ngombwa. Kanda ku karuziga kohereza.",
+    "choosePhoto": "Hitamo ifoto",
+    "country": "Igihugu / Akarere *",
+    "countryPlaceholder": "Hitamo igihugu cyawe…",
+    "experience": "Urwego rw'Uburambe *",
+    "experiencePlaceholder": "Hitamo uburambe bwawe…",
+    "exp0": "Mushya mu gukora filime (imyaka 0–2)",
+    "exp1": "Hagati (imyaka 3–5)",
+    "exp2": "Ufite uburambe (imyaka 6–10)",
+    "exp3": "Inzobere (imyaka 10+)",
+    "bio": "Iby'ubwawe *",
+    "bioPlaceholder": "Tubwire inkomoko yawe, inkuru ukunda gutunga, n'ibigira filime zawe zidasanzwe…",
+    "errors": {
+      "country": "Hitamo igihugu cyawe.",
+      "experience": "Hitamo urwego rw'uburambe bwawe.",
+      "bio": "Andika incamake ngufi iby'ubwawe.",
+      "bioMin": "Ubuzima bugomba kuba nibura inyuguti 20."
+    },
+    "submit": "Uzuza Igenamiterere",
+    "submitting": "Bika…"
+  },
+  "upload": {
+    "rulesTitle": "Murakaza Neza kuri Ikigembe Film Arts",
+    "rulesSubtitle": "Soma kandi ukurikire amabwiriza n'ibisabwa mbere yo kohereza filime yawe.",
+    "readyText": "Witeguye kohereza filime yawe? Kanda buto hepfo utangire.",
+    "startBtn": "Tangira Kohereza",
+    "steps": {
+      "details": "Amakuru",
+      "trailer": "Trailer",
+      "movie": "Filime Yose",
+      "copyright": "Uburenganzira"
+    },
+    "details": {
+      "title": "Amakuru y'Ifilime",
+      "subtitle": "Uzuza amakuru yose yerekeranye na filime yawe mbere yo kohereza dosiye.",
+      "movieTitle": "Izina *",
+      "titleRequired": "Izina rirakenewe.",
+      "longline": "Interuro Nkuru *",
+      "longlineHint": "Interuro imwe ivuga iby'ifilime yawe",
+      "longlineRequired": "Interuro nkuru irakenewe.",
+      "longlineMin": "Interuro nkuru igomba kuba nibura inyuguti 10.",
+      "synopsis": "Incamake *",
+      "synopsisHint": "Andika incamake ngufi y'ifilime yawe",
+      "synopsisRequired": "Incamake irakenewe.",
+      "synopsisMin": "Incamake igomba kuba nibura inyuguti 20.",
+      "releaseDate": "Itariki yo Gutangaza *",
+      "releaseDateRequired": "Itariki yo gutangaza irakenewe.",
+      "price": "Igiciro (RWF) *",
+      "pricePlaceholder": "urugero: 2000",
+      "priceRequired": "Igiciro girakenewe.",
+      "priceNegative": "Igiciro ntishobora kuba cyiciro.",
+      "duration": "Igihe (iminota)",
+      "durationHint": "urugero: 25",
+      "director": "Umuyobozi",
+      "directorHint": "urugero: Yohani Doe",
+      "writer": "Umuandishi",
+      "writerHint": "urugero: Yane Doe",
+      "cast": "Indirimbo",
+      "castHint": "urugero: Umukinnyi A, Umukinnyi B",
+      "freePreview": "Emera kureba buntu ifilime iyi",
+      "genres": "Ubwoko *",
+      "genresRequired": "Hitamo nibura ubwoko bumwe.",
+      "thumbnail": "Ifoto Nshingiro *",
+      "thumbnailUpload": "Kanda kohereza ifoto nshingiro",
+      "thumbnailHint": "JPG, PNG, WebP — ntarengwa 5 MB"
+    },
+    "trailer": {
+      "title": "Ohereza Trailer",
+      "subtitle": "Ohereza trailer y'ifilime yawe. Ntarengwa: amasegonda 30.",
+      "zone": "Ohereza Videwo ya Trailer",
+      "hint": "Ntarengwa: amasegonda 30 | Ingano ntarengwa: 200 MB",
+      "chooseFile": "Hitamo Dosiye"
+    },
+    "movie": {
+      "title": "Ohereza Filime Yose",
+      "subtitle": "Ohereza filime yose. Igihe kigomba kuba hagati ya iminota 10 na 30.",
+      "zone": "Ohereza Filime Yose",
+      "hint": "Ntarengwa: iminota 10 | Ntarengwa: iminota 30 | Ingano ntarengwa: 200 MB | Imiterere: MP4, MOV",
+      "errorsHeader": "Nyamuneka gusana amakosa akurikira:"
+    },
+    "copyright": {
+      "title": "Icyemezo cy'Uburenganzira",
+      "subtitle": "Ohereza icyemezo cy'uburenganzira bwo gutunga ifilime yawe. Imiterere yemewe: PDF, JPG, PNG (ntarengwa 10 MB).",
+      "zone": "Ohereza Inyandiko y'Uburenganzira",
+      "hint": "PDF, JPG, cyangwa PNG — ntarengwa 10 MB"
+    },
+    "review": {
+      "title": "Suzuma Ihererekwa Ryawe",
+      "subtitle": "Nyamuneka suzuma amakuru yose mbere yo kohereza.",
+      "sections": {
+        "details": "Amakuru y'Ifilime",
+        "thumbnail": "Ifoto Nshingiro",
+        "trailer": "Trailer",
+        "movie": "Filime Yose",
+        "copyright": "Uburenganzira"
+      },
+      "labels": {
+        "title": "Izina:",
+        "longline": "Interuro Nkuru:",
+        "synopsis": "Incamake:",
+        "genres": "Ubwoko:",
+        "releaseDate": "Itariki yo Gutangaza:",
+        "price": "Igiciro:",
+        "duration": "Igihe:",
+        "director": "Umuyobozi:",
+        "writer": "Umuandishi:",
+        "cast": "Indirimbo:",
+        "freePreview": "Kureba Buntu:",
+        "image": "Ifoto:",
+        "trailerFile": "Dosiye ya Trailer:",
+        "movieFile": "Dosiye y'Ifilime:",
+        "size": "Ingano:",
+        "document": "Inyandiko:"
+      },
+      "back": "Subira",
+      "submitBtn": "Ohereza Ifilime Yawe",
+      "submitting": "Ohereza…"
+    },
+    "success": {
+      "title": "Murakoze!",
+      "message": "Ifilime yawe yoherejwe neza. Tuzasuzuma ifilime yawe kandi tukubwire vuba.",
+      "dashboardBtn": "Jya ku Kibaho"
+    },
+    "uploading": "Kohereza… {{percent}}%",
+    "uploaded": "Yoherejwe ✓",
+    "retry": "Gerageza Nanone",
+    "remove": "Kuraho",
+    "cancel": "Hagarika",
+    "next": "Komeza",
+    "back": "Subira",
+    "reviewSubmit": "Suzuma & Ohereza"
+  },
+  "movies": {
+    "title": "Filime Zanjye",
+    "subtitle": "Filime zose wahereje ku rubuga",
+    "search": "Shakisha filime…",
+    "uploadBtn": "Ohereza Filime",
+    "tabs": {
+      "all": "Zose",
+      "live": "Zihari",
+      "pending": "Zitegerejwe",
+      "rejected": "Zanzwe"
+    },
+    "empty": "Nta filime wahereje kugeza ubu.",
+    "emptySearch": "Nta filime ihuye n'ushaka.",
+    "uploadFirst": "Ohereza filime yawe ya mbere",
+    "table": {
+      "movie": "Filime",
+      "status": "Imimerere",
+      "type": "Ubwoko",
+      "dateSubmitted": "Itariki yo Kohereza",
+      "releaseDate": "Itariki yo Gutangaza",
+      "action": "Igikorwa"
+    },
+    "chips": {
+      "pendingApproval": "Itegerejwe Kwemezwa",
+      "approvedPendingContract": "Yemejwe — Itegerejwe Amasezerano",
+      "live": "Ihari",
+      "rejected": "Yanzwe",
+      "free": "Buntu",
+      "paid": "Wishyura"
+    },
+    "viewReason": "Reba impamvu",
+    "hideReason": "Hisha impamvu",
+    "actions": {
+      "edit": "Hindura",
+      "signContract": "Shyira Umukono",
+      "view": "Reba",
+      "analytics": "Imibare"
+    },
+    "edit": {
+      "title": "Hindura Filime",
+      "note": "Dosiye ya videwo, igihe, n'itariki yo gutangaza ntishobora guhindurwa nyuma yo kohereza.",
+      "movieTitle": "Izina",
+      "overview": "Incamake / Synopsis",
+      "price": "Igiciro (RWF)",
+      "freePreview": "Kureba Buntu",
+      "genres": "Ubwoko",
+      "titleRequired": "Izina rirakenewe",
+      "cancel": "Hagarika",
+      "save": "Bika Impinduka",
+      "saving": "Bika…"
+    }
+  },
+  "wallet": {
+    "title": "Imari",
+    "subtitle": "Inyungu zawe n'amakuru yo gukura amafaranga.",
+    "available": "Amafaranga Aboneka",
+    "totalEarnings": "Inyungu Zose",
+    "totalWithdrawn": "Yose Yakuwe",
+    "pending": "Bitegerejwe Gutuburwa",
+    "shareNote": "Igice cyawe cy'inyungu ni {{percent}}% y'agaciro k'itike ryose ryagurishijwe.",
+    "form": {
+      "title": "Saba Gukura Amafaranga",
+      "subtitle": "Bikorwa mu minsi 1–2 y'akazi.",
+      "amount": "Ingano (RWF)",
+      "amountRequired": "Ingano irakenewe.",
+      "summary": "Incamake y'Inyungu",
+      "summaryAmount": "Ingano y'Amafaranga Gukurwa",
+      "summaryTax": "Umusoro wa leta / RRA (30%)",
+      "summaryTotal": "Igiteranyo cy'Amafaranga",
+      "bankTransfer": "Ohereza kuri Banki",
+      "mobileMoney": "Amafaranga ya Telefone",
+      "bankName": "Izina rya Banki",
+      "accountNumber": "Nimero y'Konti",
+      "accountHolder": "Amazina y'Nyir'Konti",
+      "momoNumber": "Nimero ya MoMo",
+      "momoProvider": "Umukoresha wa MoMo",
+      "selectProvider": "Hitamo umukoresha",
+      "mtn": "MTN Mobile Money",
+      "airtel": "Airtel Money",
+      "submitBtn": "Saba Gukura Amafaranga",
+      "submitting": "Ohereza…"
+    }
+  },
+  "withdrawals": {
+    "title": "Gukura Amafaranga",
+    "subtitle": "Amateka y'ibisaba gukura amafaranga.",
+    "tabs": {
+      "all": "Byose",
+      "pending": "Bitegerejwe",
+      "processed": "Bikoreshejwe",
+      "rejected": "Byanzwe",
+      "cancelled": "Byahagaritswe"
+    },
+    "empty": "Nta bisaba gukura amafaranga kugeza ubu.",
+    "emptyStatus": "Nta {{status}} bisaba gukura amafaranga.",
+    "table": {
+      "num": "#",
+      "amount": "Ingano",
+      "method": "Uburyo",
+      "status": "Imimerere",
+      "requested": "Basabiye",
+      "processed": "Bikoreshejwe"
+    }
+  },
+  "reports": {
+    "title": "Raporo Zanjye",
+    "subtitle": "Incamake y'inyungu zawe n'imikorere"
+  },
+  "movieDetail": {
+    "myContent": "Ibiri Gusesengura",
+    "yourMovie": "Filime yawe",
+    "detailsTab": "Amakuru",
+    "analyticsTab": "Imibare",
+    "movieDetailsTitle": "Amakuru y'ifilime",
+    "watchMovie": "Reba Filime",
+    "shareTrailer": "Sangira Trailer",
+    "fieldTitle": "Izina",
+    "fieldOverview": "Incamake",
+    "fieldCast": "Indirimbo",
+    "fieldGenres": "Ubwoko",
+    "fieldProducer": "Uwohereza",
+    "metaStatus": "Imimerere",
+    "metaPrice": "Igiciro",
+    "metaViews": "Ibyabanywe",
+    "metaDuration": "Igihe",
+    "metaHls": "HLS",
+    "metaFreePreview": "Kureba Buntu",
+    "metaFreePreviewEnabled": "Bifunguye",
+    "metaReleaseDate": "Itariki yo Gutangaza",
+    "metaUploaded": "Yoherejwe",
+    "metaLastUpdated": "Ihindurwa rya Nyuma",
+    "statusActive": "Ikorwa",
+    "statusInactive": "Ihagaritswe",
+    "analyticsTitle": "Imibare y'ifilime",
+    "advancedMode": "Uburyo bw'Inzobere",
+    "realtimeTitle": "Igihe Nyacyo",
+    "realtimeLive": "Bivugururwa Buri Gihe",
+    "realtimeSub": "Ibyabanywe · Kuva yatangazwa",
+    "copyLink": "Kopi Aho Ugera",
+    "copied": "Yakopijwe!",
+    "failedLoad": "Byanze gufungura amakuru y'ifilime.",
+    "goBack": "Subira Inyuma"
+  },
+  "contracts": {
+    "dashboard": {
+      "title": "Amasezerano yo Gusangira",
+      "subtitle": "Amasezerano yawe yo gukwirakwiza filime kuri Ikigembe.",
+      "loading": "Gushaka imimerere y'amasezerano…",
+      "statusActive": "Amasezerano Akorwa",
+      "statusExpiring": "Ashira Vuba",
+      "statusExpired": "Ashe",
+      "statusNone": "Nta Masezerano",
+      "daysRemaining": "Hasigaye iminsi {{days}}",
+      "descNone": "Nturasinyaho Amasezerano yo Gusangira. Ugomba gusinyaho mbere y'uko filime zemejwe zigaragara ku rubuga.",
+      "descActive": "Amasezerano yawe akorwa. Filime zose zemejwe ziri ku rubuga.",
+      "descExpiring": "Amasezerano yawe ashira vuba. Yongerera nonaha wirinde ibibazo.",
+      "descExpired": "Amasezerano yawe ashe. Filime zawe zikuwe ku rubuga kugeza yongerejwe.",
+      "signedOn": "Yasinywe ku",
+      "expiresOn": "Ishira ku",
+      "expiredOn": "Yashe ku",
+      "signBtn": "Sinyaho Amasezerano",
+      "renewBtn": "Ongerera Amasezerano",
+      "renewNowBtn": "Ongerera Nonaha",
+      "noMovies": "Ugomba kohereza nibura filime imwe mbere yo gusinyaho Amasezerano yo Gusangira.",
+      "uploadMovieBtn": "Ohereza Filime",
+      "infoRevenue": {
+        "title": "Uburenganzira ku Nyungu",
+        "desc": "Ubika inyungu zawe. Ikigembe ifata umusoro w'urubuga nk'uko biteganywa mu masezerano."
+      },
+      "infoOwnership": {
+        "title": "Uburenganzira ku Bikorwa",
+        "desc": "Ubika uburenganzira bwose kuri filime zawe. Amasezerano aha Ikigembe uruhushya rwo gukwirakwiza rugabanyijwe."
+      },
+      "infoRenewal": {
+        "title": "Kongerera Buri Mwaka",
+        "desc": "Amasezerano akorwa umwaka umwe. Uzabimenyeshwa iminsi 30 mbere y'uko ashira kugirango wongerera nta nkingiko."
+      }
+    },
+    "welcome": {
+      "title": "Byatsinzwe!",
+      "subtitle": "Filime yawe yemejwe kugirango ikwirakwizwe kuri Ikigembe.",
+      "infoLine1": "Kugirango ukwirakwize ibiri ku rubuga rwacu, ugomba kuzuza",
+      "agreementName": "Amasezerano y'Uwohereza Filime",
+      "infoLine2": "Aya masezerano akora kuri konti yawe kandi akwiriye filime zose ukwirakwiza kuri Ikigembe. Akorwa mu gihe cy'imyaka",
+      "validity": "2",
+      "validityEnd": "kuva itariki yo gusinyaho.",
+      "back": "Subira",
+      "continue": "Komeza",
+      "noMovies": "Ugomba kohereza nibura filime imwe mbere yo gusinyaho Amasezerano yo Gusangira.",
+      "uploadBtn": "Ohereza Filime"
+    },
+    "language": {
+      "title": "Hitamo Ururimi",
+      "subtitle": "Hitamo ururimi rw'Amasezerano y'Uwohereza Filime.",
+      "english": "Icyongereza",
+      "kinyarwanda": "Ikinyarwanda",
+      "back": "Subira",
+      "continue": "Komeza"
+    },
+    "review": {
+      "title": "Amasezerano y'Uwohereza Filime",
+      "subtitle": "Nyamuneka soma amasezerano yose neza mbere yo gukomeza. Manuka hepfo kugirango ukomeze.",
+      "download": "Pakurura PDF",
+      "scrollHint": "↓ Manuka hepfo kugirango ubone Komeza",
+      "back": "Subira",
+      "continueBtn": "Nasomye — Komeza"
+    },
+    "warning": {
+      "title": "ICYITONDERWA",
+      "subtitle": "Aya masezerano agomba kwemezwa mu gihe kitarenze amasaha 78 (iminsi 3 n'amasaha 6) kuva yoherejwe.",
+      "boxLabel": "Niba atemewe mu gihe cy'amasaha 78, film izasubikwa mu:",
+      "bullet1": "Contract ifite isezerana.",
+      "bullet2": "Film isubukwa muri status ya Pending Submission.",
+      "bullet3": "Ubusobanuro bwose kongera gutangira inzira yo kuyemeza.",
+      "timeRemaining": "Igihe gisigaye",
+      "days": "Iminsi",
+      "hours": "Amasaha",
+      "minutes": "Iminota",
+      "seconds": "Amasegonda",
+      "back": "Subira",
+      "understand": "Ndabizi — Komeza"
+    },
+    "acceptance": {
+      "title": "Sinyaho Amasezerano",
+      "subtitle": "Izina wanditse riri gukora nk'umukono wawe w'amategeko.",
+      "fieldLabel": "Amazina Yose Mu Mategeko *",
+      "fieldPlaceholder": "Injiza amazina yawe yose mu mategeko",
+      "agreeText": "Nasomye kandi nemeye rwose",
+      "agreeName": "Amasezerano y'Uwohereza Filime",
+      "agreeEnd": "n'amabwiriza yazo yose.",
+      "back": "Subira",
+      "acceptBtn": "Emeza & Komeza"
+    },
+    "verifying": {
+      "submitting": "Ohereza Amasezerano…",
+      "pleaseWait": "Tegereza duhererejeje amasezerano yawe.",
+      "failed": "Kohereza Byanze",
+      "tryAgain": "Gerageza Nanone"
+    },
+    "success": {
+      "title": "Amasezerano Yemejwe",
+      "subtitle": "Amasezerano y'Uwohereza Filime yanditswe neza.",
+      "validUntil": "Akora Kugeza",
+      "bullet1": "Filime zawe zemejwe ziri kuri Ikigembe nonaha.",
+      "bullet2": "Uzabimenyeshwa iminsi 30 mbere y'uko amasezerano yawe ashira.",
+      "dashboardBtn": "Subira ku Kibaho",
+      "moviesBtn": "Reba Filime Zanjye"
+    },
+    "notification": {
+      "title": "Filime Yemejwe",
+      "desc": "Filime yawe yemejwe kugirango ikwirakwizwe. Mbere yo gutangaza, nyamuneka uzuze Amasezerano y'Uwohereza Filime.",
+      "btn": "Suzuma Amasezerano",
+      "signBtn": "Sinyaho Amasezerano"
+    },
+    "widget": {
+      "active": "Amasezerano Akorwa",
+      "expiring": "Ashira Vuba",
+      "expired": "Ashe",
+      "expiresIn": "Ashira mu minsi {{days}}",
+      "daysRemaining": "Hasigaye iminsi {{days}}",
+      "renew": "Ongerera",
+      "renewNow": "Ongerera Nonaha"
+    }
+  }
+}

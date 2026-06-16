@@ -2,12 +2,14 @@ import { Component, HostListener, inject, signal, PLATFORM_ID, OnInit, computed 
 import { isPlatformBrowser } from '@angular/common';
 import { CommonModule } from '@angular/common';
 import { Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
+import { TranslatePipe, TranslateDirective } from '@ngx-translate/core';
 import { AuthService } from '../../core/services/auth.service';
+import { LanguageService } from '../../core/services/language.service';
 import { ProducerService, ProducerNotification } from '../services/producer.service';
 
 @Component({
   selector: 'app-producer-layout',
-  imports: [RouterOutlet, RouterLink, RouterLinkActive, CommonModule],
+  imports: [RouterOutlet, RouterLink, RouterLinkActive, CommonModule, TranslatePipe, TranslateDirective],
   templateUrl: './producer-layout.component.html',
   styleUrl: './producer-layout.component.scss'
 })
@@ -16,6 +18,7 @@ export class ProducerLayoutComponent implements OnInit {
   private readonly producerService = inject(ProducerService);
   private readonly router          = inject(Router);
   private readonly platformId      = inject(PLATFORM_ID);
+  readonly lang                    = inject(LanguageService);
 
   readonly initials        = this.authService.initials;
   readonly userName        = this.authService.userName;
@@ -37,14 +40,14 @@ export class ProducerLayoutComponent implements OnInit {
   );
 
   navItems = [
-    { label: 'Dashboard',   path: '/producer/dashboard',   icon: 'dashboard' },
-    { label: 'Upload Film', path: '/producer/upload',      icon: 'upload' },
-    { label: 'My Movies',   path: '/producer/movies',      icon: 'movies' },
-    { label: 'Wallet',      path: '/producer/wallet',      icon: 'wallet' },
-    { label: 'Withdrawals', path: '/producer/withdrawals', icon: 'withdrawals' },
-    { label: 'Reports',     path: '/producer/reports',     icon: 'reports' },
-    { label: 'Contracts',   path: '/producer/contracts',   icon: 'contracts' },
-    { label: 'Settings',    path: '/producer/settings',    icon: 'settings' },
+    { labelKey: 'nav.dashboard',   path: '/producer/dashboard',   icon: 'dashboard' },
+    { labelKey: 'nav.upload',      path: '/producer/upload',      icon: 'upload' },
+    { labelKey: 'nav.movies',      path: '/producer/movies',      icon: 'movies' },
+    { labelKey: 'nav.wallet',      path: '/producer/wallet',      icon: 'wallet' },
+    { labelKey: 'nav.withdrawals', path: '/producer/withdrawals', icon: 'withdrawals' },
+    { labelKey: 'nav.reports',     path: '/producer/reports',     icon: 'reports' },
+    { labelKey: 'nav.contracts',   path: '/producer/contracts',   icon: 'contracts' },
+    { labelKey: 'nav.settings',    path: '/producer/settings',    icon: 'settings' },
   ];
 
   ngOnInit() {

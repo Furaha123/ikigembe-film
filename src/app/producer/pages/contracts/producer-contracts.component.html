@@ -1,13 +1,13 @@
 <div class="contracts-page">
   <div class="page-header">
-    <h1 class="page-title">Distribution Agreement</h1>
-    <p class="page-subtitle">Your legal agreement to distribute films on Ikigembe.</p>
+    <h1 class="page-title">{{ 'contracts.dashboard.title' | translate }}</h1>
+    <p class="page-subtitle">{{ 'contracts.dashboard.subtitle' | translate }}</p>
   </div>
 
   @if (loading()) {
     <div class="contracts-loading">
       <span class="spinner"></span>
-      <span>Loading contract status…</span>
+      <span>{{ 'contracts.dashboard.loading' | translate }}</span>
     </div>
   } @else if (error()) {
     <div class="contracts-error">{{ error() }}</div>
@@ -19,68 +19,75 @@
         <div class="status-badge" [class]="'badge--' + state()">
           @if (state() === 'active') {
             <svg viewBox="0 0 24 24" fill="currentColor" width="14" height="14"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 14.5l-4-4 1.41-1.41L10 13.67l6.59-6.59L18 8.5l-8 8z"/></svg>
-            Agreement Active
+            {{ 'contracts.dashboard.statusActive' | translate }}
           }
           @if (state() === 'expiring') {
             <svg viewBox="0 0 24 24" fill="currentColor" width="14" height="14"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg>
-            Expiring Soon
+            {{ 'contracts.dashboard.statusExpiring' | translate }}
           }
           @if (state() === 'expired') {
             <svg viewBox="0 0 24 24" fill="currentColor" width="14" height="14"><path d="M12 2C6.47 2 2 6.47 2 12s4.47 10 10 10 10-4.47 10-10S17.53 2 12 2zm5 13.59L15.59 17 12 13.41 8.41 17 7 15.59 10.59 12 7 8.41 8.41 7 12 10.59 15.59 7 17 8.41 13.41 12 17 15.59z"/></svg>
-            Expired
+            {{ 'contracts.dashboard.statusExpired' | translate }}
           }
           @if (state() === 'none') {
             <svg viewBox="0 0 24 24" fill="currentColor" width="14" height="14"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6zm-1 1.5L18.5 9H13V3.5z"/></svg>
-            No Agreement
+            {{ 'contracts.dashboard.statusNone' | translate }}
           }
         </div>
 
         @if (state() === 'active' || state() === 'expiring') {
           <span class="days-chip">
-            {{ status()?.days_remaining }} day{{ status()?.days_remaining === 1 ? '' : 's' }} remaining
+            {{ status()?.days_remaining }} {{ 'contracts.dashboard.daysRemaining' | translate }}
           </span>
         }
       </div>
 
       <div class="status-card-body">
         @if (state() === 'none') {
-          <p class="status-desc">
-            You haven't signed a Distribution Agreement yet. You must sign one before any approved films go live on the platform.
-          </p>
-          <a routerLink="/producer/contracts/start" class="cta-btn cta-btn--primary">
-            Sign Agreement
-            <svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16"><path d="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8z"/></svg>
-          </a>
+          <p class="status-desc">{{ 'contracts.dashboard.descNone' | translate }}</p>
+          @if (!hasMovies()) {
+            <div class="no-movies-notice">
+              <p>{{ 'contracts.dashboard.noMovies' | translate }}</p>
+              <a routerLink="/producer/upload" class="cta-btn cta-btn--secondary">
+                {{ 'contracts.dashboard.uploadMovieBtn' | translate }}
+              </a>
+            </div>
+          } @else {
+            <a routerLink="/producer/contracts/start" class="cta-btn cta-btn--primary">
+              {{ 'contracts.dashboard.signBtn' | translate }}
+              <svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16"><path d="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8z"/></svg>
+            </a>
+          }
         }
 
         @if (state() === 'active') {
           <dl class="contract-details">
             <div class="detail-row">
-              <dt>Signed on</dt>
+              <dt>{{ 'contracts.dashboard.signedOn' | translate }}</dt>
               <dd>{{ formatDate(status()?.signed_at ?? null) }}</dd>
             </div>
             <div class="detail-row">
-              <dt>Expires on</dt>
+              <dt>{{ 'contracts.dashboard.expiresOn' | translate }}</dt>
               <dd>{{ formatDate(status()?.expires_at ?? null) }}</dd>
             </div>
           </dl>
-          <p class="status-desc">Your agreement is active. All approved films are live on the platform.</p>
+          <p class="status-desc">{{ 'contracts.dashboard.descActive' | translate }}</p>
         }
 
         @if (state() === 'expiring') {
           <dl class="contract-details">
             <div class="detail-row">
-              <dt>Signed on</dt>
+              <dt>{{ 'contracts.dashboard.signedOn' | translate }}</dt>
               <dd>{{ formatDate(status()?.signed_at ?? null) }}</dd>
             </div>
             <div class="detail-row">
-              <dt>Expires on</dt>
+              <dt>{{ 'contracts.dashboard.expiresOn' | translate }}</dt>
               <dd>{{ formatDate(status()?.expires_at ?? null) }}</dd>
             </div>
           </dl>
-          <p class="status-desc">Your agreement expires soon. Renew now to avoid any interruption to your films.</p>
+          <p class="status-desc">{{ 'contracts.dashboard.descExpiring' | translate }}</p>
           <a routerLink="/producer/contracts/start" class="cta-btn cta-btn--warning">
-            Renew Agreement
+            {{ 'contracts.dashboard.renewBtn' | translate }}
             <svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16"><path d="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8z"/></svg>
           </a>
         }
@@ -88,17 +95,17 @@
         @if (state() === 'expired') {
           <dl class="contract-details">
             <div class="detail-row">
-              <dt>Signed on</dt>
+              <dt>{{ 'contracts.dashboard.signedOn' | translate }}</dt>
               <dd>{{ formatDate(status()?.signed_at ?? null) }}</dd>
             </div>
             <div class="detail-row">
-              <dt>Expired on</dt>
+              <dt>{{ 'contracts.dashboard.expiredOn' | translate }}</dt>
               <dd>{{ formatDate(status()?.expires_at ?? null) }}</dd>
             </div>
           </dl>
-          <p class="status-desc">Your agreement has expired. Your films have been taken offline until you renew.</p>
+          <p class="status-desc">{{ 'contracts.dashboard.descExpired' | translate }}</p>
           <a routerLink="/producer/contracts/start" class="cta-btn cta-btn--danger">
-            Renew Now
+            {{ 'contracts.dashboard.renewNowBtn' | translate }}
             <svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16"><path d="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8z"/></svg>
           </a>
         }
@@ -111,22 +118,22 @@
         <div class="info-icon">
           <svg viewBox="0 0 24 24" fill="currentColor" width="22" height="22"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm-1 14l-3-3 1.41-1.41L11 12.17l4.59-4.58L17 9l-6 6z"/></svg>
         </div>
-        <h3>Revenue Rights</h3>
-        <p>You retain your earnings. Ikigembe takes a platform fee as defined in the agreement.</p>
+        <h3>{{ 'contracts.dashboard.infoRevenue.title' | translate }}</h3>
+        <p>{{ 'contracts.dashboard.infoRevenue.desc' | translate }}</p>
       </div>
       <div class="info-card">
         <div class="info-icon">
           <svg viewBox="0 0 24 24" fill="currentColor" width="22" height="22"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 14.5l-4-4 1.41-1.41L10 13.67l6.59-6.59L18 8.5l-8 8z"/></svg>
         </div>
-        <h3>Content Ownership</h3>
-        <p>You keep full ownership of your films. The agreement grants Ikigembe a limited distribution licence.</p>
+        <h3>{{ 'contracts.dashboard.infoOwnership.title' | translate }}</h3>
+        <p>{{ 'contracts.dashboard.infoOwnership.desc' | translate }}</p>
       </div>
       <div class="info-card">
         <div class="info-icon">
           <svg viewBox="0 0 24 24" fill="currentColor" width="22" height="22"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 3c1.93 0 3.5 1.57 3.5 3.5S13.93 13 12 13s-3.5-1.57-3.5-3.5S10.07 6 12 6zm7 13H5v-.23c0-.62.28-1.2.76-1.58C7.47 15.82 9.64 15 12 15s4.53.82 6.24 2.19c.48.38.76.97.76 1.58V19z"/></svg>
         </div>
-        <h3>Annual Renewal</h3>
-        <p>Agreements run for one year. You'll be notified 30 days before expiry so you can renew without interruption.</p>
+        <h3>{{ 'contracts.dashboard.infoRenewal.title' | translate }}</h3>
+        <p>{{ 'contracts.dashboard.infoRenewal.desc' | translate }}</p>
       </div>
     </div>
 

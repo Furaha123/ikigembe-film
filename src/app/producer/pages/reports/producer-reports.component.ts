@@ -1,4 +1,5 @@
 import { Component } from '@angular/core';
+import { TranslatePipe, TranslateDirective } from '@ngx-translate/core';
 import { ProducerRevenueTrendComponent }      from './revenue-trend/producer-revenue-trend.component';
 import { ProducerEarningsReportComponent }    from './earnings-report/producer-earnings-report.component';
 import { ProducerMoviesPerformanceComponent } from './movies-performance/producer-movies-performance.component';
@@ -7,7 +8,7 @@ import { ProducerTransactionsComponent }      from './transactions/producer-tran
 @Component({
   selector: 'app-producer-reports',
   standalone: true,
-  imports: [
+  imports: [TranslatePipe, TranslateDirective, 
     ProducerRevenueTrendComponent,
     ProducerEarningsReportComponent,
     ProducerMoviesPerformanceComponent,

@@ -46,6 +46,13 @@
       }
     </nav>
 
+    <a routerLink="/browse" class="sidebar-browse nav-item" (click)="closeSidebarOnMobile()">
+      <span class="nav-icon">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
+      </span>
+      <span class="nav-label">Browse Homepage</span>
+    </a>
+
     <button class="sidebar-logout" (click)="logout()" [disabled]="isLoggingOut()">
       @if (isLoggingOut()) {
         <span class="logout-spin"></span>

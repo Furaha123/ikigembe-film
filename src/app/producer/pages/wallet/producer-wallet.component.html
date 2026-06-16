@@ -1,7 +1,7 @@
 <div class="wallet-page">
   <div class="page-header">
-    <h1>Wallet</h1>
-    <p>Your earnings and withdrawal details.</p>
+    <h1>{{ 'wallet.title' | translate }}</h1>
+    <p>{{ 'wallet.subtitle' | translate }}</p>
   </div>
 
   <!-- Balance cards -->
@@ -17,7 +17,7 @@
         </div>
         <div class="stat-body">
           <span class="stat-value">{{ formatCurrency(wallet()!.wallet_balance) }}</span>
-          <span class="stat-label">Available Balance</span>
+          <span class="stat-label">{{ 'wallet.available' | translate }}</span>
         </div>
       </div>
       <div class="stat-card earnings">
@@ -26,7 +26,7 @@
         </div>
         <div class="stat-body">
           <span class="stat-value">{{ formatCurrency(wallet()!.total_earnings) }}</span>
-          <span class="stat-label">Total Earnings</span>
+          <span class="stat-label">{{ 'wallet.totalEarnings' | translate }}</span>
         </div>
       </div>
       <div class="stat-card withdrawn">
@@ -35,7 +35,7 @@
         </div>
         <div class="stat-body">
           <span class="stat-value">{{ formatCurrency(wallet()!.total_withdrawn) }}</span>
-          <span class="stat-label">Total Withdrawn</span>
+          <span class="stat-label">{{ 'wallet.totalWithdrawn' | translate }}</span>
         </div>
       </div>
       <div class="stat-card pending">
@@ -44,22 +44,22 @@
         </div>
         <div class="stat-body">
           <span class="stat-value">{{ formatCurrency(wallet()!.pending_withdrawals) }}</span>
-          <span class="stat-label">Pending Payouts</span>
+          <span class="stat-label">{{ 'wallet.pending' | translate }}</span>
         </div>
       </div>
     </div>
 
     @if (wallet()!.producer_share_percentage) {
       <p class="share-note">
-        Your revenue share is <strong>{{ wallet()!.producer_share_percentage }}%</strong> of every ticket sold.
+        {{ 'wallet.shareNote' | translate: { percent: wallet()!.producer_share_percentage } }}
       </p>
     }
   }
 
   <!-- Withdrawal form -->
   <div class="form-card">
-    <h2 class="form-title">Request Withdrawal</h2>
-    <p class="form-sub">Processed within 1–2 business days.</p>
+    <h2 class="form-title">{{ 'wallet.form.title' | translate }}</h2>
+    <p class="form-sub">{{ 'wallet.form.subtitle' | translate }}</p>
 
     @if (successMsg()) {
       <div class="alert success">
@@ -77,10 +77,10 @@
     <form [formGroup]="form" (ngSubmit)="submit()">
       <!-- Amount -->
       <div class="field">
-        <label>Amount (RWF)</label>
+        <label>{{ 'wallet.form.amount' | translate }}</label>
         <input type="number" formControlName="amount" placeholder="e.g. 50000" min="1" />
         @if (form.get('amount')?.touched && form.get('amount')?.hasError('required')) {
-          <span class="field-error">Amount is required.</span>
+          <span class="field-error">{{ 'wallet.form.amountRequired' | translate }}</span>
         }
       </div>
 
@@ -89,22 +89,21 @@
         <div class="invoice-preview">
           <div class="invoice-header">
             <svg viewBox="0 0 24 24" fill="currentColor"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6zm-1 7V3.5L18.5 9H13z"/></svg>
-            Payout Summary
+            {{ 'wallet.form.summary' | translate }}
           </div>
           <div class="invoice-row">
-            <span class="inv-label">Amount to Withdraw</span>
+            <span class="inv-label">{{ 'wallet.form.summaryAmount' | translate }}</span>
             <span class="inv-val">RWF {{ taxBreakdown()!.amount | number }}</span>
           </div>
           <div class="invoice-row">
             <span class="inv-label">
-              Gov. Tax / RRA
-              <span class="inv-badge">30%</span>
+              {{ 'wallet.form.summaryTax' | translate }}
             </span>
             <span class="inv-val deduction">+ RWF {{ taxBreakdown()!.govTax | number }}</span>
           </div>
           <div class="invoice-divider"></div>
           <div class="invoice-row total">
-            <span class="inv-label-total">Total from Balance</span>
+            <span class="inv-label-total">{{ 'wallet.form.summaryTotal' | translate }}</span>
             <span class="inv-val-total">RWF {{ taxBreakdown()!.totalDeducted | number }}</span>
           </div>
         </div>
@@ -112,15 +111,15 @@
 
       <!-- Payment method toggle -->
       <div class="field">
-        <label>Payment Method</label>
+        <label>{{ 'dashboard.withdraw.method' | translate }}</label>
         <div class="method-tabs">
           <button type="button" class="method-tab" [class.active]="isBank()" (click)="setMethod('Bank')">
             <svg viewBox="0 0 24 24" fill="currentColor"><path d="M4 10v7h3v-7H4zm6 0v7h3v-7h-3zM2 22h19v-3H2v3zm14-12v7h3v-7h-3zM11.5 1L2 6v2h19V6l-9.5-5z"/></svg>
-            Bank Transfer
+            {{ 'wallet.form.bankTransfer' | translate }}
           </button>
           <button type="button" class="method-tab" [class.active]="!isBank()" (click)="setMethod('MoMo')">
             <svg viewBox="0 0 24 24" fill="currentColor"><path d="M17 1.01L7 1c-1.1 0-2 .9-2 2v18c0 1.1.9 2 2 2h10c1.1 0 2-.9 2-2V3c0-1.1-.9-1.99-2-1.99zM17 19H7V5h10v14z"/></svg>
-            Mobile Money
+            {{ 'wallet.form.mobileMoney' | translate }}
           </button>
         </div>
       </div>
@@ -128,37 +127,37 @@
       <!-- Bank fields -->
       @if (isBank()) {
         <div class="field">
-          <label>Bank Name</label>
+          <label>{{ 'wallet.form.bankName' | translate }}</label>
           <input type="text" formControlName="bank_name" placeholder="e.g. Bank of Kigali" />
         </div>
         <div class="field">
-          <label>Account Number</label>
+          <label>{{ 'wallet.form.accountNumber' | translate }}</label>
           <input type="text" formControlName="account_number" placeholder="e.g. 1234567890" />
         </div>
         <div class="field">
-          <label>Account Holder Name</label>
+          <label>{{ 'wallet.form.accountHolder' | translate }}</label>
           <input type="text" formControlName="account_holder_name" placeholder="Full name as on bank account" />
         </div>
       } @else {
         <div class="field">
-          <label>MoMo Number</label>
+          <label>{{ 'wallet.form.momoNumber' | translate }}</label>
           <input type="text" formControlName="momo_number" placeholder="e.g. 07X XXX XXXX" />
         </div>
         <div class="field">
-          <label>MoMo Provider</label>
+          <label>{{ 'wallet.form.momoProvider' | translate }}</label>
           <select formControlName="momo_provider">
-            <option value="">Select provider</option>
-            <option value="MTN">MTN Mobile Money</option>
-            <option value="Airtel">Airtel Money</option>
+            <option value="">{{ 'wallet.form.selectProvider' | translate }}</option>
+            <option value="MTN">{{ 'wallet.form.mtn' | translate }}</option>
+            <option value="Airtel">{{ 'wallet.form.airtel' | translate }}</option>
           </select>
         </div>
       }
 
       <button type="submit" class="submit-btn" [disabled]="isSaving() || form.invalid">
         @if (isSaving()) {
-          <span class="spinner"></span>Submitting…
+          <span class="spinner"></span>{{ 'wallet.form.submitting' | translate }}
         } @else {
-          Request Withdrawal
+          {{ 'wallet.form.submitBtn' | translate }}
         }
       </button>
     </form>

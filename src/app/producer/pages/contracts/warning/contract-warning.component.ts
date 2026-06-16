@@ -1,12 +1,14 @@
 import { Component, inject, signal, OnInit, OnDestroy, PLATFORM_ID } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { Router } from '@angular/router';
+import { TranslatePipe, TranslateDirective } from '@ngx-translate/core';
 
 const HOURS_78 = 78 * 60 * 60 * 1000;
 
 @Component({
   selector: 'app-contract-warning',
   standalone: true,
+  imports: [TranslatePipe, TranslateDirective],
   templateUrl: './contract-warning.component.html',
   styleUrl: './contract-warning.component.scss',
 })

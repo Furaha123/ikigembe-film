@@ -132,6 +132,23 @@ $muted:   #888;
   line-height: 1.55;
 }
 
+// ── No-movies gate ──────────────────────────────────────────
+.no-movies-notice {
+  background: #1a1200;
+  border: 1px solid #8a6a00;
+  border-radius: 8px;
+  padding: 1rem 1.25rem;
+  margin-bottom: 1rem;
+  p { color: #e0b820; margin: 0 0 0.75rem; font-size: 0.92rem; }
+}
+
+.cta-btn--secondary {
+  background: #2a2a2a;
+  color: #e5e5e5;
+  border: 1px solid #444;
+  &:hover { background: #333; border-color: #666; }
+}
+
 // ── CTA buttons ──────────────────────────────────────────────
 .cta-btn {
   display: inline-flex;

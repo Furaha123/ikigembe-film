@@ -87,13 +87,7 @@ export class LoginComponent implements AfterViewInit, OnInit {
   }
 
   private navigateByRole() {
-    if (this.authService.isAdmin()) {
-      this.router.navigate(['/admin/dashboard'], { replaceUrl: true });
-    } else if (this.authService.userRole() === 'Producer') {
-      this.router.navigate(['/producer/dashboard'], { replaceUrl: true });
-    } else {
-      this.router.navigate(['/browse'], { replaceUrl: true });
-    }
+    this.router.navigate(['/browse'], { replaceUrl: true });
   }
 
   private handleGoogleCredential(idToken: string) {

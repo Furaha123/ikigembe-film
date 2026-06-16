@@ -1,10 +1,12 @@
 import { Component, inject } from '@angular/core';
 import { Router } from '@angular/router';
+import { TranslatePipe, TranslateDirective } from '@ngx-translate/core';
 import { ContractFlowService } from '../contract-flow.service';
 
 @Component({
   selector: 'app-contract-language',
   standalone: true,
+  imports: [TranslatePipe, TranslateDirective],
   templateUrl: './contract-language.component.html',
   styleUrl: './contract-language.component.scss',
 })

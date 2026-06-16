@@ -1,11 +1,12 @@
 import { Component, inject, OnInit, signal, computed } from '@angular/core';
+import { TranslatePipe, TranslateDirective } from '@ngx-translate/core';
 import { CommonModule, DecimalPipe } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { ProducerService, ProducerWallet } from '../../services/producer.service';
 
 @Component({
   selector: 'app-producer-wallet',
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [TranslatePipe, TranslateDirective, CommonModule, ReactiveFormsModule],
   templateUrl: './producer-wallet.component.html',
   styleUrl: './producer-wallet.component.scss'
 })

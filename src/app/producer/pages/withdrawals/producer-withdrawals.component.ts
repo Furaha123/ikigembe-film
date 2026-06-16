@@ -1,4 +1,5 @@
 import { Component, inject, OnInit, signal, computed } from '@angular/core';
+import { TranslatePipe, TranslateDirective } from '@ngx-translate/core';
 import { CommonModule } from '@angular/common';
 import { ProducerService, ProducerWithdrawal } from '../../services/producer.service';
 
@@ -6,7 +7,7 @@ type FilterTab = 'All' | 'Pending' | 'Approved' | 'Completed' | 'Rejected';
 
 @Component({
   selector: 'app-producer-withdrawals',
-  imports: [CommonModule],
+  imports: [TranslatePipe, TranslateDirective, CommonModule],
   templateUrl: './producer-withdrawals.component.html',
   styleUrl: './producer-withdrawals.component.scss'
 })
