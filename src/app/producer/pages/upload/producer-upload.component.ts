@@ -46,8 +46,8 @@ export class ProducerUploadComponent {
   // ── Details form ─────────────────────────────────────
   detailsForm = this.fb.group({
     title:            ['', [Validators.required, Validators.minLength(2)]],
-    longline:         ['', [Validators.required, Validators.minLength(10)]],
-    synopsis:         ['', [Validators.required, Validators.minLength(20)]],
+    longline:         ['', [Validators.required, Validators.minLength(10), Validators.maxLength(200)]],
+    synopsis:         ['', [Validators.required, Validators.minLength(20), Validators.maxLength(600)]],
     release_date:     ['', Validators.required],
     price:            [0, [Validators.required, Validators.min(0)]],
     duration_minutes: [null as number | null, Validators.min(1)],
@@ -210,8 +210,8 @@ export class ProducerUploadComponent {
       this.trailerUploadError.set('Only .mp4 and .mov formats are accepted.');
       return;
     }
-    if (file.size > 200 * 1024 * 1024) {
-      this.trailerUploadError.set('File size must not exceed 200 MB.');
+    if (file.size > 100 * 1024 * 1024) {
+      this.trailerUploadError.set('File size must not exceed 100 MB.');
       return;
     }
     this.trailerFile.set(file);

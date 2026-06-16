@@ -253,6 +253,14 @@ $red:    #f87171;
 .required { color: $red; margin-left: 2px; }
 .optional  { color: $muted; font-weight: 400; font-size: 0.72rem; }
 .field-error { font-size: 0.775rem; color: $red; }
+.char-count {
+  display: block;
+  font-size: 0.72rem;
+  color: $muted;
+  text-align: right;
+  margin-top: 0.2rem;
+  &.near-limit { color: #f59e0b; }
+}
 
 .release-date-picker {
   display: block;
