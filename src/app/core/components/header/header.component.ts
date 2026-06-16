@@ -1,5 +1,5 @@
 import {
-  Component, HostListener, inject, input, signal,
+  Component, HostListener, inject, input, signal, computed,
   ViewChild, ElementRef, OnInit, OnDestroy
 } from '@angular/core';
 import { Router, RouterLink, NavigationEnd } from '@angular/router';
@@ -25,7 +25,12 @@ export class HeaderComponent implements OnInit, OnDestroy {
   private readonly movieService = inject(MovieService);
   private readonly inboxService = inject(InboxService);
 
-  readonly initials = this.authService.initials;
+  readonly initials       = this.authService.initials;
+  readonly isAdmin        = this.authService.isAdmin;
+  readonly userRole       = this.authService.userRole;
+  readonly dashboardRoute = computed(() =>
+    this.authService.isAdmin() ? '/admin/dashboard' : '/producer/dashboard'
+  );
 
   isScrolled     = signal(false);
   showDropdown   = signal(false);
