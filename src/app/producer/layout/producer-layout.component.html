@@ -36,7 +36,7 @@
               <svg viewBox="0 0 24 24" fill="currentColor"><path d="M19.14 12.94c.04-.3.06-.61.06-.94s-.02-.64-.07-.94l2.03-1.58a.49.49 0 0 0 .12-.61l-1.92-3.32a.49.49 0 0 0-.59-.22l-2.39.96a7.02 7.02 0 0 0-1.62-.94l-.36-2.54a.484.484 0 0 0-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96a.48.48 0 0 0-.59.22L2.74 8.87a.47.47 0 0 0 .12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58a.49.49 0 0 0-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32a.47.47 0 0 0-.12-.61l-2.01-1.58zM12 15.6a3.6 3.6 0 1 1 0-7.2 3.6 3.6 0 0 1 0 7.2z"/></svg>
             }
           </span>
-          <span class="nav-label">{{ item.label }}</span>
+          <span class="nav-label">{{ item.labelKey | translate }}</span>
           @if (item.icon === 'movies') {
             <span class="nav-count">{{ movieCount() }}</span>
           }
@@ -48,20 +48,20 @@
       <span class="nav-icon">
         <svg viewBox="0 0 24 24" fill="currentColor"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6zm-1 1.5L18.5 9H13V3.5zM6 20V4h5v7h7v9H6zm2-5h8v2H8v-2zm0-3h8v2H8V12z"/></svg>
       </span>
-      <span class="nav-label">Terms &amp; Conditions</span>
+      <span class="nav-label">{{ 'nav.terms' | translate }}</span>
     </a>
 
     <button class="sidebar-logout" (click)="logout()" [disabled]="isLoggingOut()">
       @if (isLoggingOut()) {
         <span class="logout-spin"></span>
-        <span class="nav-label">Signing out...</span>
+        <span class="nav-label">{{ 'nav.signingOut' | translate }}</span>
       } @else {
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
           <polyline points="16 17 21 12 16 7"/>
           <line x1="21" y1="12" x2="9" y2="12"/>
         </svg>
-        <span class="nav-label">Sign Out</span>
+        <span class="nav-label">{{ 'nav.signOut' | translate }}</span>
       }
     </button>
   </aside>
@@ -82,8 +82,17 @@
           <svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16">
             <path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM14 13v4h-4v-4H7l5-5 5 5h-3z"/>
           </svg>
-          <span class="upload-btn-label">Upload Film</span>
+          <span class="upload-btn-label">{{ 'topbar.uploadFilm' | translate }}</span>
         </a>
+
+        <!-- ── Language toggle ── -->
+        <button class="lang-toggle" (click)="lang.toggle()" [title]="lang.currentLang() === 'en' ? 'Switch to Kinyarwanda' : 'Switch to English'">
+          @if (lang.currentLang() === 'en') {
+            <span class="lang-flag">🇷🇼</span><span class="lang-label">RW</span>
+          } @else {
+            <span class="lang-flag">🇬🇧</span><span class="lang-label">EN</span>
+          }
+        </button>
 
         <!-- ── Notification bell ── -->
         <div class="notif-menu">
@@ -99,14 +108,14 @@
           @if (showNotifDropdown()) {
             <div class="notif-dropdown">
               <div class="notif-header">
-                <span class="notif-title">Notifications</span>
+                <span class="notif-title">{{ 'notifications.title' | translate }}</span>
                 @if (unreadCount() > 0) {
-                  <button class="mark-all-read" (click)="markAllRead($event)">Mark all read</button>
+                  <button class="mark-all-read" (click)="markAllRead($event)">{{ 'notifications.markAllRead' | translate }}</button>
                 }
               </div>
 
               @if (notifications().length === 0) {
-                <div class="notif-empty">No notifications yet.</div>
+                <div class="notif-empty">{{ 'notifications.empty' | translate }}</div>
               } @else {
                 @for (n of notifications(); track n.id) {
                   <div class="notif-item" [class.unread]="!n.read" (click)="onNotifClick(n, $event)">
@@ -153,13 +162,13 @@
             <div class="topbar-dropdown">
               <button class="topbar-dropdown-item logout" (click)="logout()" [disabled]="isLoggingOut()">
                 @if (isLoggingOut()) {
-                  <span class="logout-spin"></span>Signing out…
+                  <span class="logout-spin"></span>{{ 'nav.signingOut' | translate }}
                 } @else {
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
                     <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
                     <polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/>
                   </svg>
-                  Sign Out
+                  {{ 'nav.signOut' | translate }}
                 }
               </button>
             </div>
@@ -175,7 +184,7 @@
           <svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18">
             <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/>
           </svg>
-          <span><strong>Your account is under review.</strong> You can prepare submissions but nothing goes live until approved.</span>
+          <span [innerHTML]="'statusBanner.pending' | translate"></span>
           <button class="banner-dismiss" (click)="dismissBanner()" aria-label="Dismiss">
             <svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
           </button>
@@ -187,10 +196,8 @@
           <svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18">
             <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zM4 12c0-4.42 3.58-8 8-8 1.85 0 3.55.63 4.9 1.68L5.68 16.9A7.902 7.902 0 0 1 4 12zm8 8c-1.85 0-3.55-.63-4.9-1.68L18.32 7.1A7.902 7.902 0 0 1 20 12c0 4.42-3.58 8-8 8z"/>
           </svg>
-          <span>
-            <strong>Your account has been suspended.</strong>
+          <span>{{ 'statusBanner.suspended' | translate }}
             @if (suspensionReason()) { {{ suspensionReason() }} }
-            All upload, submit, and film management actions are blocked.
           </span>
           <button class="banner-dismiss" (click)="dismissBanner()" aria-label="Dismiss">
             <svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>

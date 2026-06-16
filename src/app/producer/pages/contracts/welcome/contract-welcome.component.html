@@ -15,24 +15,47 @@
       </svg>
     </div>
 
-    <h1 class="flow-title">Congratulations!</h1>
-    <p class="flow-subtitle">Your movie has been approved for distribution on Ikigembe.</p>
+    <!-- Loading -->
+    @if (hasMovies() === null) {
+      <div class="flow-loading">
+        <span class="spinner"></span>
+      </div>
+    }
 
-    <div class="info-box">
-      <p>
-        To distribute content on our platform, you must complete a
-        <strong>Producer Distribution Agreement</strong>.
-      </p>
-      <p>
-        This agreement applies to your account and covers all movies you distribute
-        on Ikigembe. It remains valid for <strong>2 years</strong> from the date of signing.
-      </p>
-    </div>
+    <!-- No movies gate -->
+    @else if (!hasMovies()) {
+      <h1 class="flow-title">{{ 'contracts.welcome.title' | translate }}</h1>
+      <div class="info-box info-box--warning">
+        <p>{{ 'contracts.welcome.noMovies' | translate }}</p>
+      </div>
+      <div class="flow-actions">
+        <button class="btn-outline" (click)="back()">{{ 'contracts.welcome.back' | translate }}</button>
+        <a routerLink="/producer/upload" class="btn-gold">{{ 'contracts.welcome.uploadBtn' | translate }}</a>
+      </div>
+    }
 
-    <div class="flow-actions">
-      <button class="btn-outline" (click)="back()">Back</button>
-      <button class="btn-gold" (click)="continue()">Continue</button>
-    </div>
+    <!-- Normal flow -->
+    @else {
+      <h1 class="flow-title">{{ 'contracts.welcome.title' | translate }}</h1>
+      <p class="flow-subtitle">{{ 'contracts.welcome.subtitle' | translate }}</p>
+
+      <div class="info-box">
+        <p>
+          {{ 'contracts.welcome.infoLine1' | translate }}
+          <strong>{{ 'contracts.welcome.agreementName' | translate }}</strong>.
+        </p>
+        <p>
+          {{ 'contracts.welcome.infoLine2' | translate }}
+          <strong>{{ 'contracts.welcome.validity' | translate }}</strong>
+          {{ 'contracts.welcome.validityEnd' | translate }}
+        </p>
+      </div>
+
+      <div class="flow-actions">
+        <button class="btn-outline" (click)="back()">{{ 'contracts.welcome.back' | translate }}</button>
+        <button class="btn-gold" (click)="continue()">{{ 'contracts.welcome.continue' | translate }}</button>
+      </div>
+    }
 
   </div>
 </div>

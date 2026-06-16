@@ -5,17 +5,17 @@
       <div class="spinner-wrap">
         <div class="spinner"></div>
       </div>
-      <h2 class="verify-title">Submitting Agreement…</h2>
-      <p class="verify-sub">Please wait while we process your agreement.</p>
+      <h2 class="verify-title">{{ 'contracts.verifying.submitting' | translate }}</h2>
+      <p class="verify-sub">{{ 'contracts.verifying.pleaseWait' | translate }}</p>
     } @else {
       <div class="icon-wrap error-icon">
         <svg viewBox="0 0 24 24" fill="currentColor" width="32" height="32">
           <path d="M12 2C6.47 2 2 6.47 2 12s4.47 10 10 10 10-4.47 10-10S17.53 2 12 2zm5 13.59L15.59 17 12 13.41 8.41 17 7 15.59 10.59 12 7 8.41 8.41 7 12 10.59 15.59 7 17 8.41 13.41 12 17 15.59z"/>
         </svg>
       </div>
-      <h2 class="verify-title">Submission Failed</h2>
+      <h2 class="verify-title">{{ 'contracts.verifying.failed' | translate }}</h2>
       <p class="verify-sub">{{ errorMessage() }}</p>
-      <button class="btn-gold" (click)="retry()">Try Again</button>
+      <button class="btn-gold" (click)="retry()">{{ 'contracts.verifying.tryAgain' | translate }}</button>
     }
 
   </div>

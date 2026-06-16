@@ -3,15 +3,15 @@
   <!-- ── Header ── -->
   <div class="page-header">
     <div class="header-text">
-      <h1>My Films</h1>
-      <p>All films you have submitted to the platform</p>
+      <h1>{{ 'movies.title' | translate }}</h1>
+      <p>{{ 'movies.subtitle' | translate }}</p>
     </div>
     <div class="header-actions">
       <div class="search-wrap">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
         </svg>
-        <input type="text" placeholder="Search films…"
+        <input type="text" [placeholder]="'movies.search' | translate"
                [ngModel]="search()" (ngModelChange)="search.set($event)" />
         @if (search()) {
           <button class="clear-search" (click)="search.set('')">
@@ -23,7 +23,7 @@
         <svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16">
           <path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM14 13v4h-4v-4H7l5-5 5 5h-3z"/>
         </svg>
-        Upload Film
+        {{ 'movies.uploadBtn' | translate }}
       </button>
     </div>
   </div>
@@ -31,16 +31,16 @@
   <!-- ── Status Tabs ── -->
   <div class="status-tabs">
     <button class="tab-btn" [class.active]="activeTab() === 'all'" (click)="setTab('all')">
-      All <span class="tab-count">{{ tabCounts().all }}</span>
+      {{ 'movies.tabs.all' | translate }} <span class="tab-count">{{ tabCounts().all }}</span>
     </button>
     <button class="tab-btn" [class.active]="activeTab() === 'live'" (click)="setTab('live')">
-      Live <span class="tab-count tab-count--live">{{ tabCounts().live }}</span>
+      {{ 'movies.tabs.live' | translate }} <span class="tab-count tab-count--live">{{ tabCounts().live }}</span>
     </button>
     <button class="tab-btn" [class.active]="activeTab() === 'pending'" (click)="setTab('pending')">
-      Pending <span class="tab-count tab-count--amber">{{ tabCounts().pending }}</span>
+      {{ 'movies.tabs.pending' | translate }} <span class="tab-count tab-count--amber">{{ tabCounts().pending }}</span>
     </button>
     <button class="tab-btn" [class.active]="activeTab() === 'rejected'" (click)="setTab('rejected')">
-      Rejected <span class="tab-count tab-count--red">{{ tabCounts().rejected }}</span>
+      {{ 'movies.tabs.rejected' | translate }} <span class="tab-count tab-count--red">{{ tabCounts().rejected }}</span>
     </button>
   </div>
 
@@ -65,9 +65,9 @@
         <rect x="2" y="2" width="20" height="20" rx="2"/>
         <path d="M10 8l6 4-6 4V8z"/>
       </svg>
-      <p>{{ search() ? 'No films match your search.' : 'You have no films submitted yet.' }}</p>
+      <p>{{ search() ? ('movies.emptySearch' | translate) : ('movies.empty' | translate) }}</p>
       @if (!search()) {
-        <button class="btn-upload-empty" (click)="goToUpload()">Upload your first film</button>
+        <button class="btn-upload-empty" (click)="goToUpload()">{{ 'movies.uploadFirst' | translate }}</button>
       }
     </div>
 
@@ -79,17 +79,17 @@
           <tr>
             <th class="th-movie" (click)="setSort('title')"
                 [class.sorted]="sortCol() === 'title'">
-              Movie
+              {{ 'movies.table.movie' | translate }}
               <svg class="sort-arrow" viewBox="0 0 24 24" fill="currentColor"
                    [class.asc]="sortCol() === 'title' && sortDir() === 'asc'">
                 <path d="M7 10l5 5 5-5H7z"/>
               </svg>
             </th>
-            <th class="th-status">Status</th>
-            <th class="th-type">Type</th>
+            <th class="th-status">{{ 'movies.table.status' | translate }}</th>
+            <th class="th-type">{{ 'movies.table.type' | translate }}</th>
             <th class="th-date sortable" (click)="setSort('created_at')"
                 [class.sorted]="sortCol() === 'created_at'">
-              Date Submitted
+              {{ 'movies.table.dateSubmitted' | translate }}
               <svg class="sort-arrow" viewBox="0 0 24 24" fill="currentColor"
                    [class.asc]="sortCol() === 'created_at' && sortDir() === 'asc'">
                 <path d="M7 10l5 5 5-5H7z"/>
@@ -97,13 +97,13 @@
             </th>
             <th class="th-release sortable" (click)="setSort('release_date')"
                 [class.sorted]="sortCol() === 'release_date'">
-              Release Date
+              {{ 'movies.table.releaseDate' | translate }}
               <svg class="sort-arrow" viewBox="0 0 24 24" fill="currentColor"
                    [class.asc]="sortCol() === 'release_date' && sortDir() === 'asc'">
                 <path d="M7 10l5 5 5-5H7z"/>
               </svg>
             </th>
-            <th class="th-actions">Action</th>
+            <th class="th-actions">{{ 'movies.table.action' | translate }}</th>
           </tr>
         </thead>
 
@@ -139,12 +139,12 @@
               <!-- Status column -->
               <td class="td-status">
                 <span class="status-chip" [class]="statusClass(movie)">
-                  {{ statusLabel(movie) }}
+                  {{ statusLabel(movie) | translate }}
                 </span>
                 @if (movie.approval_status === 'rejected' && movie.rejection_reason) {
                   <button class="view-reason-btn"
                           (click)="toggleReason(movie.id, $event)">
-                    {{ expandedReasons().has(movie.id) ? 'Hide reason' : 'View reason' }}
+                    {{ expandedReasons().has(movie.id) ? ('movies.hideReason' | translate) : ('movies.viewReason' | translate) }}
                   </button>
                   @if (expandedReasons().has(movie.id)) {
                     <p class="rejection-inline-note">{{ movie.rejection_reason }}</p>
@@ -155,7 +155,7 @@
               <!-- Type column -->
               <td class="td-type">
                 <span class="type-chip" [class.type-paid]="movie.price > 0">
-                  {{ movieType(movie) }}
+                  {{ movieType(movie) | translate }}
                 </span>
               </td>
 
@@ -171,14 +171,14 @@
               <td class="td-actions" (click)="$event.stopPropagation()">
                 <div class="action-btns">
                   @if (isEditable(movie)) {
-                    <button class="btn-action btn-action--edit" (click)="openEdit(movie, $event)">Edit</button>
+                    <button class="btn-action btn-action--edit" (click)="openEdit(movie, $event)">{{ 'movies.actions.edit' | translate }}</button>
                   }
                   @if (movie.approval_status === 'approved_pending_contract') {
-                    <button class="btn-action btn-action--contract" (click)="goToContract()">Sign Contract</button>
+                    <button class="btn-action btn-action--contract" (click)="goToContract()">{{ 'movies.actions.signContract' | translate }}</button>
                   }
-                  <button class="btn-action btn-action--view" (click)="viewDetail(movie.id)">View</button>
+                  <button class="btn-action btn-action--view" (click)="viewDetail(movie.id)">{{ 'movies.actions.view' | translate }}</button>
                   @if (isLive(movie)) {
-                    <button class="btn-action btn-action--analytics" (click)="viewDetail(movie.id)">Analytics</button>
+                    <button class="btn-action btn-action--analytics" (click)="viewDetail(movie.id)">{{ 'movies.actions.analytics' | translate }}</button>
                   }
                 </div>
               </td>
@@ -201,7 +201,7 @@
     <div class="modal-box edit-modal" (click)="$event.stopPropagation()">
 
       <div class="modal-header">
-        <h3>Edit Film</h3>
+        <h3>{{ 'movies.edit.title' | translate }}</h3>
         <button class="modal-close" (click)="closeEdit()">
           <svg viewBox="0 0 24 24" fill="currentColor" width="20" height="20">
             <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
@@ -212,34 +212,34 @@
       <div class="modal-body" [formGroup]="editForm">
 
         <div class="edit-note">
-          The video file, duration, and release date cannot be changed after submission.
+          {{ 'movies.edit.note' | translate }}
         </div>
 
         <!-- Title -->
         <div class="edit-field">
-          <label class="edit-label">Title</label>
+          <label class="edit-label">{{ 'movies.edit.movieTitle' | translate }}</label>
           <input class="edit-input" type="text" formControlName="title" placeholder="Film title" />
           @if (editForm.get('title')?.invalid && editForm.get('title')?.touched) {
-            <span class="edit-error">Title is required</span>
+            <span class="edit-error">{{ 'movies.edit.titleRequired' | translate }}</span>
           }
         </div>
 
         <!-- Overview -->
         <div class="edit-field">
-          <label class="edit-label">Overview / Synopsis</label>
+          <label class="edit-label">{{ 'movies.edit.overview' | translate }}</label>
           <textarea class="edit-textarea" formControlName="overview" rows="3"
                     placeholder="Short description of the film"></textarea>
         </div>
 
         <!-- Price -->
         <div class="edit-field">
-          <label class="edit-label">Price (RWF)</label>
+          <label class="edit-label">{{ 'movies.edit.price' | translate }}</label>
           <input class="edit-input" type="number" formControlName="price" min="0" placeholder="0" />
         </div>
 
         <!-- Free preview toggle -->
         <div class="edit-field edit-field--row">
-          <label class="edit-label">Free Preview</label>
+          <label class="edit-label">{{ 'movies.edit.freePreview' | translate }}</label>
           <label class="toggle-switch">
             <input type="checkbox" formControlName="has_free_preview" />
             <span class="toggle-track"></span>
@@ -248,7 +248,7 @@
 
         <!-- Genres -->
         <div class="edit-field">
-          <label class="edit-label">Genres</label>
+          <label class="edit-label">{{ 'movies.edit.genres' | translate }}</label>
           <div class="genre-grid">
             @for (g of ALL_GENRES; track g) {
               <button type="button" class="genre-chip"
@@ -264,9 +264,9 @@
       </div>
 
       <div class="modal-footer">
-        <button class="btn-close-modal" (click)="closeEdit()" [disabled]="isSaving()">Cancel</button>
+        <button class="btn-close-modal" (click)="closeEdit()" [disabled]="isSaving()">{{ 'movies.edit.cancel' | translate }}</button>
         <button class="btn-save-modal" (click)="saveEdit()" [disabled]="editForm.invalid || isSaving()">
-          @if (isSaving()) { Saving… } @else { Save Changes }
+          @if (isSaving()) { {{ 'movies.edit.saving' | translate }} } @else { {{ 'movies.edit.save' | translate }} }
         </button>
       </div>
 

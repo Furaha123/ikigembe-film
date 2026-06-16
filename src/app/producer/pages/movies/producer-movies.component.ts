@@ -1,4 +1,5 @@
 import { Component, inject, OnInit, signal, computed } from '@angular/core';
+import { TranslateModule } from '@ngx-translate/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -15,7 +16,7 @@ const ALL_GENRES = [
 
 @Component({
   selector: 'app-producer-movies',
-  imports: [CommonModule, FormsModule, ReactiveFormsModule],
+  imports: [TranslateModule, CommonModule, FormsModule, ReactiveFormsModule],
   templateUrl: './producer-movies.component.html',
   styleUrl: './producer-movies.component.scss',
 })
@@ -171,10 +172,10 @@ export class ProducerMoviesComponent implements OnInit {
 
   // ── Status helpers ────────────────────────────────────
   statusLabel(m: ProducerMovie): string {
-    if (m.approval_status === 'rejected') return 'Rejected';
-    if (m.approval_status === 'approved') return 'Now Live';
-    if (m.approval_status === 'approved_pending_contract') return 'Pending Contract';
-    return 'Pending Review';
+    if (m.approval_status === 'rejected') return 'movies.chips.rejected';
+    if (m.approval_status === 'approved') return 'movies.chips.live';
+    if (m.approval_status === 'approved_pending_contract') return 'movies.chips.approvedPendingContract';
+    return 'movies.chips.pendingApproval';
   }
 
   statusClass(m: ProducerMovie): string {
@@ -185,7 +186,7 @@ export class ProducerMoviesComponent implements OnInit {
   }
 
   movieType(m: ProducerMovie): string {
-    return m.price > 0 ? 'Paid' : 'Free';
+    return m.price > 0 ? 'movies.chips.paid' : 'movies.chips.free';
   }
 
   isLive(m: ProducerMovie): boolean { return m.approval_status === 'approved'; }

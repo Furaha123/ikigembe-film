@@ -5,14 +5,11 @@
     </svg>
   </div>
   <div class="approval-body">
-    <h3 class="approval-title">🎉 Movie Approved</h3>
-    <p class="approval-desc">
-      Your movie has been approved for distribution. Before publishing, please complete the
-      <strong>Producer Distribution Agreement</strong>.
-    </p>
+    <h3 class="approval-title">{{ 'contracts.notification.title' | translate }}</h3>
+    <p class="approval-desc">{{ 'contracts.notification.desc' | translate }}</p>
   </div>
   <a routerLink="/producer/contracts/start" class="approval-btn">
-    Review Agreement
+    {{ 'contracts.notification.btn' | translate }}
     <svg viewBox="0 0 24 24" fill="currentColor" width="15" height="15">
       <path d="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8z"/>
     </svg>

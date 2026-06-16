@@ -1,12 +1,13 @@
 import { Component, inject, signal, computed } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
+import { TranslateModule } from '@ngx-translate/core';
 import { ContractFlowService } from '../contract-flow.service';
 
 @Component({
   selector: 'app-contract-acceptance',
   standalone: true,
-  imports: [FormsModule],
+  imports: [FormsModule, TranslateModule],
   templateUrl: './contract-acceptance.component.html',
   styleUrl: './contract-acceptance.component.scss',
 })

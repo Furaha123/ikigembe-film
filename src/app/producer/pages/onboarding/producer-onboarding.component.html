@@ -4,10 +4,10 @@
   <div class="ob-brand">
     <img src="/assets/ikigembe.log.png" alt="Ikigembe" class="ob-logo" />
     <div class="ob-brand-text">
-      <h2>Welcome to IKIGEMBE</h2>
-      <p>Complete your producer profile so viewers and our admin team can learn about you and your work.</p>
+      <h2>{{ 'onboarding.welcome' | translate }}</h2>
+      <p>{{ 'onboarding.subtitle' | translate }}</p>
     </div>
-    <button class="skip-all-btn" (click)="skip()">Skip setup for now →</button>
+    <button class="skip-all-btn" (click)="skip()">{{ 'onboarding.skip' | translate }} →</button>
   </div>
 
   <!-- Right form panel -->
@@ -21,8 +21,8 @@
     <div class="ob-form-wrap">
 
       <div class="ob-step">
-        <h1 class="step-title">Tell us about yourself</h1>
-        <p class="step-desc">Help viewers and IKIGEMBE's team understand who you are as a producer.</p>
+        <h1 class="step-title">{{ 'onboarding.stepTitle' | translate }}</h1>
+        <p class="step-desc">{{ 'onboarding.stepDesc' | translate }}</p>
 
         <!-- Avatar -->
         <div class="avatar-row">
@@ -41,9 +41,9 @@
             </div>
           </div>
           <div class="avatar-info">
-            <span class="avatar-label">Profile Photo</span>
-            <span class="avatar-hint">Optional. Click the circle to upload.</span>
-            <button type="button" class="btn-change-photo" (click)="avatarInput.click()">Choose photo</button>
+            <span class="avatar-label">{{ 'onboarding.photo' | translate }}</span>
+            <span class="avatar-hint">{{ 'onboarding.photoHint' | translate }}</span>
+            <button type="button" class="btn-change-photo" (click)="avatarInput.click()">{{ 'onboarding.choosePhoto' | translate }}</button>
           </div>
           <input #avatarInput type="file" accept="image/*" class="hidden-input" (change)="onAvatarSelect($event)" />
         </div>
@@ -52,46 +52,46 @@
 
           <!-- Country -->
           <div class="field" [class.has-error]="country?.invalid && country?.touched">
-            <label for="ob-country">Country / Region *</label>
+            <label for="ob-country">{{ 'onboarding.country' | translate }}</label>
             <select id="ob-country" formControlName="country">
-              <option value="">Select your country…</option>
+              <option value="">{{ 'onboarding.countryPlaceholder' | translate }}</option>
               @for (c of COUNTRIES; track c) {
                 <option [value]="c">{{ c }}</option>
               }
             </select>
             @if (country?.touched && country?.hasError('required')) {
-              <span class="field-error">Please select your country.</span>
+              <span class="field-error">{{ 'onboarding.errors.country' | translate }}</span>
             }
           </div>
 
           <!-- Experience level -->
           <div class="field" [class.has-error]="experience?.invalid && experience?.touched">
-            <label for="ob-exp">Experience Level *</label>
+            <label for="ob-exp">{{ 'onboarding.experience' | translate }}</label>
             <select id="ob-exp" formControlName="experience">
-              <option value="">Select your experience…</option>
-              <option value="new">New to filmmaking (0–2 years)</option>
-              <option value="intermediate">Intermediate (3–5 years)</option>
-              <option value="experienced">Experienced (6–10 years)</option>
-              <option value="veteran">Veteran (10+ years)</option>
+              <option value="">{{ 'onboarding.experiencePlaceholder' | translate }}</option>
+              <option value="new">{{ 'onboarding.exp0' | translate }}</option>
+              <option value="intermediate">{{ 'onboarding.exp1' | translate }}</option>
+              <option value="experienced">{{ 'onboarding.exp2' | translate }}</option>
+              <option value="veteran">{{ 'onboarding.exp3' | translate }}</option>
             </select>
             @if (experience?.touched && experience?.hasError('required')) {
-              <span class="field-error">Please select your experience level.</span>
+              <span class="field-error">{{ 'onboarding.errors.experience' | translate }}</span>
             }
           </div>
 
           <!-- Bio -->
           <div class="field" [class.has-error]="bio?.invalid && bio?.touched">
             <label for="ob-bio">
-              About You *
+              {{ 'onboarding.bio' | translate }}
               <span class="char-count">{{ bio?.value?.length ?? 0 }}/400</span>
             </label>
             <textarea id="ob-bio" formControlName="bio" rows="4"
-                      placeholder="Tell us about your background, the stories you love to tell, and what makes your films unique…"
+                      [placeholder]="'onboarding.bioPlaceholder' | translate"
                       maxlength="400"></textarea>
             @if (bio?.touched && bio?.hasError('required')) {
-              <span class="field-error">Please write a short bio.</span>
+              <span class="field-error">{{ 'onboarding.errors.bio' | translate }}</span>
             } @else if (bio?.touched && bio?.hasError('minlength')) {
-              <span class="field-error">Bio must be at least 20 characters.</span>
+              <span class="field-error">{{ 'onboarding.errors.bioMin' | translate }}</span>
             }
           </div>
 
@@ -105,9 +105,9 @@
           <div></div>
           <button class="btn-finish" (click)="complete()" [disabled]="isSaving()">
             @if (isSaving()) {
-              <span class="spinner"></span>Saving…
+              <span class="spinner"></span>{{ 'onboarding.submitting' | translate }}
             } @else {
-              Complete Setup
+              {{ 'onboarding.submit' | translate }}
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="18" height="18"><polyline points="20 6 9 17 4 12"/></svg>
             }
           </button>

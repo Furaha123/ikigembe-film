@@ -1,0 +1,499 @@
+{
+  "nav": {
+    "dashboard": "Dashboard",
+    "upload": "Upload Film",
+    "movies": "My Movies",
+    "wallet": "Wallet",
+    "withdrawals": "Withdrawals",
+    "reports": "Reports",
+    "contracts": "Contracts",
+    "settings": "Settings",
+    "terms": "Terms & Conditions",
+    "signOut": "Sign Out",
+    "signingOut": "Signing out…"
+  },
+  "topbar": {
+    "uploadFilm": "Upload Film"
+  },
+  "notifications": {
+    "title": "Notifications",
+    "markAllRead": "Mark all read",
+    "empty": "No notifications yet."
+  },
+  "statusBanner": {
+    "pending": "Your account is under review. You can prepare submissions but nothing goes live until approved.",
+    "suspended": "Your account has been suspended. All upload, submit, and film management actions are blocked."
+  },
+  "dashboard": {
+    "title": "Producer Dashboard",
+    "subtitle": "Track your earnings and manage your content",
+    "uploadCta": {
+      "title": "Upload a Film",
+      "subtitle": "Submit your content for review — approved films go live on the platform"
+    },
+    "dateRange": "Date Range",
+    "contractWarning": {
+      "expiringTitle": "Agreement Expiring Soon",
+      "expiringMessage": "Your agreement expires in {{days}} days. Renew now to avoid interruptions.",
+      "renewBtn": "Renew Agreement",
+      "expiredTitle": "Agreement Expired",
+      "expiredMessage": "Please renew your Producer Distribution Agreement. Distribution of newly approved content will be paused until renewal.",
+      "renewNowBtn": "Renew Now"
+    },
+    "kpi": {
+      "views": "Views",
+      "watchTime": "Watch Time (hours)",
+      "revenue": "Your Estimated Revenue",
+      "revenueSubtitle": "Total from all content"
+    },
+    "tabs": {
+      "views": "Views",
+      "watchTime": "Watch Time",
+      "revenue": "Revenue",
+      "earnings": "Earnings"
+    },
+    "earningsOverview": "Earnings Overview",
+    "withdraw": {
+      "title": "Withdraw Earnings",
+      "balance": "Available Balance",
+      "balanceSubtitle": "Ready to withdraw",
+      "amount": "Amount to Withdraw",
+      "amountHint": "Min: RWF 5,000 • Processing: 3–5 business days",
+      "method": "Payment Method",
+      "mobileMoney": "Mobile Money",
+      "bankTransfer": "Bank Transfer",
+      "provider": "Provider",
+      "phone": "Phone Number",
+      "bankName": "Bank Name",
+      "accountNumber": "Account Number",
+      "accountHolder": "Account Holder Name",
+      "summary": "Payout Summary",
+      "summaryAmount": "Amount to Withdraw",
+      "summaryTax": "Gov. Tax / RRA (30%)",
+      "summaryTotal": "Total from Balance",
+      "btn": "Request Withdrawal",
+      "submitting": "Submitting…"
+    },
+    "recentWithdrawals": "Recent Withdrawals",
+    "performance": {
+      "title": "Your Content Performance",
+      "seeAll": "See All Content"
+    },
+    "transactions": {
+      "title": "Recent Transactions",
+      "showLess": "Show Less",
+      "viewAll": "View All",
+      "movie": "Movie",
+      "buyer": "Buyer",
+      "amount": "Amount",
+      "share": "Your Share",
+      "status": "Status",
+      "date": "Date",
+      "completed": "Completed",
+      "pending": "Pending"
+    }
+  },
+  "onboarding": {
+    "welcome": "Welcome to IKIGEMBE",
+    "subtitle": "Complete your producer profile so viewers and our admin team can learn about you and your work.",
+    "skip": "Skip setup for now",
+    "stepTitle": "Tell us about yourself",
+    "stepDesc": "Help viewers and IKIGEMBE's team understand who you are as a producer.",
+    "photo": "Profile Photo",
+    "photoHint": "Optional. Click the circle to upload.",
+    "choosePhoto": "Choose photo",
+    "country": "Country / Region *",
+    "countryPlaceholder": "Select your country…",
+    "experience": "Experience Level *",
+    "experiencePlaceholder": "Select your experience…",
+    "exp0": "New to filmmaking (0–2 years)",
+    "exp1": "Intermediate (3–5 years)",
+    "exp2": "Experienced (6–10 years)",
+    "exp3": "Veteran (10+ years)",
+    "bio": "About You *",
+    "bioPlaceholder": "Tell us about your background, the stories you love to tell, and what makes your films unique…",
+    "errors": {
+      "country": "Please select your country.",
+      "experience": "Please select your experience level.",
+      "bio": "Please write a short bio.",
+      "bioMin": "Bio must be at least 20 characters."
+    },
+    "submit": "Complete Setup",
+    "submitting": "Saving…"
+  },
+  "upload": {
+    "rulesTitle": "Welcome to Ikigembe Film Arts",
+    "rulesSubtitle": "Please read and follow the rules and requirements before uploading your film.",
+    "readyText": "Ready to upload your movie? Click the button below to get started.",
+    "startBtn": "Start Upload",
+    "steps": {
+      "details": "Details",
+      "trailer": "Trailer",
+      "movie": "Full Movie",
+      "copyright": "Copyright"
+    },
+    "details": {
+      "title": "Movie Details",
+      "subtitle": "Fill in all information about your movie before uploading files.",
+      "movieTitle": "Title *",
+      "titleRequired": "Title is required.",
+      "longline": "Longline *",
+      "longlineHint": "One-line tagline for your movie",
+      "longlineRequired": "Longline is required.",
+      "longlineMin": "Longline must be at least 10 characters.",
+      "synopsis": "Synopsis *",
+      "synopsisHint": "Write a brief synopsis of your movie",
+      "synopsisRequired": "Synopsis is required.",
+      "synopsisMin": "Synopsis must be at least 20 characters.",
+      "releaseDate": "Release Date *",
+      "releaseDateRequired": "Release date is required.",
+      "price": "Price (RWF) *",
+      "pricePlaceholder": "e.g. 2000",
+      "priceRequired": "Price is required.",
+      "priceNegative": "Price cannot be negative.",
+      "duration": "Duration (minutes)",
+      "durationHint": "e.g. 25",
+      "director": "Director",
+      "directorHint": "e.g. John Doe",
+      "writer": "Writer",
+      "writerHint": "e.g. Jane Doe",
+      "cast": "Cast",
+      "castHint": "e.g. Actor A, Actor B, Actor C",
+      "freePreview": "Allow free preview for this movie",
+      "genres": "Genres *",
+      "genresRequired": "Select at least one genre.",
+      "thumbnail": "Thumbnail Image *",
+      "thumbnailUpload": "Click to upload thumbnail",
+      "thumbnailHint": "JPG, PNG, WebP — max 5 MB"
+    },
+    "trailer": {
+      "title": "Upload Trailer",
+      "subtitle": "Upload your movie trailer. Maximum duration: 30 seconds.",
+      "zone": "Upload Trailer Video",
+      "hint": "Max duration: 30 seconds | Max size: 200 MB",
+      "chooseFile": "Choose File"
+    },
+    "movie": {
+      "title": "Upload Full Movie",
+      "subtitle": "Upload the full movie file. Duration must be between 10 and 30 minutes.",
+      "zone": "Upload Full Movie",
+      "hint": "Min: 10 min | Max: 30 min | Max size: 200 MB | Formats: MP4, MOV",
+      "errorsHeader": "Please fix the following errors:"
+    },
+    "copyright": {
+      "title": "Copyright Proof",
+      "subtitle": "Upload proof of copyright ownership for your movie. Accepted formats: PDF, JPG, PNG (max 10 MB).",
+      "zone": "Upload Copyright Document",
+      "hint": "PDF, JPG, or PNG — max 10 MB"
+    },
+    "review": {
+      "title": "Review Your Submission",
+      "subtitle": "Please review all information before submitting.",
+      "sections": {
+        "details": "Movie Details",
+        "thumbnail": "Thumbnail",
+        "trailer": "Trailer",
+        "movie": "Full Movie",
+        "copyright": "Copyright"
+      },
+      "labels": {
+        "title": "Title:",
+        "longline": "Longline:",
+        "synopsis": "Synopsis:",
+        "genres": "Genres:",
+        "releaseDate": "Release Date:",
+        "price": "Price:",
+        "duration": "Duration:",
+        "director": "Director:",
+        "writer": "Writer:",
+        "cast": "Cast:",
+        "freePreview": "Free Preview:",
+        "image": "Image:",
+        "trailerFile": "Trailer File:",
+        "movieFile": "Movie File:",
+        "size": "Size:",
+        "document": "Document:"
+      },
+      "back": "Back",
+      "submitBtn": "Submit Your Movie",
+      "submitting": "Submitting…"
+    },
+    "success": {
+      "title": "Thank You!",
+      "message": "Your movie has been submitted successfully. We will review your movie and get back to you soon.",
+      "dashboardBtn": "Go to Dashboard"
+    },
+    "uploading": "Uploading… {{percent}}%",
+    "uploaded": "Uploaded ✓",
+    "retry": "Retry",
+    "remove": "Remove",
+    "cancel": "Cancel",
+    "next": "Next",
+    "back": "Back",
+    "reviewSubmit": "Review & Submit"
+  },
+  "movies": {
+    "title": "My Films",
+    "subtitle": "All films you have submitted to the platform",
+    "search": "Search films…",
+    "uploadBtn": "Upload Film",
+    "tabs": {
+      "all": "All",
+      "live": "Live",
+      "pending": "Pending",
+      "rejected": "Rejected"
+    },
+    "empty": "You have no films submitted yet.",
+    "emptySearch": "No films match your search.",
+    "uploadFirst": "Upload your first film",
+    "table": {
+      "movie": "Movie",
+      "status": "Status",
+      "type": "Type",
+      "dateSubmitted": "Date Submitted",
+      "releaseDate": "Release Date",
+      "action": "Action"
+    },
+    "chips": {
+      "pendingApproval": "Pending Approval",
+      "approvedPendingContract": "Approved Pending Contract",
+      "live": "Live",
+      "rejected": "Rejected",
+      "free": "Free",
+      "paid": "Paid"
+    },
+    "viewReason": "View reason",
+    "hideReason": "Hide reason",
+    "actions": {
+      "edit": "Edit",
+      "signContract": "Sign Contract",
+      "view": "View",
+      "analytics": "Analytics"
+    },
+    "edit": {
+      "title": "Edit Film",
+      "note": "The video file, duration, and release date cannot be changed after submission.",
+      "movieTitle": "Title",
+      "overview": "Overview / Synopsis",
+      "price": "Price (RWF)",
+      "freePreview": "Free Preview",
+      "genres": "Genres",
+      "titleRequired": "Title is required",
+      "cancel": "Cancel",
+      "save": "Save Changes",
+      "saving": "Saving…"
+    }
+  },
+  "wallet": {
+    "title": "Wallet",
+    "subtitle": "Your earnings and withdrawal details.",
+    "available": "Available Balance",
+    "totalEarnings": "Total Earnings",
+    "totalWithdrawn": "Total Withdrawn",
+    "pending": "Pending Payouts",
+    "shareNote": "Your revenue share is {{percent}}% of every ticket sold.",
+    "form": {
+      "title": "Request Withdrawal",
+      "subtitle": "Processed within 1–2 business days.",
+      "amount": "Amount (RWF)",
+      "amountRequired": "Amount is required.",
+      "summary": "Payout Summary",
+      "summaryAmount": "Amount to Withdraw",
+      "summaryTax": "Gov. Tax / RRA (30%)",
+      "summaryTotal": "Total from Balance",
+      "bankTransfer": "Bank Transfer",
+      "mobileMoney": "Mobile Money",
+      "bankName": "Bank Name",
+      "accountNumber": "Account Number",
+      "accountHolder": "Account Holder Name",
+      "momoNumber": "MoMo Number",
+      "momoProvider": "MoMo Provider",
+      "selectProvider": "Select provider",
+      "mtn": "MTN Mobile Money",
+      "airtel": "Airtel Money",
+      "submitBtn": "Request Withdrawal",
+      "submitting": "Submitting…"
+    }
+  },
+  "withdrawals": {
+    "title": "Withdrawals",
+    "subtitle": "History of your payout requests.",
+    "tabs": {
+      "all": "All",
+      "pending": "Pending",
+      "processed": "Processed",
+      "rejected": "Rejected",
+      "cancelled": "Cancelled"
+    },
+    "empty": "No withdrawal requests yet.",
+    "emptyStatus": "No {{status}} withdrawals.",
+    "table": {
+      "num": "#",
+      "amount": "Amount",
+      "method": "Method",
+      "status": "Status",
+      "requested": "Requested",
+      "processed": "Processed"
+    }
+  },
+  "reports": {
+    "title": "My Reports",
+    "subtitle": "Your earnings and performance overview"
+  },
+  "movieDetail": {
+    "myContent": "My Content",
+    "yourMovie": "Your movie",
+    "detailsTab": "Details",
+    "analyticsTab": "Analytics",
+    "movieDetailsTitle": "Movie details",
+    "watchMovie": "Watch Movie",
+    "shareTrailer": "Share Trailer",
+    "fieldTitle": "Title",
+    "fieldOverview": "Overview",
+    "fieldCast": "Cast",
+    "fieldGenres": "Genres",
+    "fieldProducer": "Producer",
+    "metaStatus": "Status",
+    "metaPrice": "Price",
+    "metaViews": "Views",
+    "metaDuration": "Duration",
+    "metaHls": "HLS",
+    "metaFreePreview": "Free Preview",
+    "metaFreePreviewEnabled": "Enabled",
+    "metaReleaseDate": "Release date",
+    "metaUploaded": "Uploaded",
+    "metaLastUpdated": "Last updated",
+    "statusActive": "Active",
+    "statusInactive": "Inactive",
+    "analyticsTitle": "Movie analytics",
+    "advancedMode": "Advanced mode",
+    "realtimeTitle": "Realtime",
+    "realtimeLive": "Updating live",
+    "realtimeSub": "Views · Since published",
+    "copyLink": "Copy Link",
+    "copied": "Copied!",
+    "failedLoad": "Failed to load movie details.",
+    "goBack": "Go back"
+  },
+  "contracts": {
+    "dashboard": {
+      "title": "Distribution Agreement",
+      "subtitle": "Your legal agreement to distribute films on Ikigembe.",
+      "loading": "Loading contract status…",
+      "statusActive": "Agreement Active",
+      "statusExpiring": "Expiring Soon",
+      "statusExpired": "Expired",
+      "statusNone": "No Agreement",
+      "daysRemaining": "{{days}} day(s) remaining",
+      "descNone": "You haven't signed a Distribution Agreement yet. You must sign one before any approved films go live on the platform.",
+      "descActive": "Your agreement is active. All approved films are live on the platform.",
+      "descExpiring": "Your agreement expires soon. Renew now to avoid any interruption to your films.",
+      "descExpired": "Your agreement has expired. Your films have been taken offline until you renew.",
+      "signedOn": "Signed on",
+      "expiresOn": "Expires on",
+      "expiredOn": "Expired on",
+      "signBtn": "Sign Agreement",
+      "renewBtn": "Renew Agreement",
+      "renewNowBtn": "Renew Now",
+      "noMovies": "You need to upload at least one movie before you can sign a Distribution Agreement.",
+      "uploadMovieBtn": "Upload a Movie",
+      "infoRevenue": {
+        "title": "Revenue Rights",
+        "desc": "You retain your earnings. Ikigembe takes a platform fee as defined in the agreement."
+      },
+      "infoOwnership": {
+        "title": "Content Ownership",
+        "desc": "You keep full ownership of your films. The agreement grants Ikigembe a limited distribution licence."
+      },
+      "infoRenewal": {
+        "title": "Annual Renewal",
+        "desc": "Agreements run for one year. You'll be notified 30 days before expiry so you can renew without interruption."
+      }
+    },
+    "welcome": {
+      "title": "Congratulations!",
+      "subtitle": "Your movie has been approved for distribution on Ikigembe.",
+      "infoLine1": "To distribute content on our platform, you must complete a",
+      "agreementName": "Producer Distribution Agreement",
+      "infoLine2": "This agreement applies to your account and covers all movies you distribute on Ikigembe. It remains valid for",
+      "validity": "2 years",
+      "validityEnd": "from the date of signing.",
+      "back": "Back",
+      "continue": "Continue",
+      "noMovies": "You need to upload at least one movie before you can sign a Distribution Agreement.",
+      "uploadBtn": "Upload a Movie"
+    },
+    "language": {
+      "title": "Select Language",
+      "subtitle": "Choose the language for your Producer Distribution Agreement.",
+      "english": "English",
+      "kinyarwanda": "Kinyarwanda",
+      "back": "Back",
+      "continue": "Continue"
+    },
+    "review": {
+      "title": "Producer Distribution Agreement",
+      "subtitle": "Please read the full agreement carefully before proceeding. Scroll to the bottom to continue.",
+      "download": "Download PDF",
+      "scrollHint": "↓ Scroll to the bottom to enable Continue",
+      "back": "Back",
+      "continueBtn": "I've Read This — Continue"
+    },
+    "warning": {
+      "title": "WARNING",
+      "subtitle": "This agreement must be accepted within 78 hours (3 days and 6 hours) from the time it was sent.",
+      "boxLabel": "If not accepted within 78 hours:",
+      "bullet1": "The contract will be canceled.",
+      "bullet2": "The movie will be returned to Pending Submission.",
+      "bullet3": "The Producer will be required to restart the process.",
+      "timeRemaining": "Time remaining",
+      "days": "Days",
+      "hours": "Hours",
+      "minutes": "Minutes",
+      "seconds": "Seconds",
+      "back": "Back",
+      "understand": "I Understand — Continue"
+    },
+    "acceptance": {
+      "title": "Sign the Agreement",
+      "subtitle": "Your typed name serves as your legal signature.",
+      "fieldLabel": "Full Legal Name *",
+      "fieldPlaceholder": "Enter your full legal name",
+      "agreeText": "I have read and fully agree to the",
+      "agreeName": "Producer Distribution Agreement",
+      "agreeEnd": "and all its terms.",
+      "back": "Back",
+      "acceptBtn": "Accept & Continue"
+    },
+    "verifying": {
+      "submitting": "Submitting Agreement…",
+      "pleaseWait": "Please wait while we process your agreement.",
+      "failed": "Submission Failed",
+      "tryAgain": "Try Again"
+    },
+    "success": {
+      "title": "Agreement Approved",
+      "subtitle": "Your Producer Distribution Agreement has been successfully recorded.",
+      "validUntil": "Valid Until",
+      "bullet1": "Your approved movies are now live on Ikigembe.",
+      "bullet2": "You will be notified 30 days before your agreement expires.",
+      "dashboardBtn": "Return to Dashboard",
+      "moviesBtn": "View My Movies"
+    },
+    "notification": {
+      "title": "Movie Approved",
+      "desc": "Your movie has been approved for distribution. Before publishing, please complete the Producer Distribution Agreement.",
+      "btn": "Review Agreement",
+      "signBtn": "Sign Contract"
+    },
+    "widget": {
+      "active": "Agreement Active",
+      "expiring": "Expiring Soon",
+      "expired": "Expired",
+      "expiresIn": "Expires in {{days}} day(s)",
+      "daysRemaining": "{{days}} days remaining",
+      "renew": "Renew",
+      "renewNow": "Renew Now"
+    }
+  }
+}

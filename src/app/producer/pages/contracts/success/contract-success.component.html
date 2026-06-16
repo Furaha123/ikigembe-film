@@ -7,14 +7,12 @@
       </svg>
     </div>
 
-    <h1 class="flow-title success-title">Agreement Approved</h1>
-    <p class="flow-subtitle">
-      Your Producer Distribution Agreement has been successfully recorded.
-    </p>
+    <h1 class="flow-title success-title">{{ 'contracts.success.title' | translate }}</h1>
+    <p class="flow-subtitle">{{ 'contracts.success.subtitle' | translate }}</p>
 
     @if (expiresAt()) {
       <div class="validity-box">
-        <span class="validity-label">Valid Until</span>
+        <span class="validity-label">{{ 'contracts.success.validUntil' | translate }}</span>
         <span class="validity-date">{{ formatDate(expiresAt()!) }}</span>
       </div>
     }
@@ -24,22 +22,22 @@
         <svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16" class="bullet-icon">
           <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 14.5l-4-4 1.41-1.41L10 13.67l6.59-6.59L18 8.5l-8 8z"/>
         </svg>
-        Your approved movies are now live on Ikigembe.
+        {{ 'contracts.success.bullet1' | translate }}
       </div>
       <div class="bullet-item">
         <svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16" class="bullet-icon">
           <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 14.5l-4-4 1.41-1.41L10 13.67l6.59-6.59L18 8.5l-8 8z"/>
         </svg>
-        You will be notified 30 days before your agreement expires.
+        {{ 'contracts.success.bullet2' | translate }}
       </div>
     </div>
 
     <div class="flow-actions full-width">
       <a routerLink="/producer/dashboard" class="btn-outline" style="text-decoration:none;display:inline-flex;align-items:center;justify-content:center;">
-        Return to Dashboard
+        {{ 'contracts.success.dashboardBtn' | translate }}
       </a>
       <a routerLink="/producer/movies" class="btn-gold" style="text-decoration:none;display:inline-flex;align-items:center;justify-content:center;">
-        View My Movies
+        {{ 'contracts.success.moviesBtn' | translate }}
       </a>
     </div>
 

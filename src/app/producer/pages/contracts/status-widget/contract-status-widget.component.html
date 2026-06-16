@@ -3,24 +3,24 @@
 
     @if (state() === 'active') {
       <div class="widget-chip chip--green">
-        <span class="chip-dot"></span> Agreement Active
+        <span class="chip-dot"></span> {{ 'contracts.widget.active' | translate }}
       </div>
-      <span class="widget-meta">Expires in {{ status().days_remaining }} day{{ status().days_remaining === 1 ? '' : 's' }}</span>
+      <span class="widget-meta">{{ 'contracts.widget.expiresIn' | translate: { days: status().days_remaining } }}</span>
     }
 
     @if (state() === 'expiring') {
       <div class="widget-chip chip--amber">
-        <span class="chip-dot"></span> Expiring Soon
+        <span class="chip-dot"></span> {{ 'contracts.widget.expiring' | translate }}
       </div>
-      <span class="widget-meta">{{ status().days_remaining }} days remaining</span>
-      <a routerLink="/producer/contracts/start" class="widget-action">Renew</a>
+      <span class="widget-meta">{{ 'contracts.widget.daysRemaining' | translate: { days: status().days_remaining } }}</span>
+      <a routerLink="/producer/contracts/start" class="widget-action">{{ 'contracts.widget.renew' | translate }}</a>
     }
 
     @if (state() === 'expired') {
       <div class="widget-chip chip--red">
-        <span class="chip-dot"></span> Expired
+        <span class="chip-dot"></span> {{ 'contracts.widget.expired' | translate }}
       </div>
-      <a routerLink="/producer/contracts/start" class="widget-action">Renew Now</a>
+      <a routerLink="/producer/contracts/start" class="widget-action">{{ 'contracts.widget.renewNow' | translate }}</a>
     }
 
   </div>

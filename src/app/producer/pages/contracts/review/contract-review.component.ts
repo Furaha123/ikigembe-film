@@ -1,12 +1,14 @@
 import { Component, inject, signal, AfterViewInit, ElementRef, ViewChild, PLATFORM_ID } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { Router } from '@angular/router';
+import { TranslateModule } from '@ngx-translate/core';
 import { ContractFlowService } from '../contract-flow.service';
 import { CONTRACT_TEXT_EN, CONTRACT_TEXT_RW } from './contract-text';
 
 @Component({
   selector: 'app-contract-review',
   standalone: true,
+  imports: [TranslateModule],
   templateUrl: './contract-review.component.html',
   styleUrl: './contract-review.component.scss',
 })

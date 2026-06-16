@@ -235,6 +235,17 @@ $sidebar-collapsed-w: 64px;
 }
 
 /* ── Notification bell ── */
+/* ── Language toggle ── */
+.lang-toggle {
+  display: inline-flex; align-items: center; gap: 0.3rem;
+  background: #1e1e1e; border: 1px solid $border; border-radius: 20px;
+  color: $text; cursor: pointer; padding: 0.3rem 0.7rem; font-size: 0.78rem;
+  margin-right: 0.5rem; transition: border-color 0.2s, background 0.2s;
+  &:hover { border-color: $gold; background: #252525; }
+  .lang-flag { font-size: 1rem; line-height: 1; }
+  .lang-label { font-weight: 600; letter-spacing: 0.03em; }
+}
+
 .notif-menu { position: relative; margin-right: 0.5rem; }
 
 .notif-btn {
