@@ -76,6 +76,16 @@ export const authInterceptor: HttpInterceptorFn = (
         );
       }
 
+      // No refresh token means the user never had a valid session (or only had
+      // a stale access token with an already-expired refresh). Clear the bad
+      // token and retry the original request anonymously so public endpoints
+      // like /preview/:id continue to work without forcing a login redirect.
+      if (!getRefresh()) {
+        localStorage.removeItem(TOKEN_KEY);
+        isRefreshing = false;
+        return next(req);
+      }
+
       isRefreshing = true;
       refreshDone$.next(null);
 
