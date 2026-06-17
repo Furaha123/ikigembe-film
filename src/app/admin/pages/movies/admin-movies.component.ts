@@ -86,7 +86,7 @@ export class AdminMoviesComponent implements OnInit, OnDestroy {
       takeUntil(this.pollingStop$),
     ).subscribe({
       next: (res) => {
-        const patch = { hls_status: res.hls_status, hls_url: res.hls_url };
+        const patch = { hls_status: res.hls_status, hls_url: res.hls_url, hls_error_message: res.hls_error_message };
 
         this.submissions.update(list =>
           list.map(s => s.id === id ? { ...s, ...patch } : s)
@@ -167,11 +167,32 @@ export class AdminMoviesComponent implements OnInit, OnDestroy {
     return s.hls_status === 'ready' || !!s.hls_url;
   }
 
+  isProcessingStuck(s: FilmSubmissionItem): boolean {
+    if (s.hls_status !== 'processing') return false;
+    const submittedMs = new Date(s.submission_date).getTime();
+    return (Date.now() - submittedMs) > 24 * 60 * 60 * 1000;
+  }
+
+  processingHoursElapsed(s: FilmSubmissionItem): number {
+    const submittedMs = new Date(s.submission_date).getTime();
+    return Math.floor((Date.now() - submittedMs) / (1000 * 60 * 60));
+  }
+
   watchDisabledReason(s: FilmSubmissionItem): string {
     if (s.hls_status === 'processing')   return 'Video is being processed — check back soon';
     if (s.hls_status === 'failed')       return 'Video processing failed';
     if (s.hls_status === 'not_started')  return 'Video has not been processed yet';
     return '';
+  }
+
+  hlsStatusLabel(status: string): string {
+    const map: Record<string, string> = {
+      not_started: 'Not queued',
+      processing:  'Processing',
+      ready:       'Ready',
+      failed:      'Failed',
+    };
+    return map[status] ?? status;
   }
 
   watchFilm(s: FilmSubmissionItem, type: 'full' | 'trailer'): void {
@@ -193,7 +214,7 @@ export class AdminMoviesComponent implements OnInit, OnDestroy {
       next: (res) => {
         this.watchLoading.set(null);
         this.submissions.update(list => list.map(i =>
-          i.id === s.id ? { ...i, hls_status: res.hls_status, hls_url: res.hls_url } : i
+          i.id === s.id ? { ...i, hls_status: res.hls_status, hls_url: res.hls_url, hls_error_message: res.hls_error_message } : i
         ));
         if (res.hls_url) {
           this.openPlayer(res.hls_url, s.thumbnail_url ?? '', s.title);

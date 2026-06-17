@@ -226,7 +226,24 @@
               <div class="detail-row"><span class="detail-label">Free Preview</span><span class="detail-value">{{ s.free_preview ? 'Yes' : 'No' }}</span></div>
             }
             @if (s.hls_status) {
-              <div class="detail-row"><span class="detail-label">Video Processing</span><span class="detail-value">{{ s.hls_status }}</span></div>
+              <div class="detail-row">
+                <span class="detail-label">Video Processing</span>
+                <span class="hls-badge hls-badge--{{ s.hls_status }}">{{ hlsStatusLabel(s.hls_status) }}</span>
+              </div>
+            }
+            @if (isProcessingStuck(s)) {
+              <div class="detail-row">
+                <div class="stuck-warning">
+                  <svg viewBox="0 0 24 24" fill="currentColor" width="14" height="14"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg>
+                  Processing for {{ processingHoursElapsed(s) }}h — job may be stuck. Check the worker logs on Render.
+                </div>
+              </div>
+            }
+            @if (s.hls_error_message) {
+              <div class="detail-row detail-row--bio">
+                <span class="detail-label">Processing Error</span>
+                <span class="detail-value hls-error-msg">{{ s.hls_error_message }}</span>
+              </div>
             }
             @if (s.cast) {
               <div class="detail-row detail-row--bio"><span class="detail-label">Cast</span><span class="detail-value">{{ s.cast }}</span></div>

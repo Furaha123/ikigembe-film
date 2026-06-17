@@ -73,6 +73,7 @@ export interface FilmSubmissionItem {
   genres?: string | null;
   hls_status?: HlsStatus | null;
   hls_url?: string | null;
+  hls_error_message?: string | null;
   video_url?: string | null;
   trailer_url?: string | null;
   free_preview?: boolean;
