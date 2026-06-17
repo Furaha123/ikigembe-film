@@ -4,12 +4,13 @@ import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { AdminService } from '../../services/admin.service';
 import { AdminMovie, FilmSubmissionItem } from '../../models/admin.interface';
+import { VideoPlayerComponent } from '../../../shared/components/video-player/video-player.component';
 
 type ActiveTab = 'submissions' | 'catalog';
 
 @Component({
   selector: 'app-admin-movies',
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, VideoPlayerComponent],
   templateUrl: './admin-movies.component.html',
   styleUrl: './admin-movies.component.scss'
 })
@@ -46,6 +47,16 @@ export class AdminMoviesComponent implements OnInit {
   pendingCount = computed(() => this.submissions().filter(s => s.status === 'pending_review' || s.status === 'pending_admin_review').length);
 
   selectedSubmission = signal<FilmSubmissionItem | null>(null);
+
+  // ── Inline video player ──────────────────────────────
+  isWatching   = signal(false);
+  watchSrc     = signal('');
+  watchPoster  = signal('');
+  watchTitle   = signal('');
+  watchLoading = signal<number | null>(null);
+
+  // ── Per-film reviewer notes (pre-fill rejection reason) ──
+  notesMap = signal<Map<number, string>>(new Map());
 
   openSubmissionDetail(s: FilmSubmissionItem) { this.selectedSubmission.set(s); }
   closeSubmissionDetail() { this.selectedSubmission.set(null); }
@@ -97,6 +108,58 @@ export class AdminMoviesComponent implements OnInit {
     if (this.submissionsPage() < this.submissionsTotalPages()) this.loadSubmissions(this.submissionsPage() + 1);
   }
 
+  // ── Reviewer notes ───────────────────────────────────
+  getNote(id: number): string { return this.notesMap().get(id) ?? ''; }
+
+  setNote(id: number, text: string): void {
+    this.notesMap.update(m => { const n = new Map(m); n.set(id, text); return n; });
+  }
+
+  canWatchFilm(s: FilmSubmissionItem): boolean {
+    return !!(s.hls_url || s.video_url || s.hls_status === 'completed');
+  }
+
+  watchFilm(s: FilmSubmissionItem, type: 'full' | 'trailer'): void {
+    if (type === 'trailer') {
+      if (!s.trailer_url) return;
+      this.openPlayer(s.trailer_url, s.thumbnail_url ?? '', `${s.title} — Trailer`);
+      return;
+    }
+
+    const cached = s.hls_url ?? s.video_url;
+    if (cached) {
+      this.openPlayer(cached, s.thumbnail_url ?? '', s.title);
+      return;
+    }
+
+    this.watchLoading.set(s.id);
+    this.adminService.getFilmDetail(s.id).subscribe({
+      next: (d) => {
+        this.watchLoading.set(null);
+        this.submissions.update(list => list.map(i =>
+          i.id === s.id
+            ? { ...i, hls_url: d.hls_url, video_url: d.video_url, trailer_url: d.trailer_url ?? i.trailer_url }
+            : i
+        ));
+        const url = d.hls_url ?? d.video_url;
+        if (url) this.openPlayer(url, s.thumbnail_url ?? d.thumbnail_url ?? '', s.title);
+      },
+      error: () => this.watchLoading.set(null),
+    });
+  }
+
+  private openPlayer(src: string, poster: string, title: string): void {
+    this.watchSrc.set(src);
+    this.watchPoster.set(poster);
+    this.watchTitle.set(title);
+    this.isWatching.set(true);
+  }
+
+  closeWatchOverlay(): void {
+    this.isWatching.set(false);
+    this.watchSrc.set('');
+  }
+
   // ── Submission actions ───────────────────────────────
   approveSubmission(id: number) {
     this.actionId.set(id);
@@ -114,7 +177,7 @@ export class AdminMoviesComponent implements OnInit {
 
   openRejectSubmission(film: FilmSubmissionItem) {
     this.rejectSubmissionModal.set(film);
-    this.rejectSubmissionReason.set('');
+    this.rejectSubmissionReason.set(this.getNote(film.id));
   }
 
   closeRejectSubmission() { this.rejectSubmissionModal.set(null); }

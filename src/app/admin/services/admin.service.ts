@@ -15,6 +15,7 @@ import {
   WithdrawalItem,
   AdminMovie,
   FilmSubmissionItem,
+  FilmDetail,
   ProducerDocuments,
   ProducerContractItem,
   RevenueTrendItem,
@@ -130,6 +131,10 @@ export class AdminService {
 
   rejectFilm(id: number, reason: string): Observable<unknown> {
     return this.http.post(`${BASE}/admin/dashboard/movies/${id}/reject/`, { reason });
+  }
+
+  getFilmDetail(id: number): Observable<FilmDetail> {
+    return this.http.get<FilmDetail>(`${BASE}/admin/dashboard/movies/${id}/`);
   }
 
   removeFilm(id: number): Observable<unknown> {
