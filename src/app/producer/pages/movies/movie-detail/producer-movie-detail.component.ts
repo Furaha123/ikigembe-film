@@ -254,7 +254,7 @@ export class ProducerMovieDetailComponent implements OnInit, OnDestroy {
     const map: Record<string, string> = {
       not_started: 'Not Processed',
       processing:  'Processing…',
-      completed:   'Ready',
+      ready:       'Ready',
       failed:      'Failed',
     };
     return map[status] ?? status;
@@ -264,7 +264,7 @@ export class ProducerMovieDetailComponent implements OnInit, OnDestroy {
     const map: Record<string, string> = {
       not_started: 'hls-pending',
       processing:  'hls-processing',
-      completed:   'hls-ready',
+      ready:       'hls-ready',
       failed:      'hls-failed',
     };
     return map[status] ?? '';
