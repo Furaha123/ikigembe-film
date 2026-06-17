@@ -79,15 +79,6 @@ export interface FilmSubmissionItem {
   copyright_url?: string | null;
 }
 
-export interface FilmDetail {
-  id: number;
-  title: string;
-  thumbnail_url: string | null;
-  trailer_url: string | null;
-  video_url: string | null;
-  hls_url: string | null;
-  hls_status: HlsStatus;
-}
 
 export type HlsStatus = 'not_started' | 'processing' | 'ready' | 'failed';
 

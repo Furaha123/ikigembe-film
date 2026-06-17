@@ -178,16 +178,13 @@ export class AdminMoviesComponent implements OnInit, OnDestroy {
     }
 
     this.watchLoading.set(s.id);
-    this.adminService.getFilmDetail(s.id).subscribe({
-      next: (d) => {
+    this.adminService.getFilmHlsStatus(s.id).subscribe({
+      next: (res) => {
         this.watchLoading.set(null);
         this.submissions.update(list => list.map(i =>
-          i.id === s.id
-            ? { ...i, hls_url: d.hls_url, video_url: d.video_url, trailer_url: d.trailer_url ?? i.trailer_url }
-            : i
+          i.id === s.id ? { ...i, hls_status: res.hls_status, hls_url: res.hls_url } : i
         ));
-        const url = d.hls_url ?? d.video_url;
-        if (url) this.openPlayer(url, s.thumbnail_url ?? d.thumbnail_url ?? '', s.title);
+        if (res.hls_url) this.openPlayer(res.hls_url, s.thumbnail_url ?? '', s.title);
       },
       error: () => this.watchLoading.set(null),
     });
