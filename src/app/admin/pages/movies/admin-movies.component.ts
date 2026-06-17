@@ -164,7 +164,14 @@ export class AdminMoviesComponent implements OnInit, OnDestroy {
   }
 
   canWatchFilm(s: FilmSubmissionItem): boolean {
-    return s.hls_status !== 'processing';
+    return s.hls_status === 'ready' || !!s.hls_url;
+  }
+
+  watchDisabledReason(s: FilmSubmissionItem): string {
+    if (s.hls_status === 'processing')   return 'Video is being processed — check back soon';
+    if (s.hls_status === 'failed')       return 'Video processing failed';
+    if (s.hls_status === 'not_started')  return 'Video has not been processed yet';
+    return '';
   }
 
   watchFilm(s: FilmSubmissionItem, type: 'full' | 'trailer'): void {
@@ -190,8 +197,6 @@ export class AdminMoviesComponent implements OnInit, OnDestroy {
         ));
         if (res.hls_url) {
           this.openPlayer(res.hls_url, s.thumbnail_url ?? '', s.title);
-        } else {
-          this.watchError.set('No video available for this film yet.');
         }
       },
       error: () => {
