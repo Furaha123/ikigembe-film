@@ -76,9 +76,13 @@ export class ProducerOnboardingComponent implements OnInit {
 
     this.http.post(`${environment.apiUrl}/producer/onboarding/`, payload).subscribe({
       next:  () => this.finishOnboarding(),
-      error: () => {
-        this.isSaving.set(false);
-        this.saveError.set('Failed to save your profile. Please try again.');
+      error: (err) => {
+        if (err.status === 409) {
+          this.finishOnboarding();
+        } else {
+          this.isSaving.set(false);
+          this.saveError.set('Failed to save your profile. Please try again.');
+        }
       },
     });
   }

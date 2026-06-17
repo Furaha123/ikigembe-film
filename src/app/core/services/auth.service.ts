@@ -19,6 +19,7 @@ export interface UserProfile {
   account_status?: string;
   studio_name?: string;
   suspension_reason?: string;
+  onboarding_completed?: boolean;
 }
 
 export interface NotificationPreferences {
@@ -37,8 +38,6 @@ const IS_STAFF_KEY    = 'ikigembe_is_staff';
 const ROLE_KEY        = 'ikigembe_role';
 const ACCT_STATUS_KEY = 'ikigembe_account_status';
 const SUSPENSION_KEY  = 'ikigembe_suspension_reason';
-
-function onboardingKey(email: string) { return `ikigembe_onboarding_done_${email}`; }
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
@@ -76,11 +75,7 @@ export class AuthService {
     isPlatformBrowser(this.platformId) ? (localStorage.getItem(SUSPENSION_KEY) ?? '') : ''
   );
 
-  readonly onboardingComplete = signal<boolean>(
-    isPlatformBrowser(this.platformId)
-      ? localStorage.getItem(onboardingKey(localStorage.getItem(EMAIL_KEY) ?? '')) === '1'
-      : false
-  );
+  readonly onboardingComplete = signal<boolean>(false);
 
   readonly initials = computed(() => {
     const name = this.userName().trim();
@@ -134,9 +129,6 @@ export class AuthService {
   }
 
   completeOnboarding() {
-    if (isPlatformBrowser(this.platformId)) {
-      localStorage.setItem(onboardingKey(this.userEmail()), '1');
-    }
     this.onboardingComplete.set(true);
   }
 
@@ -200,10 +192,9 @@ export class AuthService {
     if (resolvedEmail && isPlatformBrowser(this.platformId)) {
       localStorage.setItem(EMAIL_KEY, resolvedEmail);
       this.userEmail.set(resolvedEmail);
-      if (localStorage.getItem(onboardingKey(resolvedEmail)) === '1') {
-        this.onboardingComplete.set(true);
-      }
     }
+
+    this.onboardingComplete.set(u?.onboarding_completed ?? false);
 
     const isStaff = u?.is_staff ?? false;
     if (isPlatformBrowser(this.platformId)) {

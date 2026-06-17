@@ -67,7 +67,9 @@
         <div class="view-header">
           <h1>{{ 'movieDetail.movieDetailsTitle' | translate }}</h1>
           <div class="view-header-actions">
-            <button class="btn-watch" (click)="watchMovie()">
+            <button class="btn-watch" (click)="watchMovie()"
+              [disabled]="!movie()!.hls_url && !movie()!.video_url"
+              [title]="(!movie()!.hls_url && !movie()!.video_url) ? 'Video not yet processed' : ''">
               <svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
               {{ 'movieDetail.watchMovie' | translate }}
             </button>
@@ -508,6 +510,21 @@
         </button>
       </div>
 
+    </div>
+  </div>
+}
+
+<!-- ══════════════════════════════ INLINE PLAYER OVERLAY ══ -->
+@if (isWatching()) {
+  <div class="player-overlay" (click)="closePlayer()">
+    <div class="player-modal" (click)="$event.stopPropagation()">
+      <button class="player-close" (click)="closePlayer()">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+      </button>
+      <app-video-player
+        [src]="watchSrc()"
+        [poster]="movie()?.thumbnail_url ?? ''"
+      />
     </div>
   </div>
 }
