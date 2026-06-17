@@ -61,6 +61,7 @@
                     <button class="action-btn approve" (click)="approveSubmission(s.id)" [disabled]="actionId() === s.id">
                       {{ actionId() === s.id ? '…' : 'Approve' }}
                     </button>
+                    <button class="action-btn changes" (click)="openRequestChanges(s); $event.stopPropagation()">Changes</button>
                     <button class="action-btn reject" (click)="openRejectSubmission(s)">Reject</button>
                   }
                   <button class="action-btn danger" (click)="openRemoveConfirm(s.id)">Remove</button>
@@ -182,6 +183,33 @@
             </div>
           }
 
+          <!-- ── Watch actions ── -->
+          <div class="watch-actions">
+            <button class="watch-btn watch-btn--full"
+              [disabled]="!canWatchFilm(s) || watchLoading() === s.id"
+              [title]="canWatchFilm(s) ? 'Watch the full submitted film' : watchDisabledReason(s)"
+              (click)="watchFilm(s, 'full')">
+              @if (watchLoading() === s.id) {
+                <span class="spin"></span> Loading…
+              } @else {
+                <svg viewBox="0 0 24 24" fill="currentColor" width="14" height="14"><path d="M8 5v14l11-7z"/></svg>
+                Watch Film
+              }
+            </button>
+            @if (s.trailer_url) {
+              <button class="watch-btn watch-btn--trailer"
+                title="Watch the trailer"
+                (click)="watchFilm(s, 'trailer')">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="13" height="13"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                Trailer
+              </button>
+            }
+          </div>
+
+          @if (watchError()) {
+            <p class="watch-error">{{ watchError() }}</p>
+          }
+
           <div class="detail-rows">
             <div class="detail-row"><span class="detail-label">Title</span><span class="detail-value">{{ s.title }}</span></div>
             <div class="detail-row"><span class="detail-label">Producer</span><span class="detail-value">{{ s.producer_name }}</span></div>
@@ -199,7 +227,24 @@
               <div class="detail-row"><span class="detail-label">Free Preview</span><span class="detail-value">{{ s.free_preview ? 'Yes' : 'No' }}</span></div>
             }
             @if (s.hls_status) {
-              <div class="detail-row"><span class="detail-label">Video Processing</span><span class="detail-value">{{ s.hls_status }}</span></div>
+              <div class="detail-row">
+                <span class="detail-label">Video Processing</span>
+                <span class="hls-badge hls-badge--{{ s.hls_status }}">{{ hlsStatusLabel(s.hls_status) }}</span>
+              </div>
+            }
+            @if (isProcessingStuck(s)) {
+              <div class="detail-row">
+                <div class="stuck-warning">
+                  <svg viewBox="0 0 24 24" fill="currentColor" width="14" height="14"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg>
+                  Processing for {{ processingHoursElapsed(s) }}h — job may be stuck. Check the worker logs on Render.
+                </div>
+              </div>
+            }
+            @if (s.hls_error_message) {
+              <div class="detail-row detail-row--bio">
+                <span class="detail-label">Processing Error</span>
+                <span class="detail-value hls-error-msg">{{ s.hls_error_message }}</span>
+              </div>
             }
             @if (s.cast) {
               <div class="detail-row detail-row--bio"><span class="detail-label">Cast</span><span class="detail-value">{{ s.cast }}</span></div>
@@ -219,10 +264,26 @@
             </a>
           }
 
+          <!-- ── Reviewer notes ── -->
+          <div class="reviewer-notes">
+            <div class="notes-header">
+              <span class="notes-label">Reviewer Notes</span>
+              <span class="notes-hint">Pre-fills rejection reason</span>
+            </div>
+            <textarea class="notes-textarea" rows="3"
+              [value]="getNote(s.id)"
+              (input)="setNote(s.id, $any($event.target).value)"
+              placeholder="Write your notes here. These will be pre-filled when you reject this film.">
+            </textarea>
+          </div>
+
           @if (s.status === 'pending_review' || s.status === 'pending_admin_review') {
             <div class="detail-actions">
               <button class="action-btn approve full" (click)="approveSubmission(s.id); closeSubmissionDetail()" [disabled]="actionId() === s.id">
                 {{ actionId() === s.id ? 'Approving…' : 'Approve' }}
+              </button>
+              <button class="action-btn changes full" (click)="openRequestChanges(s); closeSubmissionDetail()">
+                Request Changes
               </button>
               <button class="action-btn reject full" (click)="openRejectSubmission(s); closeSubmissionDetail()">
                 Reject
@@ -230,6 +291,33 @@
             </div>
           }
         }
+      </div>
+    </div>
+  }
+
+  <!-- Request Changes modal -->
+  @if (requestChangesModal()) {
+    <div class="overlay" (click)="closeRequestChanges()">
+      <div class="dialog" (click)="$event.stopPropagation()">
+        <h3>Request Changes</h3>
+        <p><strong>{{ requestChangesModal()!.title }}</strong></p>
+        <div class="field">
+          <label>Note to Producer</label>
+          <textarea rows="4" [value]="requestChangesNote()"
+                    (input)="requestChangesNote.set($any($event.target).value)"
+                    placeholder="Describe what the producer needs to fix or improve…"
+                    class="dialog-textarea"></textarea>
+        </div>
+        @if (requestChangesError()) {
+          <p style="color:#fca5a5;font-size:0.82rem;margin:0 0 0.5rem;">{{ requestChangesError() }}</p>
+        }
+        <div class="dialog-actions">
+          <button class="action-btn neutral" (click)="closeRequestChanges()">Cancel</button>
+          <button class="action-btn changes" (click)="confirmRequestChanges()"
+                  [disabled]="isRequestingChanges() || !requestChangesNote().trim()">
+            {{ isRequestingChanges() ? 'Sending…' : 'Request Changes' }}
+          </button>
+        </div>
       </div>
     </div>
   }
@@ -245,6 +333,23 @@
           <button class="action-btn danger" (click)="deleteMovie(confirmDelete()!)" [disabled]="actionId() !== null">
             @if (actionId() !== null) { Deleting... } @else { Yes, Delete }
           </button>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- ══════════════════════════ INLINE PLAYER OVERLAY ══ -->
+  @if (isWatching()) {
+    <div class="player-overlay" (click)="closeWatchOverlay()">
+      <div class="player-container" (click)="$event.stopPropagation()">
+        <div class="player-topbar">
+          <span class="player-film-title">{{ watchTitle() }}</span>
+          <button class="player-close-btn" (click)="closeWatchOverlay()" title="Close player">
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+          </button>
+        </div>
+        <div class="player-body">
+          <app-video-player [src]="watchSrc()" [poster]="watchPoster()" />
         </div>
       </div>
     </div>

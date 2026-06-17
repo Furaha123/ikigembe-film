@@ -53,7 +53,7 @@ export class ProducerMoviesComponent implements OnInit {
     return {
       all:      all.length,
       live:     all.filter(m => m.approval_status === 'approved').length,
-      pending:  all.filter(m => m.approval_status === 'pending_review' || m.approval_status === 'approved_pending_contract').length,
+      pending:  all.filter(m => m.approval_status === 'pending_review' || m.approval_status === 'approved_pending_contract' || m.approval_status === 'changes_requested').length,
       rejected: all.filter(m => m.approval_status === 'rejected').length,
     };
   });
@@ -64,7 +64,7 @@ export class ProducerMoviesComponent implements OnInit {
 
     let list = this.movies();
     if (tab === 'live')     list = list.filter(m => m.approval_status === 'approved');
-    if (tab === 'pending')  list = list.filter(m => m.approval_status === 'pending_review' || m.approval_status === 'approved_pending_contract');
+    if (tab === 'pending')  list = list.filter(m => m.approval_status === 'pending_review' || m.approval_status === 'approved_pending_contract' || m.approval_status === 'changes_requested');
     if (tab === 'rejected') list = list.filter(m => m.approval_status === 'rejected');
     if (q) list = list.filter(m => m.title.toLowerCase().includes(q));
 
@@ -175,6 +175,7 @@ export class ProducerMoviesComponent implements OnInit {
     if (m.approval_status === 'rejected') return 'movies.chips.rejected';
     if (m.approval_status === 'approved') return 'movies.chips.live';
     if (m.approval_status === 'approved_pending_contract') return 'movies.chips.approvedPendingContract';
+    if (m.approval_status === 'changes_requested') return 'Changes Requested';
     return 'movies.chips.pendingApproval';
   }
 
@@ -182,6 +183,7 @@ export class ProducerMoviesComponent implements OnInit {
     if (m.approval_status === 'rejected') return 'status-rejected';
     if (m.approval_status === 'approved') return 'status-live';
     if (m.approval_status === 'approved_pending_contract') return 'status-contract';
+    if (m.approval_status === 'changes_requested') return 'status-changes';
     return 'status-review';
   }
 
@@ -191,7 +193,7 @@ export class ProducerMoviesComponent implements OnInit {
 
   isLive(m: ProducerMovie): boolean { return m.approval_status === 'approved'; }
   isEditable(m: ProducerMovie): boolean {
-    return m.approval_status === 'pending_review' || m.approval_status === 'rejected';
+    return m.approval_status === 'pending_review' || m.approval_status === 'rejected' || m.approval_status === 'changes_requested';
   }
 
   genreLabel(m: ProducerMovie): string {

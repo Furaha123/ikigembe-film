@@ -84,6 +84,33 @@
           </div>
         </div>
 
+        @if (isChangesRequested()) {
+          <div class="changes-requested-banner">
+            <div class="changes-banner-icon">
+              <svg viewBox="0 0 24 24" fill="currentColor" width="20" height="20">
+                <path d="M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z"/>
+              </svg>
+            </div>
+            <div class="changes-banner-body">
+              <span class="changes-banner-title">Changes Requested</span>
+              @if (movie()!.changes_requested_note) {
+                <p class="changes-banner-note">{{ movie()!.changes_requested_note }}</p>
+              }
+            </div>
+            <button class="btn-resubmit" (click)="resubmitOpen.set(true)">
+              <svg viewBox="0 0 24 24" fill="currentColor" width="15" height="15"><path d="M17.65 6.35A7.958 7.958 0 0 0 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08A5.99 5.99 0 0 1 12 18c-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/></svg>
+              Resubmit Film
+            </button>
+          </div>
+        }
+
+        @if (resubmitSuccess()) {
+          <div class="resubmit-success-banner">
+            <svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 14.5l-4-4 1.41-1.41L10 13.67l6.59-6.59L18 8.5l-8 8z"/></svg>
+            Your resubmission is under review. You'll be notified once the admin has reviewed it.
+          </div>
+        }
+
         <div class="details-layout">
 
           <!-- Left: info fields -->
@@ -510,6 +537,62 @@
         </button>
       </div>
 
+    </div>
+  </div>
+}
+
+<!-- ══════════════════════════════ RESUBMIT MODAL ══ -->
+@if (resubmitOpen()) {
+  <div class="resubmit-overlay" (click)="resubmitOpen.set(false)">
+    <div class="resubmit-dialog" (click)="$event.stopPropagation()">
+      <div class="resubmit-header">
+        <h3>Resubmit Film</h3>
+        <button class="close-btn" (click)="resubmitOpen.set(false)">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </div>
+      <p class="resubmit-hint">Upload new files to replace what the admin asked you to fix. At least one file is required.</p>
+
+      <div class="resubmit-field">
+        <label class="resubmit-label">New Video File <span class="resubmit-optional">(optional)</span></label>
+        <label class="resubmit-file-btn" [class.has-file]="resubmitVideoFile()">
+          <svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16"><path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM14 13v4h-4v-4H7l5-5 5 5h-3z"/></svg>
+          {{ resubmitVideoFile() ? resubmitVideoFile()!.name : 'Choose video file' }}
+          <input type="file" accept="video/*" class="hidden-input" (change)="onResubmitVideoSelected($event)" />
+        </label>
+        @if (resubmitVideoUploading()) {
+          <div class="resubmit-progress-bar"><div class="resubmit-progress-fill" [style.width.%]="resubmitVideoProgress()"></div></div>
+          <span class="resubmit-pct">{{ resubmitVideoProgress() }}%</span>
+        }
+        @if (resubmitVideoKey()) { <span class="resubmit-uploaded">Uploaded</span> }
+        @if (resubmitVideoError()) { <span class="resubmit-error">{{ resubmitVideoError() }}</span> }
+      </div>
+
+      <div class="resubmit-field">
+        <label class="resubmit-label">New Copyright Document <span class="resubmit-optional">(optional)</span></label>
+        <label class="resubmit-file-btn" [class.has-file]="resubmitCopyrightFile()">
+          <svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6zm-1 1.5L18.5 9H13V3.5z"/></svg>
+          {{ resubmitCopyrightFile() ? resubmitCopyrightFile()!.name : 'Choose PDF or image' }}
+          <input type="file" accept=".pdf,.jpg,.jpeg,.png" class="hidden-input" (change)="onResubmitCopyrightSelected($event)" />
+        </label>
+        @if (resubmitCopyrightUploading()) {
+          <div class="resubmit-progress-bar"><div class="resubmit-progress-fill" [style.width.%]="resubmitCopyrightProgress()"></div></div>
+          <span class="resubmit-pct">{{ resubmitCopyrightProgress() }}%</span>
+        }
+        @if (resubmitCopyrightKey()) { <span class="resubmit-uploaded">Uploaded</span> }
+        @if (resubmitCopyrightError()) { <span class="resubmit-error">{{ resubmitCopyrightError() }}</span> }
+      </div>
+
+      @if (resubmitError()) { <p class="resubmit-dialog-error">{{ resubmitError() }}</p> }
+
+      <div class="resubmit-actions">
+        <button class="btn-cancel" (click)="resubmitOpen.set(false)">Cancel</button>
+        <button class="btn-submit-resubmit"
+                [disabled]="!canResubmit() || resubmitLoading() || resubmitVideoUploading() || resubmitCopyrightUploading()"
+                (click)="submitResubmit()">
+          {{ resubmitLoading() ? 'Submitting…' : 'Submit for Review' }}
+        </button>
+      </div>
     </div>
   </div>
 }

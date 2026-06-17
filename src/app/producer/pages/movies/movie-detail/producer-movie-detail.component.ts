@@ -95,6 +95,27 @@ export class ProducerMovieDetailComponent implements OnInit, OnDestroy {
   isWatching     = signal(false);
   watchSrc       = signal('');
 
+  // ── Resubmit flow ─────────────────────────────────────
+  resubmitOpen             = signal(false);
+  resubmitVideoFile        = signal<File | null>(null);
+  resubmitVideoKey         = signal<string | null>(null);
+  resubmitVideoProgress    = signal(0);
+  resubmitVideoUploading   = signal(false);
+  resubmitVideoError       = signal<string | null>(null);
+
+  resubmitCopyrightFile        = signal<File | null>(null);
+  resubmitCopyrightKey         = signal<string | null>(null);
+  resubmitCopyrightProgress    = signal(0);
+  resubmitCopyrightUploading   = signal(false);
+  resubmitCopyrightError       = signal<string | null>(null);
+
+  resubmitLoading = signal(false);
+  resubmitError   = signal<string | null>(null);
+  resubmitSuccess = signal(false);
+
+  isChangesRequested = computed(() => this.movie()?.approval_status === 'changes_requested');
+  canResubmit        = computed(() => !!(this.resubmitVideoKey() || this.resubmitCopyrightKey()));
+
   private mainChart:   Chart | null = null;
   private advChart:    Chart | null = null;
   private copiedTimer: ReturnType<typeof setTimeout> | null = null;
@@ -254,7 +275,7 @@ export class ProducerMovieDetailComponent implements OnInit, OnDestroy {
     const map: Record<string, string> = {
       not_started: 'Not Processed',
       processing:  'Processing…',
-      completed:   'Ready',
+      ready:       'Ready',
       failed:      'Failed',
     };
     return map[status] ?? status;
@@ -264,7 +285,7 @@ export class ProducerMovieDetailComponent implements OnInit, OnDestroy {
     const map: Record<string, string> = {
       not_started: 'hls-pending',
       processing:  'hls-processing',
-      completed:   'hls-ready',
+      ready:       'hls-ready',
       failed:      'hls-failed',
     };
     return map[status] ?? '';
@@ -462,6 +483,87 @@ export class ProducerMovieDetailComponent implements OnInit, OnDestroy {
     if (!url) return;
     const text = encodeURIComponent(`Watch the trailer for "${title}" on Ikigembe: ${url}`);
     window.open(`https://wa.me/?text=${text}`, '_blank', 'noopener,noreferrer');
+  }
+
+  onResubmitVideoSelected(event: Event): void {
+    const file = (event.target as HTMLInputElement).files?.[0];
+    if (!file) return;
+    this.resubmitVideoFile.set(file);
+    this.resubmitVideoKey.set(null);
+    this.resubmitVideoError.set(null);
+    this.resubmitVideoProgress.set(0);
+    this.uploadResubmitFile(file, 'video');
+  }
+
+  onResubmitCopyrightSelected(event: Event): void {
+    const file = (event.target as HTMLInputElement).files?.[0];
+    if (!file) return;
+    this.resubmitCopyrightFile.set(file);
+    this.resubmitCopyrightKey.set(null);
+    this.resubmitCopyrightError.set(null);
+    this.resubmitCopyrightProgress.set(0);
+    this.uploadResubmitFile(file, 'copyright');
+  }
+
+  private uploadResubmitFile(file: File, type: 'video' | 'copyright'): void {
+    const setUploading = type === 'video' ? this.resubmitVideoUploading : this.resubmitCopyrightUploading;
+    const setKey       = type === 'video' ? this.resubmitVideoKey       : this.resubmitCopyrightKey;
+    const setProgress  = type === 'video' ? this.resubmitVideoProgress  : this.resubmitCopyrightProgress;
+    const setError     = type === 'video' ? this.resubmitVideoError     : this.resubmitCopyrightError;
+
+    setUploading.set(true);
+    this.producerService.getPresignedUploadUrl(file.name, file.type).subscribe({
+      next: ({ url, key }) => {
+        const xhr = new XMLHttpRequest();
+        xhr.upload.onprogress = (e) => {
+          if (e.lengthComputable) setProgress.set(Math.round((e.loaded / e.total) * 100));
+        };
+        xhr.onload = () => {
+          setUploading.set(false);
+          if (xhr.status >= 200 && xhr.status < 300) {
+            setKey.set(key);
+            setProgress.set(100);
+          } else {
+            setError.set('Upload failed. Please try again.');
+          }
+        };
+        xhr.onerror = () => { setUploading.set(false); setError.set('Upload failed. Please try again.'); };
+        xhr.open('PUT', url);
+        xhr.setRequestHeader('Content-Type', file.type);
+        xhr.send(file);
+      },
+      error: () => { setUploading.set(false); setError.set('Could not get upload URL. Please try again.'); },
+    });
+  }
+
+  submitResubmit(): void {
+    if (!this.canResubmit() || this.resubmitLoading()) return;
+    const id = this.movie()?.id;
+    if (!id) return;
+
+    this.resubmitLoading.set(true);
+    this.resubmitError.set(null);
+
+    const payload: { video_key?: string; copyright_document_key?: string } = {};
+    const vk = this.resubmitVideoKey();
+    const ck = this.resubmitCopyrightKey();
+    if (vk) payload.video_key = vk;
+    if (ck) payload.copyright_document_key = ck;
+
+    this.producerService.resubmitFilm(id, payload).subscribe({
+      next: (updated) => {
+        this.movie.set(updated as any);
+        this.resubmitLoading.set(false);
+        this.resubmitSuccess.set(true);
+        this.resubmitOpen.set(false);
+      },
+      error: (err) => {
+        this.resubmitLoading.set(false);
+        this.resubmitError.set(
+          err?.error?.error ?? err?.error?.detail ?? 'Resubmission failed. Please try again.'
+        );
+      },
+    });
   }
 
   ngOnDestroy(): void {

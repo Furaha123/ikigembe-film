@@ -1,16 +1,16 @@
 <div class="vp-wrapper"
+     tabindex="0"
      (mousemove)="onMouseMove()"
      (mouseleave)="onMouseLeave()"
      (dblclick)="toggleFullscreen()"
+     (keydown)="onKeyDown($event)"
      [class.vp-fullscreen]="fullscreen()">
 
   <video #videoEl
     class="vp-video"
-    [src]="src"
     [poster]="poster"
     preload="metadata"
-    (click)="togglePlay()"
-    (keydown)="onKeyDown($event)">
+    (click)="togglePlay()">
     <track kind="captions" />
   </video>
 
@@ -36,7 +36,6 @@
     <div class="vp-bar">
       <!-- Left controls -->
       <div class="vp-bar__left">
-        <!-- Rewind 10s -->
         <button class="vp-btn" (click)="rewind()" title="Rewind 10s">
           <svg viewBox="0 0 24 24" fill="currentColor">
             <path d="M12 5V1L7 6l5 5V7c3.31 0 6 2.69 6 6s-2.69 6-6 6-6-2.69-6-6H4c0 4.42 3.58 8 8 8s8-3.58 8-8-3.58-8-8-8z"/>
@@ -44,7 +43,6 @@
           </svg>
         </button>
 
-        <!-- Play / Pause -->
         <button class="vp-btn vp-btn--play" (click)="togglePlay()" title="Play/Pause">
           @if (playing()) {
             <svg viewBox="0 0 24 24" fill="currentColor">
@@ -57,7 +55,6 @@
           }
         </button>
 
-        <!-- Forward 10s -->
         <button class="vp-btn" (click)="forward()" title="Forward 10s">
           <svg viewBox="0 0 24 24" fill="currentColor">
             <path d="M12 5V1l5 5-5 5V7c-3.31 0-6 2.69-6 6s2.69 6 6 6 6-2.69 6-6h2c0 4.42-3.58 8-8 8s-8-3.58-8-8 3.58-8 8-8z"/>
@@ -65,13 +62,11 @@
           </svg>
         </button>
 
-        <!-- Time -->
         <span class="vp-time">{{ currentTimeStr() }} / {{ durationStr() }}</span>
       </div>
 
       <!-- Right controls -->
       <div class="vp-bar__right">
-        <!-- Volume -->
         <button class="vp-btn" (click)="toggleMute()" title="Mute">
           @if (muted() || volume() === 0) {
             <svg viewBox="0 0 24 24" fill="currentColor">
@@ -89,6 +84,43 @@
                [value]="muted() ? 0 : volume()"
                (input)="onVolumeChange($event)" />
 
+        <!-- Quality picker (HLS only) -->
+        @if (qualityLevels().length > 0) {
+          <div class="vp-quality-wrap" (click)="$event.stopPropagation()">
+            <button class="vp-btn vp-quality-btn"
+                    (click)="toggleQualityMenu()"
+                    [title]="'Quality: ' + currentQualityLabel()">
+              <span class="vp-quality-chip">
+                <svg viewBox="0 0 24 24" fill="currentColor" width="15" height="15">
+                  <path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/>
+                </svg>
+                {{ currentQualityLabel() }}
+              </span>
+            </button>
+            @if (showQualityMenu()) {
+              <div class="vp-quality-menu" role="menu">
+                @for (level of qualityLevels(); track level.index) {
+                  <button role="menuitem"
+                          [class.active]="currentQuality() === level.index"
+                          (click)="setQuality(level.index)">
+                    @if (level.index === -1) {
+                      <svg viewBox="0 0 24 24" fill="currentColor" width="12" height="12" style="margin-right:5px;opacity:.7">
+                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 14.5v-9l6 4.5-6 4.5z"/>
+                      </svg>
+                    }
+                    {{ level.label }}
+                    @if (currentQuality() === level.index) {
+                      <svg viewBox="0 0 24 24" fill="currentColor" width="12" height="12" style="margin-left:auto">
+                        <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
+                      </svg>
+                    }
+                  </button>
+                }
+              </div>
+            }
+          </div>
+        }
+
         <!-- Fullscreen -->
         <button class="vp-btn" (click)="toggleFullscreen()" title="Fullscreen">
           @if (fullscreen()) {
@@ -105,7 +137,7 @@
     </div>
   </div>
 
-  <!-- Big play button when paused -->
+  <!-- Big center play button when paused -->
   @if (!playing() && !srcError()) {
     <button class="vp-center-play" (click)="togglePlay()">
       <svg viewBox="0 0 24 24" fill="currentColor">
@@ -114,7 +146,7 @@
     </button>
   }
 
-  <!-- Source error -->
+  <!-- Source error state -->
   @if (srcError()) {
     <div class="vp-error">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="48" height="48">

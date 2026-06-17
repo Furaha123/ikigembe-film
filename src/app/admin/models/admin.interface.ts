@@ -65,15 +65,29 @@ export interface FilmSubmissionItem {
   submission_date: string;
   genre: string | null;
   duration_minutes: number | null;
-  status: 'pending_review' | 'pending_admin_review' | 'approved' | 'rejected' | 'approved_pending_contract';
+  status: 'pending_review' | 'pending_admin_review' | 'approved' | 'rejected' | 'approved_pending_contract' | 'changes_requested';
   rejection_reason: string | null;
   thumbnail_url: string | null;
   synopsis?: string | null;
   cast?: string | null;
   genres?: string | null;
-  hls_status?: string | null;
+  hls_status?: HlsStatus | null;
+  hls_url?: string | null;
+  hls_error_message?: string | null;
+  video_url?: string | null;
+  trailer_url?: string | null;
   free_preview?: boolean;
   copyright_url?: string | null;
+}
+
+
+export type HlsStatus = 'not_started' | 'processing' | 'ready' | 'failed';
+
+export interface FilmHlsStatusResponse {
+  id: number;
+  hls_status: HlsStatus;
+  hls_url: string | null;
+  hls_error_message: string | null;
 }
 
 export interface ProducerContractItem {
