@@ -59,19 +59,22 @@ export class AdminMoviesComponent implements OnInit, OnDestroy {
   watchPoster  = signal('');
   watchTitle   = signal('');
   watchLoading = signal<number | null>(null);
+  watchError   = signal<string | null>(null);
 
   // ── Per-film reviewer notes (pre-fill rejection reason) ──
   notesMap = signal<Map<number, string>>(new Map());
 
   openSubmissionDetail(s: FilmSubmissionItem): void {
     this.selectedSubmission.set(s);
-    if (s.hls_status === 'processing' || s.hls_status === 'not_started') {
+    this.watchError.set(null);
+    if (s.hls_status === 'processing') {
       this.startPolling(s.id);
     }
   }
 
   closeSubmissionDetail(): void {
     this.pollingStop$.next();
+    this.watchError.set(null);
     this.selectedSubmission.set(null);
   }
 
@@ -161,7 +164,7 @@ export class AdminMoviesComponent implements OnInit, OnDestroy {
   }
 
   canWatchFilm(s: FilmSubmissionItem): boolean {
-    return !!(s.hls_url || s.video_url || s.hls_status === 'ready');
+    return s.hls_status !== 'processing';
   }
 
   watchFilm(s: FilmSubmissionItem, type: 'full' | 'trailer'): void {
@@ -178,15 +181,23 @@ export class AdminMoviesComponent implements OnInit, OnDestroy {
     }
 
     this.watchLoading.set(s.id);
+    this.watchError.set(null);
     this.adminService.getFilmHlsStatus(s.id).subscribe({
       next: (res) => {
         this.watchLoading.set(null);
         this.submissions.update(list => list.map(i =>
           i.id === s.id ? { ...i, hls_status: res.hls_status, hls_url: res.hls_url } : i
         ));
-        if (res.hls_url) this.openPlayer(res.hls_url, s.thumbnail_url ?? '', s.title);
+        if (res.hls_url) {
+          this.openPlayer(res.hls_url, s.thumbnail_url ?? '', s.title);
+        } else {
+          this.watchError.set('No video available for this film yet.');
+        }
       },
-      error: () => this.watchLoading.set(null),
+      error: () => {
+        this.watchLoading.set(null);
+        this.watchError.set('Could not load video. Please try again.');
+      },
     });
   }
 

@@ -322,6 +322,13 @@ $muted: #888;
   flex-shrink: 0;
 }
 
+.watch-error {
+  margin: 0;
+  padding: 0.5rem 1.5rem 0;
+  font-size: 0.8rem;
+  color: #fca5a5;
+}
+
 // ── Reviewer notes section ───────────────────────────────
 .reviewer-notes {
   padding: 1rem 1.5rem;

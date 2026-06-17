@@ -186,7 +186,7 @@
           <div class="watch-actions">
             <button class="watch-btn watch-btn--full"
               [disabled]="!canWatchFilm(s) || watchLoading() === s.id"
-              [title]="!canWatchFilm(s) ? 'Video not yet processed' : 'Watch the full submitted film'"
+              [title]="!canWatchFilm(s) ? 'Video is currently being processed — check back soon' : 'Watch the full submitted film'"
               (click)="watchFilm(s, 'full')">
               @if (watchLoading() === s.id) {
                 <span class="spin"></span> Loading…
@@ -204,6 +204,10 @@
               </button>
             }
           </div>
+
+          @if (watchError()) {
+            <p class="watch-error">{{ watchError() }}</p>
+          }
 
           <div class="detail-rows">
             <div class="detail-row"><span class="detail-label">Title</span><span class="detail-value">{{ s.title }}</span></div>
