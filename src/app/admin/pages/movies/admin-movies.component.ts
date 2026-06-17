@@ -1,7 +1,9 @@
-import { Component, inject, OnInit, signal, computed } from '@angular/core';
+import { Component, inject, OnInit, OnDestroy, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
+import { Subject, interval } from 'rxjs';
+import { switchMap, takeUntil } from 'rxjs/operators';
 import { AdminService } from '../../services/admin.service';
 import { AdminMovie, FilmSubmissionItem } from '../../models/admin.interface';
 import { VideoPlayerComponent } from '../../../shared/components/video-player/video-player.component';
@@ -14,7 +16,7 @@ type ActiveTab = 'submissions' | 'catalog';
   templateUrl: './admin-movies.component.html',
   styleUrl: './admin-movies.component.scss'
 })
-export class AdminMoviesComponent implements OnInit {
+export class AdminMoviesComponent implements OnInit, OnDestroy {
   private readonly adminService = inject(AdminService);
   private readonly fb = inject(FormBuilder);
   private readonly router = inject(Router);
@@ -48,6 +50,9 @@ export class AdminMoviesComponent implements OnInit {
 
   selectedSubmission = signal<FilmSubmissionItem | null>(null);
 
+  // ── HLS status polling ───────────────────────────────
+  private readonly pollingStop$ = new Subject<void>();
+
   // ── Inline video player ──────────────────────────────
   isWatching   = signal(false);
   watchSrc     = signal('');
@@ -58,8 +63,48 @@ export class AdminMoviesComponent implements OnInit {
   // ── Per-film reviewer notes (pre-fill rejection reason) ──
   notesMap = signal<Map<number, string>>(new Map());
 
-  openSubmissionDetail(s: FilmSubmissionItem) { this.selectedSubmission.set(s); }
-  closeSubmissionDetail() { this.selectedSubmission.set(null); }
+  openSubmissionDetail(s: FilmSubmissionItem): void {
+    this.selectedSubmission.set(s);
+    if (s.hls_status === 'processing' || s.hls_status === 'not_started') {
+      this.startPolling(s.id);
+    }
+  }
+
+  closeSubmissionDetail(): void {
+    this.pollingStop$.next();
+    this.selectedSubmission.set(null);
+  }
+
+  private startPolling(id: number): void {
+    this.pollingStop$.next(); // cancel any existing poll first
+
+    interval(10_000).pipe(
+      switchMap(() => this.adminService.getFilmHlsStatus(id)),
+      takeUntil(this.pollingStop$),
+    ).subscribe({
+      next: (res) => {
+        const patch = { hls_status: res.hls_status, hls_url: res.hls_url };
+
+        this.submissions.update(list =>
+          list.map(s => s.id === id ? { ...s, ...patch } : s)
+        );
+
+        const sel = this.selectedSubmission();
+        if (sel?.id === id) {
+          this.selectedSubmission.set({ ...sel, ...patch });
+        }
+
+        if (res.hls_status === 'ready' || res.hls_status === 'failed') {
+          this.pollingStop$.next();
+        }
+      },
+    });
+  }
+
+  ngOnDestroy(): void {
+    this.pollingStop$.next();
+    this.pollingStop$.complete();
+  }
 
   form = this.fb.group({
     title:           ['', Validators.required],
@@ -116,7 +161,7 @@ export class AdminMoviesComponent implements OnInit {
   }
 
   canWatchFilm(s: FilmSubmissionItem): boolean {
-    return !!(s.hls_url || s.video_url || s.hls_status === 'completed');
+    return !!(s.hls_url || s.video_url || s.hls_status === 'ready');
   }
 
   watchFilm(s: FilmSubmissionItem, type: 'full' | 'trailer'): void {

@@ -71,7 +71,7 @@ export interface FilmSubmissionItem {
   synopsis?: string | null;
   cast?: string | null;
   genres?: string | null;
-  hls_status?: string | null;
+  hls_status?: HlsStatus | null;
   hls_url?: string | null;
   video_url?: string | null;
   trailer_url?: string | null;
@@ -86,7 +86,16 @@ export interface FilmDetail {
   trailer_url: string | null;
   video_url: string | null;
   hls_url: string | null;
-  hls_status: string;
+  hls_status: HlsStatus;
+}
+
+export type HlsStatus = 'not_started' | 'processing' | 'ready' | 'failed';
+
+export interface FilmHlsStatusResponse {
+  id: number;
+  hls_status: HlsStatus;
+  hls_url: string | null;
+  hls_error_message: string | null;
 }
 
 export interface ProducerContractItem {

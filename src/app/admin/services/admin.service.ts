@@ -16,6 +16,7 @@ import {
   AdminMovie,
   FilmSubmissionItem,
   FilmDetail,
+  FilmHlsStatusResponse,
   ProducerDocuments,
   ProducerContractItem,
   RevenueTrendItem,
@@ -135,6 +136,10 @@ export class AdminService {
 
   getFilmDetail(id: number): Observable<FilmDetail> {
     return this.http.get<FilmDetail>(`${BASE}/admin/dashboard/movies/${id}/`);
+  }
+
+  getFilmHlsStatus(id: number): Observable<FilmHlsStatusResponse> {
+    return this.http.get<FilmHlsStatusResponse>(`${BASE}/admin/dashboard/movies/${id}/hls-status/`);
   }
 
   removeFilm(id: number): Observable<unknown> {
