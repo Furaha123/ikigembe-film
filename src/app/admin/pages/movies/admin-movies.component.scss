@@ -99,6 +99,7 @@ $muted: #888;
   &.badge-rejected  { background: #2e1a1a; color: #fca5a5; }
   &.badge-review    { background: #2a2316; color: #fde68a; }
   &.badge-contract  { background: rgba(245,158,11,.1); color: #f59e0b; }
+  &.badge-changes   { background: rgba(245,158,11,.12); color: #f59e0b; border: 1px solid rgba(245,158,11,.25); }
 }
 
 /* ── Action buttons ── */
@@ -111,6 +112,7 @@ $muted: #888;
   &.reject   { background: rgba(239,68,68,0.18);   color: #fca5a5; }
   &.approve  { background: rgba(74,222,128,0.18);  color: #86efac; }
   &.contract { background: rgba(245,158,11,0.15);  color: #f59e0b; }
+  &.changes  { background: rgba(245,158,11,0.12);  color: #f59e0b; border: 1px solid rgba(245,158,11,0.3); &:hover { background: rgba(245,158,11,0.22); } }
   &.neutral  { background: rgba(255,255,255,0.06); color: $text; }
   &.save     { background: $gold; color: #000; }
   &.full     { width: 100%; justify-content: center; }

@@ -1175,3 +1175,219 @@ tfoot .adv-total-row {
   opacity: 0.4;
   cursor: not-allowed;
 }
+
+// ── Changes Requested banner ──────────────────────────
+.changes-requested-banner {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  background: rgba(245, 158, 11, 0.08);
+  border: 1px solid rgba(245, 158, 11, 0.3);
+  border-radius: 10px;
+  padding: 1rem 1.25rem;
+  margin-bottom: 1.5rem;
+
+  .changes-banner-icon { color: #f59e0b; flex-shrink: 0; margin-top: 1px; }
+  .changes-banner-body { flex: 1; min-width: 0; }
+  .changes-banner-title {
+    display: block;
+    font-weight: 700;
+    color: #f59e0b;
+    font-size: 0.9rem;
+    margin-bottom: 0.25rem;
+  }
+  .changes-banner-note {
+    color: rgba(255,255,255,0.75);
+    font-size: 0.85rem;
+    margin: 0;
+    line-height: 1.5;
+  }
+}
+
+.btn-resubmit {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(245,158,11,0.12);
+  color: #f59e0b;
+  border: 1px solid rgba(245,158,11,0.3);
+  border-radius: 8px;
+  padding: 8px 14px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  flex-shrink: 0;
+  transition: background 0.15s;
+  &:hover { background: rgba(245,158,11,0.2); }
+}
+
+.resubmit-success-banner {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  background: rgba(52, 211, 153, 0.08);
+  border: 1px solid rgba(52, 211, 153, 0.3);
+  border-radius: 10px;
+  padding: 0.9rem 1.25rem;
+  margin-bottom: 1.5rem;
+  color: #34d399;
+  font-size: 0.875rem;
+}
+
+// ── Resubmit modal ─────────────────────────────────────
+.resubmit-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.65);
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+}
+
+.resubmit-dialog {
+  background: #161616;
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 12px;
+  padding: 1.5rem;
+  width: 100%;
+  max-width: 480px;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.resubmit-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.75rem;
+  h3 { font-size: 1.05rem; font-weight: 700; color: #fff; margin: 0; }
+  .close-btn {
+    background: none; border: none; color: rgba(255,255,255,0.5);
+    cursor: pointer; padding: 4px;
+    &:hover { color: #fff; }
+    svg { display: block; width: 18px; height: 18px; }
+  }
+}
+
+.resubmit-hint {
+  font-size: 0.82rem;
+  color: rgba(255,255,255,0.55);
+  margin: 0 0 1.25rem;
+  line-height: 1.5;
+}
+
+.resubmit-field { margin-bottom: 1.25rem; }
+
+.resubmit-label {
+  display: block;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: rgba(255,255,255,0.7);
+  margin-bottom: 0.5rem;
+}
+
+.resubmit-optional {
+  color: rgba(255,255,255,0.35);
+  font-weight: 400;
+  margin-left: 4px;
+}
+
+.resubmit-file-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(255,255,255,0.05);
+  border: 1px dashed rgba(255,255,255,0.15);
+  border-radius: 8px;
+  padding: 10px 14px;
+  cursor: pointer;
+  color: rgba(255,255,255,0.6);
+  font-size: 0.82rem;
+  transition: border-color 0.15s, background 0.15s;
+  &:hover, &.has-file {
+    border-color: $gold;
+    color: $gold;
+    background: rgba(200,168,75,0.05);
+  }
+}
+
+.hidden-input { display: none; }
+
+.resubmit-progress-bar {
+  height: 3px;
+  background: rgba(255,255,255,0.1);
+  border-radius: 2px;
+  margin-top: 6px;
+  overflow: hidden;
+}
+
+.resubmit-progress-fill {
+  height: 100%;
+  background: $gold;
+  border-radius: 2px;
+  transition: width 0.1s;
+}
+
+.resubmit-pct {
+  font-size: 0.75rem;
+  color: rgba(255,255,255,0.5);
+  margin-top: 3px;
+  display: block;
+}
+
+.resubmit-uploaded {
+  display: inline-flex;
+  align-items: center;
+  font-size: 0.75rem;
+  color: #34d399;
+  margin-top: 4px;
+}
+
+.resubmit-error {
+  display: block;
+  font-size: 0.75rem;
+  color: #f87171;
+  margin-top: 4px;
+}
+
+.resubmit-dialog-error {
+  font-size: 0.82rem;
+  color: #f87171;
+  margin: 0 0 1rem;
+}
+
+.resubmit-actions {
+  display: flex;
+  gap: 0.75rem;
+  justify-content: flex-end;
+  margin-top: 1.25rem;
+}
+
+.btn-cancel {
+  background: rgba(255,255,255,0.06);
+  color: #e5e5e5;
+  border: none;
+  border-radius: 6px;
+  padding: 0.45rem 1rem;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  &:hover { background: rgba(255,255,255,0.1); }
+}
+
+.btn-submit-resubmit {
+  background: rgba(200,168,75,0.12);
+  color: $gold;
+  border: 1px solid rgba(200,168,75,0.3);
+  border-radius: 6px;
+  padding: 0.45rem 1rem;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s;
+  &:hover:not(:disabled) { background: rgba(200,168,75,0.22); }
+  &:disabled { opacity: 0.5; cursor: not-allowed; }
+}

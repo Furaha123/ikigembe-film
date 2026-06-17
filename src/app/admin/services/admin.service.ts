@@ -134,6 +134,10 @@ export class AdminService {
     return this.http.post(`${BASE}/admin/dashboard/movies/${id}/reject/`, { reason });
   }
 
+  requestChanges(id: number, note: string): Observable<{ detail: string }> {
+    return this.http.post<{ detail: string }>(`${BASE}/admin/dashboard/movies/${id}/request-changes/`, { note });
+  }
+
   getFilmHlsStatus(id: number): Observable<FilmHlsStatusResponse> {
     return this.http.get<FilmHlsStatusResponse>(`${BASE}/admin/dashboard/movies/${id}/hls-status/`);
   }

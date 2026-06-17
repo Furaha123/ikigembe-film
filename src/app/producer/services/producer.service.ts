@@ -28,8 +28,8 @@ export interface ProducerMovie {
   duration_minutes: number | null;
   is_active: boolean;
   has_free_preview: boolean;
-  hls_status: 'not_started' | 'processing' | 'completed' | 'failed';
-  approval_status: 'pending_review' | 'approved' | 'rejected' | 'approved_pending_contract';
+  hls_status: 'not_started' | 'processing' | 'ready' | 'failed';
+  approval_status: 'pending_review' | 'approved' | 'rejected' | 'approved_pending_contract' | 'changes_requested';
   rejection_reason: string | null;
   created_at: string;
   genres: string[];
@@ -70,7 +70,7 @@ export interface ProducerMovieDetail {
   trailer_duration_seconds: number | null;
   video_url: string | null;
   hls_url: string | null;
-  hls_status: 'not_started' | 'processing' | 'completed' | 'failed';
+  hls_status: 'not_started' | 'processing' | 'ready' | 'failed';
   subtitles: string | null;
   price: number;
   views: number;
@@ -84,6 +84,9 @@ export interface ProducerMovieDetail {
   producer: string | null;
   created_at: string;
   updated_at: string;
+  approval_status: 'pending_review' | 'approved' | 'rejected' | 'approved_pending_contract' | 'changes_requested';
+  changes_requested_note: string | null;
+  rejection_reason: string | null;
 }
 
 export interface ProducerWithdrawal {
@@ -203,6 +206,7 @@ export interface ProducerNotification {
     | 'account_rejected'
     | 'film_approved'
     | 'film_rejected'
+    | 'film_changes_requested'
     | 'document_reminder'
     | 'contract_required'
     | 'contract_expiring'
@@ -378,6 +382,10 @@ export class ProducerService {
 
   deleteFilm(id: number): Observable<unknown> {
     return this.http.delete(`${BASE}/producer/films/${id}/`);
+  }
+
+  resubmitFilm(id: number, payload: { video_key?: string; copyright_document_key?: string }): Observable<ProducerMovieDetail> {
+    return this.http.post<ProducerMovieDetail>(`${BASE}/producer/films/${id}/resubmit/`, payload);
   }
 
   getNotifications(): Observable<ProducerNotification[]> {

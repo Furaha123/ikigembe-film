@@ -64,6 +64,12 @@ export class AdminMoviesComponent implements OnInit, OnDestroy {
   // ── Per-film reviewer notes (pre-fill rejection reason) ──
   notesMap = signal<Map<number, string>>(new Map());
 
+  // ── Request Changes ──────────────────────────────────
+  requestChangesModal  = signal<FilmSubmissionItem | null>(null);
+  requestChangesNote   = signal('');
+  isRequestingChanges  = signal(false);
+  requestChangesError  = signal<string | null>(null);
+
   openSubmissionDetail(s: FilmSubmissionItem): void {
     this.selectedSubmission.set(s);
     this.watchError.set(null);
@@ -254,6 +260,35 @@ export class AdminMoviesComponent implements OnInit, OnDestroy {
     });
   }
 
+  openRequestChanges(film: FilmSubmissionItem) {
+    this.requestChangesModal.set(film);
+    this.requestChangesNote.set('');
+    this.requestChangesError.set(null);
+  }
+
+  closeRequestChanges() { this.requestChangesModal.set(null); }
+
+  confirmRequestChanges() {
+    const film = this.requestChangesModal();
+    if (!film || !this.requestChangesNote().trim()) return;
+    this.isRequestingChanges.set(true);
+    this.requestChangesError.set(null);
+    this.adminService.requestChanges(film.id, this.requestChangesNote()).subscribe({
+      next: () => {
+        this.submissions.update(list => list.map(s =>
+          s.id === film.id ? { ...s, status: 'changes_requested' as const } : s
+        ));
+        this.isRequestingChanges.set(false);
+        this.closeRequestChanges();
+        this.closeSubmissionDetail();
+      },
+      error: (err) => {
+        this.isRequestingChanges.set(false);
+        this.requestChangesError.set(err?.error?.detail ?? 'Failed to request changes. Please try again.');
+      },
+    });
+  }
+
   openRejectSubmission(film: FilmSubmissionItem) {
     this.rejectSubmissionModal.set(film);
     this.rejectSubmissionReason.set(this.getNote(film.id));
@@ -315,6 +350,7 @@ export class AdminMoviesComponent implements OnInit, OnDestroy {
     if (s === 'approved') return 'Approved';
     if (s === 'rejected') return 'Rejected';
     if (s === 'approved_pending_contract') return 'Pending Contract';
+    if (s === 'changes_requested') return 'Changes Requested';
     return 'Under Review'; // pending_review | pending_admin_review
   }
 
@@ -322,6 +358,7 @@ export class AdminMoviesComponent implements OnInit, OnDestroy {
     if (s === 'approved') return 'badge-approved';
     if (s === 'rejected') return 'badge-rejected';
     if (s === 'approved_pending_contract') return 'badge-contract';
+    if (s === 'changes_requested') return 'badge-changes';
     return 'badge-review';
   }
 

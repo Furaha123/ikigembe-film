@@ -129,6 +129,7 @@ export class ProducerLayoutComponent implements OnInit {
   notifIcon(type: ProducerNotification['type']): string {
     if (type === 'film_approved' || type === 'account_approved') return 'check';
     if (type === 'film_rejected' || type === 'account_rejected') return 'cross';
+    if (type === 'film_changes_requested') return 'warning';
     if (type === 'contract_required' || type === 'contract_expiring' || type === 'contract_expired') return 'contract';
     return 'bell';
   }
@@ -142,6 +143,8 @@ export class ProducerLayoutComponent implements OnInit {
     this.showNotifDropdown.set(false);
     if (n.type === 'contract_required' || n.type === 'contract_expiring' || n.type === 'contract_expired') {
       this.router.navigate(['/producer/contracts/start']);
+    } else if (n.type === 'film_changes_requested') {
+      this.router.navigate(['/producer/movies']);
     }
   }
 

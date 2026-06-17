@@ -61,6 +61,7 @@
                     <button class="action-btn approve" (click)="approveSubmission(s.id)" [disabled]="actionId() === s.id">
                       {{ actionId() === s.id ? '…' : 'Approve' }}
                     </button>
+                    <button class="action-btn changes" (click)="openRequestChanges(s); $event.stopPropagation()">Changes</button>
                     <button class="action-btn reject" (click)="openRejectSubmission(s)">Reject</button>
                   }
                   <button class="action-btn danger" (click)="openRemoveConfirm(s.id)">Remove</button>
@@ -281,12 +282,42 @@
               <button class="action-btn approve full" (click)="approveSubmission(s.id); closeSubmissionDetail()" [disabled]="actionId() === s.id">
                 {{ actionId() === s.id ? 'Approving…' : 'Approve' }}
               </button>
+              <button class="action-btn changes full" (click)="openRequestChanges(s); closeSubmissionDetail()">
+                Request Changes
+              </button>
               <button class="action-btn reject full" (click)="openRejectSubmission(s); closeSubmissionDetail()">
                 Reject
               </button>
             </div>
           }
         }
+      </div>
+    </div>
+  }
+
+  <!-- Request Changes modal -->
+  @if (requestChangesModal()) {
+    <div class="overlay" (click)="closeRequestChanges()">
+      <div class="dialog" (click)="$event.stopPropagation()">
+        <h3>Request Changes</h3>
+        <p><strong>{{ requestChangesModal()!.title }}</strong></p>
+        <div class="field">
+          <label>Note to Producer</label>
+          <textarea rows="4" [value]="requestChangesNote()"
+                    (input)="requestChangesNote.set($any($event.target).value)"
+                    placeholder="Describe what the producer needs to fix or improve…"
+                    class="dialog-textarea"></textarea>
+        </div>
+        @if (requestChangesError()) {
+          <p style="color:#fca5a5;font-size:0.82rem;margin:0 0 0.5rem;">{{ requestChangesError() }}</p>
+        }
+        <div class="dialog-actions">
+          <button class="action-btn neutral" (click)="closeRequestChanges()">Cancel</button>
+          <button class="action-btn changes" (click)="confirmRequestChanges()"
+                  [disabled]="isRequestingChanges() || !requestChangesNote().trim()">
+            {{ isRequestingChanges() ? 'Sending…' : 'Request Changes' }}
+          </button>
+        </div>
       </div>
     </div>
   }
