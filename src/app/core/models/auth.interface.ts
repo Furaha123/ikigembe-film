@@ -52,6 +52,7 @@ export interface LoginUser {
   is_staff?: boolean;
   role?: string;
   date_joined?: string;
+  onboarding_completed?: boolean;
 }
 
 /** Covers DRF token, JWT, and AWS Cognito response shapes */
