@@ -6,6 +6,7 @@ import { TranslatePipe, TranslateDirective } from '@ngx-translate/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ProducerService, ProducerMovieDetail } from '../../../services/producer.service';
+import { VideoPlayerComponent } from '../../../../shared/components/video-player/video-player.component';
 import {
   Chart, LineController, LineElement, PointElement,
   LinearScale, CategoryScale, Filler, Tooltip, Legend,
@@ -62,7 +63,7 @@ const RANGE_CONFIGS: Record<string, RangeConfig> = {
 @Component({
   selector: 'app-producer-movie-detail',
   standalone: true,
-  imports: [TranslatePipe, TranslateDirective, CommonModule],
+  imports: [TranslatePipe, TranslateDirective, CommonModule, VideoPlayerComponent],
   templateUrl: './producer-movie-detail.component.html',
   styleUrl: './producer-movie-detail.component.scss',
 })
@@ -91,6 +92,8 @@ export class ProducerMovieDetailComponent implements OnInit, OnDestroy {
   advChartType   = signal<AdvChartType>('line');
   isShareOpen    = signal(false);
   copiedFlash    = signal(false);
+  isWatching     = signal(false);
+  watchSrc       = signal('');
 
   private mainChart:   Chart | null = null;
   private advChart:    Chart | null = null;
@@ -234,8 +237,17 @@ export class ProducerMovieDetailComponent implements OnInit, OnDestroy {
   back(): void { this.router.navigate(['/producer/movies']); }
 
   watchMovie(): void {
-    const id = this.movie()?.id;
-    if (id) this.router.navigate(['/movie', id]);
+    const m = this.movie();
+    if (!m) return;
+    const src = m.hls_url ?? m.video_url ?? '';
+    if (!src) return;
+    this.watchSrc.set(src);
+    this.isWatching.set(true);
+  }
+
+  closePlayer(): void {
+    this.isWatching.set(false);
+    this.watchSrc.set('');
   }
 
   hlsLabel(status: string): string {
