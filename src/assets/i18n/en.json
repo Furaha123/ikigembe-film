@@ -32,6 +32,14 @@
       "subtitle": "Submit your content for review — approved films go live on the platform"
     },
     "dateRange": "Date Range",
+    "dateRangeSep": "to",
+    "summary": {
+      "on": "On {{label}},",
+      "in": "In {{label}},",
+      "views": "your content was watched {{count}} times",
+      "watchTime": "viewers spent {{hours}} hours watching",
+      "earnings": "your estimated earnings were {{amount}}"
+    },
     "contractWarning": {
       "expiringTitle": "Agreement Expiring Soon",
       "expiringMessage": "Your agreement expires in {{days}} days. Renew now to avoid interruptions.",
@@ -44,7 +52,8 @@
       "views": "Views",
       "watchTime": "Watch Time (hours)",
       "revenue": "Your Estimated Revenue",
-      "revenueSubtitle": "Total from all content"
+      "revenueSubtitle": "Total from all content",
+      "vsPeriod": "vs last period"
     },
     "tabs": {
       "views": "Views",
@@ -72,12 +81,16 @@
       "summaryTax": "Gov. Tax / RRA (30%)",
       "summaryTotal": "Total from Balance",
       "btn": "Request Withdrawal",
-      "submitting": "Submitting…"
+      "submitting": "Submitting…",
+      "successMsg": "Request submitted! Processing within 3–5 business days.",
+      "errorMsg": "Failed to submit. Please try again."
     },
     "recentWithdrawals": "Recent Withdrawals",
     "performance": {
       "title": "Your Content Performance",
-      "seeAll": "See All Content"
+      "seeAll": "See All Content",
+      "viewDetails": "View Details",
+      "close": "Close"
     },
     "transactions": {
       "title": "Recent Transactions",

@@ -18,6 +18,9 @@
           <li>{{ item.label }}</li>
         }
       }
+      @if (userRole() === 'Viewer') {
+        <li><a routerLink="/profile" class="producer-cta">Become a Producer</a></li>
+      }
     </ul>
   </div>
   <div class="right">
@@ -210,6 +213,9 @@
           } @else {
             <li><span>{{ item.label }}</span></li>
           }
+        }
+        @if (userRole() === 'Viewer') {
+          <li><a routerLink="/profile" class="producer-cta" (click)="closeMobileMenu()">Become a Producer</a></li>
         }
       </ul>
     </nav>

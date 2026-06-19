@@ -70,7 +70,7 @@
       </div>
       <div class="custom-range">
         <input type="date" #startDate (change)="onCustomRange(startDate.value, endDate.value)" />
-        <span class="to-sep">to</span>
+        <span class="to-sep">{{ 'dashboard.dateRangeSep' | translate }}</span>
         <input type="date" #endDate (change)="onCustomRange(startDate.value, endDate.value)" />
       </div>
     </div>
@@ -91,7 +91,7 @@
         <div class="kpi-value">{{ fmtNum(rangeStats().views) }}</div>
         <div class="kpi-growth">
           <svg viewBox="0 0 24 24" fill="currentColor" class="arrow-up"><path d="M16 6l2.29 2.29-4.88 4.88-4-4L2 16.59 3.41 18l6-6 4 4 6.3-6.29L22 12V6h-6z"/></svg>
-          +{{ rangeStats().viewsGrowth }}% vs last period
+          +{{ rangeStats().viewsGrowth }}% {{ 'dashboard.kpi.vsPeriod' | translate }}
         </div>
       </div>
     </div>
@@ -108,7 +108,7 @@
         <div class="kpi-value">{{ fmtNum(rangeStats().watchTime) }}h</div>
         <div class="kpi-growth kpi-growth--teal">
           <svg viewBox="0 0 24 24" fill="currentColor" class="arrow-up"><path d="M16 6l2.29 2.29-4.88 4.88-4-4L2 16.59 3.41 18l6-6 4 4 6.3-6.29L22 12V6h-6z"/></svg>
-          +{{ rangeStats().watchGrowth }}% vs last period
+          +{{ rangeStats().watchGrowth }}% {{ 'dashboard.kpi.vsPeriod' | translate }}
         </div>
       </div>
     </div>
@@ -334,7 +334,7 @@
         <div class="movie-right">
           <span class="movie-earnings">{{ fmt(m.total_gross_revenue) }}</span>
           <button class="detail-btn" (click)="toggleMovieDetail(m.title)">
-            {{ expandedMovie() === m.title ? 'Close' : 'View Details' }}
+            {{ expandedMovie() === m.title ? ('dashboard.performance.close' | translate) : ('dashboard.performance.viewDetails' | translate) }}
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
                  [style.transform]="expandedMovie() === m.title ? 'rotate(180deg)' : 'none'">
               <path d="M6 9l6 6 6-6"/>

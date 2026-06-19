@@ -284,6 +284,13 @@ $muted:  #888;
   &.gold { background: $gold; color: #000; border-color: $gold; }
 }
 
+.upgrade-note {
+  font-size: 0.85rem;
+  color: $muted;
+  line-height: 1.5;
+  margin: 0;
+}
+
 // Payment history
 .ph-loading,
 .ph-empty {

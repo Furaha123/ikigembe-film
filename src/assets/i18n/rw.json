@@ -1,6 +1,6 @@
 {
   "nav": {
-    "dashboard": "Ikibaho",
+    "dashboard": "Imbonerahamwe",
     "upload": "Ohereza Filime",
     "movies": "Filime Zanjye",
     "wallet": "Imari",
@@ -25,13 +25,21 @@
     "suspended": "Konti yawe ihagaritswe. Ibikorwa byose byo kohereza no gucunga filime bihagaritswe."
   },
   "dashboard": {
-    "title": "Ikibaho cy'Umukora wa Filime",
+    "title": "Imbonerahamwe cy'uwukora Filime",
     "subtitle": "Kurikirana inyungu zawe kandi ugenzure ibiri gusesengura",
     "uploadCta": {
       "title": "Ohereza Filime",
       "subtitle": "Ohereza ibiri gusesengura — filime zemejwe zizagaragara ku rubuga"
     },
     "dateRange": "Ibihe by'Amakuru",
+    "dateRangeSep": "kugeza",
+    "summary": {
+      "on": "Ku {{label}},",
+      "in": "Mu {{label}},",
+      "views": "ibiri gusesengura byawe byarebwe inshuro {{count}}",
+      "watchTime": "abareba bangeje amasaha {{hours}} bareba",
+      "earnings": "inyungu zawe zetekerezwa zari {{amount}}"
+    },
     "contractWarning": {
       "expiringTitle": "Amasezerano Ashira Vuba",
       "expiringMessage": "Amasezerano yawe ashira mu minsi {{days}}. Yongerera nonaha kugirango wirinde ibibazo.",
@@ -41,13 +49,14 @@
       "renewNowBtn": "Ongerera Nonaha"
     },
     "kpi": {
-      "views": "Ibyabanywe",
+      "views": "Ibyarebwe",
       "watchTime": "Igihe cyo Kureba (amasaha)",
       "revenue": "Inyungu Zawe Zetekerezwa",
-      "revenueSubtitle": "Iyungurwa ry'ibiri byose"
+      "revenueSubtitle": "Iyungurwa ry'ibiri byose",
+      "vsPeriod": "ugereranyije n'igihe gishize"
     },
     "tabs": {
-      "views": "Ibyabanywe",
+      "views": "Ibyarebwe",
       "watchTime": "Igihe cyo Kureba",
       "revenue": "Inyungu",
       "earnings": "Amafaranga Yinjiye"
@@ -72,12 +81,16 @@
       "summaryTax": "Umusoro wa leta / RRA (30%)",
       "summaryTotal": "Igiteranyo cy'Amafaranga",
       "btn": "Saba Gukura Amafaranga",
-      "submitting": "Ohereza…"
+      "submitting": "Ohereza…",
+      "successMsg": "Icyifuzo cyoherejwe! Bizakorwa mu minsi 3–5 y'akazi.",
+      "errorMsg": "Byanze kohereza. Nyamuneka gerageza nanone."
     },
     "recentWithdrawals": "Gukura Amafaranga Bishya",
     "performance": {
       "title": "Imikorere y'Ibiri Gusesengura",
-      "seeAll": "Reba Ibiri Byose"
+      "seeAll": "Reba Ibiri Byose",
+      "viewDetails": "Reba Ibisobanuro",
+      "close": "Funga"
     },
     "transactions": {
       "title": "Ibikorwa Bishya",
