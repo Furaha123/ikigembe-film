@@ -213,6 +213,30 @@
     </form>
   </section>
 
+  @if (userRole() === 'Viewer') {
+    <section class="card">
+      <h2 class="card-title">Become a Producer</h2>
+      <p class="card-desc">Share your stories with the world. Upload your films to Ikigembe and start earning.</p>
+
+      @if (!showUpgradeConfirm()) {
+        <div class="card-actions">
+          <button class="btn gold" (click)="showUpgradeConfirm.set(true)">Become a Producer</button>
+        </div>
+      } @else {
+        <p class="upgrade-note">Your account will be upgraded to a Producer account. You'll complete a short onboarding to set up your producer profile.</p>
+        @if (upgradeError()) {
+          <div class="error-msg">{{ upgradeError() }}</div>
+        }
+        <div class="edit-actions">
+          <button class="btn" (click)="showUpgradeConfirm.set(false)" [disabled]="isUpgrading()">Cancel</button>
+          <button class="btn gold" (click)="upgradeToProducer()" [disabled]="isUpgrading()">
+            {{ isUpgrading() ? 'Upgrading…' : 'Confirm' }}
+          </button>
+        </div>
+      }
+    </section>
+  }
+
   @if (userRole() !== 'Producer') {
     <!-- Payment History -->
     <section class="card">

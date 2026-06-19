@@ -1,6 +1,7 @@
 import { Component, inject, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { Router } from '@angular/router';
 import { AuthService, UserProfile, NotificationPreferences } from '../../core/services/auth.service';
 import { PaymentService, PaymentHistoryItem } from '../../core/services/payment.service';
 import { HeaderComponent } from '../../core/components/header/header.component';
@@ -16,6 +17,7 @@ export class ProfileComponent implements OnInit {
   private readonly authService    = inject(AuthService);
   private readonly paymentService = inject(PaymentService);
   private readonly fb             = inject(FormBuilder);
+  private readonly router         = inject(Router);
 
   readonly userRole = this.authService.userRole;
 
@@ -45,6 +47,10 @@ export class ProfileComponent implements OnInit {
   isSavingPassword = signal(false);
   passwordSuccess = signal(false);
   passwordErrors = signal<{ current?: string; new?: string; confirm?: string; general?: string }>({});
+
+  isUpgrading       = signal(false);
+  upgradeError      = signal<string | null>(null);
+  showUpgradeConfirm = signal(false);
 
   passwordForm = this.fb.group({
     current_password: ['', Validators.required],
@@ -164,6 +170,23 @@ export class ProfileComponent implements OnInit {
         if (body.new_password)     errors.new     = Array.isArray(body.new_password) ? body.new_password[0] : body.new_password;
         if (!Object.keys(errors).length) errors.general = body.detail ?? body.error ?? 'Something went wrong.';
         this.passwordErrors.set(errors);
+      },
+    });
+  }
+
+  upgradeToProducer(): void {
+    if (this.isUpgrading()) return;
+    this.isUpgrading.set(true);
+    this.upgradeError.set(null);
+    this.authService.upgradeToProducer().subscribe({
+      next: () => {
+        this.isUpgrading.set(false);
+        this.router.navigate(['/producer/onboarding']);
+      },
+      error: (err) => {
+        this.isUpgrading.set(false);
+        const msg = err?.error?.error ?? err?.error?.detail ?? 'Upgrade failed. Please try again.';
+        this.upgradeError.set(msg);
       },
     });
   }

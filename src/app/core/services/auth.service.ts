@@ -243,6 +243,12 @@ export class AuthService {
     return this.http.patch<NotificationPreferences>(`${this.baseUrl}/auth/notifications/`, prefs);
   }
 
+  upgradeToProducer(): Observable<LoginResponse> {
+    return this.http.post<LoginResponse>(`${this.baseUrl}/auth/upgrade-to-producer/`, {}).pipe(
+      tap((res) => this.storeSession(res))
+    );
+  }
+
   changePassword(current_password: string, new_password: string): Observable<unknown> {
     return this.http.post(`${this.baseUrl}/auth/change-password/`, { current_password, new_password });
   }

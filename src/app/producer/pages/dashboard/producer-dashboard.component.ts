@@ -2,7 +2,7 @@ import {
   Component, inject, signal, computed,
   AfterViewInit, OnDestroy, OnInit, ElementRef, ViewChild,
 } from '@angular/core';
-import { TranslatePipe, TranslateDirective } from '@ngx-translate/core';
+import { TranslatePipe, TranslateDirective, TranslateService } from '@ngx-translate/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { RouterLink } from '@angular/router';
@@ -54,6 +54,7 @@ export class ProducerDashboardComponent implements OnInit, AfterViewInit, OnDest
   private readonly authService      = inject(AuthService);
   private readonly producerService  = inject(ProducerService);
   private readonly contractService  = inject(ContractService);
+  private readonly translate        = inject(TranslateService);
   readonly fb                       = inject(FormBuilder);
   readonly ranges: Range[]         = ['7D', '14D', '28D', '1M', '2M', '3M', '6M', '1Y'];
 
@@ -239,12 +240,13 @@ export class ProducerDashboardComponent implements OnInit, AfterViewInit, OnDest
     if (!data.length) return '';
     const last = data[data.length - 1];
     const r    = this.selectedRange();
-    const prefix = ['7D', '14D'].includes(r) ? `On ${last.label},` : `In ${last.label},`;
+    const prefixKey = ['7D', '14D'].includes(r) ? 'dashboard.summary.on' : 'dashboard.summary.in';
+    const prefix = this.translate.instant(prefixKey, { label: last.label });
     if (m === 'views')
-      return `${prefix} your content was watched ${this.fmtNum(last.views)} times`;
+      return `${prefix} ${this.translate.instant('dashboard.summary.views', { count: this.fmtNum(last.views) })}`;
     if (m === 'watchTime')
-      return `${prefix} viewers spent ${last.watchTime.toLocaleString()} hours watching`;
-    return `${prefix} your estimated earnings were ${this.fmt(last.earnings)}`;
+      return `${prefix} ${this.translate.instant('dashboard.summary.watchTime', { hours: last.watchTime.toLocaleString() })}`;
+    return `${prefix} ${this.translate.instant('dashboard.summary.earnings', { amount: this.fmt(last.earnings) })}`;
   }
 
   // ── Movie detail panel ────────────────────────────────
@@ -314,7 +316,7 @@ export class ProducerDashboardComponent implements OnInit, AfterViewInit, OnDest
     this.producerService.requestWithdrawal(payload).subscribe({
       next: () => {
         this.isSaving.set(false);
-        this.successMsg.set('Request submitted! Processing within 3–5 business days.');
+        this.successMsg.set(this.translate.instant('dashboard.withdraw.successMsg'));
         this.withdrawForm.reset({ momo_provider: 'MTN' });
         this.selectMethod(this.paymentMethod());
         this.producerService.getWallet().subscribe({
@@ -326,7 +328,7 @@ export class ProducerDashboardComponent implements OnInit, AfterViewInit, OnDest
       },
       error: () => {
         this.isSaving.set(false);
-        this.successMsg.set('Failed to submit. Please try again.');
+        this.successMsg.set(this.translate.instant('dashboard.withdraw.errorMsg'));
       },
     });
   }
