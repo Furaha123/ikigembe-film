@@ -61,9 +61,6 @@ export class AdminMoviesComponent implements OnInit, OnDestroy {
   watchLoading = signal<number | null>(null);
   watchError   = signal<string | null>(null);
 
-  // ── Per-film reviewer notes (pre-fill rejection reason) ──
-  notesMap = signal<Map<number, string>>(new Map());
-
   // ── Request Changes ──────────────────────────────────
   requestChangesModal  = signal<FilmSubmissionItem | null>(null);
   requestChangesNote   = signal('');
@@ -160,13 +157,6 @@ export class AdminMoviesComponent implements OnInit, OnDestroy {
 
   nextSubmissionsPage() {
     if (this.submissionsPage() < this.submissionsTotalPages()) this.loadSubmissions(this.submissionsPage() + 1);
-  }
-
-  // ── Reviewer notes ───────────────────────────────────
-  getNote(id: number): string { return this.notesMap().get(id) ?? ''; }
-
-  setNote(id: number, text: string): void {
-    this.notesMap.update(m => { const n = new Map(m); n.set(id, text); return n; });
   }
 
   canWatchFilm(s: FilmSubmissionItem): boolean {
@@ -291,7 +281,7 @@ export class AdminMoviesComponent implements OnInit, OnDestroy {
 
   openRejectSubmission(film: FilmSubmissionItem) {
     this.rejectSubmissionModal.set(film);
-    this.rejectSubmissionReason.set(this.getNote(film.id));
+    this.rejectSubmissionReason.set('');
   }
 
   closeRejectSubmission() { this.rejectSubmissionModal.set(null); }

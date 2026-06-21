@@ -264,19 +264,6 @@
             </a>
           }
 
-          <!-- ── Reviewer notes ── -->
-          <div class="reviewer-notes">
-            <div class="notes-header">
-              <span class="notes-label">Reviewer Notes</span>
-              <span class="notes-hint">Pre-fills rejection reason</span>
-            </div>
-            <textarea class="notes-textarea" rows="3"
-              [value]="getNote(s.id)"
-              (input)="setNote(s.id, $any($event.target).value)"
-              placeholder="Write your notes here. These will be pre-filled when you reject this film.">
-            </textarea>
-          </div>
-
           @if (s.status === 'pending_review' || s.status === 'pending_admin_review') {
             <div class="detail-actions">
               <button class="action-btn approve full" (click)="approveSubmission(s.id); closeSubmissionDetail()" [disabled]="actionId() === s.id">

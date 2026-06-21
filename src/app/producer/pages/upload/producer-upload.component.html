@@ -10,6 +10,17 @@
       </div>
       <h2>{{ 'upload.success.title' | translate }}</h2>
       <p>{{ 'upload.success.message' | translate }}</p>
+
+      <div class="review-timeline-box">
+        <div class="review-timeline-header">
+          <svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16">
+            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/>
+          </svg>
+          <span>{{ 'upload.success.reviewTimelineLabel' | translate }}</span>
+        </div>
+        <p>{{ 'upload.success.reviewTimeline' | translate }}</p>
+      </div>
+
       <button class="btn-primary" (click)="goToDashboard()">{{ 'upload.success.dashboardBtn' | translate }}</button>
     </div>
   }
@@ -149,29 +160,17 @@
               }
             </div>
 
-            <!-- Release Date + Price -->
-            <div class="field-row">
-              <div class="field" [class.has-error]="releaseDate?.invalid && releaseDate?.touched">
-                <label>{{ 'upload.details.releaseDate' | translate }} <span class="required">*</span></label>
-                <procurement-date-picker
-                  [singleMode]="true"
-                  (singleDateChange)="onReleaseDateChange($event)"
-                  class="release-date-picker"
-                />
-                @if (releaseDate?.touched && releaseDate?.hasError('required')) {
-                  <span class="field-error">{{ 'upload.details.releaseDateRequired' | translate }}</span>
-                }
-              </div>
-
-              <div class="field" [class.has-error]="price?.invalid && price?.touched">
-                <label>{{ 'upload.details.price' | translate }} <span class="required">*</span></label>
-                <input type="number" formControlName="price" [placeholder]="'upload.details.pricePlaceholder' | translate" min="0" />
-                @if (price?.touched && price?.hasError('required')) {
-                  <span class="field-error">{{ 'upload.details.priceRequired' | translate }}</span>
-                } @else if (price?.touched && price?.hasError('min')) {
-                  <span class="field-error">{{ 'upload.details.priceNegative' | translate }}</span>
-                }
-              </div>
+            <!-- Release Date -->
+            <div class="field" [class.has-error]="releaseDate?.invalid && releaseDate?.touched">
+              <label>{{ 'upload.details.releaseDate' | translate }} <span class="required">*</span></label>
+              <procurement-date-picker
+                [singleMode]="true"
+                (singleDateChange)="onReleaseDateChange($event)"
+                class="release-date-picker"
+              />
+              @if (releaseDate?.touched && releaseDate?.hasError('required')) {
+                <span class="field-error">{{ 'upload.details.releaseDateRequired' | translate }}</span>
+              }
             </div>
 
             <!-- Duration -->
@@ -439,7 +438,7 @@
         <div class="step-card">
           <div class="step-card-header">
             <h2>{{ 'upload.copyright.title' | translate }}</h2>
-            <p>{{ 'upload.copyright.subtitle' | translate }}</p>
+            <p>{{ 'upload.copyright.subtitle' | translate }} <span class="optional">(Optional)</span></p>
           </div>
 
           <div class="upload-zone"
@@ -527,10 +526,6 @@
               <span class="review-val">{{ detailsForm.value.release_date || '—' }}</span>
             </div>
             <div class="review-row">
-              <span class="review-key">{{ 'upload.review.labels.price' | translate }}</span>
-              <span class="review-val">{{ detailsForm.value.price != null ? 'RWF ' + detailsForm.value.price : '—' }}</span>
-            </div>
-            <div class="review-row">
               <span class="review-key">{{ 'upload.review.labels.duration' | translate }}</span>
               <span class="review-val">{{ detailsForm.value.duration_minutes ? detailsForm.value.duration_minutes + ' min' : '—' }}</span>
             </div>
@@ -587,10 +582,10 @@
           </div>
 
           <div class="review-section">
-            <h3 class="review-section-title">{{ 'upload.review.sections.copyright' | translate }}</h3>
+            <h3 class="review-section-title">{{ 'upload.review.sections.copyright' | translate }} <span class="optional">(Optional)</span></h3>
             <div class="review-row">
               <span class="review-key">{{ 'upload.review.labels.document' | translate }}</span>
-              <span class="review-val">{{ copyrightFile()?.name ?? '—' }}</span>
+              <span class="review-val">{{ copyrightFile()?.name ?? 'Not provided' }}</span>
             </div>
           </div>
 
@@ -598,9 +593,20 @@
             <div class="error-box single">{{ submitError() }}</div>
           }
 
+          <div class="field-check terms-check">
+            <label class="check-label">
+              <input type="checkbox" [checked]="termsAccepted()" (change)="termsAccepted.set($any($event.target).checked)" />
+              <span>
+                I confirm that I have read and agree to the
+                <a href="/terms" target="_blank" rel="noopener">Terms &amp; Conditions</a>
+                and that this submission is my original work.
+              </span>
+            </label>
+          </div>
+
           <div class="step-actions">
             <button class="btn-back" (click)="goBack()">{{ 'upload.review.back' | translate }}</button>
-            <button class="btn-submit-main" [disabled]="isSubmitting()" (click)="submit()">
+            <button class="btn-submit-main" [disabled]="isSubmitting() || !termsAccepted()" (click)="submit()">
               @if (isSubmitting()) {
                 <span class="spinner"></span>{{ 'upload.review.submitting' | translate }}
               } @else {

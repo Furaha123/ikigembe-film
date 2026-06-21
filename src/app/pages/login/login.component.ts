@@ -14,7 +14,7 @@ declare const google: {
   };
 };
 
-const GOOGLE_CLIENT_ID = '315063576340-7m07t5n12jerr8qjhalushs82h2c5rjl.apps.googleusercontent.com';
+const GOOGLE_CLIENT_ID = '315063576340-dokh369lnriqdpermiha2iesqrm097dp.apps.googleusercontent.com';
 
 interface LoginErrors {
   email?: string[];

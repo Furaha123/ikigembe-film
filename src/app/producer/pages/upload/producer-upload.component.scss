@@ -39,6 +39,35 @@ $red:    #f87171;
   p  { color: $muted; font-size: 0.95rem; max-width: 420px; line-height: 1.75; margin: 0; }
 }
 
+.review-timeline-box {
+  background: rgba(200, 168, 75, 0.08);
+  border: 1px solid rgba(200, 168, 75, 0.25);
+  border-radius: 10px;
+  padding: 1rem 1.25rem;
+  max-width: 420px;
+  width: 100%;
+  text-align: left;
+
+  .review-timeline-header {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: $gold;
+    font-weight: 600;
+    font-size: 0.85rem;
+    margin-bottom: 0.5rem;
+    svg { flex-shrink: 0; }
+  }
+
+  p {
+    color: #b0b0b0;
+    font-size: 0.875rem;
+    line-height: 1.6;
+    margin: 0;
+    max-width: none;
+  }
+}
+
 // ── Rules page ─────────────────────────────────────────
 .rules-page {
   padding: 0.5rem 0;
