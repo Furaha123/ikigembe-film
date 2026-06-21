@@ -16,14 +16,14 @@
     </div>
 
     <!-- Loading -->
-    @if (hasMovies() === null) {
+    @if (eligibility() === 'loading') {
       <div class="flow-loading">
         <span class="spinner"></span>
       </div>
     }
 
     <!-- No movies gate -->
-    @else if (!hasMovies()) {
+    @else if (eligibility() === 'no_movies') {
       <h1 class="flow-title">{{ 'contracts.welcome.title' | translate }}</h1>
       <div class="info-box info-box--warning">
         <p>{{ 'contracts.welcome.noMovies' | translate }}</p>
@@ -34,7 +34,19 @@
       </div>
     }
 
-    <!-- Normal flow -->
+    <!-- Movies uploaded but none approved yet -->
+    @else if (eligibility() === 'not_approved') {
+      <h1 class="flow-title">{{ 'contracts.welcome.title' | translate }}</h1>
+      <div class="info-box info-box--warning">
+        <p>Your film is under review. You can sign the contract once the admin approves your submission.</p>
+      </div>
+      <div class="flow-actions">
+        <button class="btn-outline" (click)="back()">{{ 'contracts.welcome.back' | translate }}</button>
+        <a routerLink="/producer/movies" class="btn-gold">View My Films</a>
+      </div>
+    }
+
+    <!-- Eligible — normal flow -->
     @else {
       <h1 class="flow-title">{{ 'contracts.welcome.title' | translate }}</h1>
       <p class="flow-subtitle">{{ 'contracts.welcome.subtitle' | translate }}</p>

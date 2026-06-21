@@ -236,6 +236,8 @@
     "success": {
       "title": "Thank You!",
       "message": "Your movie has been submitted successfully. We will review your movie and get back to you soon.",
+      "reviewTimeline": "Our team typically reviews submissions within 3–5 business days. You'll receive an email notification once a decision has been made.",
+      "reviewTimelineLabel": "What happens next?",
       "dashboardBtn": "Go to Dashboard"
     },
     "uploading": "Uploading… {{percent}}%",

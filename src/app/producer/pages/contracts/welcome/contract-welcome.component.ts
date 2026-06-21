@@ -14,12 +14,20 @@ export class ContractWelcomeComponent implements OnInit {
   private readonly router           = inject(Router);
   private readonly producerService  = inject(ProducerService);
 
-  hasMovies = signal<boolean | null>(null); // null = loading
+  eligibility = signal<'loading' | 'no_movies' | 'not_approved' | 'eligible'>('loading');
 
   ngOnInit() {
     this.producerService.getMovies().subscribe({
-      next:  (movies) => this.hasMovies.set(movies.length > 0),
-      error: ()       => this.hasMovies.set(false),
+      next: (movies) => {
+        if (movies.length === 0) {
+          this.eligibility.set('no_movies');
+        } else if (movies.some(m => m.approval_status === 'approved' || m.approval_status === 'approved_pending_contract')) {
+          this.eligibility.set('eligible');
+        } else {
+          this.eligibility.set('not_approved');
+        }
+      },
+      error: () => this.eligibility.set('no_movies'),
     });
   }
 

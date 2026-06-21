@@ -49,7 +49,6 @@ export class ProducerUploadComponent {
     longline:         ['', [Validators.required, Validators.minLength(10), Validators.maxLength(200)]],
     synopsis:         ['', [Validators.required, Validators.minLength(20), Validators.maxLength(600)]],
     release_date:     ['', Validators.required],
-    price:            [0, [Validators.required, Validators.min(0)]],
     duration_minutes: [null as number | null, Validators.min(1)],
     cast:             [''],
     director:         [''],
@@ -98,8 +97,9 @@ export class ProducerUploadComponent {
   copyrightError = signal<string | null>(null);
 
   // ── Submit ────────────────────────────────────────────
-  isSubmitting = signal(false);
-  submitError  = signal<string | null>(null);
+  isSubmitting  = signal(false);
+  submitError   = signal<string | null>(null);
+  termsAccepted = signal(false);
 
   // ── Computed ──────────────────────────────────────────
   stepIndex = computed(() => {
@@ -116,7 +116,6 @@ export class ProducerUploadComponent {
   get longline()        { return this.detailsForm.get('longline'); }
   get synopsis()        { return this.detailsForm.get('synopsis'); }
   get releaseDate()     { return this.detailsForm.get('release_date'); }
-  get price()           { return this.detailsForm.get('price'); }
   get durationMinutes() { return this.detailsForm.get('duration_minutes'); }
   get cast()            { return this.detailsForm.get('cast'); }
   get director()        { return this.detailsForm.get('director'); }
@@ -150,10 +149,6 @@ export class ProducerUploadComponent {
   }
 
   nextFromCopyright() {
-    if (!this.copyrightReady()) {
-      this.copyrightError.set('Copyright proof document is required.');
-      return;
-    }
     this.currentStep.set('review');
   }
 
@@ -379,7 +374,7 @@ export class ProducerUploadComponent {
     fd.append('title',            v.title!);
     fd.append('overview',         v.synopsis!);
     fd.append('release_date',     v.release_date!);
-    fd.append('price',            String(v.price ?? 0));
+    fd.append('price',            '500');
     fd.append('duration_minutes', String(v.duration_minutes ?? 0));
     fd.append('is_active',        'false');
     fd.append('has_free_preview', String(v.has_free_preview ?? false));

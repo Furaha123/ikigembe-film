@@ -25,7 +25,7 @@
     "suspended": "Konti yawe ihagaritswe. Ibikorwa byose byo kohereza no gucunga filime bihagaritswe."
   },
   "dashboard": {
-    "title": "Imbonerahamwe cy'uwukora Filime",
+    "title": "Imbonerahamwe y'uwukora Filime",
     "subtitle": "Kurikirana inyungu zawe kandi ugenzure ibiri gusesengura",
     "uploadCta": {
       "title": "Ohereza Filime",
@@ -236,6 +236,8 @@
     "success": {
       "title": "Murakoze!",
       "message": "Ifilime yawe yoherejwe neza. Tuzasuzuma ifilime yawe kandi tukubwire vuba.",
+      "reviewTimeline": "Itsinda ryacu risuzuma ibyo byoherejwe mu minsi 3–5 y'akazi. Uzabona ubutumwa bwa imeyili igihe icyemezo gifashwe.",
+      "reviewTimelineLabel": "Bizakurikiraho ni iki?",
       "dashboardBtn": "Jya ku Kibaho"
     },
     "uploading": "Kohereza… {{percent}}%",
