@@ -10,6 +10,7 @@ import { IVideoContent } from '../../shared/models/video-content.interface';
 import { VideoPlayerComponent } from '../../shared/components/video-player/video-player.component';
 import { PaymentModalComponent } from '../../shared/components/payment-modal/payment-modal.component';
 import { PaymentService } from '../../core/services/payment.service';
+import { DataSaverService } from '../../core/services/data-saver.service';
 
 @Component({
   selector: 'app-movie-detail',
@@ -24,6 +25,7 @@ export class MovieDetailComponent implements OnInit, OnDestroy {
   private readonly movieService   = inject(MovieService);
   private readonly paymentService = inject(PaymentService);
   private readonly seo            = inject(SeoService);
+  readonly dataSaver              = inject(DataSaverService);
 
   movie            = signal<any>(null);
   cast             = signal<any[]>([]);

@@ -2,6 +2,7 @@ import { Component, OnInit, inject, signal, computed, PLATFORM_ID } from '@angul
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { MovieService } from '../../shared/services/movie.service';
+import { DataSaverService } from '../../core/services/data-saver.service';
 import { HeaderComponent } from '../../core/components/header/header.component';
 import { FooterComponent } from '../../core/components/footer/footer.component';
 import { SeoService } from '../../core/services/seo.service';
@@ -20,6 +21,7 @@ export class ProducerProfileComponent implements OnInit {
   private readonly router       = inject(Router);
   private readonly movieService = inject(MovieService);
   private readonly seo          = inject(SeoService);
+  private readonly dataSaver    = inject(DataSaverService);
   readonly platformId           = inject(PLATFORM_ID);
 
   producer    = signal<ProducerProfile | null>(null);
@@ -30,7 +32,7 @@ export class ProducerProfileComponent implements OnInit {
   totalPages  = signal(1);
   totalMovies = signal(0);
 
-  backdropUrl = computed(() => this.movies()[0]?.backdrop_url ?? null);
+  backdropUrl = computed(() => this.dataSaver.isActive() ? null : (this.movies()[0]?.backdrop_url ?? null));
 
   readonly skeletons = Array(8).fill(0);
 

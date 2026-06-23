@@ -9,7 +9,7 @@
           class="swiper-slide"
         >
           <div class="movie-card">
-            <img [src]="movie.thumbnail_url" [alt]="movie.title" />
+            <img [src]="movie.thumbnail_url" [alt]="movie.title" loading="lazy" />
             <div class="quality-badge">HD</div>
             <button class="play-overlay" (click)="goToMovie(movie)">
               <span class="play-btn">

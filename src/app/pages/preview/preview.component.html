@@ -32,7 +32,7 @@
 
   <!-- Hero -->
   <section class="preview-hero"
-           [style.background-image]="m.backdrop_url ? 'url(' + m.backdrop_url + ')' : (m.thumbnail_url ? 'url(' + m.thumbnail_url + ')' : 'none')">
+           [style.background-image]="!dataSaver.isActive() && m.backdrop_url ? 'url(' + m.backdrop_url + ')' : (m.thumbnail_url ? 'url(' + m.thumbnail_url + ')' : 'none')">
     <div class="preview-hero-overlay">
       @if (m.trailer_url) {
         <button class="preview-play-btn" (click)="playTrailer()" aria-label="Play trailer">
@@ -49,7 +49,7 @@
 
       <!-- Poster -->
       @if (m.thumbnail_url) {
-        <img [src]="m.thumbnail_url" [alt]="m.title" class="preview-poster" />
+        <img [src]="m.thumbnail_url" [alt]="m.title" class="preview-poster" loading="lazy" />
       }
 
       <!-- Details -->

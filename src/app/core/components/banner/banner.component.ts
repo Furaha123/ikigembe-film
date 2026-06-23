@@ -1,6 +1,7 @@
 import { Component, computed, inject, input, signal } from '@angular/core';
 import { DomSanitizer } from '@angular/platform-browser';
 import { Router } from '@angular/router';
+import { DataSaverService } from '../../services/data-saver.service';
 
 @Component({
   selector: 'app-banner',
@@ -8,8 +9,9 @@ import { Router } from '@angular/router';
   styleUrl: './banner.component.scss'
 })
 export class BannerComponent {
-  private sanitizer = inject(DomSanitizer);
-  private router = inject(Router);
+  private sanitizer  = inject(DomSanitizer);
+  private router     = inject(Router);
+  private dataSaver  = inject(DataSaverService);
 
   bannerTitle = input<string>('');
   bannerOverview = input<string>('');
@@ -21,7 +23,7 @@ export class BannerComponent {
 
   videoUrl = computed(() => {
     const key = this.trailerKey();
-    if (!key) return null;
+    if (!key || this.dataSaver.isActive()) return null;
     const mute = this.isMuted() ? 1 : 0;
     return this.sanitizer.bypassSecurityTrustResourceUrl(
       `https://www.youtube.com/embed/${key}?autoplay=1&mute=${mute}&loop=1&playlist=${key}&controls=0&showinfo=0&modestbranding=1&rel=0&iv_load_policy=3&disablekb=1&fs=0`

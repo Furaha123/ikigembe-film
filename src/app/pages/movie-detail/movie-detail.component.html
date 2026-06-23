@@ -11,7 +11,7 @@
   </nav>
 
   <!-- Hero Section -->
-  <section class="hero" [style.background-image]="movie.backdrop_url ? 'url(' + movie.backdrop_url + ')' : 'none'">
+  <section class="hero" [style.background-image]="!dataSaver.isActive() && movie.backdrop_url ? 'url(' + movie.backdrop_url + ')' : 'none'">
     <div class="hero-overlay">
       @if (movie.trailer_url) {
         <button class="hero-play-btn" (click)="playTrailer()" title="Watch Trailer">
@@ -36,7 +36,7 @@
     <div class="info-layout">
       <!-- Left: Poster -->
       <div class="poster-col">
-        <img [src]="movie.thumbnail_url" [alt]="movie.title" class="poster" />
+        <img [src]="movie.thumbnail_url" [alt]="movie.title" class="poster" loading="lazy" />
       </div>
 
       <!-- Center: Details -->
@@ -121,7 +121,7 @@
           @for (similar of similarMovies(); track similar.id) {
             <button class="similar-card" (click)="goToMovie(similar.id)">
               <div class="similar-poster">
-                <img [src]="similar.thumbnail_url" [alt]="similar.title || similar.name" />
+                <img [src]="similar.thumbnail_url" [alt]="similar.title || similar.name" loading="lazy" />
                 <span class="similar-badge">HD</span>
               </div>
               <p class="similar-name">{{ similar.title || similar.name }}</p>
