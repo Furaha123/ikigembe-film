@@ -75,6 +75,11 @@ export class ProducerUploadComponent {
   thumbnailPreview = signal<string | null>(null);
   thumbnailError   = signal<string | null>(null);
 
+  // ── Backdrop ──────────────────────────────────────────
+  backdropFile    = signal<File | null>(null);
+  backdropPreview = signal<string | null>(null);
+  backdropError   = signal<string | null>(null);
+
   // ── Trailer ───────────────────────────────────────────
   trailerFile        = signal<File | null>(null);
   trailerKey         = signal<string | null>(null);
@@ -183,6 +188,30 @@ export class ProducerUploadComponent {
   removeThumbnail() {
     this.thumbnailFile.set(null);
     this.thumbnailPreview.set(null);
+  }
+
+  // ── Backdrop handlers ─────────────────────────────────
+  onBackdropSelect(event: Event) {
+    const file = (event.target as HTMLInputElement).files?.[0];
+    if (!file) return;
+    if (!file.type.startsWith('image/')) {
+      this.backdropError.set('Only image files are accepted (JPG, PNG, WebP).');
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      this.backdropError.set('Image must be under 5 MB.');
+      return;
+    }
+    this.backdropError.set(null);
+    this.backdropFile.set(file);
+    const reader = new FileReader();
+    reader.onload = (e) => this.backdropPreview.set(e.target?.result as string);
+    reader.readAsDataURL(file);
+  }
+
+  removeBackdrop() {
+    this.backdropFile.set(null);
+    this.backdropPreview.set(null);
   }
 
   // ── Trailer handlers ──────────────────────────────────
@@ -393,6 +422,7 @@ export class ProducerUploadComponent {
     if (v.writer?.trim())   fd.append('writer',   v.writer.trim());
 
     if (this.thumbnailFile()) fd.append('thumbnail', this.thumbnailFile()!);
+    if (this.backdropFile())  fd.append('backdrop',  this.backdropFile()!);
     if (this.copyrightFile()) fd.append('copyright_document', this.copyrightFile()!);
 
     this.producerService.submitMovie(fd).subscribe({

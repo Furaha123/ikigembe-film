@@ -7,7 +7,9 @@ import {
   MovieDetailResponse,
   TrailerResponse,
   MovieCreditsResponse,
-  SimilarMoviesResponse
+  SimilarMoviesResponse,
+  ProducersListResponse,
+  ProducerMoviesResponse,
 } from '../models/movie-api.interface';
 import {
   ALL_MOCK_MOVIES,
@@ -73,6 +75,17 @@ export class MovieService {
   getSimilarMovies(id: number) {
     const results = ALL_MOCK_MOVIES.filter(m => m.id !== id).slice(0, 6);
     return of<SimilarMoviesResponse>({ results });
+  }
+
+  getProducers() {
+    return this.http.get<ProducersListResponse>(`${this.baseUrl}/producers/`);
+  }
+
+  getMoviesByProducer(id: number, page = 1) {
+    return this.http.get<ProducerMoviesResponse>(
+      `${this.baseUrl}/producers/${id}/`,
+      { params: { page: page.toString() } }
+    );
   }
 
   getMovieStream(id: number) {

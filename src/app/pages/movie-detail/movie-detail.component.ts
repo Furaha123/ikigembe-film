@@ -1,6 +1,6 @@
 import { Component, OnInit, inject, signal, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { SeoService } from '../../core/services/seo.service';
 import { forkJoin } from 'rxjs';
 import { MovieService } from '../../shared/services/movie.service';
@@ -14,7 +14,7 @@ import { PaymentService } from '../../core/services/payment.service';
 @Component({
   selector: 'app-movie-detail',
   standalone: true,
-  imports: [CommonModule, HeaderComponent, FooterComponent, VideoPlayerComponent, PaymentModalComponent],
+  imports: [CommonModule, RouterLink, HeaderComponent, FooterComponent, VideoPlayerComponent, PaymentModalComponent],
   templateUrl: './movie-detail.component.html',
   styleUrls: ['./movie-detail.component.scss']
 })

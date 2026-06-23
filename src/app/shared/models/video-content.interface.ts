@@ -14,4 +14,6 @@ export interface IVideoContent {
   has_free_preview: boolean;
   // legacy compat
   name?: string;
+  // producer attribution (runtime field from backend)
+  producer_profile?: { id: number; name: string };
 }

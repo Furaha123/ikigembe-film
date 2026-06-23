@@ -443,6 +443,141 @@ $red:    #f87171;
   &:hover { border-color: $red; color: $red; }
 }
 
+// ── Field hint ─────────────────────────────────────────
+.field-hint {
+  font-size: 0.8rem;
+  color: $muted;
+  margin: -0.25rem 0 0.75rem;
+  line-height: 1.5;
+}
+
+// ── Backdrop upload ────────────────────────────────────
+.backdrop-drop {
+  border: 2px dashed $border;
+  border-radius: 10px;
+  padding: 1.5rem 1rem;
+  text-align: center;
+  cursor: pointer;
+  transition: border-color 0.2s, background 0.2s;
+  margin-bottom: 0.4rem;
+  background: repeating-linear-gradient(
+    -45deg,
+    transparent,
+    transparent 8px,
+    rgba(255,255,255,0.012) 8px,
+    rgba(255,255,255,0.012) 16px
+  );
+
+  &:hover, &:focus-visible {
+    border-color: rgba(200, 168, 75, 0.45);
+    background: rgba(200, 168, 75, 0.03);
+    outline: none;
+  }
+
+  svg {
+    width: 40px;
+    height: 30px;
+    color: $muted;
+    margin: 0 auto 0.65rem;
+    display: block;
+  }
+
+  p    { font-size: 0.875rem; color: #ccc; margin: 0 0 0.25rem; font-weight: 500; }
+  span { font-size: 0.78rem; color: $muted; }
+}
+
+.backdrop-preview {
+  position: relative;
+  border-radius: 8px;
+  overflow: hidden;
+  margin-bottom: 0.4rem;
+  border: 1px solid $border;
+
+  img {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+    display: block;
+  }
+}
+
+.backdrop-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0,0,0,0);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s;
+
+  .backdrop-preview:hover & {
+    background: rgba(0,0,0,0.55);
+  }
+}
+
+.backdrop-remove {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.45rem 1rem;
+  background: rgba(20,20,20,0.9);
+  border: 1px solid rgba(248, 113, 113, 0.5);
+  color: $red;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.2s;
+
+  svg { width: 12px; height: 12px; }
+
+  .backdrop-preview:hover & {
+    opacity: 1;
+  }
+}
+
+.backdrop-filename {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 0.4rem 0.75rem;
+  background: rgba(0,0,0,0.65);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.75rem;
+  color: rgba(255,255,255,0.7);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+
+  svg { color: $gold; flex-shrink: 0; }
+}
+
+// ── Review backdrop thumb ──────────────────────────────
+.review-val--preview {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+
+  .review-backdrop-thumb {
+    width: 64px;
+    height: 36px;
+    object-fit: cover;
+    border-radius: 4px;
+    border: 1px solid $border;
+    flex-shrink: 0;
+  }
+}
+
+.review-val--muted {
+  color: $muted;
+  font-style: italic;
+}
+
 // ── Upload zone ────────────────────────────────────────
 .upload-zone {
   border: 2px dashed $border;

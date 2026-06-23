@@ -1,4 +1,5 @@
-import { Component, inject, OnInit, signal, computed } from '@angular/core';
+import { Component, inject, OnInit, OnDestroy, signal, computed, PLATFORM_ID } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
 import { TranslatePipe, TranslateDirective } from '@ngx-translate/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
@@ -20,14 +21,17 @@ const ALL_GENRES = [
   templateUrl: './producer-movies.component.html',
   styleUrl: './producer-movies.component.scss',
 })
-export class ProducerMoviesComponent implements OnInit {
+export class ProducerMoviesComponent implements OnInit, OnDestroy {
   private readonly producerService = inject(ProducerService);
   private readonly fb              = inject(FormBuilder);
   private readonly router          = inject(Router);
+  private readonly platformId      = inject(PLATFORM_ID);
+  private copiedTimer: ReturnType<typeof setTimeout> | null = null;
 
   readonly ALL_GENRES = ALL_GENRES;
 
-  movies    = signal<ProducerMovie[]>([]);
+  movies       = signal<ProducerMovie[]>([]);
+  copiedMovieId = signal<number | null>(null);
   isLoading = signal(true);
   search    = signal('');
   activeTab = signal<StatusTab>('all');
@@ -212,6 +216,21 @@ export class ProducerMoviesComponent implements OnInit {
     return 'RWF ' + n.toLocaleString();
   }
 
+  shareMovie(movie: ProducerMovie, event: Event): void {
+    event.stopPropagation();
+    if (!isPlatformBrowser(this.platformId)) return;
+    const url = `${window.location.origin}/preview/${movie.id}`;
+    navigator.clipboard.writeText(url).then(() => {
+      this.copiedMovieId.set(movie.id);
+      if (this.copiedTimer) clearTimeout(this.copiedTimer);
+      this.copiedTimer = setTimeout(() => this.copiedMovieId.set(null), 2500);
+    }).catch(() => {});
+  }
+
   goToUpload() { this.router.navigate(['/producer/upload']); }
   goToContract() { this.router.navigate(['/producer/contracts/start']); }
+
+  ngOnDestroy(): void {
+    if (this.copiedTimer) clearTimeout(this.copiedTimer);
+  }
 }

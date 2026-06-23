@@ -1,0 +1,168 @@
+<app-header [userImg]="''" />
+
+<!-- ① Initial full-page load -->
+@if (loading() && !producer()) {
+  <div class="pp-hero-skeleton">
+    <div class="pp-hero-skeleton__bar"></div>
+    <div class="pp-hero-skeleton__frame"></div>
+    <div class="pp-hero-skeleton__bar"></div>
+  </div>
+  <section class="pp-films-section">
+    <div class="pp-grid">
+      @for (s of skeletons; track $index) {
+        <div class="pp-skeleton-card">
+          <div class="pp-skeleton-poster"></div>
+          <div class="pp-skeleton-line pp-skeleton-line--title"></div>
+          <div class="pp-skeleton-line pp-skeleton-line--meta"></div>
+        </div>
+      }
+    </div>
+  </section>
+}
+
+<!-- ② Error / not found -->
+@if (error() && !producer()) {
+  <div class="pp-not-found">
+    <svg viewBox="0 0 24 24" width="60" height="60" fill="none" stroke="#555" stroke-width="1.2">
+      <circle cx="12" cy="12" r="10"/>
+      <path d="m15 9-6 6M9 9l6 6"/>
+    </svg>
+    <h2>Producer not found</h2>
+    <p>This producer may not exist or their page is unavailable.</p>
+    <a routerLink="/producers" class="pp-back-link">
+      <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
+        <path d="M15.41 16.59L10.83 12l4.58-4.59L14 6l-6 6 6 6z"/>
+      </svg>
+      Browse all producers
+    </a>
+  </div>
+}
+
+<!-- ③ Loaded state -->
+@if (producer(); as p) {
+
+  <!-- Cinematic letterbox hero -->
+  <div class="pp-letterbox">
+    <div class="pp-letterbox__bar"></div>
+    <div class="pp-letterbox__frame"
+         [class.pp-letterbox__frame--gradient]="!backdropUrl()"
+         [style.backgroundImage]="backdropUrl() ? 'url(' + backdropUrl() + ')' : 'none'">
+      <div class="pp-vignette"></div>
+      <div class="pp-info-panel">
+        <div class="pp-info-glass">
+          <span class="pp-film-badge">
+            <svg viewBox="0 0 24 24" width="12" height="12" fill="currentColor">
+              <path d="M4 6H2v14c0 1.1.9 2 2 2h14v-2H4V6zm16-4H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-8 12.5v-9l6 4.5-6 4.5z"/>
+            </svg>
+            {{ totalMovies() }} film{{ totalMovies() === 1 ? '' : 's' }}
+          </span>
+          <h1 class="pp-producer-name">{{ p.name }}</h1>
+          @if (p.bio) {
+            <p class="pp-bio">{{ p.bio }}</p>
+          }
+          <a routerLink="/producers" class="pp-all-link">
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor">
+              <path d="M15.41 16.59L10.83 12l4.58-4.59L14 6l-6 6 6 6z"/>
+            </svg>
+            All producers
+          </a>
+        </div>
+      </div>
+    </div>
+    <div class="pp-letterbox__bar"></div>
+  </div>
+
+  <!-- Films section -->
+  <section class="pp-films-section">
+    <div class="pp-films-header">
+      <h2 class="pp-films-title">
+        Films by <span class="pp-films-title__gold">{{ p.name }}</span>
+      </h2>
+      @if (totalMovies() > 0 && totalPages() > 1) {
+        <span class="pp-page-indicator">Page {{ currentPage() }} of {{ totalPages() }}</span>
+      }
+    </div>
+
+    @if (loading()) {
+      <div class="pp-grid">
+        @for (s of skeletons; track $index) {
+          <div class="pp-skeleton-card">
+            <div class="pp-skeleton-poster"></div>
+            <div class="pp-skeleton-line pp-skeleton-line--title"></div>
+            <div class="pp-skeleton-line pp-skeleton-line--meta"></div>
+          </div>
+        }
+      </div>
+
+    } @else if (movies().length === 0) {
+      <div class="pp-empty">
+        <svg viewBox="0 0 24 24" width="52" height="52" fill="none" stroke="#555" stroke-width="1.5">
+          <rect x="2" y="2" width="20" height="20" rx="2.5"/>
+          <path d="M10 8l6 4-6 4V8z"/>
+        </svg>
+        <p>No films available from this producer yet.</p>
+      </div>
+
+    } @else {
+      <div class="pp-grid">
+        @for (movie of movies(); track movie.id) {
+          <button class="pp-card" (click)="goToMovie(movie.id)">
+            <div class="pp-card-poster">
+              <img [src]="movie.thumbnail_url" [alt]="movie.title" loading="lazy" />
+              <div class="pp-card-overlay">
+                <div class="pp-play-circle">
+                  <svg viewBox="0 0 24 24" width="22" height="22" fill="white">
+                    <path d="M8 5v14l11-7z"/>
+                  </svg>
+                </div>
+              </div>
+              @if (movie.has_free_preview) {
+                <span class="pp-badge pp-badge--free">Free</span>
+              }
+            </div>
+            <div class="pp-card-info">
+              <p class="pp-card-title">{{ movie.title }}</p>
+              <div class="pp-card-meta">
+                @if (movie.release_date) {
+                  <span class="pp-card-year">{{ movie.release_date.substring(0, 4) }}</span>
+                  <span class="pp-meta-dot">·</span>
+                }
+                <span class="pp-card-rating">
+                  <svg viewBox="0 0 24 24" width="11" height="11" fill="#ffc107">
+                    <path d="M12 2l3.09 6.26L22 9.27l-5 4.87L18.18 22 12 18.56 5.82 22 7 14.14l-5-4.87 6.91-1.01z"/>
+                  </svg>
+                  {{ movie.rating ? movie.rating.toFixed(1) : 'N/A' }}
+                </span>
+              </div>
+            </div>
+          </button>
+        }
+      </div>
+
+      @if (totalPages() > 1) {
+        <div class="pp-pagination">
+          <button class="pp-pag-btn" [disabled]="currentPage() === 1" (click)="prevPage()">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
+              <path d="M15.41 16.59L10.83 12l4.58-4.59L14 6l-6 6 6 6z"/>
+            </svg>
+            Previous
+          </button>
+          <div class="pp-pag-info">
+            <span class="pp-pag-current">{{ currentPage() }}</span>
+            <span class="pp-pag-sep">/</span>
+            <span class="pp-pag-total">{{ totalPages() }}</span>
+          </div>
+          <button class="pp-pag-btn" [disabled]="currentPage() === totalPages()" (click)="nextPage()">
+            Next
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
+              <path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6z"/>
+            </svg>
+          </button>
+        </div>
+      }
+    }
+  </section>
+
+}
+
+<app-footer />
