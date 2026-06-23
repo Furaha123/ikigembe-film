@@ -28,6 +28,7 @@ export class MovieDetailComponent implements OnInit, OnDestroy {
   movie            = signal<any>(null);
   cast             = signal<any[]>([]);
   similarMovies    = signal<IVideoContent[]>([]);
+  moreFromProducer = signal<IVideoContent[]>([]);
   videoSrc         = signal<string>('');
   isPlaying        = signal(false);
   showPaymentModal = signal(false);
@@ -51,6 +52,7 @@ export class MovieDetailComponent implements OnInit, OnDestroy {
       this.movie.set(details);
       this.cast.set(credits.cast?.slice(0, 10) || []);
       this.similarMovies.set(similar.results?.slice(0, 6) || []);
+      this.moreFromProducer.set([]);
       this.fullVideoUrl = details.video_url || '';
       this.videoSrc.set(details.trailer_url || '');
       this.purchased.set(this.paymentService.hasPurchased(id));
@@ -62,6 +64,16 @@ export class MovieDetailComponent implements OnInit, OnDestroy {
         noIndex: true,
       });
       this.seo.setMovieJsonLd(details);
+
+      const producerId = details.producer_profile?.id;
+      if (producerId) {
+        this.movieService.getMoviesByProducer(producerId).subscribe({
+          next: (res) => this.moreFromProducer.set(
+            res.results.filter((m: IVideoContent) => m.id !== id).slice(0, 8)
+          ),
+          error: () => {},
+        });
+      }
     });
   }
 
