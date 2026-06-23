@@ -59,6 +59,14 @@ export const routes: Routes = [
     loadComponent: () => import('./pages/preview/preview.component').then(a => a.PreviewComponent)
   },
   {
+    path: 'producers',
+    loadComponent: () => import('./pages/producers-list/producers-list.component').then(a => a.ProducersListComponent)
+  },
+  {
+    path: 'producers/:id',
+    loadComponent: () => import('./pages/producer-profile/producer-profile.component').then(a => a.ProducerProfileComponent)
+  },
+  {
     path: 'producer',
     loadChildren: () => import('./producer/producer.routes').then(m => m.producerRoutes),
   },

@@ -103,7 +103,12 @@
           @if (movie.producer) {
             <div class="detail-row">
               <span class="label">Producer:</span>
-              <span class="value producer-value">{{ movie.producer }}</span>
+              @if (movie.producer_profile?.id) {
+                <a class="value producer-value producer-link"
+                   [routerLink]="['/producers', movie.producer_profile.id]">{{ movie.producer }}</a>
+              } @else {
+                <span class="value producer-value">{{ movie.producer }}</span>
+              }
             </div>
           }
         </div>

@@ -55,6 +55,7 @@ export class HeaderComponent implements OnInit, OnDestroy {
   navList = [
     { label: 'Home',                route: '/browse' },
     { label: 'My List',             route: '/my-list' },
+    { label: 'Producers',           route: '/producers' },
     { label: 'Browse by Language',  route: null },
   ];
 

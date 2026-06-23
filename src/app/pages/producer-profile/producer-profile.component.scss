@@ -1,0 +1,446 @@
+:host {
+  display: block;
+  background: #111120;
+  min-height: 100vh;
+  color: #e5e5e5;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+// ── Letterbox Hero ────────────────────────────────────────────────────────────
+.pp-letterbox {
+  padding-top: 64px;
+}
+
+.pp-letterbox__bar {
+  height: 36px;
+  background: #000;
+}
+
+.pp-letterbox__frame {
+  position: relative;
+  aspect-ratio: 2.39 / 1;
+  background-color: #0a0a18;
+  background-size: cover;
+  background-position: center 25%;
+  background-repeat: no-repeat;
+  overflow: hidden;
+
+  &--gradient {
+    background-image: linear-gradient(135deg, #1a1a2e 0%, #0e0e24 40%, #12121f 100%) !important;
+  }
+
+  @media (max-width: 900px) {
+    aspect-ratio: unset;
+    height: 280px;
+    background-position: center 30%;
+  }
+
+  @media (max-width: 480px) {
+    height: 220px;
+  }
+}
+
+.pp-vignette {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(to right, rgba(0,0,0,0.55) 0%, transparent 25%, transparent 75%, rgba(0,0,0,0.55) 100%),
+    linear-gradient(to bottom, transparent 40%, rgba(10, 10, 24, 0.95) 100%);
+  pointer-events: none;
+}
+
+.pp-info-panel {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+}
+
+.pp-info-glass {
+  background: rgba(10, 10, 24, 0.6);
+  backdrop-filter: blur(14px) saturate(1.3);
+  border-top: 1px solid rgba(201, 168, 76, 0.18);
+  padding: 1.5rem 3.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+
+  @media (max-width: 768px) {
+    padding: 1.25rem 1.25rem;
+  }
+}
+
+.pp-film-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #c9a84c;
+  padding: 0.2rem 0.65rem;
+  background: rgba(201, 168, 76, 0.12);
+  border: 1px solid rgba(201, 168, 76, 0.3);
+  border-radius: 999px;
+  width: fit-content;
+}
+
+.pp-producer-name {
+  font-size: clamp(1.5rem, 3.5vw, 2.4rem);
+  font-weight: 800;
+  color: #fff;
+  margin: 0;
+  letter-spacing: -0.02em;
+  line-height: 1.15;
+}
+
+.pp-bio {
+  font-size: 0.9rem;
+  color: #aaa;
+  margin: 0;
+  max-width: 520px;
+  line-height: 1.6;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.pp-all-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.78rem;
+  color: #777;
+  text-decoration: none;
+  transition: color 0.18s;
+  margin-top: 0.15rem;
+
+  &:hover {
+    color: #c9a84c;
+  }
+}
+
+// ── Films section ─────────────────────────────────────────────────────────────
+.pp-films-section {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 2.5rem 3.5rem 5rem;
+
+  @media (max-width: 768px) {
+    padding: 2rem 1.25rem 4rem;
+  }
+}
+
+.pp-films-header {
+  display: flex;
+  align-items: baseline;
+  gap: 1rem;
+  margin-bottom: 1.75rem;
+  flex-wrap: wrap;
+}
+
+.pp-films-title {
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: #fff;
+  margin: 0;
+
+  &__gold {
+    color: #c9a84c;
+  }
+}
+
+.pp-page-indicator {
+  font-size: 0.8rem;
+  color: #666;
+  margin-left: auto;
+}
+
+// ── Movie grid ────────────────────────────────────────────────────────────────
+.pp-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1.25rem;
+
+  @media (max-width: 1200px) { grid-template-columns: repeat(3, 1fr); }
+  @media (max-width: 780px)  { grid-template-columns: repeat(2, 1fr); }
+  @media (max-width: 480px)  { grid-template-columns: 1fr; }
+}
+
+.pp-card {
+  display: flex;
+  flex-direction: column;
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  text-align: left;
+
+  &:hover {
+    .pp-card-poster {
+      transform: scale(1.03);
+    }
+    .pp-card-overlay {
+      opacity: 1;
+    }
+  }
+}
+
+.pp-card-poster {
+  position: relative;
+  border-radius: 8px;
+  overflow: hidden;
+  transition: transform 0.25s ease;
+  background: #1a1a2e;
+  aspect-ratio: 2 / 3;
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+}
+
+.pp-card-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.52);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.22s;
+}
+
+.pp-play-circle {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: rgba(201, 168, 76, 0.85);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.18s;
+
+  .pp-card:hover & {
+    transform: scale(1.08);
+  }
+}
+
+.pp-badge {
+  position: absolute;
+  top: 0.5rem;
+  left: 0.5rem;
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 0.2rem 0.5rem;
+  border-radius: 4px;
+
+  &--free {
+    background: #2a6e3f;
+    color: #7fffad;
+  }
+}
+
+.pp-card-info {
+  padding: 0.65rem 0.25rem 0;
+}
+
+.pp-card-title {
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: #e5e5e5;
+  margin: 0 0 0.3rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.pp-card-meta {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.75rem;
+  color: #888;
+}
+
+.pp-meta-dot {
+  color: #555;
+}
+
+.pp-card-rating {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  color: #ffc107;
+  font-weight: 600;
+}
+
+// ── Pagination ────────────────────────────────────────────────────────────────
+.pp-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1.25rem;
+  margin-top: 3rem;
+}
+
+.pp-pag-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.6rem 1.35rem;
+  background: transparent;
+  border: 1.5px solid rgba(201, 168, 76, 0.35);
+  color: #c9a84c;
+  border-radius: 8px;
+  font-size: 0.88rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.18s, border-color 0.18s, opacity 0.18s;
+
+  &:hover:not(:disabled) {
+    background: rgba(201, 168, 76, 0.1);
+    border-color: rgba(201, 168, 76, 0.6);
+  }
+
+  &:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+  }
+}
+
+.pp-pag-info {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.9rem;
+  color: #888;
+}
+
+.pp-pag-current {
+  color: #fff;
+  font-weight: 700;
+}
+
+.pp-pag-sep {
+  color: #555;
+}
+
+// ── Empty state ───────────────────────────────────────────────────────────────
+.pp-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  padding: 4rem 2rem;
+  text-align: center;
+  color: #666;
+  font-size: 0.95rem;
+}
+
+// ── Not found ─────────────────────────────────────────────────────────────────
+.pp-not-found {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  min-height: calc(100vh - 200px);
+  text-align: center;
+  padding: 4rem 2rem;
+
+  h2 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #fff;
+    margin: 0;
+  }
+
+  p {
+    font-size: 0.95rem;
+    color: #888;
+    margin: 0;
+  }
+}
+
+.pp-back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.65rem 1.5rem;
+  background: transparent;
+  border: 1.5px solid rgba(201, 168, 76, 0.4);
+  color: #c9a84c;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: background 0.18s;
+  margin-top: 0.5rem;
+
+  &:hover {
+    background: rgba(201, 168, 76, 0.1);
+  }
+}
+
+// ── Skeleton ──────────────────────────────────────────────────────────────────
+@keyframes shimmer {
+  0%   { background-position: -600px 0; }
+  100% { background-position: 600px 0; }
+}
+
+%shimmer-base {
+  background: linear-gradient(90deg, #1a1a2e 25%, #23233a 50%, #1a1a2e 75%);
+  background-size: 1200px 100%;
+  animation: shimmer 1.6s infinite linear;
+}
+
+// Hero skeleton
+.pp-hero-skeleton {
+  padding-top: 64px;
+}
+
+.pp-hero-skeleton__bar {
+  height: 36px;
+  background: #000;
+}
+
+.pp-hero-skeleton__frame {
+  @extend %shimmer-base;
+  aspect-ratio: 2.39 / 1;
+
+  @media (max-width: 900px) {
+    aspect-ratio: unset;
+    height: 280px;
+  }
+}
+
+// Card skeleton
+.pp-skeleton-card {
+  background: rgba(20, 20, 35, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.04);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.pp-skeleton-poster {
+  @extend %shimmer-base;
+  width: 100%;
+  aspect-ratio: 2 / 3;
+}
+
+.pp-skeleton-line {
+  @extend %shimmer-base;
+  border-radius: 6px;
+  margin: 0.65rem 0.25rem 0.25rem;
+  height: 13px;
+
+  &--title { width: 80%; }
+  &--meta  { width: 45%; height: 11px; margin-bottom: 0.65rem; }
+}

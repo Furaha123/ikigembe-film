@@ -235,6 +235,16 @@
         color: #c9a84c;
         font-weight: 600;
       }
+
+      .producer-link {
+        text-decoration: none;
+        border-bottom: 1px solid transparent;
+        transition: border-color 0.18s;
+
+        &:hover {
+          border-bottom-color: rgba(201, 168, 76, 0.6);
+        }
+      }
     }
 
     // Cast cards

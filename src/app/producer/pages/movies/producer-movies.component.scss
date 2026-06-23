@@ -370,6 +370,19 @@ tbody tr.movie-row {
   &--contract  { background: rgba(200,168,75,0.15); border-color: $gold; color: $gold; font-weight: 700; }
   &--view      { background: rgba(255,255,255,0.06); border-color: #333; color: #ccc; }
   &--analytics { background: rgba(74,222,128,0.08); border-color: rgba(74,222,128,0.25); color: $green; }
+  &--share {
+    background: rgba(96,165,250,0.08);
+    border-color: rgba(96,165,250,0.25);
+    color: #93c5fd;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+  }
+  &--copied {
+    background: rgba(74,222,128,0.12);
+    border-color: rgba(74,222,128,0.35);
+    color: $green;
+  }
 }
 
 .view-reason-btn {
