@@ -18,11 +18,13 @@
     } @else {
       <!-- Movie header -->
       <div class="pm-header">
-        <img [src]="movie.thumbnail_url" [alt]="movie.title" class="pm-poster" />
+        <img [src]="movie.thumbnail_url" [alt]="movie.title" class="pm-poster" loading="lazy" />
         <div class="pm-info">
           <h3 class="pm-title">{{ movie.title }}</h3>
           <span class="pm-price">RWF {{ movie.price | number }}</span>
-          <span class="pm-duration">{{ movie.duration_minutes }} min</span>
+          @if (movie.duration_minutes) {
+            <span class="pm-duration">{{ movie.duration_minutes }} min</span>
+          }
         </div>
       </div>
 

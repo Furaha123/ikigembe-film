@@ -11,7 +11,7 @@
   </nav>
 
   <!-- Hero Section -->
-  <section class="hero" [style.background-image]="movie.backdrop_url ? 'url(' + movie.backdrop_url + ')' : 'none'">
+  <section class="hero" [style.background-image]="!dataSaver.isActive() && movie.backdrop_url ? 'url(' + movie.backdrop_url + ')' : 'none'">
     <div class="hero-overlay">
       @if (movie.trailer_url) {
         <button class="hero-play-btn" (click)="playTrailer()" title="Watch Trailer">
@@ -36,7 +36,7 @@
     <div class="info-layout">
       <!-- Left: Poster -->
       <div class="poster-col">
-        <img [src]="movie.thumbnail_url" [alt]="movie.title" class="poster" />
+        <img [src]="movie.thumbnail_url" [alt]="movie.title" class="poster" loading="lazy" />
       </div>
 
       <!-- Center: Details -->
@@ -51,7 +51,9 @@
             </svg>
             {{ movie.rating?.toFixed(1) ?? 'N/A' }}
           </span>
-          <span class="runtime">{{ movie.duration_minutes }} min</span>
+          @if (movie.duration_minutes) {
+            <span class="runtime">{{ movie.duration_minutes }} min</span>
+          }
         </div>
 
         <!-- CTA Buttons -->
@@ -121,7 +123,7 @@
           @for (similar of similarMovies(); track similar.id) {
             <button class="similar-card" (click)="goToMovie(similar.id)">
               <div class="similar-poster">
-                <img [src]="similar.thumbnail_url" [alt]="similar.title || similar.name" />
+                <img [src]="similar.thumbnail_url" [alt]="similar.title || similar.name" loading="lazy" />
                 <span class="similar-badge">HD</span>
               </div>
               <p class="similar-name">{{ similar.title || similar.name }}</p>
@@ -135,6 +137,51 @@
       </div>
     </div>
   </section>
+
+  <!-- More from Producer -->
+  @if (moreFromProducer().length > 0 && movie().producer_profile?.id) {
+    <section class="more-from-section">
+      <div class="more-from-header">
+        <h2 class="more-from-title">
+          More from <span class="more-from-title__gold">{{ movie().producer }}</span>
+        </h2>
+        <a class="more-from-seeall" [routerLink]="['/producers', movie().producer_profile.id]">
+          See all
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor">
+            <path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6z"/>
+          </svg>
+        </a>
+      </div>
+      <div class="more-from-row">
+        @for (m of moreFromProducer(); track m.id) {
+          <button class="mf-card" (click)="goToMovie(m.id)">
+            <div class="mf-poster">
+              <img [src]="m.thumbnail_url" [alt]="m.title" loading="lazy" />
+              <div class="mf-overlay">
+                <div class="mf-play">
+                  <svg viewBox="0 0 24 24" width="20" height="20" fill="white"><path d="M8 5v14l11-7z"/></svg>
+                </div>
+                @if (m.rating) {
+                  <div class="mf-overlay-meta">
+                    <span class="mf-rating">
+                      <svg viewBox="0 0 24 24" width="10" height="10" fill="#ffc107">
+                        <path d="M12 2l3.09 6.26L22 9.27l-5 4.87L18.18 22 12 18.56 5.82 22 7 14.14l-5-4.87 6.91-1.01z"/>
+                      </svg>
+                      {{ m.rating.toFixed(1) }}
+                    </span>
+                  </div>
+                }
+              </div>
+            </div>
+            <p class="mf-title">{{ m.title }}</p>
+            @if (m.release_date) {
+              <p class="mf-year">{{ m.release_date.substring(0, 4) }}</p>
+            }
+          </button>
+        }
+      </div>
+    </section>
+  }
 
   <app-footer />
 

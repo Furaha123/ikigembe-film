@@ -4,12 +4,16 @@
      (mouseleave)="onMouseLeave()"
      (dblclick)="toggleFullscreen()"
      (keydown)="onKeyDown($event)"
+     (contextmenu)="$event.preventDefault()"
      [class.vp-fullscreen]="fullscreen()">
 
   <video #videoEl
     class="vp-video"
     [poster]="poster"
     preload="metadata"
+    controlsList="nodownload nofullscreen noremoteplayback"
+    disablePictureInPicture
+    playsinline
     (click)="togglePlay()">
     <track kind="captions" />
   </video>

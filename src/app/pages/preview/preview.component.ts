@@ -2,6 +2,7 @@ import { Component, OnInit, inject, signal, PLATFORM_ID } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { MovieService } from '../../core/services/movie.service';
+import { DataSaverService } from '../../core/services/data-saver.service';
 import { VideoPlayerComponent } from '../../shared/components/video-player/video-player.component';
 import { MoviePreview } from '../../shared/models/movie-api.interface';
 import { SeoService } from '../../core/services/seo.service';
@@ -18,6 +19,7 @@ export class PreviewComponent implements OnInit {
   private readonly movieService = inject(MovieService);
   private readonly seo          = inject(SeoService);
   private readonly platformId   = inject(PLATFORM_ID);
+  readonly dataSaver            = inject(DataSaverService);
 
   movie      = signal<MoviePreview | null>(null);
   isLoading  = signal(true);

@@ -13,7 +13,7 @@
     @if (movie()) {
       <div class="sidebar-movie">
         @if (movie()!.thumbnail_url) {
-          <img class="sb-thumb" [src]="movie()!.thumbnail_url" [alt]="movie()!.title" />
+          <img class="sb-thumb" [src]="movie()!.thumbnail_url" [alt]="movie()!.title" loading="lazy" />
         } @else {
           <div class="sb-thumb-ph">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
@@ -153,7 +153,7 @@
           <div class="details-right">
             @if (movie()!.thumbnail_url) {
               <div class="poster-wrap">
-                <img class="poster-img" [src]="movie()!.thumbnail_url" [alt]="movie()!.title" />
+                <img class="poster-img" [src]="movie()!.thumbnail_url" [alt]="movie()!.title" loading="lazy" />
               </div>
             }
 

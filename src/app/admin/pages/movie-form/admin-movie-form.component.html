@@ -167,18 +167,10 @@
     <section class="form-section">
       <h2 class="section-title">Details</h2>
 
-      <div class="form-row three-col">
+      <div class="form-row">
         <div class="field">
           <label for="f-price">Price (RWF)</label>
           <input id="f-price" type="number" formControlName="price" min="0" placeholder="0" />
-        </div>
-        <div class="field">
-          <label for="f-duration">Duration (minutes)</label>
-          <input id="f-duration" type="number" formControlName="duration_minutes" min="0" placeholder="0" />
-        </div>
-        <div class="field">
-          <label for="f-trailer-duration">Trailer Duration (seconds)</label>
-          <input id="f-trailer-duration" type="number" formControlName="trailer_duration_seconds" min="0" placeholder="0" />
         </div>
       </div>
 
@@ -206,16 +198,6 @@
           <div class="toggle-wrap">
             <input type="checkbox" formControlName="is_active" class="toggle-input" id="t-active" />
             <label for="t-active" class="toggle-track"></label>
-          </div>
-        </label>
-        <label class="toggle-field">
-          <div class="toggle-info">
-            <span class="toggle-label">Free Preview</span>
-            <span class="toggle-desc">Allow non-paying viewers to watch a short preview</span>
-          </div>
-          <div class="toggle-wrap">
-            <input type="checkbox" formControlName="has_free_preview" class="toggle-input" id="t-preview" />
-            <label for="t-preview" class="toggle-track"></label>
           </div>
         </label>
       </div>

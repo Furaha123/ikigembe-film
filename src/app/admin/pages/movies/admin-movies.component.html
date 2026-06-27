@@ -179,7 +179,7 @@
         @if (selectedSubmission(); as s) {
           @if (s.thumbnail_url) {
             <div class="sub-thumbnail-wrap">
-              <img [src]="s.thumbnail_url" [alt]="s.title" class="sub-thumbnail" />
+              <img [src]="s.thumbnail_url" [alt]="s.title" class="sub-thumbnail" loading="lazy" />
             </div>
           }
 

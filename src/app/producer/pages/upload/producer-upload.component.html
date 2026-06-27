@@ -173,15 +173,6 @@
               }
             </div>
 
-            <!-- Duration -->
-            <div class="field">
-              <label>{{ 'upload.details.duration' | translate }} <span class="optional">(Optional)</span></label>
-              <input type="number" formControlName="duration_minutes" [placeholder]="'upload.details.durationHint' | translate" min="1" />
-              @if (durationMinutes?.touched && durationMinutes?.hasError('min')) {
-                <span class="field-error">Duration must be at least 1 minute.</span>
-              }
-            </div>
-
             <!-- Director + Writer -->
             <div class="field-row">
               <div class="field">
@@ -198,14 +189,6 @@
             <div class="field">
               <label>{{ 'upload.details.cast' | translate }} <span class="optional">(Optional — comma separated)</span></label>
               <input type="text" formControlName="cast" [placeholder]="'upload.details.castHint' | translate" />
-            </div>
-
-            <!-- Free Preview -->
-            <div class="field-check">
-              <label class="check-label">
-                <input type="checkbox" formControlName="has_free_preview" />
-                <span>{{ 'upload.details.freePreview' | translate }}</span>
-              </label>
             </div>
 
           </form>
@@ -575,10 +558,6 @@
               <span class="review-key">{{ 'upload.review.labels.releaseDate' | translate }}</span>
               <span class="review-val">{{ detailsForm.value.release_date || '—' }}</span>
             </div>
-            <div class="review-row">
-              <span class="review-key">{{ 'upload.review.labels.duration' | translate }}</span>
-              <span class="review-val">{{ detailsForm.value.duration_minutes ? detailsForm.value.duration_minutes + ' min' : '—' }}</span>
-            </div>
             @if (detailsForm.value.director) {
               <div class="review-row">
                 <span class="review-key">{{ 'upload.review.labels.director' | translate }}</span>
@@ -597,10 +576,6 @@
                 <span class="review-val">{{ detailsForm.value.cast }}</span>
               </div>
             }
-            <div class="review-row">
-              <span class="review-key">{{ 'upload.review.labels.freePreview' | translate }}</span>
-              <span class="review-val">{{ detailsForm.value.has_free_preview ? 'Yes' : 'No' }}</span>
-            </div>
           </div>
 
           <div class="review-section">
