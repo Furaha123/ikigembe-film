@@ -45,15 +45,13 @@ export class ProducerUploadComponent {
 
   // ── Details form ─────────────────────────────────────
   detailsForm = this.fb.group({
-    title:            ['', [Validators.required, Validators.minLength(2)]],
-    longline:         ['', [Validators.required, Validators.minLength(10), Validators.maxLength(200)]],
-    synopsis:         ['', [Validators.required, Validators.minLength(20), Validators.maxLength(600)]],
-    release_date:     ['', Validators.required],
-    duration_minutes: [null as number | null, Validators.min(1)],
-    cast:             [''],
-    director:         [''],
-    writer:           [''],
-    has_free_preview: [false],
+    title:        ['', [Validators.required, Validators.minLength(2)]],
+    longline:     ['', [Validators.required, Validators.minLength(10), Validators.maxLength(200)]],
+    synopsis:     ['', [Validators.required, Validators.minLength(20), Validators.maxLength(600)]],
+    release_date: ['', Validators.required],
+    cast:         [''],
+    director:     [''],
+    writer:       [''],
   });
 
   // ── Genre selection ───────────────────────────────────
@@ -117,14 +115,13 @@ export class ProducerUploadComponent {
   movieReady      = computed(() => !!this.movieKey());
   copyrightReady  = computed(() => !!this.copyrightFile());
 
-  get title()           { return this.detailsForm.get('title'); }
-  get longline()        { return this.detailsForm.get('longline'); }
-  get synopsis()        { return this.detailsForm.get('synopsis'); }
-  get releaseDate()     { return this.detailsForm.get('release_date'); }
-  get durationMinutes() { return this.detailsForm.get('duration_minutes'); }
-  get cast()            { return this.detailsForm.get('cast'); }
-  get director()        { return this.detailsForm.get('director'); }
-  get writer()          { return this.detailsForm.get('writer'); }
+  get title()       { return this.detailsForm.get('title'); }
+  get longline()    { return this.detailsForm.get('longline'); }
+  get synopsis()    { return this.detailsForm.get('synopsis'); }
+  get releaseDate() { return this.detailsForm.get('release_date'); }
+  get cast()        { return this.detailsForm.get('cast'); }
+  get director()    { return this.detailsForm.get('director'); }
+  get writer()      { return this.detailsForm.get('writer'); }
 
   onReleaseDateChange(date: Date): void {
     const iso = date.toISOString().split('T')[0]; // YYYY-MM-DD
@@ -404,9 +401,7 @@ export class ProducerUploadComponent {
     fd.append('overview',         v.synopsis!);
     fd.append('release_date',     v.release_date!);
     fd.append('price',            '500');
-    fd.append('duration_minutes', String(v.duration_minutes ?? 0));
-    fd.append('is_active',        'false');
-    fd.append('has_free_preview', String(v.has_free_preview ?? false));
+    fd.append('is_active', 'false');
     fd.append('video_key',        this.movieKey()!);
 
     if (this.trailerKey()) fd.append('trailer_key', this.trailerKey()!);

@@ -38,17 +38,14 @@ export class AdminMovieFormComponent implements OnInit {
   filesError = signal<{ thumbnail?: string; video?: string }>({});
 
   form = this.fb.group({
-    title:                    ['', Validators.required],
-    overview:                 ['', Validators.required],
-    release_date:             ['', Validators.required],
-    price:                    [0, [Validators.min(0)]],
-    duration_minutes:         [0, [Validators.min(0)]],
-    trailer_duration_seconds: [0, [Validators.min(0)]],
-    cast:                     [''],
-    genres:                   [''],
-    producer:                 [''],
-    is_active:                [true],
-    has_free_preview:         [false],
+    title:        ['', Validators.required],
+    overview:     ['', Validators.required],
+    release_date: ['', Validators.required],
+    price:        [0, [Validators.min(0)]],
+    cast:         [''],
+    genres:       [''],
+    producer:     [''],
+    is_active:    [true],
   });
 
   ngOnInit() {
@@ -70,17 +67,14 @@ export class AdminMovieFormComponent implements OnInit {
     this.movieService.getMovieDetails(id).subscribe({
       next: (movie: any) => {
         this.form.patchValue({
-          title:                    movie.title ?? '',
-          overview:                 movie.overview ?? '',
-          release_date:             movie.release_date ?? '',
-          price:                    movie.price ?? 0,
-          duration_minutes:         movie.duration_minutes ?? 0,
-          trailer_duration_seconds: movie.trailer_duration_seconds ?? 0,
-          cast:                     Array.isArray(movie.cast) ? movie.cast.join(', ') : (movie.cast ?? ''),
-          genres:                   Array.isArray(movie.genres) ? movie.genres.join(', ') : (movie.genres ?? ''),
-          producer:                 movie.producer_id ?? movie.producer ?? '',
-          is_active:                movie.is_active ?? true,
-          has_free_preview:         movie.has_free_preview ?? false,
+          title:        movie.title ?? '',
+          overview:     movie.overview ?? '',
+          release_date: movie.release_date ?? '',
+          price:        movie.price ?? 0,
+          cast:         Array.isArray(movie.cast) ? movie.cast.join(', ') : (movie.cast ?? ''),
+          genres:       Array.isArray(movie.genres) ? movie.genres.join(', ') : (movie.genres ?? ''),
+          producer:     movie.producer_id ?? movie.producer ?? '',
+          is_active:    movie.is_active ?? true,
         });
         this.isLoadingMovie.set(false);
       },
@@ -156,10 +150,7 @@ export class AdminMovieFormComponent implements OnInit {
     fd.append('overview',                 v.overview ?? '');
     fd.append('release_date',             v.release_date ?? '');
     fd.append('price',                    String(v.price ?? 0));
-    fd.append('duration_minutes',         String(v.duration_minutes ?? 0));
-    fd.append('trailer_duration_seconds', String(v.trailer_duration_seconds ?? 0));
-    fd.append('is_active',                String(v.is_active ?? true));
-    fd.append('has_free_preview',         String(v.has_free_preview ?? false));
+    fd.append('is_active', String(v.is_active ?? true));
 
     if (v.cast?.trim())     fd.append('cast',     JSON.stringify(v.cast.split(',').map((s: string) => s.trim()).filter(Boolean)));
     if (v.genres?.trim())   fd.append('genres',   JSON.stringify(v.genres.split(',').map((s: string) => s.trim()).filter(Boolean)));

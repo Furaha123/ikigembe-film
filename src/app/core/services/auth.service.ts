@@ -38,6 +38,7 @@ const IS_STAFF_KEY    = 'ikigembe_is_staff';
 const ROLE_KEY        = 'ikigembe_role';
 const ACCT_STATUS_KEY = 'ikigembe_account_status';
 const SUSPENSION_KEY  = 'ikigembe_suspension_reason';
+const ONBOARDING_KEY  = 'ikigembe_onboarded';
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
@@ -75,7 +76,9 @@ export class AuthService {
     isPlatformBrowser(this.platformId) ? (localStorage.getItem(SUSPENSION_KEY) ?? '') : ''
   );
 
-  readonly onboardingComplete = signal<boolean>(false);
+  readonly onboardingComplete = signal<boolean>(
+    isPlatformBrowser(this.platformId) ? localStorage.getItem(ONBOARDING_KEY) === '1' : false
+  );
 
   readonly initials = computed(() => {
     const name = this.userName().trim();
@@ -130,6 +133,9 @@ export class AuthService {
 
   completeOnboarding() {
     this.onboardingComplete.set(true);
+    if (isPlatformBrowser(this.platformId)) {
+      localStorage.setItem(ONBOARDING_KEY, '1');
+    }
   }
 
   setAccountStatus(status: AccountStatus, reason?: string) {
@@ -194,7 +200,11 @@ export class AuthService {
       this.userEmail.set(resolvedEmail);
     }
 
-    this.onboardingComplete.set(u?.onboarding_completed ?? false);
+    const onboarded = u?.onboarding_completed ?? false;
+    this.onboardingComplete.set(onboarded);
+    if (isPlatformBrowser(this.platformId)) {
+      localStorage.setItem(ONBOARDING_KEY, onboarded ? '1' : '0');
+    }
 
     const isStaff = u?.is_staff ?? false;
     if (isPlatformBrowser(this.platformId)) {
@@ -279,6 +289,7 @@ export class AuthService {
       localStorage.removeItem(ROLE_KEY);
       localStorage.removeItem(ACCT_STATUS_KEY);
       localStorage.removeItem(SUSPENSION_KEY);
+      localStorage.removeItem(ONBOARDING_KEY);
     }
     this.isLoggedIn.set(false);
     this.isAdmin.set(false);

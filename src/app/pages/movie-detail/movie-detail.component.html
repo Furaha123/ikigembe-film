@@ -51,7 +51,9 @@
             </svg>
             {{ movie.rating?.toFixed(1) ?? 'N/A' }}
           </span>
-          <span class="runtime">{{ movie.duration_minutes }} min</span>
+          @if (movie.duration_minutes) {
+            <span class="runtime">{{ movie.duration_minutes }} min</span>
+          }
         </div>
 
         <!-- CTA Buttons -->

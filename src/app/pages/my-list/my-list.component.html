@@ -55,7 +55,7 @@
           <div class="card-info">
             <h3 class="card-title">{{ movie.title }}</h3>
             <div class="card-meta">
-              <span class="duration">{{ movie.duration_minutes }} min</span>
+              <span class="duration">{{ movie.duration_minutes ? movie.duration_minutes + ' min' : '—' }}</span>
               @if (movie.rating) {
                 <span class="separator">·</span>
                 <span class="rating">
