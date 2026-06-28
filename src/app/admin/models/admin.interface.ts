@@ -161,6 +161,7 @@ export interface AdminMovie {
   rejection_reason?: string | null;
   trailer_url: string | null;
   thumbnail_url: string | null;
+  is_featured?: boolean;
 }
 
 export interface MovieFormData {

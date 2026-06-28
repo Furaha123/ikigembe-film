@@ -12,6 +12,7 @@ export interface IVideoContent {
   views: number;
   duration_minutes: number;
   has_free_preview: boolean;
+  is_featured?: boolean;
   // legacy compat
   name?: string;
   // producer attribution (runtime field from backend)

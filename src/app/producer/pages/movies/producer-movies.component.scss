@@ -329,6 +329,7 @@ tbody tr.movie-row {
   &.status-rejected  { background: rgba(248,113,113,0.12); color: $red; }
   &.status-review    { background: rgba(251,191,36,0.12);  color: $amber; }
   &.status-contract  { background: rgba(200,168,75,0.12);  color: $gold; }
+  &.status-changes   { background: rgba(245,158,11,0.12);  color: #fbbf24; border: 1px solid rgba(245,158,11,0.25); }
 }
 
 /* Type chip */
@@ -631,6 +632,315 @@ tbody tr.movie-row {
 
   &:hover { border-color: #555; color: #ccc; }
   &.selected { background: rgba(200,168,75,0.15); border-color: $gold; color: $gold; }
+}
+
+/* ── Changes-requested banner ── */
+.changes-banner {
+  margin-top: 0.5rem;
+  background: rgba(245,158,11,0.07);
+  border: 1px solid rgba(245,158,11,0.25);
+  border-radius: 7px;
+  padding: 0.6rem 0.75rem;
+  max-width: 240px;
+}
+
+.changes-banner-note {
+  font-size: 0.73rem;
+  color: #fbbf24;
+  margin: 0 0 0.5rem;
+  line-height: 1.45;
+  white-space: normal;
+}
+
+.changes-banner-btn {
+  background: rgba(245,158,11,0.15);
+  border: 1px solid rgba(245,158,11,0.4);
+  color: #fbbf24;
+  border-radius: 5px;
+  padding: 0.3rem 0.65rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.15s;
+  &:hover { background: rgba(245,158,11,0.25); }
+}
+
+/* ── Resubmit Drawer ── */
+.resubmit-overlay {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.82);
+  z-index: 600;
+  display: flex;
+  align-items: flex-end;
+  @media (min-width: 768px) {
+    align-items: center;
+    justify-content: center;
+  }
+}
+
+.resubmit-drawer {
+  background: #181818;
+  border: 1px solid #2a2a2a;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  width: 100%;
+  max-height: 95dvh;
+  border-radius: 16px 16px 0 0;
+  @media (min-width: 768px) {
+    width: min(640px, 96vw);
+    max-height: 90vh;
+    border-radius: 14px;
+  }
+}
+
+.resubmit-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1.25rem 1.5rem;
+  border-bottom: 1px solid #2a2a2a;
+  flex-shrink: 0;
+  h3 { font-size: 1.05rem; font-weight: 700; color: #fff; margin: 0 0 0.35rem; }
+}
+
+.resubmit-header-text { flex: 1; min-width: 0; }
+
+.resubmit-admin-note {
+  display: flex; align-items: flex-start; gap: 0.35rem;
+  font-size: 0.8rem; color: #fbbf24; margin: 0;
+  line-height: 1.45;
+  svg { flex-shrink: 0; margin-top: 1px; }
+}
+
+.resubmit-close {
+  background: none; border: none; color: #666; cursor: pointer;
+  padding: 0.15rem; display: flex; align-items: center;
+  border-radius: 6px; flex-shrink: 0;
+  transition: color 0.15s, background 0.15s;
+  &:hover { color: #fff; background: #2a2a2a; }
+}
+
+.resubmit-tabs {
+  display: flex;
+  border-bottom: 1px solid #2a2a2a;
+  flex-shrink: 0;
+}
+
+.rs-tab {
+  display: flex; align-items: center; gap: 0.35rem;
+  background: none; border: none; color: #666;
+  padding: 0.7rem 1.25rem;
+  font-size: 0.83rem; font-weight: 500;
+  cursor: pointer; border-bottom: 2px solid transparent;
+  transition: color 0.15s, border-color 0.15s;
+  margin-bottom: -1px;
+  &:hover { color: #ccc; }
+  &.active { color: $gold; border-bottom-color: $gold; font-weight: 600; }
+}
+
+.rs-tab-check { color: $green; font-size: 0.82rem; }
+
+.resubmit-body {
+  flex: 1;
+  overflow-y: auto;
+}
+
+.rs-section { padding: 1.25rem 1.5rem; display: flex; flex-direction: column; gap: 1rem; }
+
+.rs-optional-note {
+  font-size: 0.82rem; color: #888; margin: 0;
+  background: rgba(255,255,255,0.04); border: 1px solid #2a2a2a;
+  border-radius: 7px; padding: 0.6rem 0.85rem;
+}
+
+.rs-field { display: flex; flex-direction: column; gap: 0.35rem; }
+
+.rs-label {
+  font-size: 0.72rem; font-weight: 600; letter-spacing: 0.05em;
+  text-transform: uppercase; color: #666;
+}
+
+.rs-input, .rs-textarea {
+  background: #111; border: 1px solid #2a2a2a; border-radius: 7px;
+  padding: 0.6rem 0.75rem; color: #e0e0e0; font-size: 0.875rem;
+  outline: none; box-sizing: border-box; width: 100%;
+  font-family: inherit;
+  transition: border-color 0.15s;
+  &:focus { border-color: $gold; }
+  &::placeholder { color: #444; }
+}
+
+.rs-textarea { resize: vertical; min-height: 72px; }
+
+.rs-row {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;
+  @media (max-width: 520px) { grid-template-columns: 1fr; }
+}
+
+.rs-hint { font-size: 0.72rem; color: #555; }
+
+.rs-genre-grid { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+
+.rs-genre-chip {
+  background: #1a1a1a; border: 1px solid #333; color: #666;
+  border-radius: 20px; padding: 0.28rem 0.7rem;
+  font-size: 0.75rem; cursor: pointer; transition: all 0.15s;
+  &:hover { border-color: #555; color: #ccc; }
+  &.selected { background: rgba(200,168,75,0.15); border-color: $gold; color: $gold; }
+}
+
+.rs-cast-wrap {
+  display: flex; flex-wrap: wrap; gap: 0.4rem; align-items: center;
+  background: #111; border: 1px solid #2a2a2a; border-radius: 7px;
+  padding: 0.4rem 0.6rem; min-height: 42px;
+  &:focus-within { border-color: $gold; }
+}
+
+.rs-cast-tag {
+  display: inline-flex; align-items: center; gap: 0.25rem;
+  background: rgba(200,168,75,0.12); border: 1px solid rgba(200,168,75,0.3);
+  color: $gold; border-radius: 20px; padding: 0.18rem 0.55rem;
+  font-size: 0.75rem; font-weight: 500;
+}
+
+.rs-cast-remove {
+  background: none; border: none; color: $gold; cursor: pointer;
+  padding: 0; line-height: 1; font-size: 0.95rem; opacity: 0.7;
+  &:hover { opacity: 1; }
+}
+
+.rs-cast-input {
+  background: none; border: none; outline: none;
+  color: #e0e0e0; font-size: 0.82rem; flex: 1; min-width: 120px;
+  &::placeholder { color: #444; }
+}
+
+.rs-drop-zone {
+  border: 2px dashed #2a2a2a; border-radius: 10px;
+  padding: 2.5rem 1rem; text-align: center;
+  display: flex; flex-direction: column; align-items: center; gap: 0.5rem;
+  cursor: pointer; transition: border-color 0.15s, background 0.15s;
+  color: #555;
+  p { margin: 0; font-size: 0.875rem; }
+  &.dragging { border-color: $gold; background: rgba(200,168,75,0.05); }
+  &:hover { border-color: #444; }
+}
+
+.rs-drop-hint { font-size: 0.78rem !important; color: #444 !important; }
+
+.rs-pick-btn {
+  display: inline-flex; align-items: center;
+  background: rgba(255,255,255,0.06); border: 1px solid #333;
+  color: #ccc; border-radius: 7px; padding: 0.45rem 1rem;
+  font-size: 0.82rem; cursor: pointer; margin-top: 0.25rem;
+  transition: background 0.15s;
+  &:hover { background: rgba(255,255,255,0.1); }
+}
+
+.rs-file-card {
+  background: #111; border: 1px solid #2a2a2a; border-radius: 9px;
+  padding: 0.9rem 1rem; display: flex; flex-direction: column; gap: 0.6rem;
+}
+
+.rs-file-info {
+  display: flex; align-items: flex-start; gap: 0.65rem;
+  svg { color: #888; flex-shrink: 0; margin-top: 2px; }
+  div { display: flex; flex-direction: column; gap: 0.1rem; }
+}
+
+.rs-filename { font-size: 0.875rem; color: #e0e0e0; font-weight: 500; }
+.rs-filesize { font-size: 0.75rem; color: #666; }
+
+.rs-progress-wrap {
+  height: 4px; background: #2a2a2a; border-radius: 2px; overflow: hidden;
+}
+
+.rs-progress-bar {
+  height: 100%; background: $gold; border-radius: 2px;
+  transition: width 0.3s ease;
+}
+
+.rs-pct { font-size: 0.78rem; color: #888; }
+.rs-done { font-size: 0.82rem; color: $green; font-weight: 600; }
+.rs-upload-err { font-size: 0.78rem; color: $red; }
+.rs-err { font-size: 0.82rem; color: $red; margin: 0; }
+
+.rs-remove-file {
+  background: none; border: none; color: $red; font-size: 0.78rem;
+  cursor: pointer; padding: 0; align-self: flex-start;
+  &:hover { text-decoration: underline; }
+}
+
+/* ── Image upload (thumbnail / backdrop) ── */
+.rs-img-current, .rs-img-preview {
+  display: flex; align-items: flex-start; gap: 0.75rem;
+  img {
+    width: 90px; height: 60px; object-fit: cover;
+    border-radius: 6px; border: 1px solid #2a2a2a; flex-shrink: 0;
+  }
+  &--wide img { width: 160px; height: 60px; }
+}
+
+.rs-img-replace-btn {
+  display: inline-flex; align-items: center;
+  background: rgba(255,255,255,0.06); border: 1px solid #333;
+  color: #ccc; border-radius: 6px; padding: 0.35rem 0.8rem;
+  font-size: 0.78rem; cursor: pointer; transition: background 0.15s;
+  &:hover { background: rgba(255,255,255,0.1); }
+}
+
+.rs-img-remove {
+  background: none; border: none; color: $red; font-size: 0.78rem;
+  cursor: pointer; padding: 0; display: block; margin-top: 0.35rem;
+  &:hover { text-decoration: underline; }
+}
+
+.rs-img-placeholder {
+  display: flex; align-items: center; gap: 0.6rem;
+  background: #111; border: 2px dashed #2a2a2a; border-radius: 8px;
+  padding: 0.85rem 1rem; cursor: pointer;
+  color: #555; font-size: 0.82rem;
+  transition: border-color 0.15s, background 0.15s;
+  &:hover { border-color: #444; background: rgba(255,255,255,0.03); }
+  svg { flex-shrink: 0; }
+
+  &--wide {
+    width: 100%;
+    padding: 1.1rem 1rem;
+  }
+}
+
+.resubmit-footer {
+  border-top: 1px solid #2a2a2a;
+  padding: 1rem 1.5rem;
+  flex-shrink: 0;
+}
+
+.rs-footer-err {
+  font-size: 0.82rem; color: $red; margin: 0 0 0.75rem;
+}
+
+.resubmit-footer-btns {
+  display: flex; justify-content: flex-end; gap: 0.65rem;
+}
+
+.rs-cancel-btn {
+  background: none; border: 1px solid #444; color: #ccc;
+  border-radius: 7px; padding: 0.6rem 1.1rem;
+  font-size: 0.875rem; cursor: pointer; transition: all 0.15s;
+  &:hover:not(:disabled) { border-color: #666; color: #fff; }
+  &:disabled { opacity: 0.5; cursor: not-allowed; }
+}
+
+.rs-submit-btn {
+  background: $gold; border: none; color: #000;
+  border-radius: 7px; padding: 0.6rem 1.4rem;
+  font-size: 0.875rem; font-weight: 700; cursor: pointer;
+  transition: opacity 0.15s;
+  &:hover:not(:disabled) { opacity: 0.88; }
+  &:disabled { opacity: 0.45; cursor: not-allowed; }
 }
 
 /* ── Responsive ── */

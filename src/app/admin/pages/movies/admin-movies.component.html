@@ -61,8 +61,10 @@
                     <button class="action-btn approve" (click)="approveSubmission(s.id)" [disabled]="actionId() === s.id">
                       {{ actionId() === s.id ? '…' : 'Approve' }}
                     </button>
-                    <button class="action-btn changes" (click)="openRequestChanges(s); $event.stopPropagation()">Changes</button>
                     <button class="action-btn reject" (click)="openRejectSubmission(s)">Reject</button>
+                  }
+                  @if (s.status === 'pending_review' || s.status === 'pending_admin_review' || s.status === 'changes_requested') {
+                    <button class="action-btn changes" (click)="openRequestChanges(s); $event.stopPropagation()">Changes</button>
                   }
                   <button class="action-btn danger" (click)="openRemoveConfirm(s.id)">Remove</button>
                 </td>
@@ -103,6 +105,7 @@
               <th>Duration</th>
               <th>Price (RWF)</th>
               <th>Release Date</th>
+              <th title="Pin to hero banner">Hero</th>
               <th>Actions</th>
             </tr>
           </thead>
@@ -115,6 +118,17 @@
                 <td class="muted">{{ formatDuration(movie.duration_minutes) }}</td>
                 <td>{{ movie.price | number }}</td>
                 <td class="muted">{{ movie.release_date | date:'mediumDate' }}</td>
+                <td class="td-hero">
+                  <button class="hero-pin-btn" [class.pinned]="movie.is_featured"
+                          (click)="toggleFeatured(movie, $event)"
+                          [title]="movie.is_featured ? 'Remove from hero' : 'Pin to hero banner'">
+                    @if (movie.is_featured) {
+                      <svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                    } @else {
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                    }
+                  </button>
+                </td>
                 <td class="actions">
                   <button class="action-btn edit" (click)="goToEdit(movie.id)">Edit</button>
                   <button class="action-btn danger" (click)="confirmDeleteMovie(movie.id)" [disabled]="actionId() === movie.id">Delete</button>
@@ -292,8 +306,10 @@
           <label>Note to Producer</label>
           <textarea rows="4" [value]="requestChangesNote()"
                     (input)="requestChangesNote.set($any($event.target).value)"
-                    placeholder="Describe what the producer needs to fix or improve…"
+                    placeholder="e.g. Please re-upload the trailer in 1080p — the current version is too low resolution."
+                    maxlength="1000"
                     class="dialog-textarea"></textarea>
+          <p style="font-size:0.72rem;color:#666;margin:0.25rem 0 0;text-align:right;">{{ requestChangesNote().length }}/1000</p>
         </div>
         @if (requestChangesError()) {
           <p style="color:#fca5a5;font-size:0.82rem;margin:0 0 0.5rem;">{{ requestChangesError() }}</p>
@@ -301,8 +317,8 @@
         <div class="dialog-actions">
           <button class="action-btn neutral" (click)="closeRequestChanges()">Cancel</button>
           <button class="action-btn changes" (click)="confirmRequestChanges()"
-                  [disabled]="isRequestingChanges() || !requestChangesNote().trim()">
-            {{ isRequestingChanges() ? 'Sending…' : 'Request Changes' }}
+                  [disabled]="isRequestingChanges() || requestChangesNote().trim().length < 10">
+            {{ isRequestingChanges() ? 'Sending…' : 'Send Request' }}
           </button>
         </div>
       </div>

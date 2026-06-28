@@ -31,6 +31,7 @@ export interface ProducerMovie {
   hls_status: 'not_started' | 'processing' | 'ready' | 'failed';
   approval_status: 'pending_review' | 'approved' | 'rejected' | 'approved_pending_contract' | 'changes_requested';
   rejection_reason: string | null;
+  changes_requested_note: string | null;
   created_at: string;
   genres: string[];
 }
@@ -384,8 +385,12 @@ export class ProducerService {
     return this.http.delete(`${BASE}/producer/films/${id}/`);
   }
 
-  resubmitFilm(id: number, payload: { video_key?: string; copyright_document_key?: string }): Observable<ProducerMovieDetail> {
-    return this.http.post<ProducerMovieDetail>(`${BASE}/producer/films/${id}/resubmit/`, payload);
+  resubmitFilm(id: number, formData: FormData): Observable<ProducerMovieDetail> {
+    return this.http.patch<ProducerMovieDetail>(`${BASE}/movies/${id}/resubmit/`, formData);
+  }
+
+  abortUpload(uploadId: string, fileKey: string): Observable<unknown> {
+    return this.http.post(`${BASE}/movies/upload/abort/`, { upload_id: uploadId, file_key: fileKey });
   }
 
   getNotifications(): Observable<ProducerNotification[]> {

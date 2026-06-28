@@ -158,6 +158,12 @@ export class AdminService {
     return this.http.delete(`${BASE}/movies/${id}/delete/`);
   }
 
+  featureMovie(id: number, featured: boolean): Observable<unknown> {
+    const fd = new FormData();
+    fd.append('is_featured', String(featured));
+    return this.http.patch(`${BASE}/movies/${id}/update/`, fd);
+  }
+
   // Producer detail report & movie purchases
   getProducerReport(id: number): Observable<ProducerReport> {
     return this.http.get<ProducerReport>(`${BASE}/admin/dashboard/producers/${id}/report/`);
