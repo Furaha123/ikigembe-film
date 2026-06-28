@@ -178,26 +178,12 @@
                 <span class="meta-value">{{ fmtNum(movie()!.views) }}</span>
               </div>
 
-              @if (movie()!.duration_minutes) {
-                <div class="meta-row">
-                  <span class="meta-label">{{ 'movieDetail.metaDuration' | translate }}</span>
-                  <span class="meta-value">{{ movie()!.duration_minutes }} min</span>
-                </div>
-              }
-
               <div class="meta-row">
                 <span class="meta-label">{{ 'movieDetail.metaHls' | translate }}</span>
                 <span class="hls-badge" [class]="hlsClass(movie()!.hls_status)">
                   {{ hlsLabel(movie()!.hls_status) }}
                 </span>
               </div>
-
-              @if (movie()!.has_free_preview) {
-                <div class="meta-row">
-                  <span class="meta-label">{{ 'movieDetail.metaFreePreview' | translate }}</span>
-                  <span class="meta-value gold">{{ 'movieDetail.metaFreePreviewEnabled' | translate }}</span>
-                </div>
-              }
 
               <div class="meta-row">
                 <span class="meta-label">{{ 'movieDetail.metaReleaseDate' | translate }}</span>

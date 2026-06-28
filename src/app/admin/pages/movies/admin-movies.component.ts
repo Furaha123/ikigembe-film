@@ -260,7 +260,7 @@ export class AdminMoviesComponent implements OnInit, OnDestroy {
 
   confirmRequestChanges() {
     const film = this.requestChangesModal();
-    if (!film || !this.requestChangesNote().trim()) return;
+    if (!film || this.requestChangesNote().trim().length < 10) return;
     this.isRequestingChanges.set(true);
     this.requestChangesError.set(null);
     this.adminService.requestChanges(film.id, this.requestChangesNote()).subscribe({
@@ -321,6 +321,16 @@ export class AdminMoviesComponent implements OnInit, OnDestroy {
   }
 
   // ── Catalog actions ──────────────────────────────────
+  toggleFeatured(movie: AdminMovie, event: Event): void {
+    event.stopPropagation();
+    const next = !movie.is_featured;
+    this.adminService.featureMovie(movie.id, next).subscribe({
+      next: () => this.movies.update(list =>
+        list.map(m => m.id === movie.id ? { ...m, is_featured: next } : m)
+      ),
+    });
+  }
+
   confirmDeleteMovie(id: number) { this.confirmDelete.set(id); }
   cancelDelete() { this.confirmDelete.set(null); }
 

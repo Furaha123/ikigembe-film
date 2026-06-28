@@ -544,13 +544,13 @@ export class ProducerMovieDetailComponent implements OnInit, OnDestroy {
     this.resubmitLoading.set(true);
     this.resubmitError.set(null);
 
-    const payload: { video_key?: string; copyright_document_key?: string } = {};
+    const fd = new FormData();
     const vk = this.resubmitVideoKey();
     const ck = this.resubmitCopyrightKey();
-    if (vk) payload.video_key = vk;
-    if (ck) payload.copyright_document_key = ck;
+    if (vk) fd.append('video_key', vk);
+    if (ck) fd.append('copyright_document_key', ck);
 
-    this.producerService.resubmitFilm(id, payload).subscribe({
+    this.producerService.resubmitFilm(id, fd).subscribe({
       next: (updated) => {
         this.movie.set(updated as any);
         this.resubmitLoading.set(false);

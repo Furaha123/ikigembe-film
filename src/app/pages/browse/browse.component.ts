@@ -25,7 +25,7 @@ export class BrowseComponent implements OnInit {
 
   bannerTitle = '';
   bannerOverview = '';
-  bannerTrailerKey = '';
+  bannerTrailerUrl = '';
   bannerBackdropUrl = '';
   bannerId: number | null = null;
 
@@ -69,14 +69,21 @@ export class BrowseComponent implements OnInit {
   }
 
   private pickRandomBanner() {
-    const source = this.nowPlayingMovies.length ? this.nowPlayingMovies : this.movies;
-    if (!source.length) return;
+    const pool = this.nowPlayingMovies.length ? this.nowPlayingMovies : this.movies;
+    if (!pool.length) return;
 
-    const movie = source[Math.floor(Math.random() * source.length)];
+    // Priority 1 — admin-pinned movies that also have a backdrop (editorial control).
+    // Priority 2 — any movie with a proper wide backdrop (quality gate).
+    // Priority 3 — anything (last resort so the hero never stays blank).
+    const featured     = pool.filter(m => m.is_featured && m.backdrop_url);
+    const withBackdrop = pool.filter(m => !!m.backdrop_url);
+    const candidates   = featured.length ? featured : withBackdrop.length ? withBackdrop : pool;
+
+    const movie = candidates[Math.floor(Math.random() * candidates.length)];
     this.bannerId = movie.id;
     this.bannerTitle = movie.title || movie.name || '';
     this.bannerOverview = movie.overview;
-    this.bannerTrailerKey = '';
+    this.bannerTrailerUrl = movie.trailer_url || '';
     this.bannerBackdropUrl = movie.backdrop_url || movie.thumbnail_url || '';
   }
 

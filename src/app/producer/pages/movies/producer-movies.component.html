@@ -150,6 +150,14 @@
                     <p class="rejection-inline-note">{{ movie.rejection_reason }}</p>
                   }
                 }
+                @if (isChangesRequested(movie)) {
+                  <div class="changes-banner" (click)="$event.stopPropagation()">
+                    <p class="changes-banner-note">
+                      {{ movie.changes_requested_note || 'Review your submission and make the requested updates.' }}
+                    </p>
+                    <button class="changes-banner-btn" (click)="openResubmit(movie, $event)">Fix &amp; Resubmit</button>
+                  </div>
+                }
               </td>
 
               <!-- Type column -->
@@ -284,6 +292,262 @@
         <button class="btn-save-modal" (click)="saveEdit()" [disabled]="editForm.invalid || isSaving()">
           @if (isSaving()) { {{ 'movies.edit.saving' | translate }} } @else { {{ 'movies.edit.save' | translate }} }
         </button>
+      </div>
+
+    </div>
+  </div>
+}
+
+<!-- ── Resubmit Drawer ── -->
+@if (resubmitMovie()) {
+  <div class="resubmit-overlay" (click)="closeResubmit()">
+    <div class="resubmit-drawer" (click)="$event.stopPropagation()" (keydown.escape)="closeResubmit()">
+
+      <!-- Header -->
+      <div class="resubmit-header">
+        <div class="resubmit-header-text">
+          <h3>Resubmit: {{ resubmitMovie()!.title }}</h3>
+          @if (resubmitMovie()!.changes_requested_note) {
+            <p class="resubmit-admin-note">
+              <svg viewBox="0 0 24 24" fill="currentColor" width="13" height="13"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg>
+              {{ resubmitMovie()!.changes_requested_note }}
+            </p>
+          }
+        </div>
+        <button class="resubmit-close" (click)="closeResubmit()">
+          <svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </div>
+
+      <!-- Tabs -->
+      <div class="resubmit-tabs">
+        <button class="rs-tab" [class.active]="resubmitTab() === 'metadata'" (click)="resubmitTab.set('metadata')">① Metadata</button>
+        <button class="rs-tab" [class.active]="resubmitTab() === 'trailer'" (click)="resubmitTab.set('trailer')">
+          ② Trailer
+          @if (resubmitTrailerKey()) { <span class="rs-tab-check">✓</span> }
+        </button>
+        <button class="rs-tab" [class.active]="resubmitTab() === 'film'" (click)="resubmitTab.set('film')">
+          ③ Full Film
+          @if (resubmitFilmKey()) { <span class="rs-tab-check">✓</span> }
+        </button>
+      </div>
+
+      <!-- Body -->
+      <div class="resubmit-body">
+
+        <!-- ① Metadata -->
+        @if (resubmitTab() === 'metadata') {
+          <div class="rs-section">
+            <ng-container [formGroup]="resubmitForm">
+              <div class="rs-field">
+                <label class="rs-label">Title</label>
+                <input class="rs-input" formControlName="title" type="text" placeholder="Film title" />
+              </div>
+              <div class="rs-field">
+                <label class="rs-label">Overview</label>
+                <textarea class="rs-textarea" formControlName="overview" rows="3" placeholder="Short description"></textarea>
+              </div>
+              <div class="rs-row">
+                <div class="rs-field">
+                  <label class="rs-label">Release Date</label>
+                  <input class="rs-input" formControlName="release_date" type="date" />
+                </div>
+                <div class="rs-field">
+                  <label class="rs-label">Price (RWF)</label>
+                  <input class="rs-input" formControlName="price" type="number" min="0" placeholder="0" />
+                </div>
+              </div>
+            </ng-container>
+
+            <div class="rs-field">
+              <label class="rs-label">Genres</label>
+              <div class="rs-genre-grid">
+                @for (g of ALL_GENRES; track g) {
+                  <button type="button" class="rs-genre-chip"
+                          [class.selected]="resubmitGenres().has(g)"
+                          (click)="toggleResubmitGenre(g)">{{ g }}</button>
+                }
+              </div>
+            </div>
+
+            <div class="rs-field">
+              <label class="rs-label">Cast</label>
+              <div class="rs-cast-wrap">
+                @for (name of resubmitCast(); track name) {
+                  <span class="rs-cast-tag">
+                    {{ name }}
+                    <button type="button" class="rs-cast-remove" (click)="removeCastMember(name)">×</button>
+                  </span>
+                }
+                <input class="rs-cast-input" type="text" placeholder="Add name, press Enter"
+                       [ngModel]="resubmitCastInput()" (ngModelChange)="resubmitCastInput.set($event)"
+                       (keydown)="onCastKeydown($event)" />
+              </div>
+              <span class="rs-hint">Press Enter or comma to add each name.</span>
+            </div>
+
+            <!-- Thumbnail -->
+            <div class="rs-field">
+              <label class="rs-label">Thumbnail</label>
+              @if (resubmitThumbnailPreview()) {
+                <div class="rs-img-preview">
+                  <img [src]="resubmitThumbnailPreview()!" alt="New thumbnail" />
+                  <button type="button" class="rs-img-remove" (click)="removeRThumbnail()">× Remove</button>
+                </div>
+              } @else if (resubmitMovie()!.thumbnail_url) {
+                <div class="rs-img-current">
+                  <img [src]="resubmitMovie()!.thumbnail_url!" alt="Current thumbnail" />
+                  <label class="rs-img-replace-btn">
+                    Replace
+                    <input type="file" accept="image/*" hidden (change)="onRThumbnailSelect($event)" />
+                  </label>
+                </div>
+              } @else {
+                <label class="rs-img-placeholder">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="22" height="22"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+                  <span>Upload thumbnail</span>
+                  <input type="file" accept="image/*" hidden (change)="onRThumbnailSelect($event)" />
+                </label>
+              }
+              <span class="rs-hint">JPG, PNG or WebP · max 5 MB</span>
+            </div>
+
+            <!-- Backdrop -->
+            <div class="rs-field">
+              <label class="rs-label">Backdrop</label>
+              @if (resubmitBackdropPreview()) {
+                <div class="rs-img-preview rs-img-preview--wide">
+                  <img [src]="resubmitBackdropPreview()!" alt="New backdrop" />
+                  <button type="button" class="rs-img-remove" (click)="removeRBackdrop()">× Remove</button>
+                </div>
+              } @else {
+                <label class="rs-img-placeholder rs-img-placeholder--wide">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="22" height="22"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+                  <span>Upload backdrop</span>
+                  <input type="file" accept="image/*" hidden (change)="onRBackdropSelect($event)" />
+                </label>
+              }
+              <span class="rs-hint">JPG, PNG or WebP · max 5 MB · wide (16:9) recommended</span>
+            </div>
+          </div>
+        }
+
+        <!-- ② Trailer -->
+        @if (resubmitTab() === 'trailer') {
+          <div class="rs-section">
+            <p class="rs-optional-note">Replacing the trailer is optional. Leave empty to keep the current one.</p>
+
+            @if (!resubmitTrailerFile()) {
+              <div class="rs-drop-zone"
+                   [class.dragging]="isDraggingRTrailer()"
+                   (dragover)="onRTrailerDragOver($event)" (dragleave)="onRTrailerDragLeave()"
+                   (drop)="onRTrailerDrop($event)">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="32" height="32">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/>
+                </svg>
+                <p>Drag &amp; drop your trailer here</p>
+                <p class="rs-drop-hint">.mp4 or .mov · max 100 MB</p>
+                <label class="rs-pick-btn">
+                  Browse files
+                  <input type="file" accept=".mp4,.mov" hidden (change)="onRTrailerSelect($event)" />
+                </label>
+              </div>
+            } @else {
+              <div class="rs-file-card">
+                <div class="rs-file-info">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20">
+                    <polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/>
+                  </svg>
+                  <div>
+                    <span class="rs-filename">{{ resubmitTrailerFile()!.name }}</span>
+                    <span class="rs-filesize">{{ (resubmitTrailerFile()!.size / 1048576).toFixed(1) }} MB</span>
+                  </div>
+                </div>
+                @if (isUploadingRTrailer()) {
+                  <div class="rs-progress-wrap">
+                    <div class="rs-progress-bar" [style.width.%]="resubmitTrailerPct()"></div>
+                  </div>
+                  <span class="rs-pct">{{ resubmitTrailerPct() }}%</span>
+                }
+                @if (resubmitTrailerKey()) {
+                  <span class="rs-done">✓ Trailer ready to submit</span>
+                }
+                @if (resubmitTrailerError()) {
+                  <span class="rs-upload-err">{{ resubmitTrailerError() }}</span>
+                }
+                @if (!isUploadingRTrailer()) {
+                  <button class="rs-remove-file" (click)="removeRTrailer()">× Remove</button>
+                }
+              </div>
+            }
+          </div>
+        }
+
+        <!-- ③ Full Film -->
+        @if (resubmitTab() === 'film') {
+          <div class="rs-section">
+            <p class="rs-optional-note">Replacing the film will reset transcoding. It may take several minutes before the movie is available.</p>
+
+            @if (!resubmitFilmFile()) {
+              <div class="rs-drop-zone"
+                   [class.dragging]="isDraggingRFilm()"
+                   (dragover)="onRFilmDragOver($event)" (dragleave)="onRFilmDragLeave()"
+                   (drop)="onRFilmDrop($event)">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="32" height="32">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/>
+                </svg>
+                <p>Drag &amp; drop your film here</p>
+                <p class="rs-drop-hint">.mp4 or .mov · max 200 MB</p>
+                <label class="rs-pick-btn">
+                  Browse files
+                  <input type="file" accept=".mp4,.mov" hidden (change)="onRFilmSelect($event)" />
+                </label>
+              </div>
+            } @else {
+              <div class="rs-file-card">
+                <div class="rs-file-info">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20">
+                    <polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/>
+                  </svg>
+                  <div>
+                    <span class="rs-filename">{{ resubmitFilmFile()!.name }}</span>
+                    <span class="rs-filesize">{{ (resubmitFilmFile()!.size / 1048576).toFixed(1) }} MB</span>
+                  </div>
+                </div>
+                @if (isUploadingRFilm()) {
+                  <div class="rs-progress-wrap">
+                    <div class="rs-progress-bar" [style.width.%]="resubmitFilmPct()"></div>
+                  </div>
+                  <span class="rs-pct">{{ resubmitFilmPct() }}%</span>
+                }
+                @if (resubmitFilmKey()) {
+                  <span class="rs-done">✓ Film ready to submit</span>
+                }
+                @if (resubmitFilmError()) {
+                  <span class="rs-upload-err">{{ resubmitFilmError() }}</span>
+                }
+                @if (!isUploadingRFilm()) {
+                  <button class="rs-remove-file" (click)="removeRFilm()">× Remove</button>
+                }
+              </div>
+            }
+          </div>
+        }
+
+      </div>
+
+      <!-- Footer -->
+      <div class="resubmit-footer">
+        @if (resubmitError()) {
+          <p class="rs-footer-err">{{ resubmitError() }}</p>
+        }
+        <div class="resubmit-footer-btns">
+          <button class="rs-cancel-btn" (click)="closeResubmit()" [disabled]="isResubmitting()">Cancel</button>
+          <button class="rs-submit-btn" (click)="submitResubmit()"
+                  [disabled]="isResubmitting() || resubmitForm.invalid || isUploadingRTrailer() || isUploadingRFilm()">
+            @if (isResubmitting()) { Submitting… } @else { Resubmit Film }
+          </button>
+        </div>
       </div>
 
     </div>

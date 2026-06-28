@@ -1,5 +1,4 @@
 import { Component, computed, inject, input, signal } from '@angular/core';
-import { DomSanitizer } from '@angular/platform-browser';
 import { Router } from '@angular/router';
 import { DataSaverService } from '../../services/data-saver.service';
 
@@ -9,37 +8,29 @@ import { DataSaverService } from '../../services/data-saver.service';
   styleUrl: './banner.component.scss'
 })
 export class BannerComponent {
-  private sanitizer  = inject(DomSanitizer);
-  private router     = inject(Router);
-  private dataSaver  = inject(DataSaverService);
+  private router    = inject(Router);
+  private dataSaver = inject(DataSaverService);
 
-  bannerTitle = input<string>('');
-  bannerOverview = input<string>('');
-  trailerKey = input<string>('');
+  bannerTitle       = input<string>('');
+  bannerOverview    = input<string>('');
+  trailerUrl        = input<string>('');
   bannerBackdropUrl = input<string>('');
-  movieId = input<number | null>(null);
+  movieId           = input<number | null>(null);
 
   isMuted = signal(true);
 
-  videoUrl = computed(() => {
-    const key = this.trailerKey();
-    if (!key || this.dataSaver.isActive()) return null;
-    const mute = this.isMuted() ? 1 : 0;
-    return this.sanitizer.bypassSecurityTrustResourceUrl(
-      `https://www.youtube.com/embed/${key}?autoplay=1&mute=${mute}&loop=1&playlist=${key}&controls=0&showinfo=0&modestbranding=1&rel=0&iv_load_policy=3&disablekb=1&fs=0`
-    );
-  });
+  hasVideo = computed(() => !!this.trailerUrl() && !this.dataSaver.isActive());
 
-  toggleMute() {
+  toggleMute(): void {
     this.isMuted.update(v => !v);
   }
 
-  play() {
+  play(): void {
     const id = this.movieId();
     if (id != null) this.router.navigate(['/movie', id]);
   }
 
-  moreInfo() {
+  moreInfo(): void {
     const id = this.movieId();
     if (id != null) this.router.navigate(['/movie', id]);
   }
