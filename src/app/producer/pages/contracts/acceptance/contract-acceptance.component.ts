@@ -1,5 +1,4 @@
 import { Component, inject, signal, computed } from '@angular/core';
-import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { TranslatePipe, TranslateDirective } from '@ngx-translate/core';
 import { ContractFlowService } from '../contract-flow.service';
@@ -7,7 +6,7 @@ import { ContractFlowService } from '../contract-flow.service';
 @Component({
   selector: 'app-contract-acceptance',
   standalone: true,
-  imports: [FormsModule, TranslatePipe, TranslateDirective],
+  imports: [TranslatePipe, TranslateDirective],
   templateUrl: './contract-acceptance.component.html',
   styleUrl: './contract-acceptance.component.scss',
 })
@@ -15,17 +14,40 @@ export class ContractAcceptanceComponent {
   private readonly router = inject(Router);
   readonly flow = inject(ContractFlowService);
 
-  agreed        = signal(false);
-  signatureInput = signal('');
+  agreed             = signal(false);
+  signaturePhoto     = signal<File | null>(null);
+  signaturePreview   = signal<string | null>(null);
+  signatureError     = signal<string | null>(null);
 
-  isValid = computed(() => this.agreed() && this.signatureInput().trim().length >= 2);
+  isValid = computed(() => this.agreed() && !!this.signaturePhoto());
 
-  onSignatureChange(value: string) { this.signatureInput.set(value); }
+  onSignatureSelect(event: Event) {
+    const file = (event.target as HTMLInputElement).files?.[0];
+    if (!file) return;
+    if (!file.type.startsWith('image/')) {
+      this.signatureError.set('Only image files are accepted (JPG, PNG, WebP).');
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      this.signatureError.set('Image must be under 5 MB.');
+      return;
+    }
+    this.signatureError.set(null);
+    this.signaturePhoto.set(file);
+    const reader = new FileReader();
+    reader.onload = (e) => this.signaturePreview.set(e.target?.result as string);
+    reader.readAsDataURL(file);
+  }
+
+  removeSignature() {
+    this.signaturePhoto.set(null);
+    this.signaturePreview.set(null);
+  }
 
   back()     { this.router.navigate(['/producer/contracts/warning']); }
   accept() {
     if (!this.isValid()) return;
-    this.flow.signatureName.set(this.signatureInput().trim());
+    this.flow.signaturePhoto.set(this.signaturePhoto());
     this.router.navigate(['/producer/contracts/verifying']);
   }
 }

@@ -3,10 +3,10 @@ import { Injectable, signal } from '@angular/core';
 @Injectable({ providedIn: 'root' })
 export class ContractFlowService {
   selectedLanguage = signal<'en' | 'rw'>('en');
-  signatureName    = signal<string>('');
+  signaturePhoto   = signal<File | null>(null);
 
   reset() {
     this.selectedLanguage.set('en');
-    this.signatureName.set('');
+    this.signaturePhoto.set(null);
   }
 }

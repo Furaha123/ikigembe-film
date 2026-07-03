@@ -96,8 +96,10 @@
         [src]="playerSrc()"
         [poster]="playerPoster()"
         [startAt]="playerStartAt()"
+        [showCloseButton]="true"
         (progressUpdate)="onProgressUpdate($event)"
-        (videoEnded)="onVideoEnded()">
+        (videoEnded)="onVideoEnded()"
+        (closed)="closePlayer()">
       </app-video-player>
     </div>
   </div>

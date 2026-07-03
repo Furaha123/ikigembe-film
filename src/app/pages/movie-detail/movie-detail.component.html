@@ -139,13 +139,13 @@
   </section>
 
   <!-- More from Producer -->
-  @if (moreFromProducer().length > 0 && movie().producer_profile?.id) {
+  @if (moreFromProducer().length > 0 && movie.producer_profile?.id) {
     <section class="more-from-section">
       <div class="more-from-header">
         <h2 class="more-from-title">
-          More from <span class="more-from-title__gold">{{ movie().producer }}</span>
+          More from <span class="more-from-title__gold">{{ movie.producer }}</span>
         </h2>
-        <a class="more-from-seeall" [routerLink]="['/producers', movie().producer_profile.id]">
+        <a class="more-from-seeall" [routerLink]="['/producers', movie.producer_profile.id]">
           See all
           <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor">
             <path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6z"/>
@@ -197,7 +197,10 @@
         <app-video-player
           [src]="videoSrc()"
           [poster]="movie.thumbnail_url"
-          accentColor="#c9a84c">
+          accentColor="#c9a84c"
+          [autoplay]="true"
+          [showCloseButton]="true"
+          (closed)="closePlayer()">
         </app-video-player>
       </div>
     </div>

@@ -46,7 +46,7 @@ export class ProducerUploadComponent {
   // ── Details form ─────────────────────────────────────
   detailsForm = this.fb.group({
     title:        ['', [Validators.required, Validators.minLength(2)]],
-    longline:     ['', [Validators.required, Validators.minLength(10), Validators.maxLength(200)]],
+    logline:     ['', [Validators.required, Validators.minLength(10), Validators.maxLength(200)]],
     synopsis:     ['', [Validators.required, Validators.minLength(20), Validators.maxLength(600)]],
     release_date: ['', Validators.required],
     cast:         [''],
@@ -116,7 +116,7 @@ export class ProducerUploadComponent {
   copyrightReady  = computed(() => !!this.copyrightFile());
 
   get title()       { return this.detailsForm.get('title'); }
-  get longline()    { return this.detailsForm.get('longline'); }
+  get logline()    { return this.detailsForm.get('logline'); }
   get synopsis()    { return this.detailsForm.get('synopsis'); }
   get releaseDate() { return this.detailsForm.get('release_date'); }
   get cast()        { return this.detailsForm.get('cast'); }

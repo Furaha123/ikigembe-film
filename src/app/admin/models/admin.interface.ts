@@ -100,7 +100,7 @@ export interface ProducerContractItem {
   status: 'active' | 'expired';
   signed_at: string;
   expires_at: string;
-  signature_name: string;
+  signature_photo_url: string | null;
   ip_address: string;
   created_at: string;
 }

@@ -5,7 +5,6 @@
     "movies": "Filime Zanjye",
     "wallet": "Imari",
     "withdrawals": "Gukura Amafaranga",
-    "reports": "Raporo",
     "contracts": "Amasezerano",
     "settings": "Igenamiterere",
     "terms": "Amabwiriza n'Ibisabwa",
@@ -150,10 +149,10 @@
       "subtitle": "Uzuza amakuru yose yerekeranye na filime yawe mbere yo kohereza dosiye.",
       "movieTitle": "Izina *",
       "titleRequired": "Izina rirakenewe.",
-      "longline": "Interuro Nkuru *",
-      "longlineHint": "Interuro ngufi z'imashini yawe (imirongo 2)",
-      "longlineRequired": "Interuro nkuru irakenewe.",
-      "longlineMin": "Interuro nkuru igomba kuba nibura inyuguti 10.",
+      "logline": "Interuro Nkuru *",
+      "loglineHint": "Interuro ngufi z'imashini yawe (imirongo 2)",
+      "loglineRequired": "Interuro nkuru irakenewe.",
+      "loglineMin": "Interuro nkuru igomba kuba nibura inyuguti 10.",
       "synopsis": "Incamake *",
       "synopsisHint": "Andika incamake ngufi (ntarengera interuro 5–6)",
       "synopsisRequired": "Incamake irakenewe.",
@@ -178,7 +177,7 @@
       "thumbnail": "Ifoto Nshingiro *",
       "thumbnailUpload": "Kanda kohereza ifoto nshingiro",
       "thumbnailHint": "JPG, PNG, WebP — ntarengwa 5 MB",
-      "longlineMax": "Longline ntirengere inyuguti 200.",
+      "loglineMax": "logline ntirengere inyuguti 200.",
       "synopsisMax": "Synopsis ntirengere inyuguti 600."
     },
     "trailer": {
@@ -213,7 +212,7 @@
       },
       "labels": {
         "title": "Izina:",
-        "longline": "Interuro Nkuru:",
+        "logline": "Interuro Nkuru:",
         "synopsis": "Incamake:",
         "genres": "Ubwoko:",
         "releaseDate": "Itariki yo Gutangaza:",
@@ -353,10 +352,6 @@
       "processed": "Bikoreshejwe"
     }
   },
-  "reports": {
-    "title": "Raporo Zanjye",
-    "subtitle": "Incamake y'inyungu zawe n'imikorere"
-  },
   "movieDetail": {
     "myContent": "Ibiri Gusesengura",
     "yourMovie": "Filime yawe",
@@ -473,9 +468,11 @@
     },
     "acceptance": {
       "title": "Sinyaho Amasezerano",
-      "subtitle": "Izina wanditse riri gukora nk'umukono wawe w'amategeko.",
-      "fieldLabel": "Amazina Yose Mu Mategeko *",
-      "fieldPlaceholder": "Injiza amazina yawe yose mu mategeko",
+      "subtitle": "Shyiramo ifoto y'umukono wawe wanditse ku ntoki kugira ngo ikorere nk'umukono wawe w'amategeko.",
+      "fieldLabel": "Ifoto y'Umukono *",
+      "uploadPrompt": "Shyiramo ifoto y'umukono",
+      "uploadHint": "JPG, PNG, WebP · ntarengwa 5 MB",
+      "removePhoto": "Siba",
       "agreeText": "Nasomye kandi nemeye rwose",
       "agreeName": "Amasezerano y'Uwohereza Filime",
       "agreeEnd": "n'amabwiriza yazo yose.",

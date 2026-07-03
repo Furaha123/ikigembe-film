@@ -132,17 +132,17 @@
               }
             </div>
 
-            <!-- Longline -->
-            <div class="field" [class.has-error]="longline?.invalid && longline?.touched">
-              <label>{{ 'upload.details.longline' | translate }} <span class="required">*</span></label>
-              <input type="text" formControlName="longline" maxlength="200" [placeholder]="'upload.details.longlineHint' | translate" />
-              <span class="char-count" [class.near-limit]="(longline?.value?.length || 0) > 160">{{ longline?.value?.length || 0 }}/200</span>
-              @if (longline?.touched && longline?.hasError('required')) {
-                <span class="field-error">{{ 'upload.details.longlineRequired' | translate }}</span>
-              } @else if (longline?.touched && longline?.hasError('minlength')) {
-                <span class="field-error">{{ 'upload.details.longlineMin' | translate }}</span>
-              } @else if (longline?.touched && longline?.hasError('maxlength')) {
-                <span class="field-error">{{ 'upload.details.longlineMax' | translate }}</span>
+            <!-- logline -->
+            <div class="field" [class.has-error]="logline?.invalid && logline?.touched">
+              <label>{{ 'upload.details.logline' | translate }} <span class="required">*</span></label>
+              <input type="text" formControlName="logline" maxlength="200" [placeholder]="'upload.details.loglineHint' | translate" />
+              <span class="char-count" [class.near-limit]="(logline?.value?.length || 0) > 160">{{ logline?.value?.length || 0 }}/200</span>
+              @if (logline?.touched && logline?.hasError('required')) {
+                <span class="field-error">{{ 'upload.details.loglineRequired' | translate }}</span>
+              } @else if (logline?.touched && logline?.hasError('minlength')) {
+                <span class="field-error">{{ 'upload.details.loglineMin' | translate }}</span>
+              } @else if (logline?.touched && logline?.hasError('maxlength')) {
+                <span class="field-error">{{ 'upload.details.loglineMax' | translate }}</span>
               }
             </div>
 
@@ -543,8 +543,8 @@
               <span class="review-val">{{ detailsForm.value.title || '—' }}</span>
             </div>
             <div class="review-row">
-              <span class="review-key">{{ 'upload.review.labels.longline' | translate }}</span>
-              <span class="review-val">{{ detailsForm.value.longline || '—' }}</span>
+              <span class="review-key">{{ 'upload.review.labels.logline' | translate }}</span>
+              <span class="review-val">{{ detailsForm.value.logline || '—' }}</span>
             </div>
             <div class="review-row">
               <span class="review-key">{{ 'upload.review.labels.synopsis' | translate }}</span>
