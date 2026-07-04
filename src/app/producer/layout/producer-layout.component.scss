@@ -234,17 +234,58 @@ $sidebar-collapsed-w: 64px;
   @media (max-width: 640px) { display: none; }
 }
 
-/* ── Notification bell ── */
-/* ── Language toggle ── */
-.lang-toggle {
-  display: inline-flex; align-items: center; gap: 0.3rem;
-  background: #1e1e1e; border: 1px solid $border; border-radius: 20px;
-  color: $text; cursor: pointer; padding: 0.3rem 0.7rem; font-size: 0.78rem;
-  margin-right: 0.5rem; transition: border-color 0.2s, background 0.2s;
-  &:hover { border-color: $gold; background: #252525; }
-  .lang-flag { font-size: 1rem; line-height: 1; }
-  .lang-label { font-weight: 600; letter-spacing: 0.03em; }
+/* ── Language switcher ── */
+.lang-menu { position: relative; margin-right: 0.5rem; }
+
+.lang-trigger {
+  display: inline-flex; align-items: center; gap: 0.5rem;
+  background: rgba(255,255,255,0.06); border: 1px solid $border; border-radius: 20px;
+  color: $text; cursor: pointer; padding: 0.4rem 0.85rem 0.4rem 0.7rem;
+  font-size: 0.82rem; transition: border-color 0.15s, background 0.15s;
+
+  &:hover { border-color: $gold; background: rgba(255,255,255,0.1); }
+  &[aria-expanded="true"] { border-color: $gold; background: rgba(255,255,255,0.1); }
+
+  .lang-icon {
+    flex-shrink: 0; font-size: 0.8rem; font-weight: 700;
+    letter-spacing: -0.05em; opacity: 0.85;
+  }
+  .lang-code { font-weight: 600; white-space: nowrap; }
+  .lang-chevron { color: $muted; transition: transform 0.2s; flex-shrink: 0; }
+  .lang-chevron.open { transform: rotate(180deg); }
+
+  @media (max-width: 640px) {
+    .lang-code { display: none; }
+    padding: 0.4rem 0.6rem;
+  }
 }
+
+.lang-dropdown {
+  position: absolute; top: calc(100% + 8px); right: 0;
+  min-width: 190px; background: #1c1c1c;
+  border: 1px solid #2a2a2a; border-radius: 10px;
+  box-shadow: 0 12px 32px rgba(0,0,0,0.55);
+  z-index: 300; overflow: hidden;
+}
+
+.lang-option {
+  display: flex; align-items: center; gap: 0.65rem;
+  width: 100%; padding: 0.7rem 0.9rem;
+  background: none; border: none; cursor: pointer;
+  color: $text; font-size: 0.84rem; font-weight: 500; text-align: left;
+  transition: background 0.15s;
+
+  & + & { border-top: 1px solid #2a2a2a; }
+
+  .lang-flag { font-size: 1.05rem; line-height: 1; }
+  .lang-name { flex: 1; }
+  .lang-check { color: $gold; flex-shrink: 0; }
+
+  &:hover { background: rgba(255,255,255,0.05); }
+  &.active { color: $gold; }
+}
+
+/* ── Notification bell ── */
 
 .notif-menu { position: relative; margin-right: 0.5rem; }
 

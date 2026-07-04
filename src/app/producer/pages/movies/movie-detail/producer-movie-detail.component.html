@@ -593,6 +593,8 @@
       <app-video-player
         [src]="watchSrc()"
         [poster]="movie()?.thumbnail_url ?? ''"
+        [showCloseButton]="true"
+        (closed)="closePlayer()"
       />
     </div>
   </div>

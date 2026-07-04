@@ -4,7 +4,7 @@ import { CommonModule } from '@angular/common';
 import { Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { TranslatePipe, TranslateDirective } from '@ngx-translate/core';
 import { AuthService } from '../../core/services/auth.service';
-import { LanguageService } from '../../core/services/language.service';
+import { LanguageService, AppLang } from '../../core/services/language.service';
 import { ProducerService, ProducerNotification } from '../services/producer.service';
 
 @Component({
@@ -29,6 +29,7 @@ export class ProducerLayoutComponent implements OnInit {
   isLoggingOut      = signal(false);
   showUserDropdown  = signal(false);
   showNotifDropdown = signal(false);
+  showLangDropdown  = signal(false);
   notifications     = signal<ProducerNotification[]>([]);
   statusBannerDismissed = signal(false);
   movieCount        = signal<number>(0);
@@ -45,7 +46,6 @@ export class ProducerLayoutComponent implements OnInit {
     { labelKey: 'nav.movies',      path: '/producer/movies',      icon: 'movies' },
     { labelKey: 'nav.wallet',      path: '/producer/wallet',      icon: 'wallet' },
     { labelKey: 'nav.withdrawals', path: '/producer/withdrawals', icon: 'withdrawals' },
-    { labelKey: 'nav.reports',     path: '/producer/reports',     icon: 'reports' },
     { labelKey: 'nav.contracts',   path: '/producer/contracts',   icon: 'contracts' },
     { labelKey: 'nav.settings',    path: '/producer/settings',    icon: 'settings' },
   ];
@@ -79,6 +79,9 @@ export class ProducerLayoutComponent implements OnInit {
     if (!(event.target as HTMLElement).closest('.notif-menu')) {
       this.showNotifDropdown.set(false);
     }
+    if (!(event.target as HTMLElement).closest('.lang-menu')) {
+      this.showLangDropdown.set(false);
+    }
     if (
       isPlatformBrowser(this.platformId) &&
       window.innerWidth <= 768 &&
@@ -94,12 +97,26 @@ export class ProducerLayoutComponent implements OnInit {
     event.stopPropagation();
     this.showUserDropdown.update(v => !v);
     if (this.showNotifDropdown()) this.showNotifDropdown.set(false);
+    if (this.showLangDropdown()) this.showLangDropdown.set(false);
   }
 
   toggleNotifDropdown(event: Event) {
     event.stopPropagation();
     this.showNotifDropdown.update(v => !v);
     if (this.showUserDropdown()) this.showUserDropdown.set(false);
+    if (this.showLangDropdown()) this.showLangDropdown.set(false);
+  }
+
+  toggleLangDropdown(event: Event) {
+    event.stopPropagation();
+    this.showLangDropdown.update(v => !v);
+    if (this.showUserDropdown()) this.showUserDropdown.set(false);
+    if (this.showNotifDropdown()) this.showNotifDropdown.set(false);
+  }
+
+  selectLanguage(lang: AppLang) {
+    this.lang.setLanguage(lang);
+    this.showLangDropdown.set(false);
   }
 
   markAllRead(event: Event) {

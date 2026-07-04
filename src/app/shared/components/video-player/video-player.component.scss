@@ -17,6 +17,30 @@ $ctrl-bg: rgba(0, 0, 0, 0.72);
   }
 }
 
+.vp-close {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 20;
+  background: rgba(0, 0, 0, 0.55);
+  border: none;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  cursor: pointer;
+  opacity: 0.85;
+  transition: opacity 0.2s, background 0.2s;
+
+  &:hover {
+    opacity: 1;
+    background: rgba(0, 0, 0, 0.8);
+  }
+}
+
 .vp-video {
   position: absolute;
   inset: 0;

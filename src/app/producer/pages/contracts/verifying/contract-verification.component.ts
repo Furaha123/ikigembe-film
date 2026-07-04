@@ -23,20 +23,20 @@ export class ContractVerificationComponent implements OnInit {
   ngOnInit() {
     if (!isPlatformBrowser(this.platformId)) return;
 
-    const name = this.flow.signatureName();
-    if (!name) {
+    const photo = this.flow.signaturePhoto();
+    if (!photo) {
       this.router.navigate(['/producer/contracts/accept']);
       return;
     }
 
-    this.contractService.sign(name).subscribe({
+    this.contractService.sign(photo).subscribe({
       next: (contract: ProducerContract) => {
         this.router.navigate(['/producer/contracts/success'], {
           state: { expiresAt: contract.expires_at },
         });
       },
       error: (err) => {
-        const msg = err?.error?.detail || err?.error?.signature_name?.[0] || 'Something went wrong. Please try again.';
+        const msg = err?.error?.detail || err?.error?.signature_photo?.[0] || 'Something went wrong. Please try again.';
         this.errorMessage.set(msg);
       },
     });

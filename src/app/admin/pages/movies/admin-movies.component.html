@@ -352,7 +352,8 @@
           </button>
         </div>
         <div class="player-body">
-          <app-video-player [src]="watchSrc()" [poster]="watchPoster()" />
+          <app-video-player [src]="watchSrc()" [poster]="watchPoster()"
+                            [showCloseButton]="true" (closed)="closeWatchOverlay()" />
         </div>
       </div>
     </div>

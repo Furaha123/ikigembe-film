@@ -19,7 +19,7 @@ export interface ProducerContract {
   status: 'active' | 'expired';
   signed_at: string;
   expires_at: string;
-  signature_name: string;
+  signature_photo_url: string | null;
   created_at: string;
 }
 
@@ -31,9 +31,9 @@ export class ContractService {
     return this.http.get<ContractStatus>(`${BASE}/contracts/status/`);
   }
 
-  sign(signatureName: string): Observable<ProducerContract> {
-    return this.http.post<ProducerContract>(`${BASE}/contracts/sign/`, {
-      signature_name: signatureName,
-    });
+  sign(signaturePhoto: File): Observable<ProducerContract> {
+    const formData = new FormData();
+    formData.append('signature_photo', signaturePhoto);
+    return this.http.post<ProducerContract>(`${BASE}/contracts/sign/`, formData);
   }
 }

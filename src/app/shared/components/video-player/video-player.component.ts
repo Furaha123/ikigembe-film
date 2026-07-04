@@ -25,9 +25,12 @@ export class VideoPlayerComponent implements AfterViewInit, OnChanges, OnDestroy
   @Input() poster = '';
   @Input() accentColor = '#c9a84c';
   @Input() startAt = 0;
+  @Input() autoplay = false;
+  @Input() showCloseButton = false;
 
   @Output() progressUpdate = new EventEmitter<number>();
   @Output() videoEnded     = new EventEmitter<void>();
+  @Output() closed         = new EventEmitter<void>();
 
   @ViewChild('videoEl') videoRef!: ElementRef<HTMLVideoElement>;
 
@@ -123,6 +126,7 @@ export class VideoPlayerComponent implements AfterViewInit, OnChanges, OnDestroy
               .reverse(),
           ];
           this.qualityLevels.set(levels);
+          if (this.autoplay) v.play().catch(() => {});
         });
 
         this.hls.on(Hls.Events.ERROR, (_evt, data) => {
@@ -132,11 +136,15 @@ export class VideoPlayerComponent implements AfterViewInit, OnChanges, OnDestroy
       } else if (v.canPlayType('application/vnd.apple.mpegurl')) {
         // Safari native HLS
         v.src = src;
+        if (this.autoplay) v.play().catch(() => {});
       } else {
         this.srcError.set(true);
       }
     } else {
       v.src = src;
+      if (this.autoplay) {
+        v.addEventListener('canplay', () => v.play().catch(() => {}), { once: true });
+      }
     }
   }
 
@@ -273,6 +281,13 @@ export class VideoPlayerComponent implements AfterViewInit, OnChanges, OnDestroy
     } else {
       document.exitFullscreen();
     }
+  }
+
+  close() {
+    if (document.fullscreenElement) {
+      document.exitFullscreen().catch(() => {});
+    }
+    this.closed.emit();
   }
 
   onMouseMove() {

@@ -5,7 +5,6 @@
     "movies": "My Movies",
     "wallet": "Wallet",
     "withdrawals": "Withdrawals",
-    "reports": "Reports",
     "contracts": "Contracts",
     "settings": "Settings",
     "terms": "Terms & Conditions",
@@ -150,10 +149,10 @@
       "subtitle": "Fill in all information about your movie before uploading files.",
       "movieTitle": "Title *",
       "titleRequired": "Title is required.",
-      "longline": "Longline *",
-      "longlineHint": "Short 2-sentence tagline for your movie",
-      "longlineRequired": "Longline is required.",
-      "longlineMin": "Longline must be at least 10 characters.",
+      "logline": "logline *",
+      "loglineHint": "Short 2-sentence tagline for your movie",
+      "loglineRequired": "logline is required.",
+      "loglineMin": "logline must be at least 10 characters.",
       "synopsis": "Synopsis *",
       "synopsisHint": "Write a brief synopsis (max 5–6 sentences)",
       "synopsisRequired": "Synopsis is required.",
@@ -178,7 +177,7 @@
       "thumbnail": "Thumbnail Image *",
       "thumbnailUpload": "Click to upload thumbnail",
       "thumbnailHint": "JPG, PNG, WebP — max 5 MB",
-      "longlineMax": "Longline must not exceed 200 characters.",
+      "loglineMax": "logline must not exceed 200 characters.",
       "synopsisMax": "Synopsis must not exceed 600 characters."
     },
     "trailer": {
@@ -213,7 +212,7 @@
       },
       "labels": {
         "title": "Title:",
-        "longline": "Longline:",
+        "logline": "logline:",
         "synopsis": "Synopsis:",
         "genres": "Genres:",
         "releaseDate": "Release Date:",
@@ -353,10 +352,6 @@
       "processed": "Processed"
     }
   },
-  "reports": {
-    "title": "My Reports",
-    "subtitle": "Your earnings and performance overview"
-  },
   "movieDetail": {
     "myContent": "My Content",
     "yourMovie": "Your movie",
@@ -473,9 +468,11 @@
     },
     "acceptance": {
       "title": "Sign the Agreement",
-      "subtitle": "Your typed name serves as your legal signature.",
-      "fieldLabel": "Full Legal Name *",
-      "fieldPlaceholder": "Enter your full legal name",
+      "subtitle": "Upload a photo of your handwritten signature to serve as your legal signature.",
+      "fieldLabel": "Signature Photo *",
+      "uploadPrompt": "Upload signature photo",
+      "uploadHint": "JPG, PNG, WebP · max 5 MB",
+      "removePhoto": "Remove",
       "agreeText": "I have read and fully agree to the",
       "agreeName": "Producer Distribution Agreement",
       "agreeEnd": "and all its terms.",
