@@ -3,15 +3,13 @@ import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { MovieService } from '../../shared/services/movie.service';
-import { HeaderComponent } from '../../core/components/header/header.component';
-import { FooterComponent } from '../../core/components/footer/footer.component';
 import { SeoService } from '../../core/services/seo.service';
 import { ProducerSummary } from '../../shared/models/movie-api.interface';
 
 @Component({
   selector: 'app-producers-list',
   standalone: true,
-  imports: [CommonModule, RouterLink, FormsModule, HeaderComponent, FooterComponent],
+  imports: [CommonModule, RouterLink, FormsModule],
   templateUrl: './producers-list.component.html',
   styleUrls: ['./producers-list.component.scss']
 })

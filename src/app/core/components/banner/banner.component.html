@@ -1,6 +1,6 @@
 @if (hasVideo()) {
   <video class="video-bg"
-         autoplay loop playsinline preload="auto"
+         autoplay loop playsinline preload="metadata"
          [muted]="isMuted()"
          [src]="trailerUrl()"
          [attr.poster]="bannerBackdropUrl() || null">

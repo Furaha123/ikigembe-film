@@ -4,12 +4,10 @@ import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { AuthService, UserProfile, NotificationPreferences } from '../../core/services/auth.service';
 import { PaymentService, PaymentHistoryItem } from '../../core/services/payment.service';
-import { HeaderComponent } from '../../core/components/header/header.component';
-
 
 @Component({
   selector: 'app-profile',
-  imports: [CommonModule, ReactiveFormsModule, HeaderComponent],
+  imports: [CommonModule, ReactiveFormsModule],
   templateUrl: './profile.component.html',
   styleUrl: './profile.component.scss'
 })

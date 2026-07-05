@@ -3,8 +3,6 @@ import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { MovieService } from '../../shared/services/movie.service';
 import { DataSaverService } from '../../core/services/data-saver.service';
-import { HeaderComponent } from '../../core/components/header/header.component';
-import { FooterComponent } from '../../core/components/footer/footer.component';
 import { SeoService } from '../../core/services/seo.service';
 import { ProducerProfile } from '../../shared/models/movie-api.interface';
 import { IVideoContent } from '../../shared/models/video-content.interface';
@@ -12,7 +10,7 @@ import { IVideoContent } from '../../shared/models/video-content.interface';
 @Component({
   selector: 'app-producer-profile',
   standalone: true,
-  imports: [CommonModule, RouterLink, HeaderComponent, FooterComponent],
+  imports: [CommonModule, RouterLink],
   templateUrl: './producer-profile.component.html',
   styleUrls: ['./producer-profile.component.scss']
 })

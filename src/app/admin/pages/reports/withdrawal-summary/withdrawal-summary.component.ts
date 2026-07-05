@@ -11,7 +11,6 @@ import {
   Chart, CategoryScale, LinearScale, Tooltip, Legend,
   BarElement, BarController,
 } from 'chart.js';
-import * as XLSX from 'xlsx';
 
 Chart.register(CategoryScale, LinearScale, Tooltip, Legend, BarElement, BarController);
 
@@ -108,7 +107,8 @@ export class WithdrawalSummaryComponent implements OnInit, AfterViewChecked, OnD
     });
   }
 
-  export(): void {
+  async export(): Promise<void> {
+    const XLSX = await import('xlsx');
     const wb = XLSX.utils.book_new();
     const dateLabel = new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
     const rows: (string | number)[][] = [

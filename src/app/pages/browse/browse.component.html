@@ -1,5 +1,3 @@
-<app-header [userImg]="userProfileImg" />
-
 @if (isLoading) {
   <div class="state-screen">
     <div class="loader-ring"></div>
@@ -24,5 +22,3 @@
   <app-movie-carousel [title]="'Popular Movies'" [videoContents]="popularMovies" />
   <app-movie-carousel [title]="'Upcoming Movies'" [videoContents]="upcomingMovies" />
 }
-
-<app-footer />

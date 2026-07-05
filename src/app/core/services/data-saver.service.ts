@@ -16,7 +16,7 @@ export class DataSaverService {
     const conn = (navigator as Navigator & { connection?: NetworkInfo }).connection;
 
     const check = () =>
-      !!conn && (conn.saveData || conn.effectiveType === 'slow-2g' || conn.effectiveType === '2g');
+      !!conn && (conn.saveData || conn.effectiveType === 'slow-2g' || conn.effectiveType === '2g' || conn.effectiveType === '3g');
 
     this._active.set(check());
     conn?.addEventListener('change', () => this._active.set(check()));

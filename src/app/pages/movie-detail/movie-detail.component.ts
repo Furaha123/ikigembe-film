@@ -4,8 +4,6 @@ import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { SeoService } from '../../core/services/seo.service';
 import { forkJoin } from 'rxjs';
 import { MovieService } from '../../shared/services/movie.service';
-import { FooterComponent } from '../../core/components/footer/footer.component';
-import { HeaderComponent } from '../../core/components/header/header.component';
 import { IVideoContent } from '../../shared/models/video-content.interface';
 import { VideoPlayerComponent } from '../../shared/components/video-player/video-player.component';
 import { PaymentModalComponent } from '../../shared/components/payment-modal/payment-modal.component';
@@ -15,7 +13,7 @@ import { DataSaverService } from '../../core/services/data-saver.service';
 @Component({
   selector: 'app-movie-detail',
   standalone: true,
-  imports: [CommonModule, RouterLink, HeaderComponent, FooterComponent, VideoPlayerComponent, PaymentModalComponent],
+  imports: [CommonModule, RouterLink, VideoPlayerComponent, PaymentModalComponent],
   templateUrl: './movie-detail.component.html',
   styleUrls: ['./movie-detail.component.scss']
 })

@@ -1,6 +1,4 @@
 @if (movie(); as movie) {
-  <app-header [userImg]="''" />
-
   <!-- Breadcrumb -->
   <nav class="breadcrumb">
     <a (click)="goBack()">Home</a>
@@ -182,8 +180,6 @@
       </div>
     </section>
   }
-
-  <app-footer />
 
   <!-- Video Player Overlay -->
   @if (isPlaying() && videoSrc()) {

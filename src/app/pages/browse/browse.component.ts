@@ -3,8 +3,6 @@ import { SeoService } from '../../core/services/seo.service';
 import { CommonModule } from '@angular/common';
 import { forkJoin, of, catchError } from 'rxjs';
 import { BannerComponent } from '../../core/components/banner/banner.component';
-import { FooterComponent } from '../../core/components/footer/footer.component';
-import { HeaderComponent } from '../../core/components/header/header.component';
 import { MovieService } from '../../shared/services/movie.service';
 import { MovieCarouselComponent } from "../../shared/components/movie-carousel/movie-carousel.component";
 import { IVideoContent } from '../../shared/models/video-content.interface';
@@ -13,7 +11,7 @@ import { AuthService } from '../../shared/services/auth.service';
 @Component({
   selector: 'app-browse',
   standalone: true,
-  imports: [CommonModule, HeaderComponent, BannerComponent, MovieCarouselComponent, FooterComponent],
+  imports: [CommonModule, BannerComponent, MovieCarouselComponent],
   templateUrl: './browse.component.html',
   styleUrls: ['./browse.component.scss']
 })
@@ -21,7 +19,6 @@ export class BrowseComponent implements OnInit {
   auth = inject(AuthService);
   movieService = inject(MovieService);
   private seo = inject(SeoService);
-  userProfileImg = '';
 
   bannerTitle = '';
   bannerOverview = '';

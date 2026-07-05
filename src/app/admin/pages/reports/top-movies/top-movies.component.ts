@@ -6,7 +6,6 @@ import { Subscription } from 'rxjs';
 import { AdminService } from '../../../services/admin.service';
 import { TopMovieItem } from '../../../models/admin.interface';
 import { DatePickerComponent, type DateRange } from '../../../../shared/components/date-picker/date-picker';
-import * as XLSX from 'xlsx';
 
 @Component({
   selector: 'app-top-movies',
@@ -70,7 +69,8 @@ export class TopMoviesComponent implements OnInit, OnDestroy {
     return Math.round(((this.sort === 'revenue' ? movie.total_revenue : movie.views) / max) * 100);
   }
 
-  export(): void {
+  async export(): Promise<void> {
+    const XLSX = await import('xlsx');
     const wb = XLSX.utils.book_new();
     const dateLabel = new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
     const rows: (string | number)[][] = [

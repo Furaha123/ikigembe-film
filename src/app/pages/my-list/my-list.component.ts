@@ -1,14 +1,12 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { HeaderComponent } from '../../core/components/header/header.component';
-import { FooterComponent } from '../../core/components/footer/footer.component';
 import { VideoPlayerComponent } from '../../shared/components/video-player/video-player.component';
 import { MovieService, MyListMovie } from '../../shared/services/movie.service';
 
 @Component({
   selector: 'app-my-list',
   standalone: true,
-  imports: [CommonModule, HeaderComponent, FooterComponent, VideoPlayerComponent],
+  imports: [CommonModule, VideoPlayerComponent],
   templateUrl: './my-list.component.html',
   styleUrls: ['./my-list.component.scss']
 })
