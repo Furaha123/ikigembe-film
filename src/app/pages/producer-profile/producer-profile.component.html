@@ -1,11 +1,12 @@
 <!-- ① Initial full-page load -->
 @if (loading() && !producer()) {
-  <div class="pp-hero-skeleton">
-    <div class="pp-hero-skeleton__bar"></div>
-    <div class="pp-hero-skeleton__frame"></div>
-    <div class="pp-hero-skeleton__bar"></div>
+  <div class="pp-hero-skeleton"></div>
+  <div class="pp-stats-skeleton">
+    @for (s of [0,1,2,3,4]; track $index) {
+      <div class="pp-stat-skel"></div>
+    }
   </div>
-  <section class="pp-films-section">
+  <section class="pp-section">
     <div class="pp-grid">
       @for (s of skeletons; track $index) {
         <div class="pp-skeleton-card">
@@ -39,47 +40,165 @@
 <!-- ③ Loaded state -->
 @if (producer(); as p) {
 
-  <!-- Cinematic letterbox hero -->
-  <div class="pp-letterbox">
-    <div class="pp-letterbox__bar"></div>
-    <div class="pp-letterbox__frame"
-         [class.pp-letterbox__frame--gradient]="!backdropUrl()"
-         [style.backgroundImage]="backdropUrl() ? 'url(' + backdropUrl() + ')' : 'none'">
-      <div class="pp-vignette"></div>
-      <div class="pp-info-panel">
-        <div class="pp-info-glass">
-          <span class="pp-film-badge">
-            <svg viewBox="0 0 24 24" width="12" height="12" fill="currentColor">
-              <path d="M4 6H2v14c0 1.1.9 2 2 2h14v-2H4V6zm16-4H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-8 12.5v-9l6 4.5-6 4.5z"/>
-            </svg>
-            {{ totalMovies() }} film{{ totalMovies() === 1 ? '' : 's' }}
-          </span>
-          <h1 class="pp-producer-name">{{ p.name }}</h1>
-          @if (p.bio) {
-            <p class="pp-bio">{{ p.bio }}</p>
+  <!-- ═══════════════════════ CINEMATIC HERO (~45vh) ═══════════════════════ -->
+  <header class="pp-hero" [@fadeUp]
+          [class.pp-hero--gradient]="!backdropUrl()"
+          [style.backgroundImage]="backdropUrl() ? 'url(' + backdropUrl() + ')' : 'none'">
+    <div class="pp-hero-scrim"></div>
+
+    <div class="pp-hero-content">
+      <div class="pp-hero-avatar">
+        @if (p.avatar_url) {
+          <img [src]="p.avatar_url" [alt]="p.name" />
+        } @else {
+          <span>{{ getInitials(p.name) }}</span>
+        }
+      </div>
+
+      <div class="pp-hero-info">
+        <div class="pp-hero-name-row">
+          <h1 class="pp-hero-name">{{ p.name }}</h1>
+        </div>
+
+        <div class="pp-hero-meta">
+          @if (p.country) {
+            <span class="pp-meta-chip">
+              <svg viewBox="0 0 24 24" width="13" height="13" fill="currentColor"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5A2.5 2.5 0 1 1 12 6.5a2.5 2.5 0 0 1 0 5z"/></svg>
+              {{ p.country }}
+            </span>
           }
-          <a routerLink="/producers" class="pp-all-link">
-            <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor">
-              <path d="M15.41 16.59L10.83 12l4.58-4.59L14 6l-6 6 6 6z"/>
-            </svg>
-            All producers
-          </a>
+          @if (memberSince()) {
+            <span class="pp-meta-chip">Member since {{ memberSince() }}</span>
+          }
+          <span class="pp-meta-chip">{{ totalMovies() }} Film{{ totalMovies() === 1 ? '' : 's' }}</span>
+        </div>
+
+        @if (p.bio) {
+          <p class="pp-hero-bio">{{ p.bio }}</p>
+        }
+
+        @if (genresList().length) {
+          <div class="pp-hero-genres">
+            @for (g of genresList().slice(0, 4); track g) {
+              <span class="pp-genre-tag">{{ g }}</span>
+            }
+          </div>
+        }
+
+        <div class="pp-hero-stats-inline">
+          <div class="pp-inline-stat">
+            <strong>{{ displayViews() | number }}</strong>
+            <span>Total Views</span>
+          </div>
+        </div>
+
+        <div class="pp-hero-actions">
+          <button class="pp-btn pp-btn--ghost" (click)="share()">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M18 16.08a2.9 2.9 0 0 0-1.94.75l-7.1-4.14a3 3 0 0 0 0-1.38l7.1-4.14a2.92 2.92 0 1 0-.85-2.05c0 .28.05.53.13.79l-7.1 4.14a2.92 2.92 0 1 0 0 4.1l7.1 4.14a2.9 2.9 0 1 0 2.66-2.21z"/></svg>
+            {{ shareCopied() ? 'Link copied!' : 'Share' }}
+          </button>
         </div>
       </div>
     </div>
-    <div class="pp-letterbox__bar"></div>
-  </div>
+  </header>
 
-  <!-- Films section -->
-  <section class="pp-films-section">
-    <div class="pp-films-header">
-      <h2 class="pp-films-title">
-        Films by <span class="pp-films-title__gold">{{ p.name }}</span>
-      </h2>
-      @if (totalMovies() > 0 && totalPages() > 1) {
-        <span class="pp-page-indicator">Page {{ currentPage() }} of {{ totalPages() }}</span>
+  <!-- ═══════════════════════ FEATURED MOVIE ═══════════════════════ -->
+  @if (featuredMovie(); as fm) {
+    <section class="pp-featured" [@fadeUp]>
+      <p class="pp-featured-eyebrow">Most Watched</p>
+      <div class="pp-featured-card">
+        <div class="pp-featured-poster">
+          <img [src]="fm.thumbnail_url" [alt]="fm.title" loading="lazy" />
+          @if (fm.has_free_preview) {
+            <span class="pp-badge pp-badge--free">Free Preview</span>
+          }
+        </div>
+
+        <div class="pp-featured-info">
+          <h2 class="pp-featured-title">{{ fm.title }}</h2>
+          <div class="pp-featured-meta">
+            <span class="pp-card-rating">
+              <svg viewBox="0 0 24 24" width="13" height="13" fill="#ffc107"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87L18.18 22 12 18.56 5.82 22 7 14.14l-5-4.87 6.91-1.01z"/></svg>
+              {{ fm.rating ? fm.rating.toFixed(1) : 'N/A' }}
+            </span>
+            @if (fm.release_date) {
+              <span class="pp-meta-dot">·</span>
+              <span>{{ fm.release_date.substring(0, 4) }}</span>
+            }
+            @if (fm.duration_minutes) {
+              <span class="pp-meta-dot">·</span>
+              <span>{{ fm.duration_minutes }} min</span>
+            }
+            <span class="pp-meta-dot">·</span>
+            <span>{{ fm.views | number }} views</span>
+          </div>
+
+          @if (fm.genres?.length) {
+            <div class="pp-hero-genres">
+              @for (g of fm.genres!.slice(0, 4); track g) {
+                <span class="pp-genre-tag">{{ g }}</span>
+              }
+            </div>
+          }
+
+          <p class="pp-featured-overview">{{ fm.overview }}</p>
+
+          <div class="pp-featured-actions">
+            <button class="pp-btn pp-btn--gold" (click)="goToMovie(fm.id)">
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+              Watch Now
+            </button>
+            @if (fm.trailer_url) {
+              <button class="pp-btn pp-btn--ghost" (click)="playTrailer(fm)">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 8.5v7l6-3.5-6-3.5z" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="9.5"/></svg>
+                Trailer
+              </button>
+            }
+          </div>
+        </div>
+      </div>
+    </section>
+  }
+
+  <!-- ═══════════════════════ STATS ═══════════════════════ -->
+  <section class="pp-stats" [@fadeUp]>
+    <div class="pp-stat-card">
+      <span class="pp-stat-value">{{ displayMovieCount() }}</span>
+      <span class="pp-stat-label">Movies Released</span>
+    </div>
+    <div class="pp-stat-card">
+      <span class="pp-stat-value">{{ displayHours() | number }}</span>
+      <span class="pp-stat-label">Est. Watch Hours</span>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════ FILMOGRAPHY ═══════════════════════ -->
+  <section class="pp-section" id="filmography">
+    <div class="pp-section-header">
+      <h2 class="pp-section-title">Filmography</h2>
+      @if (filteredSortedMovies().length > 0) {
+        <span class="pp-result-count">{{ filteredSortedMovies().length }} title{{ filteredSortedMovies().length === 1 ? '' : 's' }}</span>
       }
     </div>
+
+    @if (allMovies().length > 0) {
+      <div class="pp-filters">
+        @if (genresList().length) {
+          <div class="pp-filter-group pp-filter-group--genres">
+            <button class="pp-chip" [class.pp-chip--active]="!genreFilter()" (click)="setGenreFilter(null)">All</button>
+            @for (g of genresList(); track g) {
+              <button class="pp-chip" [class.pp-chip--active]="genreFilter() === g" (click)="setGenreFilter(g)">{{ g }}</button>
+            }
+          </div>
+        }
+        <div class="pp-filter-group pp-filter-group--sort">
+          <button class="pp-chip" [class.pp-chip--active]="sortOption() === 'newest'" (click)="setSort('newest')">Newest</button>
+          <button class="pp-chip" [class.pp-chip--active]="sortOption() === 'oldest'" (click)="setSort('oldest')">Oldest</button>
+          <button class="pp-chip" [class.pp-chip--active]="sortOption() === 'rating'" (click)="setSort('rating')">Highest Rated</button>
+          <button class="pp-chip" [class.pp-chip--active]="sortOption() === 'popular'" (click)="setSort('popular')">Most Popular</button>
+        </div>
+      </div>
+    }
 
     @if (loading()) {
       <div class="pp-grid">
@@ -92,73 +211,149 @@
         }
       </div>
 
-    } @else if (movies().length === 0) {
+    } @else if (allMovies().length === 0) {
       <div class="pp-empty">
         <svg viewBox="0 0 24 24" width="52" height="52" fill="none" stroke="#555" stroke-width="1.5">
           <rect x="2" y="2" width="20" height="20" rx="2.5"/>
           <path d="M10 8l6 4-6 4V8z"/>
         </svg>
-        <p>No films available from this producer yet.</p>
+        <h3>No films available yet</h3>
+        <p>{{ p.name }} hasn't released a title on Ikigembe yet. Check back soon — in the meantime, explore other filmmakers below.</p>
       </div>
 
     } @else {
-      <div class="pp-grid">
-        @for (movie of movies(); track movie.id) {
-          <button class="pp-card" (click)="goToMovie(movie.id)">
-            <div class="pp-card-poster">
+      <div class="pp-grid" [@staggerGrid]="pagedMovies().length + '-' + currentPage() + '-' + sortOption() + '-' + genreFilter()">
+        @for (movie of pagedMovies(); track movie.id) {
+          <div class="pp-card">
+            <button class="pp-card-poster" (click)="goToMovie(movie.id)">
               <img [src]="movie.thumbnail_url" [alt]="movie.title" loading="lazy" />
               <div class="pp-card-overlay">
                 <div class="pp-play-circle">
-                  <svg viewBox="0 0 24 24" width="22" height="22" fill="white">
-                    <path d="M8 5v14l11-7z"/>
-                  </svg>
+                  <svg viewBox="0 0 24 24" width="20" height="20" fill="white"><path d="M8 5v14l11-7z"/></svg>
                 </div>
+                <span class="pp-card-watch">Watch</span>
               </div>
               @if (movie.has_free_preview) {
                 <span class="pp-badge pp-badge--free">Free</span>
               }
-            </div>
+              @if (movie.age_rating) {
+                <span class="pp-badge pp-badge--age">{{ movie.age_rating }}</span>
+              }
+            </button>
             <div class="pp-card-info">
               <p class="pp-card-title">{{ movie.title }}</p>
               <div class="pp-card-meta">
                 @if (movie.release_date) {
-                  <span class="pp-card-year">{{ movie.release_date.substring(0, 4) }}</span>
+                  <span>{{ movie.release_date.substring(0, 4) }}</span>
+                  <span class="pp-meta-dot">·</span>
+                }
+                @if (movie.duration_minutes) {
+                  <span>{{ movie.duration_minutes }}m</span>
                   <span class="pp-meta-dot">·</span>
                 }
                 <span class="pp-card-rating">
-                  <svg viewBox="0 0 24 24" width="11" height="11" fill="#ffc107">
-                    <path d="M12 2l3.09 6.26L22 9.27l-5 4.87L18.18 22 12 18.56 5.82 22 7 14.14l-5-4.87 6.91-1.01z"/>
-                  </svg>
+                  <svg viewBox="0 0 24 24" width="11" height="11" fill="#ffc107"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87L18.18 22 12 18.56 5.82 22 7 14.14l-5-4.87 6.91-1.01z"/></svg>
                   {{ movie.rating ? movie.rating.toFixed(1) : 'N/A' }}
                 </span>
               </div>
+              @if (movie.genres?.length) {
+                <p class="pp-card-genres">{{ movie.genres!.slice(0, 2).join(' · ') }}</p>
+              }
+              <p class="pp-card-views">{{ movie.views | number }} views</p>
             </div>
-          </button>
+          </div>
         }
       </div>
 
-      @if (totalPages() > 1) {
+      @if (totalFilterPages() > 1) {
         <div class="pp-pagination">
           <button class="pp-pag-btn" [disabled]="currentPage() === 1" (click)="prevPage()">
-            <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
-              <path d="M15.41 16.59L10.83 12l4.58-4.59L14 6l-6 6 6 6z"/>
-            </svg>
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M15.41 16.59L10.83 12l4.58-4.59L14 6l-6 6 6 6z"/></svg>
             Previous
           </button>
           <div class="pp-pag-info">
             <span class="pp-pag-current">{{ currentPage() }}</span>
             <span class="pp-pag-sep">/</span>
-            <span class="pp-pag-total">{{ totalPages() }}</span>
+            <span class="pp-pag-total">{{ totalFilterPages() }}</span>
           </div>
-          <button class="pp-pag-btn" [disabled]="currentPage() === totalPages()" (click)="nextPage()">
+          <button class="pp-pag-btn" [disabled]="currentPage() === totalFilterPages()" (click)="nextPage()">
             Next
-            <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
-              <path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6z"/>
-            </svg>
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6z"/></svg>
           </button>
         </div>
       }
     }
   </section>
+
+  <!-- ═══════════════════════ ABOUT (collapsible) ═══════════════════════ -->
+  @if (p.bio || p.experience) {
+    <section class="pp-section pp-about">
+      <button class="pp-about-toggle" (click)="toggleAbout()">
+        <h2 class="pp-section-title">About {{ p.name }}</h2>
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"
+             [class.pp-rotated]="aboutExpanded()">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M6 9l6 6 6-6"/>
+        </svg>
+      </button>
+
+      @if (aboutExpanded()) {
+        <div class="pp-about-body" [@fadeUp]>
+          @if (p.bio) {
+            <div class="pp-about-block">
+              <h3>Biography</h3>
+              <p>{{ p.bio }}</p>
+            </div>
+          }
+          @if (p.experience) {
+            <div class="pp-about-block">
+              <h3>Experience</h3>
+              <p>{{ p.experience }}</p>
+            </div>
+          }
+        </div>
+      }
+    </section>
+  }
+
+  <!-- ═══════════════════════ RELATED PRODUCERS ═══════════════════════ -->
+  @if (relatedProducers().length) {
+    <section class="pp-section pp-related">
+      <h2 class="pp-section-title">More Filmmakers to Discover</h2>
+      <div class="pp-related-row">
+        @for (rp of relatedProducers(); track rp.id) {
+          <a [routerLink]="['/producers', rp.id]" class="pp-related-card">
+            <div class="pp-related-avatar">
+              @if (rp.avatar_url) {
+                <img [src]="rp.avatar_url" [alt]="rp.name" loading="lazy" />
+              } @else {
+                <span>{{ getInitials(rp.name) }}</span>
+              }
+            </div>
+            <p class="pp-related-name">{{ rp.name }}</p>
+            <p class="pp-related-count">{{ rp.movie_count }} film{{ rp.movie_count === 1 ? '' : 's' }}</p>
+          </a>
+        }
+      </div>
+    </section>
+  }
+
+  <!-- ═══════════════════════ TRAILER MODAL ═══════════════════════ -->
+  @if (trailerUrl()) {
+    <div class="player-backdrop" (click)="closeTrailer()">
+      <div class="player-container" (click)="$event.stopPropagation()">
+        <button class="player-close" (click)="closeTrailer()">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+        <app-video-player
+          [src]="trailerUrl()!"
+          [poster]="trailerPoster()"
+          accentColor="#c9a84c"
+          [autoplay]="true"
+          [showCloseButton]="true"
+          (closed)="closeTrailer()">
+        </app-video-player>
+      </div>
+    </div>
+  }
 
 }

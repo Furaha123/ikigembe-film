@@ -33,6 +33,9 @@ export interface ProducerSummary {
   id: number;
   name: string;
   movie_count: number;
+  bio?: string | null;
+  avatar_url?: string | null;
+  date_joined?: string | null;
 }
 
 export interface ProducersListResponse {
@@ -44,6 +47,10 @@ export interface ProducerProfile {
   id: number;
   name: string;
   bio?: string | null;
+  avatar_url?: string | null;
+  date_joined?: string | null;
+  country?: string | null;
+  experience?: string | null;
 }
 
 export interface ProducerMoviesResponse {
