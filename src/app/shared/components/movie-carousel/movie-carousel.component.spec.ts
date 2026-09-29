@@ -1,7 +1,8 @@
 /* tslint:disable:no-unused-variable */
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { waitForAsync, ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { DebugElement } from '@angular/core';
+import { provideRouter } from '@angular/router';
 
 import { MovieCarouselComponent } from './movie-carousel.component';
 
@@ -9,9 +10,10 @@ describe('MovieCarouselComponent', () => {
   let component: MovieCarouselComponent;
   let fixture: ComponentFixture<MovieCarouselComponent>;
 
-  beforeEach(async(() => {
+  beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      declarations: [ MovieCarouselComponent ]
+      imports: [ MovieCarouselComponent ],
+      providers: [provideRouter([])]
     })
     .compileComponents();
   }));
