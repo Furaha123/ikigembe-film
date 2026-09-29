@@ -80,10 +80,12 @@ export const routes: Routes = [
     canActivate: [authGuard, viewerGuard],
     loadComponent: () => import('./pages/casting/casting-call-detail/casting-call-detail.component').then(a => a.CastingCallDetailComponent)
   },
-  {
-    path: 'terms',
-    loadComponent: () => import('./pages/terms/terms.component').then(a => a.TermsComponent)
-  },
+  // ── CMS pages (content from /api/pages/<slug>/; built-in terms text as fallback) ──
+  { path: 'terms',   data: { slug: 'terms' },   loadComponent: () => import('./pages/cms-page/cms-page.component').then(a => a.CmsPageComponent) },
+  { path: 'about',   data: { slug: 'about' },   loadComponent: () => import('./pages/cms-page/cms-page.component').then(a => a.CmsPageComponent) },
+  { path: 'privacy', data: { slug: 'privacy' }, loadComponent: () => import('./pages/cms-page/cms-page.component').then(a => a.CmsPageComponent) },
+  { path: 'contact', data: { slug: 'contact' }, loadComponent: () => import('./pages/cms-page/cms-page.component').then(a => a.CmsPageComponent) },
+  { path: 'pages/:slug', loadComponent: () => import('./pages/cms-page/cms-page.component').then(a => a.CmsPageComponent) },
   {
     path: 'preview/:id',
     loadComponent: () => import('./pages/preview/preview.component').then(a => a.PreviewComponent)

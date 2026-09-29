@@ -1,0 +1,43 @@
+$gold: #C5A253;
+$bg: #0C0C0C;
+$border: #2a2a2a;
+$text: #e5e5e5;
+$muted: #888;
+
+.cms-page {
+  min-height: 100vh;
+  background: $bg;
+  padding: 2rem 1rem;
+  color: $text;
+}
+
+.cms-container {
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.cms-muted { color: $muted; }
+
+.cms-missing-title {
+  font-size: 1.6rem;
+  color: $gold;
+  margin: 0 0 0.5rem;
+}
+
+.cms-back {
+  margin-top: 2rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid $border;
+}
+
+.back-btn {
+  display: inline-block;
+  border: 1px solid $border;
+  color: $muted;
+  padding: 0.6rem 1.25rem;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  text-decoration: none;
+
+  &:hover, &:focus-visible { color: $text; border-color: $text; }
+}
