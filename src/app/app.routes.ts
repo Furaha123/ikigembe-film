@@ -50,6 +50,36 @@ export const routes: Routes = [
     canActivate: [authGuard, viewerGuard],
     loadComponent: () => import('./pages/my-list/my-list.component').then(a => a.MyListComponent)
   },
+  // ── Actor marketplace (viewers with an actor profile) ──
+  {
+    path: 'actor',
+    canActivate: [authGuard, viewerGuard],
+    children: [
+      { path: '', redirectTo: 'profile', pathMatch: 'full' },
+      {
+        path: 'profile',
+        loadComponent: () => import('./pages/actor/actor-profile/actor-profile.component').then(a => a.ActorProfileComponent)
+      },
+      {
+        path: 'videos',
+        loadComponent: () => import('./pages/actor/actor-videos/actor-videos.component').then(a => a.ActorVideosComponent)
+      },
+      {
+        path: 'applications',
+        loadComponent: () => import('./pages/actor/my-applications/my-applications.component').then(a => a.MyApplicationsComponent)
+      },
+    ]
+  },
+  {
+    path: 'casting',
+    canActivate: [authGuard, viewerGuard],
+    loadComponent: () => import('./pages/casting/casting-calls/casting-calls.component').then(a => a.CastingCallsComponent)
+  },
+  {
+    path: 'casting/:id',
+    canActivate: [authGuard, viewerGuard],
+    loadComponent: () => import('./pages/casting/casting-call-detail/casting-call-detail.component').then(a => a.CastingCallDetailComponent)
+  },
   {
     path: 'terms',
     loadComponent: () => import('./pages/terms/terms.component').then(a => a.TermsComponent)

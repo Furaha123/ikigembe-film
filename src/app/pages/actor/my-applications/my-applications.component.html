@@ -1,0 +1,37 @@
+<app-header [userImg]="''" />
+
+<main class="mk-page">
+  <div class="mk-header">
+    <div>
+      <h1>{{ 'marketplace.applications.title' | translate }}</h1>
+      <p>{{ 'marketplace.applications.subtitle' | translate }}</p>
+    </div>
+  </div>
+
+  <app-actor-nav />
+
+  <div aria-live="polite">
+    @if (loading()) {
+      <p class="mk-muted">{{ 'marketplace.common.loading' | translate }}</p>
+    } @else if (error()) {
+      <p class="mk-error" role="alert">{{ error()! | translate }}</p>
+    } @else if (applications().length === 0) {
+      <p class="mk-empty">{{ 'marketplace.applications.empty' | translate }}
+        <a routerLink="/casting">{{ 'marketplace.nav.casting' | translate }}</a>
+      </p>
+    }
+  </div>
+
+  @for (a of applications(); track a.id) {
+    <article class="mk-card mk-row" style="justify-content: space-between">
+      <div>
+        <h2><a [routerLink]="['/casting', a.casting_call_id]">{{ a.casting_call_title }}</a></h2>
+        <p class="mk-muted">{{ 'marketplace.applications.sent' | translate }} {{ a.created_at | date:'mediumDate' }}
+          · {{ a.videos.length }} {{ 'marketplace.applications.videos' | translate }}</p>
+      </div>
+      <span [class]="statusClass(a.status)">{{ 'marketplace.applicationStatus.' + a.status | translate }}</span>
+    </article>
+  }
+</main>
+
+<app-footer />

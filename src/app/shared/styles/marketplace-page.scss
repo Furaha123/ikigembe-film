@@ -1,0 +1,220 @@
+// Shared layout for marketplace pages (actor hub, casting, producer directory).
+// Components list this file first in `styleUrls`, then their own overrides.
+
+$gold: #c9a84c;
+$bg-card: #1b1b1b;
+$border: #2c2c2c;
+$muted: #9a9a9a;
+$danger: #f87171;
+$ok: #4ade80;
+
+:host { display: block; }
+
+.mk-page {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 1.5rem 1rem 4rem;
+  color: #e5e5e5;
+}
+
+.mk-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+
+  h1 { font-size: 1.6rem; font-weight: 700; margin: 0; }
+  p  { color: $muted; margin: 0.25rem 0 0; }
+}
+
+.mk-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+  border-bottom: 1px solid $border;
+
+  a, button {
+    padding: 0.6rem 0.9rem;
+    color: $muted;
+    background: none;
+    border: none;
+    border-bottom: 2px solid transparent;
+    text-decoration: none;
+    cursor: pointer;
+    font: inherit;
+
+    &.active { color: #fff; border-bottom-color: $gold; }
+    &:hover  { color: #fff; }
+    &:focus-visible { outline: 2px solid $gold; outline-offset: 2px; }
+  }
+}
+
+.mk-card {
+  background: $bg-card;
+  border: 1px solid $border;
+  border-radius: 10px;
+  padding: 1.1rem 1.2rem;
+  margin-bottom: 1rem;
+
+  h2, h3 { margin: 0 0 0.4rem; font-size: 1.05rem; }
+}
+
+.mk-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 1rem;
+}
+
+.mk-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.mk-muted { color: $muted; font-size: 0.875rem; }
+.mk-empty { color: $muted; text-align: center; padding: 2.5rem 1rem; }
+.mk-error { color: $danger; font-size: 0.9rem; margin: 0.5rem 0; }
+.mk-success { color: $ok; font-size: 0.9rem; margin: 0.5rem 0; }
+
+.mk-banner {
+  border: 1px solid rgba($gold, 0.4);
+  background: rgba($gold, 0.08);
+  border-radius: 10px;
+  padding: 0.8rem 1rem;
+  margin-bottom: 1rem;
+}
+
+.mk-badge {
+  display: inline-block;
+  padding: 0.15rem 0.55rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  background: #2a2a2a;
+  color: #ddd;
+
+  &--ok      { background: rgba($ok, 0.15); color: $ok; }
+  &--warn    { background: rgba($gold, 0.15); color: $gold; }
+  &--danger  { background: rgba($danger, 0.15); color: $danger; }
+  &--info    { background: rgba(96, 165, 250, 0.15); color: #60a5fa; }
+}
+
+.mk-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+
+  span {
+    padding: 0.1rem 0.5rem;
+    border-radius: 999px;
+    border: 1px solid $border;
+    font-size: 0.75rem;
+    color: #ccc;
+  }
+}
+
+.mk-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  padding: 0.55rem 1rem;
+  border-radius: 8px;
+  border: 1px solid transparent;
+  font: inherit;
+  font-weight: 600;
+  font-size: 0.875rem;
+  cursor: pointer;
+  text-decoration: none;
+  background: $gold;
+  color: #111;
+
+  &--ghost  { background: transparent; color: #e5e5e5; border-color: $border; }
+  &--danger { background: transparent; color: $danger; border-color: rgba($danger, 0.5); }
+  &:disabled { opacity: 0.5; cursor: not-allowed; }
+  &:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
+}
+
+.mk-form {
+  display: grid;
+  gap: 0.9rem;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+
+  .mk-field--wide { grid-column: 1 / -1; }
+}
+
+.mk-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+
+  label { font-size: 0.8rem; color: #bbb; }
+  input, textarea, select {
+    background: #111;
+    border: 1px solid $border;
+    border-radius: 8px;
+    color: #eee;
+    padding: 0.55rem 0.7rem;
+    font: inherit;
+
+    &:focus-visible { outline: 2px solid $gold; outline-offset: 1px; }
+  }
+  textarea { resize: vertical; min-height: 5rem; }
+  .mk-hint { font-size: 0.75rem; color: $muted; }
+  .mk-error { margin: 0; font-size: 0.8rem; }
+}
+
+.mk-check {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.9rem;
+}
+
+.mk-progress {
+  height: 6px;
+  background: #2a2a2a;
+  border-radius: 999px;
+  overflow: hidden;
+  margin: 0.5rem 0;
+
+  div { height: 100%; background: $gold; transition: width 0.2s; }
+}
+
+.mk-pager {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  margin-top: 1.25rem;
+}
+
+.mk-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  background: rgba(0, 0, 0, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+}
+
+.mk-dialog {
+  width: min(900px, 100%);
+  background: #111;
+  border: 1px solid $border;
+  border-radius: 12px;
+  padding: 1rem;
+
+  header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 0.75rem;
+  }
+}
