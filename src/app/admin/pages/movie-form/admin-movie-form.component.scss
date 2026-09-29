@@ -305,3 +305,38 @@ $muted:   #888;
 @media (max-width: 380px) {
   .form-page-header h1 { font-size: 1.2rem; }
 }
+
+/* ── Multipart upload state ── */
+.upload-progress {
+  height: 4px;
+  margin: 0.4rem 0 0.2rem;
+  background: #2a2a2a;
+  border-radius: 999px;
+  overflow: hidden;
+
+  div { height: 100%; background: #c9a84c; transition: width 0.2s; }
+}
+
+.upload-done { color: #86efac; }
+
+.upload-retry {
+  background: none;
+  border: 1px solid #444;
+  color: #e5e5e5;
+  border-radius: 6px;
+  padding: 0.25rem 0.6rem;
+  font-size: 0.75rem;
+  cursor: pointer;
+  margin-right: 0.4rem;
+}
+
+.field > .hint { color: #666; font-size: 0.72rem; }
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}

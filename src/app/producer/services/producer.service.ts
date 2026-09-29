@@ -2,7 +2,8 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, of, map } from 'rxjs';
 import { environment } from '../../../environments/environment';
-import { MultipartUploadApi } from '../../shared/models/upload.interface';
+import { MovieUploadField, MultipartUploadApi } from '../../shared/models/upload.interface';
+import { MovieUploadService } from '../../shared/services/movie-upload.service';
 import { ALL_MOCK_MOVIES } from '../../shared/data/mock-movies.data';
 
 const BASE = environment.apiUrl;
@@ -37,8 +38,7 @@ export interface ProducerMovie {
   genres: string[];
 }
 
-/** `field_name` decides the storage folder/bucket on the backend — always send the right one. */
-export type MovieUploadField = 'video_file' | 'trailer_file' | 'thumbnail' | 'backdrop' | 'copyright_document';
+export type { MovieUploadField } from '../../shared/models/upload.interface';
 
 /** POST /producer/films/<id>/resubmit/ — at least one key required. */
 export interface FilmResubmitPayload {
@@ -251,6 +251,7 @@ export interface AnalyticsResponse {
 @Injectable({ providedIn: 'root' })
 export class ProducerService {
   private readonly http = inject(HttpClient);
+  private readonly movieUpload = inject(MovieUploadService);
 
   getWallet(): Observable<ProducerWallet> {
     return this.http.get<ProducerWallet>(`${BASE}/producer/dashboard/wallet/`);
@@ -319,47 +320,22 @@ export class ProducerService {
     return this.http.post(`${BASE}/movies/create/`, formData);
   }
 
-  initiateUpload(
-    fileName: string,
-    fileType: string,
-    fieldName: MovieUploadField,
-  ): Observable<{ upload_id: string; file_key: string }> {
-    return this.http.post<{ upload_id: string; file_key: string }>(
-      `${BASE}/movies/upload/initiate/`,
-      { file_name: fileName, file_type: fileType, field_name: fieldName },
-    );
+  // Movie multipart endpoints live in the shared MovieUploadService (also used by admins).
+  initiateUpload(fileName: string, fileType: string, fieldName: MovieUploadField): Observable<{ upload_id: string; file_key: string }> {
+    return this.movieUpload.initiate(fileName, fileType, fieldName);
   }
 
-  signPart(
-    uploadId: string,
-    fileKey: string,
-    partNumber: number,
-  ): Observable<{ url: string }> {
-    return this.http.post<{ url: string }>(
-      `${BASE}/movies/upload/sign-part/`,
-      { upload_id: uploadId, file_key: fileKey, part_number: partNumber },
-    );
+  signPart(uploadId: string, fileKey: string, partNumber: number): Observable<{ url: string }> {
+    return this.movieUpload.signPart(uploadId, fileKey, partNumber);
   }
 
-  completeUpload(
-    uploadId: string,
-    fileKey: string,
-    parts: { PartNumber: number; ETag: string }[],
-  ): Observable<{ status: string }> {
-    return this.http.post<{ status: string }>(
-      `${BASE}/movies/upload/complete/`,
-      { upload_id: uploadId, file_key: fileKey, parts },
-    );
+  completeUpload(uploadId: string, fileKey: string, parts: { PartNumber: number; ETag: string }[]): Observable<{ status: string }> {
+    return this.movieUpload.complete(uploadId, fileKey, parts);
   }
 
   /** Movie-file multipart endpoints for MultipartUploadService, bound to one `field_name`. */
   movieUploadApi(fieldName: MovieUploadField): MultipartUploadApi {
-    return {
-      initiate: (file) => this.initiateUpload(file.name, file.type || 'application/octet-stream', fieldName),
-      signPart: (uploadId, fileKey, partNumber) => this.signPart(uploadId, fileKey, partNumber),
-      complete: (uploadId, fileKey, parts) => this.completeUpload(uploadId, fileKey, parts),
-      abort:    (uploadId, fileKey) => this.abortUpload(uploadId, fileKey),
-    };
+    return this.movieUpload.api(fieldName);
   }
 
   updateFilm(id: number, payload: Partial<Pick<ProducerMovie, 'title' | 'overview' | 'genres' | 'price' | 'has_free_preview'>>): Observable<ProducerMovie> {
@@ -385,7 +361,7 @@ export class ProducerService {
   }
 
   abortUpload(uploadId: string, fileKey: string): Observable<unknown> {
-    return this.http.post(`${BASE}/movies/upload/abort/`, { upload_id: uploadId, file_key: fileKey });
+    return this.movieUpload.abort(uploadId, fileKey);
   }
 
   getNotifications(): Observable<ProducerNotification[]> {
