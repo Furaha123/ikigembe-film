@@ -1,0 +1,120 @@
+<div class="overlay" (click)="closed.emit()">
+  <div class="dialog rs-dialog" role="dialog" aria-modal="true" aria-labelledby="rs-title" (click)="$event.stopPropagation()">
+    <div class="rs-head">
+      <h3 id="rs-title">{{ 'admin.revenue.title' | translate }} — {{ movieTitle }}</h3>
+      <button class="action-btn neutral" (click)="closed.emit()">{{ 'marketplace.common.close' | translate }}</button>
+    </div>
+
+    <div aria-live="polite">
+      @if (loading()) { <p class="muted">{{ 'marketplace.common.loading' | translate }}</p> }
+      @if (loadError()) { <p class="watch-error" role="alert">{{ loadError()! | translate }}</p> }
+    </div>
+
+    @if (data(); as d) {
+      <p class="rs-current">
+        {{ 'admin.revenue.current' | translate }}:
+        @if (d.current; as c) {
+          <strong>{{ c.producer_percentage }}% / {{ c.platform_percentage }}%</strong>
+          @for (p of c.other_parties; track p.name) { <span> / {{ p.name }} {{ p.percentage }}%</span> }
+        } @else {
+          <strong>{{ d.default_producer_percentage }}% / {{ 100 - d.default_producer_percentage }}%</strong>
+          <span class="muted">({{ 'admin.revenue.default' | translate }})</span>
+        }
+      </p>
+
+      <!-- History (append-only timeline, newest first) -->
+      <h4>{{ 'admin.revenue.history' | translate }}</h4>
+      @if (timeline().length === 0) {
+        <p class="muted">{{ 'admin.revenue.noHistory' | translate: { percent: d.default_producer_percentage } }}</p>
+      }
+      <ol class="rs-timeline">
+        @for (s of timeline(); track s.id) {
+          <li [class.rs-now]="isCurrent(s)">
+            <div class="rs-when">{{ s.effective_from | date:'medium' }}
+              @if (isCurrent(s)) { <span class="badge badge-approved">{{ 'admin.revenue.inEffect' | translate }}</span> }
+            </div>
+            <div>
+              {{ 'admin.revenue.producer' | translate }} <strong>{{ s.producer_percentage }}%</strong> ·
+              {{ 'admin.revenue.platform' | translate }} <strong>{{ s.platform_percentage }}%</strong>
+              @for (p of s.other_parties; track p.name) { · {{ p.name }} <strong>{{ p.percentage }}%</strong> }
+            </div>
+            <div class="muted">{{ 'admin.revenue.contractV' | translate: { version: s.contract_version } }}
+              @if (s.created_by) { · {{ s.created_by }} }
+            </div>
+            @if (s.notes) { <div class="muted">{{ s.notes }}</div> }
+          </li>
+        }
+        <li class="rs-default muted">{{ 'admin.revenue.defaultBefore' | translate: { percent: d.default_producer_percentage } }}</li>
+      </ol>
+
+      <!-- New share -->
+      <form [formGroup]="form" (ngSubmit)="save()" novalidate class="rs-form">
+        <h4>{{ 'admin.revenue.newTitle' | translate }}</h4>
+        <p class="rs-note">{{ 'admin.revenue.futureOnly' | translate }}</p>
+
+        <div class="rs-grid">
+          <div class="field">
+            <label for="rs-producer">{{ 'admin.revenue.producer' | translate }} (%)</label>
+            <input id="rs-producer" type="number" min="0" max="100" step="1" formControlName="producer_percentage" />
+          </div>
+          <div class="field">
+            <label for="rs-platform">{{ 'admin.revenue.platform' | translate }} (%)</label>
+            <input id="rs-platform" type="number" min="0" max="100" step="1" formControlName="platform_percentage" />
+          </div>
+        </div>
+
+        <fieldset formArrayName="other_parties" class="rs-parties">
+          <legend>{{ 'admin.revenue.otherParties' | translate }}</legend>
+          @for (p of parties.controls; track $index; let i = $index) {
+            <div class="rs-grid" [formGroupName]="i">
+              <div class="field">
+                <label [for]="'rs-party-name-' + i">{{ 'admin.revenue.partyName' | translate }}</label>
+                <input [id]="'rs-party-name-' + i" formControlName="name" />
+              </div>
+              <div class="field">
+                <label [for]="'rs-party-pct-' + i">%</label>
+                <input [id]="'rs-party-pct-' + i" type="number" min="1" max="100" step="1" formControlName="percentage" />
+              </div>
+              <button type="button" class="action-btn neutral rs-remove" (click)="removeParty(i)"
+                      [attr.aria-label]="'admin.revenue.removeParty' | translate">✕</button>
+            </div>
+          }
+          <button type="button" class="action-btn neutral" (click)="addParty()">{{ 'admin.revenue.addParty' | translate }}</button>
+        </fieldset>
+
+        <p class="rs-total" [class.rs-total--bad]="total() !== 100" aria-live="polite">
+          {{ 'admin.revenue.total' | translate: { total: total() } }}
+          @if (total() !== 100) { — {{ 'admin.revenue.mustBe100' | translate }} }
+        </p>
+
+        <div class="rs-grid">
+          <div class="field">
+            <label for="rs-from">{{ 'admin.revenue.effectiveFrom' | translate }}</label>
+            <input id="rs-from" type="datetime-local" formControlName="effective_from" aria-describedby="rs-from-hint" />
+            <span id="rs-from-hint" class="muted">{{ 'admin.revenue.effectiveHint' | translate }}</span>
+          </div>
+          <div class="field">
+            <label for="rs-contract">{{ 'admin.revenue.contractId' | translate }}</label>
+            <input id="rs-contract" type="number" min="1" formControlName="contract_id" aria-describedby="rs-contract-hint" />
+            <span id="rs-contract-hint" class="muted">{{ 'admin.revenue.contractHint' | translate }}</span>
+          </div>
+        </div>
+        <div class="field">
+          <label for="rs-notes">{{ 'admin.revenue.notes' | translate }}</label>
+          <textarea id="rs-notes" rows="2" class="dialog-textarea" formControlName="notes"></textarea>
+        </div>
+
+        <div aria-live="polite">
+          @if (saveError()) { <p class="watch-error" role="alert">{{ saveError()! | translate }}</p> }
+          @if (saved()) { <p class="rs-saved" role="status">{{ 'admin.revenue.saved' | translate }}</p> }
+        </div>
+
+        <div class="dialog-actions">
+          <button type="submit" class="action-btn approve" [disabled]="saving() || total() !== 100">
+            {{ (saving() ? 'marketplace.common.saving' : 'admin.revenue.record') | translate }}
+          </button>
+        </div>
+      </form>
+    }
+  </div>
+</div>

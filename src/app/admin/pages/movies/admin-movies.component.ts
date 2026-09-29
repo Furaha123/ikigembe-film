@@ -1,5 +1,6 @@
 import { Component, inject, OnInit, OnDestroy, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { TranslatePipe } from '@ngx-translate/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { Subject, interval } from 'rxjs';
@@ -7,12 +8,13 @@ import { switchMap, takeUntil } from 'rxjs/operators';
 import { AdminService } from '../../services/admin.service';
 import { AdminMovie, FilmSubmissionItem } from '../../models/admin.interface';
 import { VideoPlayerComponent } from '../../../shared/components/video-player/video-player.component';
+import { RevenueSharesDialogComponent } from '../../shared/components/revenue-shares/revenue-shares-dialog.component';
 
 type ActiveTab = 'submissions' | 'catalog';
 
 @Component({
   selector: 'app-admin-movies',
-  imports: [CommonModule, ReactiveFormsModule, VideoPlayerComponent],
+  imports: [CommonModule, ReactiveFormsModule, TranslatePipe, VideoPlayerComponent, RevenueSharesDialogComponent],
   templateUrl: './admin-movies.component.html',
   styleUrl: './admin-movies.component.scss'
 })
@@ -60,6 +62,9 @@ export class AdminMoviesComponent implements OnInit, OnDestroy {
   watchTitle   = signal('');
   watchLoading = signal<number | null>(null);
   watchError   = signal<string | null>(null);
+
+  // ── Revenue splits (per film) ────────────────────────
+  revenueMovie = signal<AdminMovie | null>(null);
 
   // ── Request Changes ──────────────────────────────────
   requestChangesModal  = signal<FilmSubmissionItem | null>(null);

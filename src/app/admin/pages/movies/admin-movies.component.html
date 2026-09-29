@@ -131,6 +131,7 @@
                 </td>
                 <td class="actions">
                   <button class="action-btn edit" (click)="goToEdit(movie.id)">Edit</button>
+                  <button class="action-btn neutral" (click)="revenueMovie.set(movie)">{{ 'admin.revenue.open' | translate }}</button>
                   <button class="action-btn danger" (click)="confirmDeleteMovie(movie.id)" [disabled]="actionId() === movie.id">Delete</button>
                 </td>
               </tr>
@@ -139,6 +140,10 @@
         </table>
       </div>
     }
+  }
+
+  @if (revenueMovie(); as rm) {
+    <app-revenue-shares-dialog [movieId]="rm.id" [movieTitle]="rm.title" (closed)="revenueMovie.set(null)" />
   }
 
   <!-- Reject submission modal -->

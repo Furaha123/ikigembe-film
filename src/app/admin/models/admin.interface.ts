@@ -295,3 +295,44 @@ export interface WithdrawalSummaryItem {
   pending: number;
   request_count: number;
 }
+
+// ── Per-film revenue splits (append-only) ──────────────────────────────
+
+export interface RevenueParty {
+  name: string;
+  /** Whole percent, 1–100. */
+  percentage: number;
+}
+
+export interface FilmRevenueShare {
+  id: number;
+  contract_id: number;
+  contract_version: number;
+  producer_percentage: number;
+  platform_percentage: number;
+  other_parties: RevenueParty[];
+  effective_from: string;
+  notes: string;
+  created_by: string | null;
+  created_at: string;
+}
+
+/** GET /admin/dashboard/movies/<id>/revenue-shares/ — shares oldest first. */
+export interface FilmRevenueShareList {
+  movie_id: number;
+  /** Split used for payments before the first share (70 today). */
+  default_producer_percentage: number;
+  current: FilmRevenueShare | null;
+  shares: FilmRevenueShare[];
+}
+
+/** POST body. Percentages (producer + platform + other parties) must total 100. */
+export interface FilmRevenueSharePayload {
+  producer_percentage: number;
+  platform_percentage: number;
+  other_parties?: RevenueParty[];
+  /** ISO datetime; defaults to now on the server. */
+  effective_from?: string;
+  contract_id?: number;
+  notes?: string;
+}
