@@ -1,0 +1,126 @@
+<div class="admin-page">
+  <div class="page-header">
+    <div>
+      <h1>{{ 'admin.cms.title' | translate }}</h1>
+      <p>{{ 'admin.cms.pagesSubtitle' | translate }}</p>
+    </div>
+    <button class="add-btn" (click)="openNew()">{{ 'admin.cms.newPage' | translate }}</button>
+  </div>
+
+  <app-cms-tabs />
+
+  <div aria-live="polite">
+    @if (error()) { <p class="watch-error" role="alert">{{ error()! | translate }}</p> }
+  </div>
+
+  @if (editorOpen()) {
+    <form class="cms-editor" [formGroup]="form" (ngSubmit)="save()" novalidate>
+      <h2>{{ (editingId() ? 'admin.cms.editPage' : 'admin.cms.newPage') | translate }}</h2>
+
+      <div class="cms-grid">
+        <div class="field">
+          <label for="cp-slug">{{ 'admin.cms.slug' | translate }}</label>
+          <input id="cp-slug" formControlName="slug" aria-describedby="cp-slug-hint" [attr.aria-invalid]="invalid('slug')" />
+          <span id="cp-slug-hint" class="cms-hint">{{ 'admin.cms.slugHint' | translate }}</span>
+          @if (invalid('slug')) { <span class="cms-field-error">{{ 'admin.cms.slugInvalid' | translate }}</span> }
+          @if (fieldErrs()['slug']) { <span class="cms-field-error">{{ fieldErrs()['slug'] }}</span> }
+        </div>
+        <div class="field">
+          <label for="cp-title">{{ 'admin.cms.pageTitle' | translate }}</label>
+          <input id="cp-title" formControlName="title" [attr.aria-invalid]="invalid('title')" />
+          @if (invalid('title')) { <span class="cms-field-error">{{ 'marketplace.errors.required' | translate }}</span> }
+          @if (fieldErrs()['title']) { <span class="cms-field-error">{{ fieldErrs()['title'] }}</span> }
+        </div>
+      </div>
+
+      <div class="cms-toolbar" role="tablist">
+        <button type="button" role="tab" class="tab" [class.active]="!preview()" [attr.aria-selected]="!preview()" (click)="preview.set(false)">
+          {{ 'admin.cms.edit' | translate }}
+        </button>
+        <button type="button" role="tab" class="tab" [class.active]="preview()" [attr.aria-selected]="preview()" (click)="preview.set(true)">
+          {{ 'admin.cms.preview' | translate }}
+        </button>
+      </div>
+
+      @if (!preview()) {
+        <div class="field">
+          <label for="cp-body">{{ 'admin.cms.body' | translate }}</label>
+          <textarea id="cp-body" class="dialog-textarea cms-body-input" rows="16" formControlName="body" spellcheck="true"
+                    aria-describedby="cp-body-hint"></textarea>
+          <span id="cp-body-hint" class="cms-hint">{{ 'admin.cms.bodyHint' | translate }}</span>
+        </div>
+      } @else {
+        <div class="cms-preview" [attr.aria-label]="'admin.cms.preview' | translate">
+          <app-cms-page-body [title]="form.controls.title.value" [body]="form.controls.body.value" />
+        </div>
+      }
+
+      <label class="cms-check">
+        <input type="checkbox" formControlName="is_published" />
+        {{ 'admin.cms.published' | translate }}
+      </label>
+
+      <div aria-live="polite">
+        @if (saveError()) { <p class="watch-error" role="alert">{{ saveError()! | translate }}</p> }
+      </div>
+
+      <div class="dialog-actions">
+        <button type="button" class="action-btn neutral" (click)="closeEditor()">{{ 'marketplace.common.cancel' | translate }}</button>
+        <button type="submit" class="action-btn approve" [disabled]="saving()">
+          {{ (saving() ? 'marketplace.common.saving' : 'marketplace.common.save') | translate }}
+        </button>
+      </div>
+    </form>
+  }
+
+  @if (loading()) {
+    <div class="table-skeleton" aria-busy="true">@for (i of [1,2,3]; track i) { <div class="row-skeleton"></div> }</div>
+  } @else {
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>{{ 'admin.cms.pageTitle' | translate }}</th>
+            <th>{{ 'admin.cms.slug' | translate }}</th>
+            <th>{{ 'admin.marketplace.status' | translate }}</th>
+            <th>{{ 'admin.cms.updated' | translate }}</th>
+            <th>{{ 'admin.marketplace.colActions' | translate }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (p of pages(); track p.id) {
+            <tr>
+              <td class="title-cell">{{ p.title }}</td>
+              <td class="muted"><code>{{ p.slug }}</code></td>
+              <td>
+                <span class="badge" [class]="p.is_published ? 'badge-approved' : 'badge-review'">
+                  {{ (p.is_published ? 'admin.cms.statusPublished' : 'admin.cms.statusDraft') | translate }}
+                </span>
+              </td>
+              <td class="muted">{{ p.updated_at | date:'d MMM yyyy, HH:mm' }}@if (p.updated_by) { · {{ p.updated_by }} }</td>
+              <td class="actions">
+                <button class="action-btn edit" (click)="edit(p)">{{ 'marketplace.common.edit' | translate }}</button>
+                <button class="action-btn danger" (click)="confirmDelete.set(p)">{{ 'admin.cms.delete' | translate }}</button>
+              </td>
+            </tr>
+          } @empty {
+            <tr><td colspan="5" class="muted" style="text-align: center">{{ 'admin.cms.noPages' | translate }}</td></tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+
+  @if (confirmDelete(); as p) {
+    <div class="overlay" (click)="confirmDelete.set(null)">
+      <div class="dialog" role="dialog" aria-modal="true" aria-labelledby="cp-del-title" (click)="$event.stopPropagation()">
+        <h3 id="cp-del-title">{{ 'admin.cms.deletePageTitle' | translate }}</h3>
+        <p><strong>{{ p.title }}</strong> (<code>{{ p.slug }}</code>)</p>
+        <div class="dialog-actions">
+          <button class="action-btn neutral" (click)="confirmDelete.set(null)">{{ 'marketplace.common.cancel' | translate }}</button>
+          <button class="action-btn danger" (click)="remove()">{{ 'admin.cms.delete' | translate }}</button>
+        </div>
+      </div>
+    </div>
+  }
+</div>

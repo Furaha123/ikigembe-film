@@ -45,6 +45,15 @@ export const adminRoutes: Routes = [
         path: 'contracts',
         loadComponent: () => import('./pages/contracts/admin-contracts.component').then(m => m.AdminContractsComponent),
       },
+      { path: 'cms', redirectTo: 'cms/pages', pathMatch: 'full' },
+      {
+        path: 'cms/pages',
+        loadComponent: () => import('./pages/cms/admin-cms-pages.component').then(m => m.AdminCmsPagesComponent),
+      },
+      {
+        path: 'cms/ads',
+        loadComponent: () => import('./pages/cms/admin-cms-ads.component').then(m => m.AdminCmsAdsComponent),
+      },
       {
         path: 'marketplace',
         loadComponent: () => import('./pages/marketplace/admin-marketplace.component').then(m => m.AdminMarketplaceComponent),

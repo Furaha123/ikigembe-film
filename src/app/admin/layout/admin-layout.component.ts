@@ -73,6 +73,7 @@ export class AdminLayoutComponent implements OnInit, OnDestroy {
     { label: 'Withdrawals', path: '/admin/withdrawals', icon: 'withdrawals' },
     { label: 'Contracts',   path: '/admin/contracts',   icon: 'contracts' },
     { label: 'Marketplace', path: '/admin/marketplace', icon: 'marketplace' },
+    { label: 'Pages & Ads', path: '/admin/cms/pages',   icon: 'cms' },
     { label: 'Reports',     path: '/admin/reports',     icon: 'reports' },
     { label: 'Settings',    path: '/admin/settings',    icon: 'settings' },
   ];
