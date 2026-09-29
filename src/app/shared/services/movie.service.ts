@@ -11,6 +11,7 @@ import {
   SimilarMoviesResponse,
   ProducersListResponse,
   ProducerMoviesResponse,
+  MoviePreview,
   StreamResponse,
   PlaybackSource,
   WatchProgressPayload,
@@ -63,6 +64,11 @@ export class MovieService {
 
   getMovieDetails(id: number) {
     return this.http.get<MovieDetailResponse>(`${this.baseUrl}/${id}/`);
+  }
+
+  /** Public trailer/preview data (share links); no auth required. */
+  getMoviePreview(id: number) {
+    return this.http.get<MoviePreview>(`${this.baseUrl}/${id}/preview/`);
   }
 
   getMovieCredits(_id: number) {
