@@ -331,7 +331,8 @@
       "airtel": "Airtel Money",
       "submitBtn": "Saba Gukura Amafaranga",
       "submitting": "Ohereza…"
-    }
+    },
+    "shareNoteBlended": "Your overall revenue share across your films is {{percent}}%. Each film's contract can set its own split."
   },
   "withdrawals": {
     "title": "Gukura Amafaranga",
@@ -759,6 +760,36 @@
         "remove-video": "Remove talent video",
         "remove-call": "Remove casting call"
       }
+    },
+    "revenue": {
+      "open": "Revenue split",
+      "title": "Revenue split",
+      "current": "Current split (producer / platform)",
+      "default": "default",
+      "history": "History",
+      "noHistory": "No contract splits recorded — the default {{percent}}% producer share applies.",
+      "inEffect": "In effect",
+      "producer": "Producer",
+      "platform": "Platform",
+      "contractV": "Contract v{{version}}",
+      "defaultBefore": "Before the first split: default {{percent}}% producer share",
+      "newTitle": "Record a new split",
+      "futureOnly": "Splits are permanent and cannot be edited or deleted. A new split applies only to payments made after its effective date — earnings already booked are never recalculated.",
+      "otherParties": "Other parties (optional)",
+      "partyName": "Name",
+      "addParty": "Add party",
+      "removeParty": "Remove party",
+      "total": "Total: {{total}}%",
+      "mustBe100": "must be exactly 100%",
+      "effectiveFrom": "Effective from",
+      "effectiveHint": "Leave empty to start now. Must be after the latest split and any completed payment.",
+      "contractId": "Contract ID",
+      "contractHint": "Leave empty to use the producer's active contract.",
+      "notes": "Notes",
+      "record": "Record split",
+      "saved": "Split recorded.",
+      "loadFailed": "Could not load the revenue splits.",
+      "saveFailed": "Could not record the split."
     }
   }
 }

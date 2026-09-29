@@ -118,6 +118,12 @@ export class ProducerMovieDetailComponent implements OnInit, OnDestroy {
   resubmitError   = signal<UiError | null>(null);
   resubmitSuccess = signal(false);
 
+  /**
+   * Producer's share of gross for this film (0–1), from the API — splits are per
+   * film, so never assume 70/30. null until known (revenue estimates show 0).
+   */
+  shareRatio = signal<number | null>(null);
+
   isChangesRequested = computed(() => this.movie()?.approval_status === 'changes_requested');
   canResubmit        = computed(() => !!(this.resubmitVideoKey() || this.resubmitCopyrightKey()));
 
@@ -136,7 +142,7 @@ export class ProducerMovieDetailComponent implements OnInit, OnDestroy {
     return cfg.labels.map((label, i) => {
       const views     = Math.round(totalViews * cfg.weights[i]);
       const watchTime = +((views * (dur / 60))).toFixed(1);
-      const revenue   = Math.round(views * m.price * 0.7);
+      const revenue   = Math.round(views * m.price * (this.shareRatio() ?? 0));
       return { label, views, watchTime, revenue };
     });
   });
@@ -189,7 +195,7 @@ export class ProducerMovieDetailComponent implements OnInit, OnDestroy {
       const w              = weights[i] / totalW;
       const views          = Math.round(total * w);
       const watchTime      = +((views * (dur / 60))).toFixed(1);
-      const revenue        = Math.round(views * m.price * 0.7);
+      const revenue        = Math.round(views * m.price * (this.shareRatio() ?? 0));
       const purchases      = Math.round(views * 0.025);
       const completionRate = Math.min(95, Math.max(50, baseCompletion + (i % 5 - 2) * 2));
       return { label, views, watchTime, revenue, purchases, completionRate };
@@ -218,6 +224,30 @@ export class ProducerMovieDetailComponent implements OnInit, OnDestroy {
         setTimeout(() => this.buildMainChart(), 80);
       },
       error: () => { this.isLoading.set(false); this.hasError.set(true); },
+    });
+    this.loadShareRatio(id);
+  }
+
+  /** This film's effective share (earned / gross); falls back to the wallet's blended percentage. */
+  private loadShareRatio(id: number): void {
+    const fromWallet = () => this.producerService.getWallet().subscribe({
+      next: (w) => {
+        if (w.producer_share_percentage) this.shareRatio.set(w.producer_share_percentage / 100);
+        this.buildMainChart();
+      },
+      error: () => { /* leave revenue estimates at 0 */ },
+    });
+    this.producerService.getDashboardMovies().subscribe({
+      next: (list) => {
+        const m = list.find(x => x.id === id);
+        if (m && m.total_gross_revenue > 0) {
+          this.shareRatio.set(m.producer_share / m.total_gross_revenue);
+          this.buildMainChart();
+        } else {
+          fromWallet();
+        }
+      },
+      error: () => fromWallet(),
     });
   }
 
