@@ -1,0 +1,74 @@
+.rs-dialog {
+  max-width: 720px; // .dialog caps at 400px
+  width: 95%;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.rs-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.rs-current { margin: 0.5rem 0 1rem; }
+
+h4 { margin: 1.25rem 0 0.5rem; font-size: 0.9rem; }
+
+.rs-timeline {
+  list-style: none;
+  margin: 0;
+  padding: 0 0 0 1rem;
+  border-left: 2px solid #2c2c2c;
+
+  li {
+    position: relative;
+    padding: 0.4rem 0 0.8rem 0.75rem;
+    font-size: 0.85rem;
+
+    &::before {
+      content: '';
+      position: absolute;
+      left: -1.36rem;
+      top: 0.65rem;
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: #444;
+    }
+    &.rs-now::before { background: #c9a84c; }
+  }
+}
+
+.rs-when { display: flex; align-items: center; gap: 0.5rem; font-weight: 600; }
+
+.rs-note {
+  font-size: 0.8rem;
+  color: #c9a84c;
+  margin: 0 0 0.75rem;
+}
+
+.rs-grid {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 0.75rem;
+
+  .field { flex: 1 1 160px; }
+}
+
+.rs-parties {
+  border: 1px solid #2c2c2c;
+  border-radius: 8px;
+  padding: 0.75rem;
+  margin: 0 0 0.75rem;
+
+  legend { font-size: 0.75rem; color: #888; padding: 0 0.25rem; }
+}
+
+.rs-remove { margin-bottom: 0.75rem; }
+
+.rs-total { font-weight: 600; margin: 0.25rem 0 0.75rem; }
+.rs-total--bad { color: #fca5a5; }
+.rs-saved { color: #86efac; }

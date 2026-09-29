@@ -5,7 +5,10 @@ import {
   PLATFORM_ID, inject, AfterViewInit,
 } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
+import { TranslatePipe } from '@ngx-translate/core';
+import { Observable, Subscription } from 'rxjs';
 import Hls from 'hls.js';
+import { PlaybackProgress, PlaybackProgressReason, PlaybackSource, SubtitleTrack } from '../../models/movie-api.interface';
 
 interface QualityLevel {
   index: number; // -1 = auto
@@ -16,19 +19,28 @@ interface QualityLevel {
 @Component({
   selector: 'app-video-player',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, TranslatePipe],
   templateUrl: './video-player.component.html',
   styleUrls: ['./video-player.component.scss'],
 })
 export class VideoPlayerComponent implements AfterViewInit, OnChanges, OnDestroy {
+  /** Plain URL (trailers, producer/admin previews). Ignored when `source` is set. */
   @Input() src = '';
+  /** Entitled playback from /stream/ — takes precedence over `src`. */
+  @Input() source: PlaybackSource | null = null;
+  /**
+   * Re-requests a fresh source when the signed URLs/token have expired (HTTP 403).
+   * Called at most once per `source`/`src` handed in by the parent — never loops.
+   */
+  @Input() refreshSource: (() => Observable<PlaybackSource>) | null = null;
   @Input() poster = '';
   @Input() accentColor = '#c9a84c';
   @Input() startAt = 0;
   @Input() autoplay = false;
   @Input() showCloseButton = false;
 
-  @Output() progressUpdate = new EventEmitter<number>();
+  /** Every 15 s while playing, on pause/end/close, and when the page is hidden or unloaded. */
+  @Output() progressUpdate = new EventEmitter<PlaybackProgress>();
   @Output() videoEnded     = new EventEmitter<void>();
   @Output() closed         = new EventEmitter<void>();
 
@@ -40,6 +52,13 @@ export class VideoPlayerComponent implements AfterViewInit, OnChanges, OnDestroy
   private hls: Hls | null = null;
   private viewReady = false;
 
+  // Recovery state for the current parent-provided source
+  private active: PlaybackSource | null = null;
+  private refreshUsed = false;
+  private fallbackUsed = false;
+  private refreshSub: Subscription | null = null;
+  private resumeAt = 0;
+
   // Playback state
   playing     = signal(false);
   muted       = signal(false);
@@ -50,6 +69,7 @@ export class VideoPlayerComponent implements AfterViewInit, OnChanges, OnDestroy
   showControls = signal(true);
   buffered    = signal(0);
   srcError    = signal(false);
+  tracks      = signal<SubtitleTrack[]>([]);
 
   // HLS quality
   qualityLevels  = signal<QualityLevel[]>([]);
@@ -73,22 +93,40 @@ export class VideoPlayerComponent implements AfterViewInit, OnChanges, OnDestroy
     if (!isPlatformBrowser(this.platformId)) return;
     this.viewReady = true;
     this.attachVideoEvents();
-    if (this.src) this.attachSource(this.src);
+    document.addEventListener('visibilitychange', this.onVisibilityChange);
+    window.addEventListener('pagehide', this.onPageHide);
+    this.loadFromInputs();
   }
 
   ngOnChanges(changes: SimpleChanges) {
-    if (changes['src'] && !changes['src'].firstChange && this.viewReady) {
-      this.attachSource(changes['src'].currentValue ?? '');
-    }
+    if (!this.viewReady) return;
+    const srcChanged    = changes['src']    && !changes['src'].firstChange;
+    const sourceChanged = changes['source'] && !changes['source'].firstChange;
+    if (srcChanged || sourceChanged) this.loadFromInputs();
   }
 
   ngOnDestroy() {
     if (this.hideTimer) clearTimeout(this.hideTimer);
     this.stopProgressTimer();
-    this.destroyHls();
-    if (isPlatformBrowser(this.platformId) && this.videoRef?.nativeElement) {
-      this.progressUpdate.emit(this.videoRef.nativeElement.currentTime);
+    if (isPlatformBrowser(this.platformId)) {
+      document.removeEventListener('visibilitychange', this.onVisibilityChange);
+      window.removeEventListener('pagehide', this.onPageHide);
+      this.emitProgress('close'); // before teardown resets currentTime
     }
+    this.destroyHls();
+    this.refreshSub?.unsubscribe();
+    this.active = null;
+  }
+
+  private readonly onPageHide = () => this.emitProgress('unload');
+  private readonly onVisibilityChange = () => {
+    if (document.visibilityState === 'hidden') this.emitProgress('unload');
+  };
+
+  private emitProgress(reason: PlaybackProgressReason): void {
+    if (!this.active || !this.videoRef?.nativeElement) return;
+    const v = this.videoRef.nativeElement;
+    this.progressUpdate.emit({ position: v.currentTime, duration: v.duration, reason });
   }
 
   @HostListener('document:keydown', ['$event'])
@@ -100,16 +138,34 @@ export class VideoPlayerComponent implements AfterViewInit, OnChanges, OnDestroy
 
   // ── Source attachment ─────────────────────────────────
 
-  private attachSource(src: string): void {
+  /** A new source from the parent resets the one-shot refresh/fallback budget. */
+  private loadFromInputs(): void {
+    this.refreshSub?.unsubscribe();
+    this.refreshUsed  = false;
+    this.fallbackUsed = false;
+    this.resumeAt     = 0;
+    const source = this.source ?? (this.src
+      ? { src: this.src, type: this.isHlsUrl(this.src) ? 'hls' : 'mp4', fallbackSrc: null, subtitles: [] } as PlaybackSource
+      : null);
+    this.attachSource(source);
+  }
+
+  private attachSource(source: PlaybackSource | null, useFallback = false): void {
     if (!isPlatformBrowser(this.platformId) || !this.videoRef?.nativeElement) return;
 
     this.resetPlayerState();
-    if (!src) return;
+    this.active = source;
+    this.tracks.set((source?.subtitles ?? []).filter(t => !!t.url));
+    if (!source) return;
 
-    const v = this.video;
+    const v   = this.video;
+    const src = useFallback && source.fallbackSrc ? source.fallbackSrc : source.src;
+    const isHls = !useFallback && source.type === 'hls';
 
-    if (this.isHlsUrl(src)) {
+    if (isHls) {
       if (Hls.isSupported()) {
+        // No xhrSetup/credentials: the playlist proxy authorizes via its `token`
+        // query param and segments are cross-origin presigned URLs.
         this.hls = new Hls({ startLevel: -1, debug: false });
         this.hls.loadSource(src);
         this.hls.attachMedia(v);
@@ -130,13 +186,17 @@ export class VideoPlayerComponent implements AfterViewInit, OnChanges, OnDestroy
         });
 
         this.hls.on(Hls.Events.ERROR, (_evt, data) => {
-          if (data.fatal) this.srcError.set(true);
+          if (!data.fatal) return;
+          const expired = data.type === Hls.ErrorTypes.NETWORK_ERROR && data.response?.code === 403;
+          this.recover(expired);
         });
 
       } else if (v.canPlayType('application/vnd.apple.mpegurl')) {
-        // Safari native HLS
+        // Safari native HLS — the tokenised URL works unchanged
         v.src = src;
         if (this.autoplay) v.play().catch(() => {});
+      } else if (source.fallbackSrc) {
+        this.attachSource(source, true);
       } else {
         this.srcError.set(true);
       }
@@ -146,6 +206,40 @@ export class VideoPlayerComponent implements AfterViewInit, OnChanges, OnDestroy
         v.addEventListener('canplay', () => v.play().catch(() => {}), { once: true });
       }
     }
+  }
+
+  /**
+   * Fatal playback error. A 403 (or any native-element error, where the status
+   * isn't visible) means the signed URL/token may have expired: re-request the
+   * source once and resume. Otherwise fall back to the MP4 once. Then give up.
+   */
+  private recover(maybeExpired: boolean): void {
+    const source = this.active;
+    if (!source) { this.fail(); return; }
+    const at = this.video?.currentTime || this.resumeAt;
+
+    if (maybeExpired && this.refreshSource && !this.refreshUsed) {
+      this.refreshUsed = true;
+      this.destroyHls();
+      this.refreshSub = this.refreshSource().subscribe({
+        next: fresh => { this.resumeAt = at; this.attachSource(fresh); },
+        error: () => this.fail(),
+      });
+      return;
+    }
+    if (source.type === 'hls' && source.fallbackSrc && !this.fallbackUsed) {
+      this.fallbackUsed = true;
+      this.resumeAt = at;
+      this.attachSource(source, true);
+      return;
+    }
+    this.fail();
+  }
+
+  private fail(): void {
+    this.destroyHls();
+    this.srcError.set(true);
+    this.playing.set(false);
   }
 
   private destroyHls(): void {
@@ -209,7 +303,9 @@ export class VideoPlayerComponent implements AfterViewInit, OnChanges, OnDestroy
 
     v.addEventListener('loadedmetadata', () => {
       this.duration.set(v.duration);
-      if (this.startAt > 0) v.currentTime = this.startAt;
+      const seekTo = this.resumeAt > 0 ? this.resumeAt : this.startAt;
+      if (seekTo > 0) v.currentTime = seekTo;
+      this.resumeAt = 0;
     });
 
     v.addEventListener('timeupdate', () => {
@@ -223,18 +319,18 @@ export class VideoPlayerComponent implements AfterViewInit, OnChanges, OnDestroy
     v.addEventListener('pause', () => {
       this.playing.set(false);
       this.stopProgressTimer();
-      this.progressUpdate.emit(v.currentTime);
+      this.emitProgress('pause');
     });
     v.addEventListener('ended', () => {
       this.playing.set(false);
       this.stopProgressTimer();
+      this.emitProgress('ended');
       this.videoEnded.emit();
     });
     v.addEventListener('error', () => {
-      if (!this.hls) { // hls.js handles its own errors
-        this.srcError.set(true);
-        this.playing.set(false);
-      }
+      // hls.js handles its own errors; ignore the error from clearing `src` on reset
+      if (this.hls || !this.active || !v.getAttribute('src')) return;
+      this.recover(true);
     });
     v.addEventListener('volumechange', () => {
       this.muted.set(v.muted);
@@ -326,7 +422,7 @@ export class VideoPlayerComponent implements AfterViewInit, OnChanges, OnDestroy
 
   private startProgressTimer() {
     this.stopProgressTimer();
-    this.progressTimer = setInterval(() => this.progressUpdate.emit(this.video.currentTime), 15_000);
+    this.progressTimer = setInterval(() => this.emitProgress('interval'), 15_000);
   }
 
   private stopProgressTimer() {

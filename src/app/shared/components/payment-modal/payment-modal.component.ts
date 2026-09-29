@@ -1,19 +1,23 @@
 import { Component, Input, Output, EventEmitter, signal, inject, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Subject } from 'rxjs';
-import { interval, switchMap, takeWhile, take, takeUntil } from 'rxjs';
+import { HttpErrorResponse } from '@angular/common/http';
+import { TranslatePipe } from '@ngx-translate/core';
+import { Observable, Subject, takeUntil } from 'rxjs';
 import { PaymentService } from '../../../core/services/payment.service';
+import { ServicePurchase } from '../../models/marketplace.interface';
 
 @Component({
   selector: 'app-payment-modal',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, TranslatePipe],
   templateUrl: './payment-modal.component.html',
   styleUrls: ['./payment-modal.component.scss']
 })
 export class PaymentModalComponent implements OnDestroy {
   @Input() movie: any;
+  /** Non-movie purchase (marketplace fees). When set, `movie` is ignored. */
+  @Input() service: ServicePurchase | null = null;
   @Output() paid   = new EventEmitter<void>();
   @Output() closed = new EventEmitter<void>();
 
@@ -25,12 +29,15 @@ export class PaymentModalComponent implements OnDestroy {
   loadingMessage  = signal('Processing...');
   success         = signal(false);
   error           = signal('');
+  errorKey        = signal('');       // translated error when there is no backend message
+  chargedAmount   = signal<number | null>(null);
 
   onPhoneInput(e: Event) {
     // Allow only digits, spaces, +, hyphens
     const raw = (e.target as HTMLInputElement).value;
     this.phoneNumber.set(raw);
     this.error.set('');
+    this.errorKey.set('');
   }
 
   /** Normalise and validate a Rwandan MoMo number.
@@ -65,34 +72,40 @@ export class PaymentModalComponent implements OnDestroy {
     this.loading.set(true);
     this.loadingMessage.set('Processing...');
     this.error.set('');
+    this.errorKey.set('');
 
-    this.paymentService.initiate({
-      movie_id:     this.movie.id,
-      phone_number: normalised,
-    }).subscribe({
+    const start: Observable<{ deposit_id: string; amount: number }> = this.service
+      ? this.service.initiate(normalised)
+      : this.paymentService.initiate({ movie_id: this.movie.id, phone_number: normalised });
+
+    start.subscribe({
       next: (res) => {
+        this.chargedAmount.set(res.amount ?? null);
         this.loadingMessage.set('Check your phone to approve the payment...');
         this.pollStatus(res.deposit_id);
       },
-      error: (err) => {
+      error: (err: HttpErrorResponse) => {
         this.loading.set(false);
+        if (err?.status === 503) {
+          // Marketplace fees aren't configured in production yet.
+          this.errorKey.set('marketplace.purchase.unavailable');
+          return;
+        }
+        // Backend errors are { error } (e.g. 402 already purchased, 409 payment pending).
         this.error.set(
-          err?.error?.message ?? err?.error?.detail ?? 'Payment failed. Please try again.'
+          err?.error?.error ?? err?.error?.message ?? err?.error?.detail ?? 'Payment failed. Please try again.'
         );
       }
     });
   }
 
   private pollStatus(depositId: string) {
-    interval(3000).pipe(
-      switchMap(() => this.paymentService.checkStatus(depositId)),
-      takeWhile(res => res.status === 'Pending', true),
-      take(20),
+    this.paymentService.pollUntilSettled(depositId).pipe(
       takeUntil(this.destroy$)
     ).subscribe({
       next: (res) => {
         if (res.status === 'Completed') {
-          this.paymentService.savePurchase(this.movie.id);
+          if (!this.service) this.paymentService.savePurchase(this.movie.id);
           this.loading.set(false);
           this.success.set(true);
           setTimeout(() => this.paid.emit(), 1800);

@@ -1,0 +1,65 @@
+<app-header [userImg]="''" />
+
+<main class="mk-page">
+  <app-actor-nav />
+
+  <div aria-live="polite">
+    @if (loading()) {
+      <p class="mk-muted">{{ 'marketplace.common.loading' | translate }}</p>
+    } @else if (loadError()) {
+      <p class="mk-error" role="alert">{{ loadError()! | translate }}</p>
+      <a routerLink="/casting" class="mk-btn mk-btn--ghost">{{ 'marketplace.casting.backToList' | translate }}</a>
+    }
+  </div>
+
+  @if (call(); as c) {
+    <article class="mk-card">
+      <h1>{{ c.title }}</h1>
+      <p class="mk-muted">{{ c.studio_name || c.producer_name }} · {{ 'marketplace.casting.deadline' | translate }}: {{ c.deadline_at | date:'medium' }}</p>
+      <h2>{{ 'marketplace.casting.roles' | translate }}</h2>
+      <div class="mk-chips">
+        @for (r of c.roles; track $index) { <span>{{ r }}</span> }
+      </div>
+      <p style="white-space: pre-line">{{ c.description }}</p>
+    </article>
+
+    <section class="mk-card" aria-labelledby="apply-title">
+      <h2 id="apply-title">{{ 'marketplace.casting.applyTitle' | translate }}</h2>
+
+      @if (applied()) {
+        <p class="mk-success" role="status">{{ 'marketplace.casting.applied' | translate }}</p>
+        <a routerLink="/actor/applications" class="mk-btn mk-btn--ghost">{{ 'marketplace.nav.applications' | translate }}</a>
+      } @else {
+        <fieldset style="border: 0; padding: 0; margin: 0 0 1rem">
+          <legend class="mk-muted">{{ 'marketplace.casting.chooseVideos' | translate }}</legend>
+          @if (approvedVideos().length === 0) {
+            <p class="mk-muted">{{ 'marketplace.casting.noApprovedVideos' | translate }}
+              <a routerLink="/actor/videos">{{ 'marketplace.nav.videos' | translate }}</a>
+            </p>
+          }
+          @for (v of approvedVideos(); track v.id) {
+            <label class="mk-check">
+              <input type="checkbox" [checked]="selectedIds().has(v.id)" (change)="toggleVideo(v.id)" />
+              {{ v.title }}
+            </label>
+          }
+        </fieldset>
+
+        <div class="mk-field">
+          <label for="apply-note">{{ 'marketplace.casting.note' | translate }}</label>
+          <textarea id="apply-note" rows="3" [ngModel]="note()" (ngModelChange)="note.set($event)"></textarea>
+        </div>
+
+        <div aria-live="polite">
+          @if (applyError()) { <p class="mk-error" role="alert">{{ applyError()! | translate }}</p> }
+        </div>
+
+        <button type="button" class="mk-btn" style="margin-top: .75rem" (click)="apply()" [disabled]="applying()">
+          {{ (applying() ? 'marketplace.common.sending' : 'marketplace.casting.apply') | translate }}
+        </button>
+      }
+    </section>
+  }
+</main>
+
+<app-footer />

@@ -20,8 +20,11 @@
 } @else {
   <app-banner [bannerTitle]="bannerTitle" [bannerOverview]="bannerOverview" [trailerUrl]="bannerTrailerUrl" [bannerBackdropUrl]="bannerBackdropUrl" [movieId]="bannerId" />
 
+  <app-ad-slot placement="home_hero" />
   <app-movie-carousel [title]="'Now Playing'" [videoContents]="nowPlayingMovies" />
+  <app-ad-slot placement="home_banner" />
   <app-movie-carousel [title]="'Popular Movies'" [videoContents]="popularMovies" />
+  <app-ad-slot placement="browse_inline" />
   <app-movie-carousel [title]="'Upcoming Movies'" [videoContents]="upcomingMovies" />
 }
 

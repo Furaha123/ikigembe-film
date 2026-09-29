@@ -51,7 +51,7 @@
 
     @if (wallet()!.producer_share_percentage) {
       <p class="share-note">
-        {{ 'wallet.shareNote' | translate: { percent: wallet()!.producer_share_percentage } }}
+        {{ 'wallet.shareNoteBlended' | translate: { percent: wallet()!.producer_share_percentage } }}
       </p>
     }
   }

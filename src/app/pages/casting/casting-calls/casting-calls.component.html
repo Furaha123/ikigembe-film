@@ -1,0 +1,45 @@
+<app-header [userImg]="''" />
+
+<main class="mk-page">
+  <div class="mk-header">
+    <div>
+      <h1>{{ 'marketplace.casting.title' | translate }}</h1>
+      <p>{{ 'marketplace.casting.subtitle' | translate }}</p>
+    </div>
+  </div>
+
+  <app-actor-nav />
+
+  <div aria-live="polite">
+    @if (loading()) {
+      <p class="mk-muted">{{ 'marketplace.common.loading' | translate }}</p>
+    } @else if (error()) {
+      <p class="mk-error" role="alert">{{ error()! | translate }}</p>
+    } @else if (calls().length === 0) {
+      <p class="mk-empty">{{ 'marketplace.casting.empty' | translate }}</p>
+    }
+  </div>
+
+  <div class="mk-grid">
+    @for (c of calls(); track c.id) {
+      <article class="mk-card">
+        <h2><a [routerLink]="['/casting', c.id]">{{ c.title }}</a></h2>
+        <p class="mk-muted">{{ c.studio_name || c.producer_name }}</p>
+        <div class="mk-chips" [attr.aria-label]="'marketplace.casting.roles' | translate">
+          @for (r of c.roles; track $index) { <span>{{ r }}</span> }
+        </div>
+        <p class="mk-muted">{{ 'marketplace.casting.deadline' | translate }}: {{ c.deadline_at | date:'medium' }}</p>
+      </article>
+    }
+  </div>
+
+  @if (totalPages() > 1) {
+    <nav class="mk-pager" [attr.aria-label]="'marketplace.common.pagination' | translate">
+      <button type="button" class="mk-btn mk-btn--ghost" [disabled]="page() <= 1" (click)="load(page() - 1)">{{ 'marketplace.common.prev' | translate }}</button>
+      <span class="mk-muted">{{ page() }} / {{ totalPages() }}</span>
+      <button type="button" class="mk-btn mk-btn--ghost" [disabled]="page() >= totalPages()" (click)="load(page() + 1)">{{ 'marketplace.common.next' | translate }}</button>
+    </nav>
+  }
+</main>
+
+<app-footer />

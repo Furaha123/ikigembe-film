@@ -1,0 +1,118 @@
+<app-header [userImg]="''" />
+
+<main class="mk-page">
+  <div class="mk-header">
+    <div>
+      <h1>{{ 'marketplace.videos.title' | translate }}</h1>
+      <p>{{ 'marketplace.videos.subtitle' | translate }}</p>
+    </div>
+  </div>
+
+  <app-actor-nav />
+
+  <!-- New talent video: pay the fee first -->
+  <form class="mk-card" [formGroup]="form" (ngSubmit)="startPurchase()" novalidate>
+    <h2>{{ 'marketplace.videos.newTitle' | translate }}</h2>
+    <p class="mk-muted">{{ 'marketplace.videos.newHint' | translate }}
+      <a routerLink="/actor/profile">{{ 'marketplace.videos.profileLink' | translate }}</a>
+    </p>
+    <div class="mk-form">
+      <div class="mk-field">
+        <label for="av-title">{{ 'marketplace.videos.fieldTitle' | translate }} *</label>
+        <input id="av-title" formControlName="title"
+               [attr.aria-invalid]="form.controls.title.invalid && form.controls.title.touched" />
+        @if (form.controls.title.invalid && form.controls.title.touched) {
+          <p class="mk-error">{{ 'marketplace.errors.required' | translate }}</p>
+        }
+      </div>
+      <div class="mk-field">
+        <label for="av-desc">{{ 'marketplace.videos.fieldDescription' | translate }}</label>
+        <input id="av-desc" formControlName="description" />
+      </div>
+    </div>
+    <div class="mk-row" style="margin-top: .9rem">
+      <button type="submit" class="mk-btn">{{ 'marketplace.videos.payAndCreate' | translate }}</button>
+    </div>
+  </form>
+
+  <section aria-labelledby="av-list-title">
+    <h2 id="av-list-title" class="mk-muted">{{ 'marketplace.videos.listTitle' | translate }}</h2>
+
+    <div aria-live="polite">
+      @if (loading()) {
+        <p class="mk-muted">{{ 'marketplace.common.loading' | translate }}</p>
+      } @else if (error()) {
+        <p class="mk-error" role="alert">{{ error()! | translate }}</p>
+      } @else if (videos().length === 0) {
+        <p class="mk-empty">{{ 'marketplace.videos.empty' | translate }}</p>
+      }
+    </div>
+
+    <div class="mk-grid">
+      @for (v of videos(); track v.id) {
+        <article class="mk-card">
+          <div class="mk-row" style="justify-content: space-between">
+            <h3>{{ v.title }}</h3>
+            <span [class]="statusClass(v.status)">{{ 'marketplace.videoStatus.' + v.status | translate }}</span>
+          </div>
+          @if (v.description) { <p class="mk-muted">{{ v.description }}</p> }
+
+          @if (v.status === 'rejected' && v.reject_reason) {
+            <p class="mk-error">{{ 'marketplace.videos.rejectReason' | translate }}: {{ v.reject_reason }}</p>
+          }
+
+          @if (v.status === 'pending_upload') {
+            @if (v.payment_status === 'Pending') {
+              <p class="mk-muted">{{ 'marketplace.videos.paymentPending' | translate }}</p>
+              <button type="button" class="mk-btn mk-btn--ghost" (click)="load()">{{ 'marketplace.common.refresh' | translate }}</button>
+            } @else if (v.payment_status === 'Failed') {
+              <p class="mk-error">{{ 'marketplace.videos.paymentFailed' | translate }}</p>
+            }
+          }
+
+          @if (canUpload(v)) {
+            @let up = uploads()[v.id];
+            @if (up?.uploading) {
+              <div class="mk-progress" role="progressbar" [attr.aria-valuenow]="up!.pct" aria-valuemin="0" aria-valuemax="100"
+                   [attr.aria-label]="'marketplace.videos.uploading' | translate">
+                <div [style.width.%]="up!.pct"></div>
+              </div>
+              <div class="mk-row">
+                <span class="mk-muted">{{ up!.pct }}%</span>
+                <button type="button" class="mk-btn mk-btn--ghost" (click)="cancelUpload(v)">{{ 'marketplace.common.cancel' | translate }}</button>
+              </div>
+            } @else {
+              <label class="mk-btn">
+                {{ 'marketplace.videos.upload' | translate }}
+                <input type="file" accept="video/*" hidden (change)="onFileSelected(v, $event)" />
+              </label>
+            }
+            @if (up?.error) { <p class="mk-error" role="alert">{{ up!.error! | translate }}</p> }
+          }
+
+          @if (v.video_url && (v.status === 'approved' || v.status === 'pending_review')) {
+            <button type="button" class="mk-btn mk-btn--ghost" (click)="preview(v)">{{ 'marketplace.common.watch' | translate }}</button>
+          }
+        </article>
+      }
+    </div>
+  </section>
+</main>
+
+<app-footer />
+
+@if (purchase(); as p) {
+  <app-payment-modal [service]="p" (paid)="onPaid()" (closed)="closePurchase()" />
+}
+
+@if (previewSrc(); as src) {
+  <div class="mk-overlay" (click)="closePreview()">
+    <div class="mk-dialog" role="dialog" aria-modal="true" (click)="$event.stopPropagation()">
+      <header>
+        <span>{{ 'marketplace.common.preview' | translate }}</span>
+        <button type="button" class="mk-btn mk-btn--ghost" (click)="closePreview()">{{ 'marketplace.common.close' | translate }}</button>
+      </header>
+      <app-video-player [src]="src" [autoplay]="true" />
+    </div>
+  </div>
+}

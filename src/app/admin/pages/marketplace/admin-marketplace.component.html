@@ -1,0 +1,187 @@
+<div class="admin-page">
+  <div class="page-header">
+    <div>
+      <h1>{{ 'admin.marketplace.title' | translate }}</h1>
+      <p>{{ 'admin.marketplace.subtitle' | translate }}</p>
+    </div>
+  </div>
+
+  <div class="tabs" role="tablist">
+    <button class="tab" role="tab" [class.active]="tab() === 'videos'" [attr.aria-selected]="tab() === 'videos'" (click)="setTab('videos')">
+      {{ 'admin.marketplace.tabVideos' | translate }}
+    </button>
+    <button class="tab" role="tab" [class.active]="tab() === 'casting'" [attr.aria-selected]="tab() === 'casting'" (click)="setTab('casting')">
+      {{ 'admin.marketplace.tabCasting' | translate }}
+    </button>
+  </div>
+
+  <div aria-live="polite">
+    @if (error()) { <p class="watch-error" role="alert">{{ error()! | translate }}</p> }
+  </div>
+
+  @if (tab() === 'videos') {
+    <div class="field" style="max-width: 260px">
+      <label for="am-video-status">{{ 'admin.marketplace.status' | translate }}</label>
+      <select id="am-video-status" class="dialog-textarea" [value]="videoStatus()" (change)="onVideoStatus($event)">
+        @for (s of videoStatuses; track s) {
+          <option [value]="s">{{ 'marketplace.videoStatus.' + s | translate }}</option>
+        }
+      </select>
+    </div>
+
+    @if (videosLoading()) {
+      <div class="table-skeleton" aria-busy="true">
+        @for (i of [1,2,3]; track i) { <div class="row-skeleton"></div> }
+      </div>
+    } @else {
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>{{ 'admin.marketplace.colTitle' | translate }}</th>
+              <th>{{ 'admin.marketplace.colActor' | translate }}</th>
+              <th>{{ 'admin.marketplace.colSubmitted' | translate }}</th>
+              <th>{{ 'admin.marketplace.status' | translate }}</th>
+              <th>{{ 'admin.marketplace.colActions' | translate }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (v of videos(); track v.id) {
+              <tr>
+                <td class="title-cell">{{ v.title }}
+                  @if (v.reject_reason) { <div class="muted" style="font-weight: 400">{{ v.reject_reason }}</div> }
+                </td>
+                <td class="muted">#{{ v.actor_id }}</td>
+                <td class="muted">{{ v.created_at | date:'d MMM yyyy' }}</td>
+                <td><span class="badge" [class]="videoBadge(v.status)">{{ 'marketplace.videoStatus.' + v.status | translate }}</span></td>
+                <td class="actions">
+                  @if (v.video_url) {
+                    <button class="action-btn neutral" (click)="preview(v)">{{ 'marketplace.common.watch' | translate }}</button>
+                  }
+                  @if (v.status === 'pending_review') {
+                    <button class="action-btn approve" (click)="confirmApprove.set(v)" [disabled]="actionId() === v.id">{{ 'admin.marketplace.approve' | translate }}</button>
+                    <button class="action-btn reject" (click)="openReason('reject-video', v.id, v.title)">{{ 'admin.marketplace.reject' | translate }}</button>
+                  }
+                  @if (v.status !== 'removed') {
+                    <button class="action-btn danger" (click)="openReason('remove-video', v.id, v.title)">{{ 'admin.marketplace.remove' | translate }}</button>
+                  }
+                </td>
+              </tr>
+            } @empty {
+              <tr><td colspan="5" class="muted" style="text-align: center">{{ 'admin.marketplace.emptyVideos' | translate }}</td></tr>
+            }
+          </tbody>
+        </table>
+      </div>
+      @if (videoPages() > 1) {
+        <div class="pagination">
+          <button class="page-btn" (click)="loadVideos(videoPage() - 1)" [disabled]="videoPage() <= 1" [attr.aria-label]="'marketplace.common.prev' | translate">‹</button>
+          <span class="page-info">{{ videoPage() }} / {{ videoPages() }}</span>
+          <button class="page-btn" (click)="loadVideos(videoPage() + 1)" [disabled]="videoPage() >= videoPages()" [attr.aria-label]="'marketplace.common.next' | translate">›</button>
+        </div>
+      }
+    }
+  }
+
+  @if (tab() === 'casting') {
+    <div class="field" style="max-width: 260px">
+      <label for="am-call-status">{{ 'admin.marketplace.status' | translate }}</label>
+      <select id="am-call-status" class="dialog-textarea" [value]="callStatus()" (change)="onCallStatus($event)">
+        @for (s of callStatuses; track s) {
+          <option [value]="s">{{ (s ? 'marketplace.castingStatus.' + s : 'admin.marketplace.allStatuses') | translate }}</option>
+        }
+      </select>
+    </div>
+
+    @if (callsLoading()) {
+      <div class="table-skeleton" aria-busy="true">
+        @for (i of [1,2,3]; track i) { <div class="row-skeleton"></div> }
+      </div>
+    } @else {
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>{{ 'admin.marketplace.colTitle' | translate }}</th>
+              <th>{{ 'admin.marketplace.colProducer' | translate }}</th>
+              <th>{{ 'marketplace.casting.deadline' | translate }}</th>
+              <th>{{ 'admin.marketplace.status' | translate }}</th>
+              <th>{{ 'admin.marketplace.colActions' | translate }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (c of calls(); track c.id) {
+              <tr>
+                <td class="title-cell">{{ c.title }}</td>
+                <td class="muted">{{ c.studio_name || c.producer_name }}</td>
+                <td class="muted">{{ c.deadline_at | date:'d MMM yyyy' }}</td>
+                <td><span class="badge" [class]="callBadge(c.status)">{{ 'marketplace.castingStatus.' + c.status | translate }}</span></td>
+                <td class="actions">
+                  @if (c.status !== 'removed') {
+                    <button class="action-btn danger" (click)="openReason('remove-call', c.id, c.title)">{{ 'admin.marketplace.remove' | translate }}</button>
+                  }
+                </td>
+              </tr>
+            } @empty {
+              <tr><td colspan="5" class="muted" style="text-align: center">{{ 'admin.marketplace.emptyCalls' | translate }}</td></tr>
+            }
+          </tbody>
+        </table>
+      </div>
+      @if (callPages() > 1) {
+        <div class="pagination">
+          <button class="page-btn" (click)="loadCalls(callPage() - 1)" [disabled]="callPage() <= 1" [attr.aria-label]="'marketplace.common.prev' | translate">‹</button>
+          <span class="page-info">{{ callPage() }} / {{ callPages() }}</span>
+          <button class="page-btn" (click)="loadCalls(callPage() + 1)" [disabled]="callPage() >= callPages()" [attr.aria-label]="'marketplace.common.next' | translate">›</button>
+        </div>
+      }
+    }
+  }
+
+  <!-- Approve confirmation -->
+  @if (confirmApprove(); as v) {
+    <div class="overlay" (click)="confirmApprove.set(null)">
+      <div class="dialog" role="dialog" aria-modal="true" aria-labelledby="am-approve-title" (click)="$event.stopPropagation()">
+        <h3 id="am-approve-title">{{ 'admin.marketplace.approveTitle' | translate }}</h3>
+        <p><strong>{{ v.title }}</strong></p>
+        <div class="dialog-actions">
+          <button class="action-btn neutral" (click)="confirmApprove.set(null)">{{ 'marketplace.common.cancel' | translate }}</button>
+          <button class="action-btn approve" (click)="approve()" [disabled]="actionId() === v.id">{{ 'admin.marketplace.approve' | translate }}</button>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- Reason dialog (reject / remove) -->
+  @if (reasonDialog(); as d) {
+    <div class="overlay" (click)="reasonDialog.set(null)">
+      <div class="dialog" role="dialog" aria-modal="true" aria-labelledby="am-reason-title" (click)="$event.stopPropagation()">
+        <h3 id="am-reason-title">{{ ('admin.marketplace.dialog.' + d.kind) | translate }}</h3>
+        <p><strong>{{ d.title }}</strong></p>
+        <div class="field">
+          <label for="am-reason">{{ (d.required ? 'admin.marketplace.reason' : 'admin.marketplace.reasonOptional') | translate }}</label>
+          <textarea id="am-reason" rows="3" class="dialog-textarea" [value]="reason()"
+                    (input)="reason.set($any($event.target).value)" [attr.aria-required]="d.required"></textarea>
+        </div>
+        <div aria-live="polite">
+          @if (reasonError()) { <p class="watch-error" role="alert">{{ reasonError()! | translate }}</p> }
+        </div>
+        <div class="dialog-actions">
+          <button class="action-btn neutral" (click)="reasonDialog.set(null)">{{ 'marketplace.common.cancel' | translate }}</button>
+          <button class="action-btn danger" (click)="confirmReason()" [disabled]="actionId() === d.id">{{ 'admin.marketplace.confirm' | translate }}</button>
+        </div>
+      </div>
+    </div>
+  }
+
+  @if (previewSrc(); as src) {
+    <div class="overlay" (click)="previewSrc.set(null)">
+      <div class="dialog" role="dialog" aria-modal="true" style="max-width: 900px; width: 100%" (click)="$event.stopPropagation()">
+        <app-video-player [src]="src" [autoplay]="true" />
+        <div class="dialog-actions">
+          <button class="action-btn neutral" (click)="previewSrc.set(null)">{{ 'marketplace.common.close' | translate }}</button>
+        </div>
+      </div>
+    </div>
+  }
+</div>

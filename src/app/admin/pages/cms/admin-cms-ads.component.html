@@ -1,0 +1,150 @@
+<div class="admin-page">
+  <div class="page-header">
+    <div>
+      <h1>{{ 'admin.cms.title' | translate }}</h1>
+      <p>{{ 'admin.cms.adsSubtitle' | translate }}</p>
+    </div>
+    <button class="add-btn" (click)="openNew()">{{ 'admin.cms.newAd' | translate }}</button>
+  </div>
+
+  <app-cms-tabs />
+
+  <div aria-live="polite">
+    @if (error()) { <p class="watch-error" role="alert">{{ error()! | translate }}</p> }
+  </div>
+
+  @if (editorOpen()) {
+    <form class="cms-editor" [formGroup]="form" (ngSubmit)="save()" novalidate>
+      <h2>{{ (editing() ? 'admin.cms.editAd' : 'admin.cms.newAd') | translate }}</h2>
+
+      <div class="cms-grid">
+        <div class="field">
+          <label for="ad-name">{{ 'admin.cms.adName' | translate }}</label>
+          <input id="ad-name" formControlName="name" [attr.aria-invalid]="invalid('name')" />
+          @if (invalid('name')) { <span class="cms-field-error">{{ 'marketplace.errors.required' | translate }}</span> }
+          @if (fieldErrs()['name']) { <span class="cms-field-error">{{ fieldErrs()['name'] }}</span> }
+        </div>
+
+        <div class="field">
+          <label for="ad-url">{{ 'admin.cms.targetUrl' | translate }}</label>
+          <input id="ad-url" type="url" formControlName="target_url" placeholder="https://" [attr.aria-invalid]="invalid('target_url')" />
+          @if (invalid('target_url')) { <span class="cms-field-error">{{ 'admin.cms.urlInvalid' | translate }}</span> }
+          @if (fieldErrs()['target_url']) { <span class="cms-field-error">{{ fieldErrs()['target_url'] }}</span> }
+        </div>
+
+        <div class="field">
+          <label for="ad-placement">{{ 'admin.cms.placement' | translate }}</label>
+          <select id="ad-placement" formControlName="placement">
+            @for (p of placements; track p) { <option [value]="p">{{ 'admin.cms.placements.' + p | translate }}</option> }
+          </select>
+        </div>
+
+        <div class="field">
+          <label for="ad-priority">{{ 'admin.cms.priority' | translate }}</label>
+          <input id="ad-priority" type="number" min="0" step="1" formControlName="priority" aria-describedby="ad-priority-hint" />
+          <span id="ad-priority-hint" class="cms-hint">{{ 'admin.cms.priorityHint' | translate }}</span>
+        </div>
+
+        <div class="field">
+          <label for="ad-start">{{ 'admin.cms.startsAt' | translate }}</label>
+          <input id="ad-start" type="datetime-local" formControlName="starts_at" [attr.aria-invalid]="invalid('starts_at')" />
+          @if (invalid('starts_at')) { <span class="cms-field-error">{{ 'marketplace.errors.required' | translate }}</span> }
+        </div>
+
+        <div class="field">
+          <label for="ad-end">{{ 'admin.cms.endsAt' | translate }}</label>
+          <input id="ad-end" type="datetime-local" formControlName="ends_at"
+                 [attr.aria-invalid]="invalid('ends_at') || (form.hasError('endsBeforeStart') && form.controls.ends_at.touched)" />
+          @if (invalid('ends_at')) { <span class="cms-field-error">{{ 'marketplace.errors.required' | translate }}</span> }
+          @if (form.hasError('endsBeforeStart') && form.controls.ends_at.touched) {
+            <span class="cms-field-error" role="alert">{{ 'admin.cms.endsAfterStarts' | translate }}</span>
+          }
+          @if (fieldErrs()['ends_at']) { <span class="cms-field-error">{{ fieldErrs()['ends_at'] }}</span> }
+        </div>
+
+        <div class="field">
+          <label for="ad-creative">{{ 'admin.cms.creative' | translate }}{{ editing() ? '' : ' *' }}</label>
+          <input id="ad-creative" type="file" accept="image/*" (change)="onCreative($event)" aria-describedby="ad-creative-hint" />
+          <span id="ad-creative-hint" class="cms-hint">{{ (editing() ? 'admin.cms.creativeKeep' : 'admin.cms.creativeHint') | translate }}</span>
+          @if (creativeError()) { <span class="cms-field-error" role="alert">{{ creativeError()! | translate }}</span> }
+          @if (fieldErrs()['creative']) { <span class="cms-field-error">{{ fieldErrs()['creative'] }}</span> }
+        </div>
+      </div>
+
+      <label class="cms-check">
+        <input type="checkbox" formControlName="is_active" />
+        {{ 'admin.cms.active' | translate }}
+      </label>
+
+      <div aria-live="polite">
+        @if (saveError()) { <p class="watch-error" role="alert">{{ saveError()! | translate }}</p> }
+      </div>
+
+      <div class="dialog-actions">
+        <button type="button" class="action-btn neutral" (click)="closeEditor()">{{ 'marketplace.common.cancel' | translate }}</button>
+        <button type="submit" class="action-btn approve" [disabled]="saving()">
+          {{ (saving() ? 'marketplace.common.saving' : 'marketplace.common.save') | translate }}
+        </button>
+      </div>
+    </form>
+  }
+
+  @if (loading()) {
+    <div class="table-skeleton" aria-busy="true">@for (i of [1,2,3]; track i) { <div class="row-skeleton"></div> }</div>
+  } @else {
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>{{ 'admin.cms.creative' | translate }}</th>
+            <th>{{ 'admin.cms.adName' | translate }}</th>
+            <th>{{ 'admin.cms.placement' | translate }}</th>
+            <th>{{ 'admin.cms.runs' | translate }}</th>
+            <th>{{ 'admin.marketplace.status' | translate }}</th>
+            <th class="r">{{ 'admin.cms.impressions' | translate }}</th>
+            <th class="r">{{ 'admin.cms.clicks' | translate }}</th>
+            <th class="r">{{ 'admin.cms.ctr' | translate }}</th>
+            <th>{{ 'admin.marketplace.colActions' | translate }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (ad of ads(); track ad.id) {
+            <tr>
+              <td>@if (ad.creative_url) { <img class="cms-thumb" [src]="ad.creative_url" [alt]="ad.name" loading="lazy" /> }</td>
+              <td class="title-cell">{{ ad.name }}<div class="muted" style="font-weight: 400">{{ ad.target_url }}</div></td>
+              <td class="muted">{{ 'admin.cms.placements.' + ad.placement | translate }} · P{{ ad.priority }}</td>
+              <td class="muted">{{ ad.starts_at | date:'d MMM yyyy' }} – {{ ad.ends_at | date:'d MMM yyyy' }}</td>
+              <td>
+                <span class="badge" [class]="ad.is_active ? 'badge-approved' : 'badge-review'">
+                  {{ (ad.is_active ? 'admin.cms.statusActive' : 'admin.cms.statusPaused') | translate }}
+                </span>
+              </td>
+              <td class="r">{{ ad.impressions | number }}</td>
+              <td class="r">{{ ad.clicks | number }}</td>
+              <td class="r ctr">{{ ad.click_through_rate | percent:'1.1-2' }}</td>
+              <td class="actions">
+                <button class="action-btn edit" (click)="edit(ad)">{{ 'marketplace.common.edit' | translate }}</button>
+                <button class="action-btn danger" (click)="confirmDelete.set(ad)">{{ 'admin.cms.delete' | translate }}</button>
+              </td>
+            </tr>
+          } @empty {
+            <tr><td colspan="9" class="muted" style="text-align: center">{{ 'admin.cms.noAds' | translate }}</td></tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+
+  @if (confirmDelete(); as ad) {
+    <div class="overlay" (click)="confirmDelete.set(null)">
+      <div class="dialog" role="dialog" aria-modal="true" aria-labelledby="ad-del-title" (click)="$event.stopPropagation()">
+        <h3 id="ad-del-title">{{ 'admin.cms.deleteAdTitle' | translate }}</h3>
+        <p><strong>{{ ad.name }}</strong></p>
+        <div class="dialog-actions">
+          <button class="action-btn neutral" (click)="confirmDelete.set(null)">{{ 'marketplace.common.cancel' | translate }}</button>
+          <button class="action-btn danger" (click)="remove()">{{ 'admin.cms.delete' | translate }}</button>
+        </div>
+      </div>
+    </div>
+  }
+</div>

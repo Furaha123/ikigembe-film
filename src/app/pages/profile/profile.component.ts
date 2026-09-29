@@ -1,4 +1,5 @@
 import { Component, inject, OnInit, signal } from '@angular/core';
+import { TranslatePipe } from '@ngx-translate/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -9,7 +10,7 @@ import { HeaderComponent } from '../../core/components/header/header.component';
 
 @Component({
   selector: 'app-profile',
-  imports: [CommonModule, ReactiveFormsModule, HeaderComponent],
+  imports: [CommonModule, ReactiveFormsModule, HeaderComponent, TranslatePipe],
   templateUrl: './profile.component.html',
   styleUrl: './profile.component.scss'
 })

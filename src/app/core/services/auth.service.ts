@@ -225,6 +225,12 @@ export class AuthService {
     }
   }
 
+  /** Current access token (browser only). For requests HttpClient can't make, e.g. keepalive fetch on unload. */
+  getAccessToken(): string | null {
+    if (!isPlatformBrowser(this.platformId)) return null;
+    try { return localStorage.getItem(TOKEN_KEY); } catch { return null; }
+  }
+
   logout(onDone?: () => void) {
     const token = isPlatformBrowser(this.platformId) ? localStorage.getItem(TOKEN_KEY) : null;
     const refresh = isPlatformBrowser(this.platformId) ? localStorage.getItem(REFRESH_KEY) : null;

@@ -24,6 +24,9 @@ import {
   UserGrowthItem,
   WithdrawalSummaryItem,
   PayingUsersReport,
+  FilmRevenueShareList,
+  FilmRevenueShare,
+  FilmRevenueSharePayload,
 } from '../models/admin.interface';
 
 import { environment } from '../../../environments/environment';
@@ -136,6 +139,19 @@ export class AdminService {
 
   requestChanges(id: number, note: string): Observable<{ detail: string }> {
     return this.http.post<{ detail: string }>(`${BASE}/admin/dashboard/movies/${id}/request-changes/`, { note });
+  }
+
+  getRevenueShares(movieId: number): Observable<FilmRevenueShareList> {
+    return this.http.get<FilmRevenueShareList>(`${BASE}/admin/dashboard/movies/${movieId}/revenue-shares/`);
+  }
+
+  /**
+   * Append a split (shares are never edited or deleted). 400 `{ error }` for
+   * retroactive dates, dates outside the contract or before the latest share;
+   * `{ percentages: [...] }` when the total isn't 100.
+   */
+  createRevenueShare(movieId: number, payload: FilmRevenueSharePayload): Observable<FilmRevenueShare> {
+    return this.http.post<FilmRevenueShare>(`${BASE}/admin/dashboard/movies/${movieId}/revenue-shares/`, payload);
   }
 
   getFilmHlsStatus(id: number): Observable<FilmHlsStatusResponse> {

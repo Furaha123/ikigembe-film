@@ -1,0 +1,59 @@
+<div class="mk-page">
+  <div class="mk-header">
+    <div>
+      <a routerLink="/producer/casting" class="mk-muted">← {{ 'marketplace.producerCasting.title' | translate }}</a>
+      <h1>{{ call()?.title ?? ('marketplace.producerCasting.applicationsTitle' | translate) }}</h1>
+      <p>{{ 'marketplace.producerCasting.applicationsSubtitle' | translate }}</p>
+    </div>
+  </div>
+
+  <div aria-live="polite">
+    @if (loading()) {
+      <p class="mk-muted">{{ 'marketplace.common.loading' | translate }}</p>
+    } @else if (applications().length === 0 && !error()) {
+      <p class="mk-empty">{{ 'marketplace.producerCasting.noApplications' | translate }}</p>
+    }
+    @if (error()) { <p class="mk-error" role="alert">{{ error()! | translate }}</p> }
+  </div>
+
+  @for (a of applications(); track a.id) {
+    <article class="mk-card">
+      <div class="mk-row" style="justify-content: space-between">
+        <h2>{{ a.stage_name ?? ('marketplace.producerCasting.unnamedActor' | translate) }}</h2>
+        <span [class]="statusClass(a.status)">{{ 'marketplace.applicationStatus.' + a.status | translate }}</span>
+      </div>
+      @if (a.note) { <p style="white-space: pre-line">{{ a.note }}</p> }
+
+      @if (a.videos.length) {
+        <div class="mk-row">
+          @for (v of a.videos; track v.id) {
+            <button type="button" class="mk-btn mk-btn--ghost" (click)="preview.set(v)" [disabled]="!v.video_url">
+              ▶ {{ v.title }}
+            </button>
+          }
+        </div>
+      }
+
+      <div class="mk-field" style="max-width: 240px; margin-top: .75rem">
+        <label [for]="'app-status-' + a.id">{{ 'marketplace.producerCasting.status' | translate }}</label>
+        <select [id]="'app-status-' + a.id" [value]="a.status" (change)="onStatusChange(a, $event)" [disabled]="updatingId() === a.id">
+          @for (s of statuses; track s) {
+            <option [value]="s">{{ 'marketplace.applicationStatus.' + s | translate }}</option>
+          }
+        </select>
+      </div>
+    </article>
+  }
+</div>
+
+@if (preview(); as v) {
+  <div class="mk-overlay" (click)="preview.set(null)">
+    <div class="mk-dialog" role="dialog" aria-modal="true" [attr.aria-label]="v.title" (click)="$event.stopPropagation()">
+      <header>
+        <span>{{ v.title }}</span>
+        <button type="button" class="mk-btn mk-btn--ghost" (click)="preview.set(null)">{{ 'marketplace.common.close' | translate }}</button>
+      </header>
+      <app-video-player [src]="v.video_url ?? ''" [autoplay]="true" />
+    </div>
+  </div>
+}

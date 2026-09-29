@@ -9,7 +9,9 @@
     "settings": "Igenamiterere",
     "terms": "Amabwiriza n'Ibisabwa",
     "signOut": "Sohoka",
-    "signingOut": "Gusohoka…"
+    "signingOut": "Gusohoka…",
+    "casting": "Casting calls",
+    "actors": "Actor directory"
   },
   "topbar": {
     "uploadFilm": "Ohereza Filime"
@@ -329,7 +331,8 @@
       "airtel": "Airtel Money",
       "submitBtn": "Saba Gukura Amafaranga",
       "submitting": "Ohereza…"
-    }
+    },
+    "shareNoteBlended": "Your overall revenue share across your films is {{percent}}%. Each film's contract can set its own split."
   },
   "withdrawals": {
     "title": "Gukura Amafaranga",
@@ -385,7 +388,14 @@
     "copyLink": "Kopi Aho Ugera",
     "copied": "Yakopijwe!",
     "failedLoad": "Byanze gufungura amakuru y'ifilime.",
-    "goBack": "Subira Inyuma"
+    "goBack": "Subira Inyuma",
+    "watchUnavailable": "The video isn't available for preview yet.",
+    "watchFailed": "Could not load the video. Please try again.",
+    "resubmit": {
+      "uploadFailed": "Upload failed. Please try again.",
+      "failed": "Resubmission failed. Please try again.",
+      "close": "Close"
+    }
   },
   "contracts": {
     "dashboard": {
@@ -509,5 +519,346 @@
       "renew": "Ongerera",
       "renewNow": "Ongerera Nonaha"
     }
+  },
+  "player": {
+    "error": "This video could not be played."
+  },
+  "viewer": {
+    "detail": {
+      "watchMovie": "Watch Movie",
+      "buyToWatch": "Watch Full Movie — RWF {{price}}",
+      "loadingStream": "Loading…"
+    },
+    "stream": {
+      "purchaseRequired": "Purchase required to stream this movie.",
+      "failed": "We couldn't start playback. Please try again.",
+      "viewUsed": "Your view of this movie has been used. Purchase it again to watch.",
+      "otherDevice": "This purchase is already being watched on another device.",
+      "notFound": "This movie is no longer available.",
+      "buyAgain": "Buy again — RWF {{price}}",
+      "buyAgainShort": "Buy again"
+    }
+  },
+  "payments": {
+    "history": {
+      "subtitle": "Your purchases and service payments on Ikigembe.",
+      "item": "Item"
+    },
+    "purpose": {
+      "movie": "Movie purchase",
+      "actor_video": "Talent video upload fee",
+      "casting_announcement": "Casting call announcement",
+      "actor_search": "Actor directory access"
+    }
+  },
+  "marketplace": {
+    "nav": {
+      "label": "Actor marketplace",
+      "casting": "Casting calls",
+      "applications": "My applications",
+      "videos": "Talent videos",
+      "profile": "Actor profile"
+    },
+    "common": {
+      "loading": "Loading…",
+      "save": "Save",
+      "saving": "Saving…",
+      "sending": "Sending…",
+      "cancel": "Cancel",
+      "close": "Close",
+      "edit": "Edit",
+      "refresh": "Refresh",
+      "watch": "Watch",
+      "preview": "Preview",
+      "prev": "Previous",
+      "next": "Next",
+      "pagination": "Pagination"
+    },
+    "errors": {
+      "loadFailed": "Could not load this page. Please try again.",
+      "saveFailed": "Could not save. Please try again.",
+      "actionFailed": "That action failed. Please try again.",
+      "required": "This field is required.",
+      "email": "Enter a valid email address."
+    },
+    "purchase": {
+      "pay": "Pay with Mobile Money",
+      "success": "Your payment is complete.",
+      "unavailable": "This service isn't available yet."
+    },
+    "gender": {
+      "female": "Female",
+      "male": "Male",
+      "other": "Other"
+    },
+    "videoStatus": {
+      "pending_upload": "Awaiting upload",
+      "processing": "Processing",
+      "pending_review": "In review",
+      "approved": "Approved",
+      "rejected": "Rejected",
+      "removed": "Removed"
+    },
+    "castingStatus": {
+      "draft": "Draft",
+      "published": "Published",
+      "closed": "Closed",
+      "removed": "Removed"
+    },
+    "applicationStatus": {
+      "submitted": "Submitted",
+      "shortlisted": "Shortlisted",
+      "declined": "Declined"
+    },
+    "profile": {
+      "title": "Actor profile",
+      "subtitle": "How producers see you in the actor directory.",
+      "createHint": "Create your actor profile to upload talent videos and apply to casting calls.",
+      "stageName": "Stage name",
+      "dob": "Date of birth",
+      "dobHint": "Used to calculate your talent video fee. It is not shown to producers.",
+      "gender": "Gender",
+      "genderUnset": "Prefer not to say",
+      "location": "Location",
+      "languages": "Languages",
+      "skills": "Skills",
+      "listHint": "Separate items with commas.",
+      "contactEmail": "Contact email",
+      "contactPhone": "Contact phone",
+      "bio": "Bio",
+      "listed": "Show me in the producer actor directory",
+      "create": "Create profile",
+      "saved": "Profile saved."
+    },
+    "videos": {
+      "title": "Talent videos",
+      "subtitle": "Showcase your acting. Approved videos can be attached to casting applications.",
+      "newTitle": "Add a talent video",
+      "newHint": "Pay the upload fee first, then upload your video. You need an actor profile with your date of birth.",
+      "profileLink": "Edit profile",
+      "fieldTitle": "Title",
+      "fieldDescription": "Description",
+      "payAndCreate": "Pay fee and create",
+      "purchaseTitle": "Talent video upload fee",
+      "purchaseDesc": "The fee depends on your age. You'll see the amount on your phone.",
+      "listTitle": "Your videos",
+      "empty": "You haven't added any talent videos yet.",
+      "rejectReason": "Reason",
+      "paymentPending": "Payment pending — approve the prompt on your phone, then refresh.",
+      "paymentFailed": "The payment failed. Add the video again to retry.",
+      "upload": "Upload video",
+      "uploading": "Uploading video",
+      "uploadFailed": "Upload failed. Please try again.",
+      "badFile": "Choose a video file (.mp4, .mov, .m4v or .webm)."
+    },
+    "casting": {
+      "title": "Casting calls",
+      "subtitle": "Open roles from producers on Ikigembe.",
+      "empty": "There are no open casting calls right now.",
+      "roles": "Roles",
+      "deadline": "Deadline",
+      "notFound": "This casting call is closed or no longer exists.",
+      "backToList": "Back to casting calls",
+      "applyTitle": "Apply",
+      "chooseVideos": "Attach your approved talent videos",
+      "noApprovedVideos": "You have no approved talent videos yet.",
+      "note": "Note to the producer",
+      "apply": "Send application",
+      "applied": "Your application was sent.",
+      "applyFailed": "Could not send your application. Please try again."
+    },
+    "applications": {
+      "title": "My applications",
+      "subtitle": "Casting calls you've applied to.",
+      "empty": "You haven't applied to any casting calls yet.",
+      "sent": "Sent",
+      "videos": "videos"
+    },
+    "producerCasting": {
+      "title": "Casting calls",
+      "subtitle": "Announce roles and review applications from actors.",
+      "new": "New casting call",
+      "newTitle": "New casting call",
+      "editTitle": "Edit draft",
+      "fieldTitle": "Title",
+      "fieldDeadline": "Application deadline",
+      "fieldRoles": "Roles",
+      "rolesHint": "One role per line.",
+      "rolesRequired": "Add at least one role.",
+      "fieldDescription": "Description",
+      "deadlineFuture": "Choose a future date and time.",
+      "saveDraft": "Save draft",
+      "empty": "You haven't created any casting calls yet.",
+      "paymentPending": "Payment pending — the call publishes automatically once it completes.",
+      "publish": "Pay and publish",
+      "publishTitle": "Casting call announcement fee",
+      "publishDesc": "Your call is published automatically once the payment completes.",
+      "viewApplications": "Applications",
+      "close": "Close call",
+      "confirmClose": "Close this call to new applications?",
+      "applicationsTitle": "Applications",
+      "applicationsSubtitle": "Review applicants and their talent videos.",
+      "noApplications": "No applications yet.",
+      "unnamedActor": "Unnamed actor",
+      "status": "Status"
+    },
+    "directory": {
+      "title": "Actor directory",
+      "subtitle": "Search actors, watch their approved talent videos and contact them.",
+      "gateTitle": "Get access to the actor directory",
+      "gateText": "A directory pass gives you 30 days of search with contact details. Buying again extends your pass.",
+      "buy": "Buy directory access",
+      "extend": "Extend",
+      "expired": "Your directory access has expired. Buy a new pass to continue.",
+      "activeUntil": "Access active until",
+      "purchaseTitle": "Actor directory access (30 days)",
+      "purchaseDesc": "You'll see the amount on your phone.",
+      "tabSearch": "Search",
+      "tabShortlist": "Shortlist",
+      "q": "Name or keyword",
+      "any": "Any",
+      "minAge": "Min age",
+      "maxAge": "Max age",
+      "skill": "Skill",
+      "language": "Language",
+      "search": "Search",
+      "reset": "Reset",
+      "results": "actors found",
+      "shortlist": "Shortlist",
+      "unshortlist": "Remove from shortlist",
+      "shortlistEmpty": "Your shortlist is empty.",
+      "contact": "Contact",
+      "noVideos": "No approved videos yet.",
+      "actorNotFound": "This actor is no longer in the directory."
+    }
+  },
+  "admin": {
+    "marketplace": {
+      "title": "Marketplace",
+      "subtitle": "Moderate actor talent videos and casting calls.",
+      "tabVideos": "Talent videos",
+      "tabCasting": "Casting calls",
+      "status": "Status",
+      "allStatuses": "All",
+      "colTitle": "Title",
+      "colActor": "Actor",
+      "colProducer": "Producer",
+      "colSubmitted": "Submitted",
+      "colActions": "Actions",
+      "approve": "Approve",
+      "reject": "Reject",
+      "remove": "Remove",
+      "confirm": "Confirm",
+      "approveTitle": "Approve this talent video?",
+      "reason": "Reason",
+      "reasonOptional": "Reason (optional)",
+      "reasonRequired": "A reason is required.",
+      "emptyVideos": "No videos with this status.",
+      "emptyCalls": "No casting calls with this status.",
+      "dialog": {
+        "reject-video": "Reject talent video",
+        "remove-video": "Remove talent video",
+        "remove-call": "Remove casting call"
+      }
+    },
+    "revenue": {
+      "open": "Revenue split",
+      "title": "Revenue split",
+      "current": "Current split (producer / platform)",
+      "default": "default",
+      "history": "History",
+      "noHistory": "No contract splits recorded — the default {{percent}}% producer share applies.",
+      "inEffect": "In effect",
+      "producer": "Producer",
+      "platform": "Platform",
+      "contractV": "Contract v{{version}}",
+      "defaultBefore": "Before the first split: default {{percent}}% producer share",
+      "newTitle": "Record a new split",
+      "futureOnly": "Splits are permanent and cannot be edited or deleted. A new split applies only to payments made after its effective date — earnings already booked are never recalculated.",
+      "otherParties": "Other parties (optional)",
+      "partyName": "Name",
+      "addParty": "Add party",
+      "removeParty": "Remove party",
+      "total": "Total: {{total}}%",
+      "mustBe100": "must be exactly 100%",
+      "effectiveFrom": "Effective from",
+      "effectiveHint": "Leave empty to start now. Must be after the latest split and any completed payment.",
+      "contractId": "Contract ID",
+      "contractHint": "Leave empty to use the producer's active contract.",
+      "notes": "Notes",
+      "record": "Record split",
+      "saved": "Split recorded.",
+      "loadFailed": "Could not load the revenue splits.",
+      "saveFailed": "Could not record the split."
+    },
+    "cms": {
+      "title": "Pages & Ads",
+      "tabPages": "Pages",
+      "tabAds": "Ads",
+      "pagesSubtitle": "Legal and information pages shown on the public site.",
+      "adsSubtitle": "Sponsored campaigns and their performance.",
+      "newPage": "New page",
+      "editPage": "Edit page",
+      "slug": "Slug",
+      "slugHint": "Lowercase letters, numbers and hyphens. For Kinyarwanda, publish the same page as <slug>-rw (e.g. terms-rw).",
+      "slugInvalid": "Use lowercase letters, numbers and single hyphens only.",
+      "pageTitle": "Title",
+      "body": "Body (HTML)",
+      "bodyHint": "Basic HTML: headings, paragraphs, lists, links, images. Scripts and event handlers are removed when the page is shown.",
+      "edit": "Edit",
+      "preview": "Preview",
+      "published": "Published (visible on the public site)",
+      "statusPublished": "Published",
+      "statusDraft": "Draft",
+      "updated": "Updated",
+      "delete": "Delete",
+      "deletePageTitle": "Delete this page?",
+      "noPages": "No pages yet.",
+      "newAd": "New ad",
+      "editAd": "Edit ad",
+      "adName": "Name",
+      "targetUrl": "Target URL",
+      "urlInvalid": "Enter a full URL starting with http:// or https://",
+      "placement": "Placement",
+      "priority": "Priority",
+      "priorityHint": "Higher shows first within a placement.",
+      "startsAt": "Starts",
+      "endsAt": "Ends",
+      "endsAfterStarts": "The end must be after the start.",
+      "creative": "Creative",
+      "creativeHint": "Image file (required).",
+      "creativeKeep": "Leave empty to keep the current image.",
+      "creativeRequired": "Choose an image for the ad.",
+      "creativeImage": "The creative must be an image.",
+      "active": "Active",
+      "statusActive": "Active",
+      "statusPaused": "Paused",
+      "runs": "Runs",
+      "impressions": "Impressions",
+      "clicks": "Clicks",
+      "ctr": "CTR",
+      "noAds": "No ad campaigns yet.",
+      "deleteAdTitle": "Delete this ad campaign?",
+      "loadFailed": "Could not load. Please try again.",
+      "saveFailed": "Could not save. Please try again.",
+      "deleteFailed": "Could not delete. Please try again.",
+      "placements": {
+        "home_hero": "Home — below hero",
+        "home_banner": "Home — banner",
+        "browse_inline": "Browse — between rows",
+        "movie_detail": "Movie detail",
+        "sidebar": "Sidebar"
+      }
+    }
+  },
+  "cms": {
+    "lastUpdated": "Last updated",
+    "notFoundTitle": "Page not available",
+    "notFoundText": "This page hasn't been published yet. Please check back later.",
+    "back": "Back to Ikigembe",
+    "navLabel": "Page navigation"
+  },
+  "ads": {
+    "sponsored": "Sponsored"
   }
 }

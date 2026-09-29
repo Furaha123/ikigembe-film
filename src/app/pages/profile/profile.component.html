@@ -241,7 +241,7 @@
     <!-- Payment History -->
     <section class="card">
       <h2 class="card-title">Payment History</h2>
-      <p class="card-desc">Movies you have purchased on Ikigembe.</p>
+      <p class="card-desc">{{ 'payments.history.subtitle' | translate }}</p>
 
       @if (isLoadingPayments()) {
         <div class="ph-loading">Loading...</div>
@@ -252,7 +252,7 @@
           <table class="ph-table">
             <thead>
               <tr>
-                <th>Movie</th>
+                <th>{{ 'payments.history.item' | translate }}</th>
                 <th>Amount</th>
                 <th>Status</th>
                 <th>Date</th>
@@ -261,7 +261,10 @@
             <tbody>
               @for (p of payments(); track p.deposit_id) {
                 <tr>
-                  <td>{{ p.movie_title ?? '—' }}</td>
+                  <td>
+                    {{ p.movie_title ?? ('payments.purpose.' + (p.purpose || 'movie') | translate) }}
+                    @if (p.movie_title) { <span class="ph-muted"> · {{ 'payments.purpose.' + (p.purpose || 'movie') | translate }}</span> }
+                  </td>
                   <td>RWF {{ p.amount | number }}</td>
                   <td>
                     <span class="ph-badge" [class]="paymentStatusClass(p.status)">

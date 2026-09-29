@@ -1,0 +1,13 @@
+@if (ad(); as a) {
+  <aside [class]="'ad-slot ad-slot--' + placement" [attr.aria-label]="'ads.sponsored' | translate">
+    <span class="ad-label">{{ 'ads.sponsored' | translate }}</span>
+    <a #creative
+       class="ad-link"
+       [href]="a.target_url"
+       target="_blank"
+       rel="noopener noreferrer sponsored"
+       (click)="onClick(a)">
+      <img class="ad-img" [src]="a.creative_url" [alt]="a.name" loading="lazy" decoding="async" />
+    </a>
+  </aside>
+}

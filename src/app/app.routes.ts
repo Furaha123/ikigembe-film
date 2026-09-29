@@ -50,10 +50,42 @@ export const routes: Routes = [
     canActivate: [authGuard, viewerGuard],
     loadComponent: () => import('./pages/my-list/my-list.component').then(a => a.MyListComponent)
   },
+  // ── Actor marketplace (viewers with an actor profile) ──
   {
-    path: 'terms',
-    loadComponent: () => import('./pages/terms/terms.component').then(a => a.TermsComponent)
+    path: 'actor',
+    canActivate: [authGuard, viewerGuard],
+    children: [
+      { path: '', redirectTo: 'profile', pathMatch: 'full' },
+      {
+        path: 'profile',
+        loadComponent: () => import('./pages/actor/actor-profile/actor-profile.component').then(a => a.ActorProfileComponent)
+      },
+      {
+        path: 'videos',
+        loadComponent: () => import('./pages/actor/actor-videos/actor-videos.component').then(a => a.ActorVideosComponent)
+      },
+      {
+        path: 'applications',
+        loadComponent: () => import('./pages/actor/my-applications/my-applications.component').then(a => a.MyApplicationsComponent)
+      },
+    ]
   },
+  {
+    path: 'casting',
+    canActivate: [authGuard, viewerGuard],
+    loadComponent: () => import('./pages/casting/casting-calls/casting-calls.component').then(a => a.CastingCallsComponent)
+  },
+  {
+    path: 'casting/:id',
+    canActivate: [authGuard, viewerGuard],
+    loadComponent: () => import('./pages/casting/casting-call-detail/casting-call-detail.component').then(a => a.CastingCallDetailComponent)
+  },
+  // ── CMS pages (content from /api/pages/<slug>/; built-in terms text as fallback) ──
+  { path: 'terms',   data: { slug: 'terms' },   loadComponent: () => import('./pages/cms-page/cms-page.component').then(a => a.CmsPageComponent) },
+  { path: 'about',   data: { slug: 'about' },   loadComponent: () => import('./pages/cms-page/cms-page.component').then(a => a.CmsPageComponent) },
+  { path: 'privacy', data: { slug: 'privacy' }, loadComponent: () => import('./pages/cms-page/cms-page.component').then(a => a.CmsPageComponent) },
+  { path: 'contact', data: { slug: 'contact' }, loadComponent: () => import('./pages/cms-page/cms-page.component').then(a => a.CmsPageComponent) },
+  { path: 'pages/:slug', loadComponent: () => import('./pages/cms-page/cms-page.component').then(a => a.CmsPageComponent) },
   {
     path: 'preview/:id',
     loadComponent: () => import('./pages/preview/preview.component').then(a => a.PreviewComponent)

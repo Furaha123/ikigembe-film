@@ -5,7 +5,9 @@ import {
 import { TranslatePipe, TranslateDirective } from '@ngx-translate/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
-import { ProducerService, ProducerMovieDetail } from '../../../services/producer.service';
+import { ProducerService, ProducerMovieDetail, FilmResubmitPayload } from '../../../services/producer.service';
+import { MultipartUploadService, UploadAbortedError } from '../../../../shared/services/multipart-upload.service';
+import { apiErrorMessage, UiError } from '../../../../shared/utils/api-error';
 import { VideoPlayerComponent } from '../../../../shared/components/video-player/video-player.component';
 import {
   Chart, LineController, LineElement, PointElement,
@@ -74,6 +76,7 @@ export class ProducerMovieDetailComponent implements OnInit, OnDestroy {
   private readonly route           = inject(ActivatedRoute);
   private readonly router          = inject(Router);
   private readonly producerService = inject(ProducerService);
+  private readonly uploader        = inject(MultipartUploadService);
   private readonly platformId      = inject(PLATFORM_ID);
 
   readonly ranges     = ['7d', '28d', '90d', '365d', 'Lifetime'];
@@ -94,6 +97,8 @@ export class ProducerMovieDetailComponent implements OnInit, OnDestroy {
   copiedFlash    = signal(false);
   isWatching     = signal(false);
   watchSrc       = signal('');
+  watchLoading   = signal(false);
+  watchError     = signal<string | null>(null); // translation key
 
   // ── Resubmit flow ─────────────────────────────────────
   resubmitOpen             = signal(false);
@@ -101,17 +106,23 @@ export class ProducerMovieDetailComponent implements OnInit, OnDestroy {
   resubmitVideoKey         = signal<string | null>(null);
   resubmitVideoProgress    = signal(0);
   resubmitVideoUploading   = signal(false);
-  resubmitVideoError       = signal<string | null>(null);
+  resubmitVideoError       = signal<string | null>(null); // translation key
 
   resubmitCopyrightFile        = signal<File | null>(null);
   resubmitCopyrightKey         = signal<string | null>(null);
   resubmitCopyrightProgress    = signal(0);
   resubmitCopyrightUploading   = signal(false);
-  resubmitCopyrightError       = signal<string | null>(null);
+  resubmitCopyrightError       = signal<string | null>(null); // translation key
 
   resubmitLoading = signal(false);
-  resubmitError   = signal<string | null>(null);
+  resubmitError   = signal<UiError | null>(null);
   resubmitSuccess = signal(false);
+
+  /**
+   * Producer's share of gross for this film (0–1), from the API — splits are per
+   * film, so never assume 70/30. null until known (revenue estimates show 0).
+   */
+  shareRatio = signal<number | null>(null);
 
   isChangesRequested = computed(() => this.movie()?.approval_status === 'changes_requested');
   canResubmit        = computed(() => !!(this.resubmitVideoKey() || this.resubmitCopyrightKey()));
@@ -119,6 +130,7 @@ export class ProducerMovieDetailComponent implements OnInit, OnDestroy {
   private mainChart:   Chart | null = null;
   private advChart:    Chart | null = null;
   private copiedTimer: ReturnType<typeof setTimeout> | null = null;
+  private resubmitUploads: Record<'video' | 'copyright', AbortController | null> = { video: null, copyright: null };
 
   // Range-aware data for the main analytics chart
   rangeData = computed(() => {
@@ -130,7 +142,7 @@ export class ProducerMovieDetailComponent implements OnInit, OnDestroy {
     return cfg.labels.map((label, i) => {
       const views     = Math.round(totalViews * cfg.weights[i]);
       const watchTime = +((views * (dur / 60))).toFixed(1);
-      const revenue   = Math.round(views * m.price * 0.7);
+      const revenue   = Math.round(views * m.price * (this.shareRatio() ?? 0));
       return { label, views, watchTime, revenue };
     });
   });
@@ -183,7 +195,7 @@ export class ProducerMovieDetailComponent implements OnInit, OnDestroy {
       const w              = weights[i] / totalW;
       const views          = Math.round(total * w);
       const watchTime      = +((views * (dur / 60))).toFixed(1);
-      const revenue        = Math.round(views * m.price * 0.7);
+      const revenue        = Math.round(views * m.price * (this.shareRatio() ?? 0));
       const purchases      = Math.round(views * 0.025);
       const completionRate = Math.min(95, Math.max(50, baseCompletion + (i % 5 - 2) * 2));
       return { label, views, watchTime, revenue, purchases, completionRate };
@@ -212,6 +224,30 @@ export class ProducerMovieDetailComponent implements OnInit, OnDestroy {
         setTimeout(() => this.buildMainChart(), 80);
       },
       error: () => { this.isLoading.set(false); this.hasError.set(true); },
+    });
+    this.loadShareRatio(id);
+  }
+
+  /** This film's effective share (earned / gross); falls back to the wallet's blended percentage. */
+  private loadShareRatio(id: number): void {
+    const fromWallet = () => this.producerService.getWallet().subscribe({
+      next: (w) => {
+        if (w.producer_share_percentage) this.shareRatio.set(w.producer_share_percentage / 100);
+        this.buildMainChart();
+      },
+      error: () => { /* leave revenue estimates at 0 */ },
+    });
+    this.producerService.getDashboardMovies().subscribe({
+      next: (list) => {
+        const m = list.find(x => x.id === id);
+        if (m && m.total_gross_revenue > 0) {
+          this.shareRatio.set(m.producer_share / m.total_gross_revenue);
+          this.buildMainChart();
+        } else {
+          fromWallet();
+        }
+      },
+      error: () => fromWallet(),
     });
   }
 
@@ -259,11 +295,23 @@ export class ProducerMovieDetailComponent implements OnInit, OnDestroy {
 
   watchMovie(): void {
     const m = this.movie();
-    if (!m) return;
-    const src = m.hls_url ?? m.video_url ?? '';
-    if (!src) return;
-    this.watchSrc.set(src);
-    this.isWatching.set(true);
+    if (!m || this.watchLoading()) return;
+    // hls_url / video_url are expiring credentials — fetch fresh ones for every preview.
+    this.watchLoading.set(true);
+    this.watchError.set(null);
+    this.producerService.getMovieDetail(m.id).subscribe({
+      next: (fresh) => {
+        this.watchLoading.set(false);
+        const src = fresh.hls_url ?? fresh.video_url ?? '';
+        if (!src) { this.watchError.set('movieDetail.watchUnavailable'); return; }
+        this.watchSrc.set(src);
+        this.isWatching.set(true);
+      },
+      error: () => {
+        this.watchLoading.set(false);
+        this.watchError.set('movieDetail.watchFailed');
+      },
+    });
   }
 
   closePlayer(): void {
@@ -511,29 +559,47 @@ export class ProducerMovieDetailComponent implements OnInit, OnDestroy {
     const setProgress  = type === 'video' ? this.resubmitVideoProgress  : this.resubmitCopyrightProgress;
     const setError     = type === 'video' ? this.resubmitVideoError     : this.resubmitCopyrightError;
 
+    this.resubmitUploads[type]?.abort();
+    const controller = new AbortController();
+    this.resubmitUploads[type] = controller;
+
     setUploading.set(true);
-    this.producerService.getPresignedUploadUrl(file.name, file.type).subscribe({
-      next: ({ url, key }) => {
-        const xhr = new XMLHttpRequest();
-        xhr.upload.onprogress = (e) => {
-          if (e.lengthComputable) setProgress.set(Math.round((e.loaded / e.total) * 100));
-        };
-        xhr.onload = () => {
-          setUploading.set(false);
-          if (xhr.status >= 200 && xhr.status < 300) {
-            setKey.set(key);
-            setProgress.set(100);
-          } else {
-            setError.set('Upload failed. Please try again.');
-          }
-        };
-        xhr.onerror = () => { setUploading.set(false); setError.set('Upload failed. Please try again.'); };
-        xhr.open('PUT', url);
-        xhr.setRequestHeader('Content-Type', file.type);
-        xhr.send(file);
-      },
-      error: () => { setUploading.set(false); setError.set('Could not get upload URL. Please try again.'); },
+    // field_name routes the file to the right (private) folder; the backend rejects
+    // copyright keys that weren't uploaded with field_name=copyright_document.
+    const api = this.producerService.movieUploadApi(type === 'video' ? 'video_file' : 'copyright_document');
+    this.uploader.upload(file, api, {
+      signal: controller.signal,
+      onProgress: pct => setProgress.set(pct),
+    }).then(key => {
+      setKey.set(key);
+      setProgress.set(100);
+    }).catch(err => {
+      if (!(err instanceof UploadAbortedError)) setError.set('movieDetail.resubmit.uploadFailed');
+    }).finally(() => {
+      if (this.resubmitUploads[type] === controller) {
+        this.resubmitUploads[type] = null;
+        setUploading.set(false);
+      }
     });
+  }
+
+  /** Close the resubmit dialog, cancelling any upload still in flight. */
+  closeResubmit(): void {
+    this.abortResubmitUploads();
+    this.resubmitOpen.set(false);
+  }
+
+  private abortResubmitUploads(): void {
+    for (const type of ['video', 'copyright'] as const) {
+      if (this.resubmitUploads[type]) {
+        this.resubmitUploads[type]!.abort();
+        this.resubmitUploads[type] = null;
+        const file = type === 'video' ? this.resubmitVideoFile : this.resubmitCopyrightFile;
+        const uploading = type === 'video' ? this.resubmitVideoUploading : this.resubmitCopyrightUploading;
+        file.set(null);
+        uploading.set(false);
+      }
+    }
   }
 
   submitResubmit(): void {
@@ -544,29 +610,28 @@ export class ProducerMovieDetailComponent implements OnInit, OnDestroy {
     this.resubmitLoading.set(true);
     this.resubmitError.set(null);
 
-    const fd = new FormData();
+    const payload: FilmResubmitPayload = {};
     const vk = this.resubmitVideoKey();
     const ck = this.resubmitCopyrightKey();
-    if (vk) fd.append('video_key', vk);
-    if (ck) fd.append('copyright_document_key', ck);
+    if (vk) payload.video_key = vk;
+    if (ck) payload.copyright_document_key = ck;
 
-    this.producerService.resubmitFilm(id, fd).subscribe({
+    this.producerService.resubmitFilmFiles(id, payload).subscribe({
       next: (updated) => {
-        this.movie.set(updated as any);
+        this.movie.set(updated);
         this.resubmitLoading.set(false);
         this.resubmitSuccess.set(true);
         this.resubmitOpen.set(false);
       },
       error: (err) => {
         this.resubmitLoading.set(false);
-        this.resubmitError.set(
-          err?.error?.error ?? err?.error?.detail ?? 'Resubmission failed. Please try again.'
-        );
+        this.resubmitError.set({ text: apiErrorMessage(err), key: 'movieDetail.resubmit.failed' });
       },
     });
   }
 
   ngOnDestroy(): void {
+    this.abortResubmitUploads();
     this.mainChart?.destroy();
     this.advChart?.destroy();
     if (this.copiedTimer) clearTimeout(this.copiedTimer);

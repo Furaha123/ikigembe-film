@@ -50,7 +50,7 @@ export class AdminReportsComponent {
   ];
 
   readonly adminExtras: Record<ReportKey, string[]> = {
-    revenue:     ['Platform commission (30%)', 'Producer share (70%)', 'Total purchase count'],
+    revenue:     ['Platform commission', 'Producer share', 'Total purchase count'],
     movies:      ['Commission per movie', 'Revenue per view', 'Unique viewers'],
     users:       ['All producers platform-wide', 'Cross-producer paying users', 'Active user count'],
     withdrawals: ['Completed vs pending vs rejected', 'Monthly request volume'],

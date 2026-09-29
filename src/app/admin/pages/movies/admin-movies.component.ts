@@ -1,5 +1,6 @@
 import { Component, inject, OnInit, OnDestroy, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { TranslatePipe } from '@ngx-translate/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { Subject, interval } from 'rxjs';
@@ -7,12 +8,13 @@ import { switchMap, takeUntil } from 'rxjs/operators';
 import { AdminService } from '../../services/admin.service';
 import { AdminMovie, FilmSubmissionItem } from '../../models/admin.interface';
 import { VideoPlayerComponent } from '../../../shared/components/video-player/video-player.component';
+import { RevenueSharesDialogComponent } from '../../shared/components/revenue-shares/revenue-shares-dialog.component';
 
 type ActiveTab = 'submissions' | 'catalog';
 
 @Component({
   selector: 'app-admin-movies',
-  imports: [CommonModule, ReactiveFormsModule, VideoPlayerComponent],
+  imports: [CommonModule, ReactiveFormsModule, TranslatePipe, VideoPlayerComponent, RevenueSharesDialogComponent],
   templateUrl: './admin-movies.component.html',
   styleUrl: './admin-movies.component.scss'
 })
@@ -61,6 +63,9 @@ export class AdminMoviesComponent implements OnInit, OnDestroy {
   watchLoading = signal<number | null>(null);
   watchError   = signal<string | null>(null);
 
+  // ── Revenue splits (per film) ────────────────────────
+  revenueMovie = signal<AdminMovie | null>(null);
+
   // ── Request Changes ──────────────────────────────────
   requestChangesModal  = signal<FilmSubmissionItem | null>(null);
   requestChangesNote   = signal('');
@@ -89,7 +94,8 @@ export class AdminMoviesComponent implements OnInit, OnDestroy {
       takeUntil(this.pollingStop$),
     ).subscribe({
       next: (res) => {
-        const patch = { hls_status: res.hls_status, hls_url: res.hls_url, hls_error_message: res.hls_error_message };
+        // hls_url is a tokenised, expiring URL — don't keep it; watchFilm() fetches a fresh one.
+        const patch = { hls_status: res.hls_status, hls_error_message: res.hls_error_message };
 
         this.submissions.update(list =>
           list.map(s => s.id === id ? { ...s, ...patch } : s)
@@ -160,7 +166,7 @@ export class AdminMoviesComponent implements OnInit, OnDestroy {
   }
 
   canWatchFilm(s: FilmSubmissionItem): boolean {
-    return s.hls_status === 'ready' || !!s.hls_url;
+    return s.hls_status === 'ready';
   }
 
   isProcessingStuck(s: FilmSubmissionItem): boolean {
@@ -198,22 +204,19 @@ export class AdminMoviesComponent implements OnInit, OnDestroy {
       return;
     }
 
-    const cached = s.hls_url ?? s.video_url;
-    if (cached) {
-      this.openPlayer(cached, s.thumbnail_url ?? '', s.title);
-      return;
-    }
-
+    // Always fetch a fresh tokenised URL — never reuse one from the list or a previous open.
     this.watchLoading.set(s.id);
     this.watchError.set(null);
     this.adminService.getFilmHlsStatus(s.id).subscribe({
       next: (res) => {
         this.watchLoading.set(null);
         this.submissions.update(list => list.map(i =>
-          i.id === s.id ? { ...i, hls_status: res.hls_status, hls_url: res.hls_url, hls_error_message: res.hls_error_message } : i
+          i.id === s.id ? { ...i, hls_status: res.hls_status, hls_error_message: res.hls_error_message } : i
         ));
         if (res.hls_url) {
           this.openPlayer(res.hls_url, s.thumbnail_url ?? '', s.title);
+        } else {
+          this.watchError.set('Video is not available for playback yet.');
         }
       },
       error: () => {

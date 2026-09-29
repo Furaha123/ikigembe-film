@@ -3,13 +3,11 @@ import { TranslatePipe, TranslateDirective } from '@ngx-translate/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
-import { firstValueFrom } from 'rxjs';
 import { ProducerService } from '../../services/producer.service';
+import { MultipartUploadService } from '../../../shared/services/multipart-upload.service';
 import { DatePickerComponent } from '../../../shared/components/date-picker/date-picker';
 
 type WizardStep = 'rules' | 'details' | 'trailer' | 'movie' | 'copyright' | 'review';
-
-const CHUNK_SIZE = 10 * 1024 * 1024; // 10 MB
 
 const UPLOAD_RULES = [
   'Movie must be between 10 and 30 minutes.',
@@ -35,6 +33,7 @@ const ALL_GENRES = [
 export class ProducerUploadComponent {
   private readonly fb              = inject(FormBuilder);
   private readonly producerService = inject(ProducerService);
+  private readonly uploader        = inject(MultipartUploadService);
   private readonly router          = inject(Router);
 
   readonly RULES      = UPLOAD_RULES;
@@ -328,9 +327,11 @@ export class ProducerUploadComponent {
       this.movieUploadError.set(null);
     }
 
-    this.doMultipartUpload(file, fieldName, pct => {
-      if (isTrailer) this.trailerUploadPct.set(pct);
-      else           this.movieUploadPct.set(pct);
+    this.uploader.upload(file, this.producerService.movieUploadApi(fieldName), {
+      onProgress: pct => {
+        if (isTrailer) this.trailerUploadPct.set(pct);
+        else           this.movieUploadPct.set(pct);
+      },
     }).then(key => {
       if (isTrailer) {
         this.trailerKey.set(key);
@@ -349,44 +350,6 @@ export class ProducerUploadComponent {
         this.isUploadingMovie.set(false);
       }
     });
-  }
-
-  private async doMultipartUpload(
-    file: File,
-    fieldName: 'video_file' | 'trailer_file',
-    onProgress: (pct: number) => void,
-  ): Promise<string> {
-    // Step 1: Initiate
-    const { upload_id, file_key } = await firstValueFrom(
-      this.producerService.initiateUpload(file.name, file.type, fieldName)
-    );
-
-    // Step 2: Upload each chunk
-    const totalChunks = Math.ceil(file.size / CHUNK_SIZE);
-    const parts: { PartNumber: number; ETag: string }[] = [];
-
-    for (let i = 0; i < totalChunks; i++) {
-      const start = i * CHUNK_SIZE;
-      const chunk = file.slice(start, start + CHUNK_SIZE);
-
-      const { url } = await firstValueFrom(
-        this.producerService.signPart(upload_id, file_key, i + 1)
-      );
-
-      const res = await fetch(url, { method: 'PUT', body: chunk });
-      if (!res.ok) throw new Error(`Part ${i + 1} failed (${res.status})`);
-
-      const etag = res.headers.get('ETag') ?? '';
-      parts.push({ PartNumber: i + 1, ETag: etag });
-      onProgress(Math.round(((i + 1) / totalChunks) * 100));
-    }
-
-    // Step 3: Complete
-    await firstValueFrom(
-      this.producerService.completeUpload(upload_id, file_key, parts)
-    );
-
-    return file_key;
   }
 
   // ── Submit ────────────────────────────────────────────

@@ -17,6 +17,14 @@
     </div>
 
     <div class="footer-columns">
+      <nav class="footer-col" aria-labelledby="footer-info-title">
+        <h4 id="footer-info-title">Ikigembe</h4>
+        <ul>
+          @for (link of cmsLinks(); track link.route) {
+            <li><a [routerLink]="link.route">{{ link.title }}</a></li>
+          }
+        </ul>
+      </nav>
       @for (col of footerLinks; track col.title) {
         <div class="footer-col">
           <h4>{{ col.title }}</h4>
@@ -35,8 +43,8 @@
   <div class="footer-bottom">
     <p>&copy; {{ currentYear }} Ikigembe Film Arts. All rights reserved.</p>
     <div class="footer-bottom-links">
-      <a>Privacy</a>
-      <a>Terms</a>
+      <a routerLink="/privacy">Privacy</a>
+      <a routerLink="/terms">Terms</a>
       <a>Cookies</a>
     </div>
   </div>

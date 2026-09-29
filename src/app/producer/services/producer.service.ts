@@ -2,6 +2,7 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, of, map } from 'rxjs';
 import { environment } from '../../../environments/environment';
+import { MultipartUploadApi } from '../../shared/models/upload.interface';
 import { ALL_MOCK_MOVIES } from '../../shared/data/mock-movies.data';
 
 const BASE = environment.apiUrl;
@@ -36,29 +37,13 @@ export interface ProducerMovie {
   genres: string[];
 }
 
-export interface FilmSubmissionMetadata {
-  title: string;
-  synopsis: string;
-  genre: string;
-  duration_minutes: number;
-  director: string;
-  writer: string;
-  cast: string;
-  release_year: number;
-  quality: string;
-  price?: number;
-  release_date?: string;
-  has_free_preview?: boolean;
-  thumbnail_key?: string;
-}
+/** `field_name` decides the storage folder/bucket on the backend — always send the right one. */
+export type MovieUploadField = 'video_file' | 'trailer_file' | 'thumbnail' | 'backdrop' | 'copyright_document';
 
-export interface FilmSubmission {
-  video_key: string;
-  copyright_key: string;
-  id_key: string;
-  terms_accepted: boolean;
-  terms_accepted_at: string;
-  metadata: FilmSubmissionMetadata;
+/** POST /producer/films/<id>/resubmit/ — at least one key required. */
+export interface FilmResubmitPayload {
+  video_key?: string;
+  copyright_document_key?: string;
 }
 
 export interface ProducerMovieDetail {
@@ -330,16 +315,6 @@ export class ProducerService {
     );
   }
 
-  getPresignedUploadUrl(filename: string, contentType: string): Observable<{ url: string; key: string }> {
-    return this.http.post<{ url: string; key: string }>(
-      `${BASE}/producer/upload/presign/`, { filename, content_type: contentType }
-    );
-  }
-
-  submitFilm(payload: FilmSubmission): Observable<{ id: number; status: string }> {
-    return this.http.post<{ id: number; status: string }>(`${BASE}/producer/films/submit/`, payload);
-  }
-
   submitMovie(formData: FormData): Observable<unknown> {
     return this.http.post(`${BASE}/movies/create/`, formData);
   }
@@ -347,7 +322,7 @@ export class ProducerService {
   initiateUpload(
     fileName: string,
     fileType: string,
-    fieldName: 'video_file' | 'trailer_file',
+    fieldName: MovieUploadField,
   ): Observable<{ upload_id: string; file_key: string }> {
     return this.http.post<{ upload_id: string; file_key: string }>(
       `${BASE}/movies/upload/initiate/`,
@@ -377,6 +352,16 @@ export class ProducerService {
     );
   }
 
+  /** Movie-file multipart endpoints for MultipartUploadService, bound to one `field_name`. */
+  movieUploadApi(fieldName: MovieUploadField): MultipartUploadApi {
+    return {
+      initiate: (file) => this.initiateUpload(file.name, file.type || 'application/octet-stream', fieldName),
+      signPart: (uploadId, fileKey, partNumber) => this.signPart(uploadId, fileKey, partNumber),
+      complete: (uploadId, fileKey, parts) => this.completeUpload(uploadId, fileKey, parts),
+      abort:    (uploadId, fileKey) => this.abortUpload(uploadId, fileKey),
+    };
+  }
+
   updateFilm(id: number, payload: Partial<Pick<ProducerMovie, 'title' | 'overview' | 'genres' | 'price' | 'has_free_preview'>>): Observable<ProducerMovie> {
     return this.http.patch<ProducerMovie>(`${BASE}/producer/films/${id}/`, payload);
   }
@@ -385,8 +370,18 @@ export class ProducerService {
     return this.http.delete(`${BASE}/producer/films/${id}/`);
   }
 
+  /** Edit metadata/video/trailer of a changes_requested film (multipart PATCH). */
   resubmitFilm(id: number, formData: FormData): Observable<ProducerMovieDetail> {
     return this.http.patch<ProducerMovieDetail>(`${BASE}/movies/${id}/resubmit/`, formData);
+  }
+
+  /**
+   * Replace the video and/or copyright document of a changes_requested film with
+   * keys from the multipart flow. Errors: 400 no key / copyright key not uploaded
+   * with field_name=copyright_document, 404 not found, 409 wrong status.
+   */
+  resubmitFilmFiles(id: number, payload: FilmResubmitPayload): Observable<ProducerMovieDetail> {
+    return this.http.post<ProducerMovieDetail>(`${BASE}/producer/films/${id}/resubmit/`, payload);
   }
 
   abortUpload(uploadId: string, fileKey: string): Observable<unknown> {

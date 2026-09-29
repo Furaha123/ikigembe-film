@@ -13,7 +13,7 @@
     <ul class="nav-list">
       @for (item of navList; track item.label) {
         @if (item.route) {
-          <li><a [routerLink]="item.route" routerLinkActive="active">{{ item.label }}</a></li>
+          <li><a [routerLink]="item.route" routerLinkActive="active">{{ item.labelKey ? (item.labelKey | translate) : item.label }}</a></li>
         } @else {
           <li>{{ item.label }}</li>
         }
@@ -209,7 +209,7 @@
       <ul class="mobile-nav-list">
         @for (item of navList; track item.label) {
           @if (item.route) {
-            <li><a [routerLink]="item.route" routerLinkActive="active" (click)="closeMobileMenu()">{{ item.label }}</a></li>
+            <li><a [routerLink]="item.route" routerLinkActive="active" (click)="closeMobileMenu()">{{ item.labelKey ? (item.labelKey | translate) : item.label }}</a></li>
           } @else {
             <li><span>{{ item.label }}</span></li>
           }

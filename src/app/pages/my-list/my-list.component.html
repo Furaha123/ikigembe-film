@@ -24,6 +24,14 @@
       <p>Movies you purchase will appear here.</p>
     </div>
   } @else {
+    <div class="play-status" aria-live="polite">
+      @if (playError(); as e) {
+        <p class="error-msg" role="alert">{{ e.text ?? (e.key | translate) }}</p>
+        @if (e.kind === 'view_used') {
+          <button class="buy-again-btn" (click)="buyAgain()">{{ 'viewer.stream.buyAgainShort' | translate }}</button>
+        }
+      }
+    </div>
     <div class="movies-grid">
       @for (movie of movies(); track movie.id) {
         <button class="movie-card" (click)="watchMovie(movie)" [disabled]="playerLoading()">
@@ -41,13 +49,13 @@
               }
             </div>
 
-            @if (progressPercent(movie) > 0 && movie.completed !== 'true') {
+            @if (progressPercent(movie) > 0 && !movie.completed) {
               <div class="progress-bar">
                 <div class="progress-fill" [style.width.%]="progressPercent(movie)"></div>
               </div>
             }
 
-            @if (movie.completed === 'true') {
+            @if (movie.completed) {
               <span class="watched-badge">Watched</span>
             }
           </div>
@@ -65,7 +73,7 @@
                   {{ movie.rating.toFixed(1) }}
                 </span>
               }
-              @if (progressPercent(movie) > 0 && movie.completed !== 'true') {
+              @if (progressPercent(movie) > 0 && !movie.completed) {
                 <span class="separator">·</span>
                 <span class="resume-label">Resume {{ progressPercent(movie) }}%</span>
               }
@@ -93,14 +101,23 @@
 
     <div class="player-body">
       <app-video-player
-        [src]="playerSrc()"
+        [source]="playerSource()"
+        [refreshSource]="refreshStream"
         [poster]="playerPoster()"
         [startAt]="playerStartAt()"
         [showCloseButton]="true"
-        (progressUpdate)="onProgressUpdate($event)"
+        (progressUpdate)="onPlaybackProgress($event)"
         (videoEnded)="onVideoEnded()"
         (closed)="closePlayer()">
       </app-video-player>
     </div>
   </div>
+}
+
+@if (buyAgainMovie(); as m) {
+  <app-payment-modal
+    [movie]="m"
+    (paid)="onPaymentSuccess()"
+    (closed)="buyAgainMovie.set(null)">
+  </app-payment-modal>
 }

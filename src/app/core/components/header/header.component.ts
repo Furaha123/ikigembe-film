@@ -4,6 +4,7 @@ import {
 } from '@angular/core';
 import { Router, RouterLink, NavigationEnd } from '@angular/router';
 import { CommonModule } from '@angular/common';
+import { TranslatePipe } from '@ngx-translate/core';
 import { Subject, Subscription } from 'rxjs';
 import { debounceTime, distinctUntilChanged, switchMap, catchError, of, filter } from 'rxjs';
 import { AuthService } from '../../services/auth.service';
@@ -13,7 +14,7 @@ import { IVideoContent } from '../../../shared/models/video-content.interface';
 
 @Component({
   selector: 'app-header',
-  imports: [RouterLink, CommonModule],
+  imports: [RouterLink, CommonModule, TranslatePipe],
   templateUrl: './header.component.html',
   styleUrl: './header.component.scss'
 })
@@ -52,10 +53,11 @@ export class HeaderComponent implements OnInit, OnDestroy {
   private searchSubject = new Subject<string>();
   private searchSub!: Subscription;
 
-  navList = [
+  navList: { label: string; labelKey?: string; route: string | null }[] = [
     { label: 'Home',                route: '/browse' },
     { label: 'My List',             route: '/my-list' },
     { label: 'Producers',           route: '/producers' },
+    { label: 'Casting', labelKey: 'marketplace.nav.casting', route: '/casting' },
     { label: 'Browse by Language',  route: null },
   ];
 
