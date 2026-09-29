@@ -24,6 +24,11 @@
       <p>Movies you purchase will appear here.</p>
     </div>
   } @else {
+    <div class="play-status" aria-live="polite">
+      @if (playError(); as e) {
+        <p class="error-msg" role="alert">{{ e.text ?? (e.key | translate) }}</p>
+      }
+    </div>
     <div class="movies-grid">
       @for (movie of movies(); track movie.id) {
         <button class="movie-card" (click)="watchMovie(movie)" [disabled]="playerLoading()">
@@ -93,7 +98,8 @@
 
     <div class="player-body">
       <app-video-player
-        [src]="playerSrc()"
+        [source]="playerSource()"
+        [refreshSource]="refreshStream"
         [poster]="playerPoster()"
         [startAt]="playerStartAt()"
         [showCloseButton]="true"

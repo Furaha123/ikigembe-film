@@ -1,9 +1,13 @@
 import { Component, OnInit, inject, signal, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { HttpErrorResponse } from '@angular/common/http';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { TranslatePipe } from '@ngx-translate/core';
 import { SeoService } from '../../core/services/seo.service';
-import { forkJoin } from 'rxjs';
-import { MovieService } from '../../shared/services/movie.service';
+import { forkJoin, map } from 'rxjs';
+import { MovieService, toPlaybackSource } from '../../shared/services/movie.service';
+import { PlaybackSource } from '../../shared/models/movie-api.interface';
+import { apiErrorMessage, UiError } from '../../shared/utils/api-error';
 import { FooterComponent } from '../../core/components/footer/footer.component';
 import { HeaderComponent } from '../../core/components/header/header.component';
 import { IVideoContent } from '../../shared/models/video-content.interface';
@@ -15,7 +19,7 @@ import { DataSaverService } from '../../core/services/data-saver.service';
 @Component({
   selector: 'app-movie-detail',
   standalone: true,
-  imports: [CommonModule, RouterLink, HeaderComponent, FooterComponent, VideoPlayerComponent, PaymentModalComponent],
+  imports: [CommonModule, RouterLink, TranslatePipe, HeaderComponent, FooterComponent, VideoPlayerComponent, PaymentModalComponent],
   templateUrl: './movie-detail.component.html',
   styleUrls: ['./movie-detail.component.scss']
 })
@@ -31,12 +35,17 @@ export class MovieDetailComponent implements OnInit, OnDestroy {
   cast             = signal<any[]>([]);
   similarMovies    = signal<IVideoContent[]>([]);
   moreFromProducer = signal<IVideoContent[]>([]);
-  videoSrc         = signal<string>('');
+  videoSrc         = signal<string>('');   // trailer only
+  playback         = signal<PlaybackSource | null>(null); // full movie, from /stream/ — never persisted
   isPlaying        = signal(false);
   showPaymentModal = signal(false);
   purchased        = signal(false);
+  streamLoading    = signal(false);
+  streamError      = signal<UiError | null>(null);
 
-  private fullVideoUrl = '';
+  /** Handed to the player so it can re-request /stream/ once when the token expires. */
+  readonly refreshStream = () =>
+    this.movieService.getStream(this.movie()?.id).pipe(map(toPlaybackSource));
 
   ngOnInit() {
     this.route.params.subscribe(params => {
@@ -46,6 +55,8 @@ export class MovieDetailComponent implements OnInit, OnDestroy {
   }
 
   private loadMovie(id: number) {
+    this.closePlayer();
+    this.streamError.set(null);
     forkJoin({
       details: this.movieService.getMovieDetails(id),
       credits: this.movieService.getMovieCredits(id),
@@ -55,9 +66,8 @@ export class MovieDetailComponent implements OnInit, OnDestroy {
       this.cast.set(credits.cast?.slice(0, 10) || []);
       this.similarMovies.set(similar.results?.slice(0, 6) || []);
       this.moreFromProducer.set([]);
-      this.fullVideoUrl = details.video_url || '';
       this.videoSrc.set(details.trailer_url || '');
-      this.purchased.set(this.paymentService.hasPurchased(id));
+      this.purchased.set(details.has_purchased === true || this.paymentService.hasPurchased(id));
       this.seo.set({
         title: details.title,
         description: details.overview || `Watch ${details.title} on Ikigembe.`,
@@ -82,14 +92,14 @@ export class MovieDetailComponent implements OnInit, OnDestroy {
   playTrailer() {
     const trailerUrl = this.movie()?.trailer_url;
     if (!trailerUrl) return;
+    this.playback.set(null);
     this.videoSrc.set(trailerUrl);
     this.isPlaying.set(true);
   }
 
   watchFullMovie() {
     if (this.purchased()) {
-      this.videoSrc.set(this.fullVideoUrl);
-      this.isPlaying.set(true);
+      this.startStream();
     } else {
       this.showPaymentModal.set(true);
     }
@@ -98,26 +108,40 @@ export class MovieDetailComponent implements OnInit, OnDestroy {
   onPaymentSuccess() {
     this.purchased.set(true);
     this.showPaymentModal.set(false);
+    this.startStream();
+  }
+
+  private startStream() {
     const id = this.movie()?.id;
-    if (!id) return;
-    this.movieService.getMovieStream(id).subscribe({
+    if (!id || this.streamLoading()) return;
+    this.streamLoading.set(true);
+    this.streamError.set(null);
+    this.movieService.getStream(id).subscribe({
       next: (res) => {
-        this.videoSrc.set(res.hls_url || res.video_url || this.fullVideoUrl);
+        this.streamLoading.set(false);
+        this.playback.set(toPlaybackSource(res));
         this.isPlaying.set(true);
       },
-      error: () => {
-        this.videoSrc.set(this.fullVideoUrl);
-        this.isPlaying.set(true);
-      }
+      error: (err: HttpErrorResponse) => {
+        this.streamLoading.set(false);
+        if (err.status === 403) {
+          // Not (or no longer) entitled — show the buy button again.
+          this.purchased.set(false);
+          this.streamError.set({ text: apiErrorMessage(err), key: 'viewer.stream.purchaseRequired' });
+        } else {
+          this.streamError.set({ text: apiErrorMessage(err), key: 'viewer.stream.failed' });
+        }
+      },
     });
   }
 
   closePlayer() {
     this.isPlaying.set(false);
+    this.playback.set(null);
   }
 
   goToMovie(id: number) {
-    this.isPlaying.set(false);
+    this.closePlayer();
     this.router.navigate(['/movie', id]);
   }
 

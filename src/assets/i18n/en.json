@@ -385,7 +385,14 @@
     "copyLink": "Copy Link",
     "copied": "Copied!",
     "failedLoad": "Failed to load movie details.",
-    "goBack": "Go back"
+    "goBack": "Go back",
+    "watchUnavailable": "The video isn't available for preview yet.",
+    "watchFailed": "Could not load the video. Please try again.",
+    "resubmit": {
+      "uploadFailed": "Upload failed. Please try again.",
+      "failed": "Resubmission failed. Please try again.",
+      "close": "Close"
+    }
   },
   "contracts": {
     "dashboard": {
@@ -508,6 +515,20 @@
       "daysRemaining": "{{days}} days remaining",
       "renew": "Renew",
       "renewNow": "Renew Now"
+    }
+  },
+  "player": {
+    "error": "This video could not be played."
+  },
+  "viewer": {
+    "detail": {
+      "watchMovie": "Watch Movie",
+      "buyToWatch": "Watch Full Movie — RWF {{price}}",
+      "loadingStream": "Loading…"
+    },
+    "stream": {
+      "purchaseRequired": "Purchase required to stream this movie.",
+      "failed": "We couldn't start playback. Please try again."
     }
   }
 }

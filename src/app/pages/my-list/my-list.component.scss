@@ -54,6 +54,11 @@
   .error-msg { color: #f87171; }
 }
 
+.play-status .error-msg {
+  color: #f87171;
+  margin: 0 0 1rem;
+}
+
 .spinner {
   width: 40px;
   height: 40px;

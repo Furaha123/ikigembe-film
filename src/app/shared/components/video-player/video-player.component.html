@@ -22,8 +22,11 @@
     controlsList="nodownload nofullscreen noremoteplayback"
     disablePictureInPicture
     playsinline
+    [attr.crossorigin]="tracks().length ? 'anonymous' : null"
     (click)="togglePlay()">
-    <track kind="captions" />
+    @for (t of tracks(); track t.id) {
+      <track kind="subtitles" [src]="t.url" [attr.srclang]="t.language_code" [label]="t.language_name" [default]="t.is_default" />
+    }
   </video>
 
   <!-- Controls overlay -->
@@ -160,11 +163,11 @@
 
   <!-- Source error state -->
   @if (srcError()) {
-    <div class="vp-error">
+    <div class="vp-error" role="alert">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="48" height="48">
         <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
       </svg>
-      <p>This video could not be played.</p>
+      <p>{{ 'player.error' | translate }}</p>
     </div>
   }
 </div>

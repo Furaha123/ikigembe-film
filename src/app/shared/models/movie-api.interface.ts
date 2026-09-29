@@ -71,3 +71,50 @@ export interface MoviePreview {
   producer_name: string;
   studio_name: string;
 }
+
+export type HlsStatus = 'not_started' | 'processing' | 'ready' | 'failed';
+
+/** Subtitle track. `url` is a short-lived signed URL, or null when the user isn't entitled. */
+export interface SubtitleTrack {
+  id: number;
+  language_code: string;
+  language_name: string;
+  url: string | null;
+  is_default: boolean;
+  ordering: number;
+}
+
+export type StreamType = 'hls' | 'mp4';
+
+export interface StreamMovie {
+  id: number;
+  title: string;
+  video_url: string | null;
+  trailer_url: string | null;
+  subtitles: SubtitleTrack[];
+  duration_minutes: number | null;
+  access_granted: boolean;
+  hls_status: HlsStatus;
+  hls_url: string | null;
+}
+
+/** GET /api/movies/<id>/stream/ — the only supported way for a viewer to play a film. */
+export interface StreamResponse {
+  movie: StreamMovie;
+  stream_url: string;
+  stream_type: StreamType;
+  hls_status: HlsStatus;
+  fallback_url: string | null;
+  subtitles: SubtitleTrack[];
+}
+
+/**
+ * What the video player needs to play a film. Holds signed, expiring URLs:
+ * keep it in memory only for the lifetime of the player — never persist it.
+ */
+export interface PlaybackSource {
+  src: string;
+  type: StreamType;
+  fallbackSrc: string | null;
+  subtitles: SubtitleTrack[];
+}

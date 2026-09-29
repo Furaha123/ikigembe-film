@@ -64,20 +64,25 @@
               Watch Trailer
             </button>
           }
-          @if (movie.video_url) {
-            @if (purchased()) {
-              <button class="btn-watch btn-watch--owned" (click)="watchFullMovie()">
-                <svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16"><path d="M8 5v14l11-7z"/></svg>
-                Watch Movie
-              </button>
-            } @else {
-              <button class="btn-watch" (click)="watchFullMovie()">
-                <svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16">
-                  <path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"/>
-                </svg>
-                Watch Full Movie &mdash; RWF {{ movie.price | number }}
-              </button>
-            }
+          @if (purchased()) {
+            <button class="btn-watch btn-watch--owned" (click)="watchFullMovie()"
+                    [disabled]="streamLoading()" [attr.aria-busy]="streamLoading()">
+              <svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg>
+              {{ (streamLoading() ? 'viewer.detail.loadingStream' : 'viewer.detail.watchMovie') | translate }}
+            </button>
+          } @else {
+            <button class="btn-watch" (click)="watchFullMovie()">
+              <svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16" aria-hidden="true">
+                <path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"/>
+              </svg>
+              {{ 'viewer.detail.buyToWatch' | translate: { price: (movie.price | number) } }}
+            </button>
+          }
+        </div>
+
+        <div class="stream-status" aria-live="polite">
+          @if (streamError(); as e) {
+            <p class="stream-error" role="alert">{{ e.text ?? (e.key | translate) }}</p>
           }
         </div>
 
@@ -186,7 +191,7 @@
   <app-footer />
 
   <!-- Video Player Overlay -->
-  @if (isPlaying() && videoSrc()) {
+  @if (isPlaying() && (playback() || videoSrc())) {
     <div class="player-backdrop" (click)="closePlayer()">
       <div class="player-container" (click)="$event.stopPropagation()">
         <button class="player-close" (click)="closePlayer()">
@@ -196,6 +201,8 @@
         </button>
         <app-video-player
           [src]="videoSrc()"
+          [source]="playback()"
+          [refreshSource]="playback() ? refreshStream : null"
           [poster]="movie.thumbnail_url"
           accentColor="#c9a84c"
           [autoplay]="true"

@@ -10,6 +10,8 @@ import {
   SimilarMoviesResponse,
   ProducersListResponse,
   ProducerMoviesResponse,
+  StreamResponse,
+  PlaybackSource,
 } from '../models/movie-api.interface';
 
 @Injectable({
@@ -78,8 +80,13 @@ export class MovieService {
     );
   }
 
-  getMovieStream(id: number) {
-    return this.http.get<{ hls_url: string; video_url: string }>(`${this.baseUrl}/${id}/stream/`);
+  /**
+   * Entitlement-checked playback URLs. Increments the film's view counter on every
+   * call, so request it once per playback session (plus one retry on token expiry).
+   * Errors: 403 `{ error }` purchase required / not entitled, 404 movie not found.
+   */
+  getStream(id: number) {
+    return this.http.get<StreamResponse>(`${this.baseUrl}/${id}/stream/`);
   }
 
   getMyList() {
@@ -96,6 +103,15 @@ export class MovieService {
   search(query: string) {
     return this.http.get<MovieListResponse>(`${this.baseUrl}/discover/`, { params: { search: query } });
   }
+}
+
+export function toPlaybackSource(res: StreamResponse): PlaybackSource {
+  return {
+    src: res.stream_url,
+    type: res.stream_type,
+    fallbackSrc: res.fallback_url,
+    subtitles: res.subtitles ?? [],
+  };
 }
 
 export interface MyListMovie {
