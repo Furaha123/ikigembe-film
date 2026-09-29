@@ -1,0 +1,97 @@
+<div class="mk-page">
+  <div class="mk-header">
+    <div>
+      <h1>{{ 'marketplace.producerCasting.title' | translate }}</h1>
+      <p>{{ 'marketplace.producerCasting.subtitle' | translate }}</p>
+    </div>
+    <div class="mk-row">
+      <a routerLink="/producer/actors" class="mk-btn mk-btn--ghost">{{ 'marketplace.directory.title' | translate }}</a>
+      <button type="button" class="mk-btn" (click)="openNew()">{{ 'marketplace.producerCasting.new' | translate }}</button>
+    </div>
+  </div>
+
+  @if (formOpen()) {
+    <form class="mk-card" [formGroup]="form" (ngSubmit)="save()" novalidate>
+      <h2>{{ (editingId() ? 'marketplace.producerCasting.editTitle' : 'marketplace.producerCasting.newTitle') | translate }}</h2>
+      <div class="mk-form">
+        <div class="mk-field">
+          <label for="cc-title">{{ 'marketplace.producerCasting.fieldTitle' | translate }} *</label>
+          <input id="cc-title" formControlName="title" [attr.aria-invalid]="invalid('title')" />
+          @if (invalid('title')) { <p class="mk-error">{{ 'marketplace.errors.required' | translate }}</p> }
+        </div>
+        <div class="mk-field">
+          <label for="cc-deadline">{{ 'marketplace.producerCasting.fieldDeadline' | translate }} *</label>
+          <input id="cc-deadline" type="datetime-local" formControlName="deadline_at" [attr.aria-invalid]="invalid('deadline_at')" />
+          @if (invalid('deadline_at')) { <p class="mk-error">{{ 'marketplace.producerCasting.deadlineFuture' | translate }}</p> }
+        </div>
+        <div class="mk-field mk-field--wide">
+          <label for="cc-roles">{{ 'marketplace.producerCasting.fieldRoles' | translate }} *</label>
+          <textarea id="cc-roles" rows="3" formControlName="roles" aria-describedby="cc-roles-hint" [attr.aria-invalid]="invalid('roles')"></textarea>
+          <span id="cc-roles-hint" class="mk-hint">{{ 'marketplace.producerCasting.rolesHint' | translate }}</span>
+          @if (invalid('roles')) { <p class="mk-error">{{ 'marketplace.producerCasting.rolesRequired' | translate }}</p> }
+        </div>
+        <div class="mk-field mk-field--wide">
+          <label for="cc-desc">{{ 'marketplace.producerCasting.fieldDescription' | translate }} *</label>
+          <textarea id="cc-desc" rows="5" formControlName="description" [attr.aria-invalid]="invalid('description')"></textarea>
+          @if (invalid('description')) { <p class="mk-error">{{ 'marketplace.errors.required' | translate }}</p> }
+        </div>
+      </div>
+      <div aria-live="polite">
+        @if (formError()) { <p class="mk-error" role="alert">{{ formError()! | translate }}</p> }
+      </div>
+      <div class="mk-row">
+        <button type="submit" class="mk-btn" [disabled]="saving()">{{ (saving() ? 'marketplace.common.saving' : 'marketplace.producerCasting.saveDraft') | translate }}</button>
+        <button type="button" class="mk-btn mk-btn--ghost" (click)="cancelForm()">{{ 'marketplace.common.cancel' | translate }}</button>
+      </div>
+    </form>
+  }
+
+  <div aria-live="polite">
+    @if (loading()) {
+      <p class="mk-muted">{{ 'marketplace.common.loading' | translate }}</p>
+    } @else if (error()) {
+      <p class="mk-error" role="alert">{{ error()! | translate }}</p>
+    } @else if (calls().length === 0) {
+      <p class="mk-empty">{{ 'marketplace.producerCasting.empty' | translate }}</p>
+    }
+    @if (actionError()) { <p class="mk-error" role="alert">{{ actionError()! | translate }}</p> }
+  </div>
+
+  @for (c of calls(); track c.id) {
+    <article class="mk-card">
+      <div class="mk-row" style="justify-content: space-between">
+        <h2>{{ c.title }}</h2>
+        <span [class]="statusClass(c.status)">{{ 'marketplace.castingStatus.' + c.status | translate }}</span>
+      </div>
+      <p class="mk-muted">{{ 'marketplace.casting.deadline' | translate }}: {{ c.deadline_at | date:'medium' }}</p>
+      <div class="mk-chips">
+        @for (r of c.roles; track $index) { <span>{{ r }}</span> }
+      </div>
+      @if (c.status === 'draft' && c.payment_status === 'Pending') {
+        <p class="mk-muted">{{ 'marketplace.producerCasting.paymentPending' | translate }}</p>
+      }
+      <div class="mk-row" style="margin-top: .75rem">
+        @if (c.status === 'draft') {
+          <button type="button" class="mk-btn mk-btn--ghost" (click)="edit(c)">{{ 'marketplace.common.edit' | translate }}</button>
+          <button type="button" class="mk-btn" (click)="publish(c)" [disabled]="c.payment_status === 'Pending'">{{ 'marketplace.producerCasting.publish' | translate }}</button>
+        }
+        @if (c.status === 'published' || c.status === 'closed') {
+          <a class="mk-btn mk-btn--ghost" [routerLink]="['/producer/casting', c.id]">{{ 'marketplace.producerCasting.viewApplications' | translate }}</a>
+        }
+        @if (c.status === 'published') {
+          @if (confirmCloseId() === c.id) {
+            <span class="mk-muted">{{ 'marketplace.producerCasting.confirmClose' | translate }}</span>
+            <button type="button" class="mk-btn mk-btn--danger" (click)="closeCall(c)">{{ 'marketplace.producerCasting.close' | translate }}</button>
+            <button type="button" class="mk-btn mk-btn--ghost" (click)="confirmCloseId.set(null)">{{ 'marketplace.common.cancel' | translate }}</button>
+          } @else {
+            <button type="button" class="mk-btn mk-btn--danger" (click)="confirmCloseId.set(c.id)">{{ 'marketplace.producerCasting.close' | translate }}</button>
+          }
+        }
+      </div>
+    </article>
+  }
+</div>
+
+@if (purchase(); as p) {
+  <app-payment-modal [service]="p" (paid)="onPaid()" (closed)="closePurchase()" />
+}

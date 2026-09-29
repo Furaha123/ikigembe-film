@@ -47,6 +47,8 @@ export class ProducerLayoutComponent implements OnInit {
     { labelKey: 'nav.wallet',      path: '/producer/wallet',      icon: 'wallet' },
     { labelKey: 'nav.withdrawals', path: '/producer/withdrawals', icon: 'withdrawals' },
     { labelKey: 'nav.contracts',   path: '/producer/contracts',   icon: 'contracts' },
+    { labelKey: 'nav.casting',     path: '/producer/casting',     icon: 'casting' },
+    { labelKey: 'nav.actors',      path: '/producer/actors',      icon: 'actors' },
     { labelKey: 'nav.settings',    path: '/producer/settings',    icon: 'settings' },
   ];
 

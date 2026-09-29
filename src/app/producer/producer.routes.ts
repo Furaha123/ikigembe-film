@@ -43,6 +43,22 @@ export const producerRoutes: Routes = [
         loadComponent: () => import('./pages/contracts/producer-contracts.component').then(m => m.ProducerContractsComponent),
       },
       {
+        path: 'casting',
+        loadComponent: () => import('./pages/casting/producer-casting.component').then(m => m.ProducerCastingComponent),
+      },
+      {
+        path: 'casting/:id',
+        loadComponent: () => import('./pages/casting/casting-applications/casting-applications.component').then(m => m.CastingApplicationsComponent),
+      },
+      {
+        path: 'actors',
+        loadComponent: () => import('./pages/actors/actor-directory.component').then(m => m.ActorDirectoryComponent),
+      },
+      {
+        path: 'actors/:id',
+        loadComponent: () => import('./pages/actors/actor-detail/producer-actor-detail.component').then(m => m.ProducerActorDetailComponent),
+      },
+      {
         path: 'settings',
         loadComponent: () => import('../pages/profile/profile.component').then(m => m.ProfileComponent),
       },

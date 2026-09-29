@@ -1,0 +1,150 @@
+<div class="mk-page">
+  <div class="mk-header">
+    <div>
+      <h1>{{ 'marketplace.directory.title' | translate }}</h1>
+      <p>{{ 'marketplace.directory.subtitle' | translate }}</p>
+    </div>
+    <a routerLink="/producer/casting" class="mk-btn mk-btn--ghost">{{ 'marketplace.producerCasting.title' | translate }}</a>
+  </div>
+
+  <div aria-live="polite">
+    @if (accessLoading()) {
+      <p class="mk-muted">{{ 'marketplace.common.loading' | translate }}</p>
+    }
+  </div>
+
+  @if (access(); as a) {
+    @if (!a.active) {
+      <!-- Gate: no active pass -->
+      <section class="mk-card" aria-labelledby="dir-gate-title">
+        @if (expired()) {
+          <p class="mk-error" role="alert">{{ 'marketplace.directory.expired' | translate }}</p>
+        }
+        <h2 id="dir-gate-title">{{ 'marketplace.directory.gateTitle' | translate }}</h2>
+        <p class="mk-muted">{{ 'marketplace.directory.gateText' | translate }}</p>
+        <button type="button" class="mk-btn" (click)="buyAccess()">{{ 'marketplace.directory.buy' | translate }}</button>
+        @if (error()) { <p class="mk-error" role="alert">{{ error()! | translate }}</p> }
+      </section>
+    } @else {
+      <p class="mk-banner" role="status">
+        <strong>{{ 'marketplace.directory.activeUntil' | translate }} {{ a.expires_at | date:'medium' }}</strong>
+        · <button type="button" class="mk-btn mk-btn--ghost" (click)="buyAccess()">{{ 'marketplace.directory.extend' | translate }}</button>
+      </p>
+
+      <div class="mk-tabs" role="tablist">
+        <button type="button" role="tab" [class.active]="tab() === 'search'" [attr.aria-selected]="tab() === 'search'" (click)="tab.set('search')">
+          {{ 'marketplace.directory.tabSearch' | translate }}
+        </button>
+        <button type="button" role="tab" [class.active]="tab() === 'shortlist'" [attr.aria-selected]="tab() === 'shortlist'" (click)="tab.set('shortlist')">
+          {{ 'marketplace.directory.tabShortlist' | translate }} ({{ shortlist().length }})
+        </button>
+      </div>
+
+      <div aria-live="polite">
+        @if (error()) { <p class="mk-error" role="alert">{{ error()! | translate }}</p> }
+      </div>
+
+      @if (tab() === 'search') {
+        <form class="mk-card" [formGroup]="filters" (ngSubmit)="search(1)" role="search">
+          <div class="mk-form">
+            <div class="mk-field">
+              <label for="df-q">{{ 'marketplace.directory.q' | translate }}</label>
+              <input id="df-q" formControlName="q" />
+            </div>
+            <div class="mk-field">
+              <label for="df-gender">{{ 'marketplace.profile.gender' | translate }}</label>
+              <select id="df-gender" formControlName="gender">
+                <option value="">{{ 'marketplace.directory.any' | translate }}</option>
+                @for (g of genders; track g) { <option [value]="g">{{ 'marketplace.gender.' + g | translate }}</option> }
+              </select>
+            </div>
+            <div class="mk-field">
+              <label for="df-min">{{ 'marketplace.directory.minAge' | translate }}</label>
+              <input id="df-min" type="number" min="0" formControlName="min_age" />
+            </div>
+            <div class="mk-field">
+              <label for="df-max">{{ 'marketplace.directory.maxAge' | translate }}</label>
+              <input id="df-max" type="number" min="0" formControlName="max_age" />
+            </div>
+            <div class="mk-field">
+              <label for="df-location">{{ 'marketplace.profile.location' | translate }}</label>
+              <input id="df-location" formControlName="location" />
+            </div>
+            <div class="mk-field">
+              <label for="df-skill">{{ 'marketplace.directory.skill' | translate }}</label>
+              <input id="df-skill" formControlName="skill" />
+            </div>
+            <div class="mk-field">
+              <label for="df-language">{{ 'marketplace.directory.language' | translate }}</label>
+              <input id="df-language" formControlName="language" />
+            </div>
+          </div>
+          <div class="mk-row" style="margin-top: .9rem">
+            <button type="submit" class="mk-btn" [disabled]="searching()">{{ 'marketplace.directory.search' | translate }}</button>
+            <button type="button" class="mk-btn mk-btn--ghost" (click)="resetFilters()">{{ 'marketplace.directory.reset' | translate }}</button>
+          </div>
+        </form>
+
+        <p class="mk-muted" aria-live="polite">
+          @if (searching()) { {{ 'marketplace.common.loading' | translate }} }
+          @else { {{ totalCount() }} {{ 'marketplace.directory.results' | translate }} }
+        </p>
+
+        <div class="mk-grid">
+          @for (actor of actors(); track actor.id) {
+            <article class="mk-card">
+              <h2><a [routerLink]="['/producer/actors', actor.id]">{{ actor.stage_name }}</a></h2>
+              <p class="mk-muted">
+                @if (actor.age !== null) { {{ actor.age }} · }
+                @if (actor.gender) { {{ 'marketplace.gender.' + actor.gender | translate }} · }
+                {{ actor.location }}
+              </p>
+              <div class="mk-chips">@for (s of actor.skills; track $index) { <span>{{ s }}</span> }</div>
+              <p class="mk-muted">
+                @if (actor.contact_email) { <a [href]="'mailto:' + actor.contact_email">{{ actor.contact_email }}</a> }
+                @if (actor.contact_phone) { · <a [href]="'tel:' + actor.contact_phone">{{ actor.contact_phone }}</a> }
+              </p>
+              @if (shortlistedIds().has(actor.id)) {
+                <button type="button" class="mk-btn mk-btn--ghost" (click)="removeFromShortlist(actor.id)" [disabled]="shortlistBusyId() === actor.id">
+                  {{ 'marketplace.directory.unshortlist' | translate }}
+                </button>
+              } @else {
+                <button type="button" class="mk-btn" (click)="addToShortlist(actor)" [disabled]="shortlistBusyId() === actor.id">
+                  {{ 'marketplace.directory.shortlist' | translate }}
+                </button>
+              }
+            </article>
+          }
+        </div>
+
+        @if (totalPages() > 1) {
+          <nav class="mk-pager" [attr.aria-label]="'marketplace.common.pagination' | translate">
+            <button type="button" class="mk-btn mk-btn--ghost" [disabled]="page() <= 1" (click)="search(page() - 1)">{{ 'marketplace.common.prev' | translate }}</button>
+            <span class="mk-muted">{{ page() }} / {{ totalPages() }}</span>
+            <button type="button" class="mk-btn mk-btn--ghost" [disabled]="page() >= totalPages()" (click)="search(page() + 1)">{{ 'marketplace.common.next' | translate }}</button>
+          </nav>
+        }
+      } @else {
+        @if (shortlist().length === 0) {
+          <p class="mk-empty">{{ 'marketplace.directory.shortlistEmpty' | translate }}</p>
+        }
+        @for (e of shortlist(); track e.id) {
+          <article class="mk-card mk-row" style="justify-content: space-between">
+            <div>
+              <h2><a [routerLink]="['/producer/actors', e.actor.id]">{{ e.actor.stage_name }}</a></h2>
+              <p class="mk-muted">{{ e.actor.contact_email }} · {{ e.actor.contact_phone }}</p>
+              @if (e.note) { <p>{{ e.note }}</p> }
+            </div>
+            <button type="button" class="mk-btn mk-btn--danger" (click)="removeFromShortlist(e.actor.id)" [disabled]="shortlistBusyId() === e.actor.id">
+              {{ 'marketplace.directory.unshortlist' | translate }}
+            </button>
+          </article>
+        }
+      }
+    }
+  }
+</div>
+
+@if (purchase(); as p) {
+  <app-payment-modal [service]="p" (paid)="onPaid()" (closed)="purchase.set(null)" />
+}

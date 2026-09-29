@@ -1,0 +1,68 @@
+<div class="mk-page">
+  <a routerLink="/producer/actors" class="mk-muted">← {{ 'marketplace.directory.title' | translate }}</a>
+
+  <div aria-live="polite">
+    @if (loading()) {
+      <p class="mk-muted">{{ 'marketplace.common.loading' | translate }}</p>
+    }
+    @if (noAccess()) {
+      <div class="mk-card" role="alert">
+        <p class="mk-error">{{ 'marketplace.directory.expired' | translate }}</p>
+        <a routerLink="/producer/actors" class="mk-btn">{{ 'marketplace.directory.buy' | translate }}</a>
+      </div>
+    }
+    @if (error()) { <p class="mk-error" role="alert">{{ error()! | translate }}</p> }
+  </div>
+
+  @if (actor(); as a) {
+    <article class="mk-card">
+      <div class="mk-row" style="justify-content: space-between">
+        <h1>{{ a.stage_name }}</h1>
+        <button type="button" class="mk-btn" [class.mk-btn--ghost]="shortlisted()" (click)="toggleShortlist()" [disabled]="busy()">
+          {{ (shortlisted() ? 'marketplace.directory.unshortlist' : 'marketplace.directory.shortlist') | translate }}
+        </button>
+      </div>
+      <p class="mk-muted">
+        @if (a.age !== null) { {{ a.age }} · }
+        @if (a.gender) { {{ 'marketplace.gender.' + a.gender | translate }} · }
+        {{ a.location }}
+      </p>
+      @if (a.bio) { <p style="white-space: pre-line">{{ a.bio }}</p> }
+      <h2>{{ 'marketplace.profile.skills' | translate }}</h2>
+      <div class="mk-chips">@for (s of a.skills; track $index) { <span>{{ s }}</span> }</div>
+      <h2>{{ 'marketplace.profile.languages' | translate }}</h2>
+      <div class="mk-chips">@for (l of a.languages; track $index) { <span>{{ l }}</span> }</div>
+      <h2>{{ 'marketplace.directory.contact' | translate }}</h2>
+      <p>
+        @if (a.contact_email) { <a [href]="'mailto:' + a.contact_email">{{ a.contact_email }}</a> }
+        @if (a.contact_phone) { · <a [href]="'tel:' + a.contact_phone">{{ a.contact_phone }}</a> }
+      </p>
+    </article>
+
+    <section aria-labelledby="actor-videos-title">
+      <h2 id="actor-videos-title">{{ 'marketplace.nav.videos' | translate }}</h2>
+      @if (a.videos.length === 0) { <p class="mk-empty">{{ 'marketplace.directory.noVideos' | translate }}</p> }
+      <div class="mk-grid">
+        @for (v of a.videos; track v.id) {
+          <article class="mk-card">
+            <h3>{{ v.title }}</h3>
+            @if (v.description) { <p class="mk-muted">{{ v.description }}</p> }
+            <button type="button" class="mk-btn mk-btn--ghost" (click)="preview.set(v)" [disabled]="!v.video_url">{{ 'marketplace.common.watch' | translate }}</button>
+          </article>
+        }
+      </div>
+    </section>
+  }
+</div>
+
+@if (preview(); as v) {
+  <div class="mk-overlay" (click)="preview.set(null)">
+    <div class="mk-dialog" role="dialog" aria-modal="true" [attr.aria-label]="v.title" (click)="$event.stopPropagation()">
+      <header>
+        <span>{{ v.title }}</span>
+        <button type="button" class="mk-btn mk-btn--ghost" (click)="preview.set(null)">{{ 'marketplace.common.close' | translate }}</button>
+      </header>
+      <app-video-player [src]="v.video_url ?? ''" [autoplay]="true" />
+    </div>
+  </div>
+}
