@@ -2,7 +2,7 @@ import {
   Component, HostListener, inject, input, signal, computed,
   ViewChild, ElementRef, OnInit, OnDestroy
 } from '@angular/core';
-import { Router, RouterLink, NavigationEnd } from '@angular/router';
+import { Router, RouterLink, RouterLinkActive, NavigationEnd } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { TranslatePipe } from '@ngx-translate/core';
 import { Subject, Subscription } from 'rxjs';
@@ -14,7 +14,7 @@ import { IVideoContent } from '../../../shared/models/video-content.interface';
 
 @Component({
   selector: 'app-header',
-  imports: [RouterLink, CommonModule, TranslatePipe],
+  imports: [RouterLink, RouterLinkActive, CommonModule, TranslatePipe],
   templateUrl: './header.component.html',
   styleUrl: './header.component.scss'
 })
