@@ -67,7 +67,7 @@ const RANGE_CONFIGS: Record<string, RangeConfig> = {
   standalone: true,
   imports: [TranslatePipe, TranslateDirective, CommonModule, VideoPlayerComponent],
   templateUrl: './producer-movie-detail.component.html',
-  styleUrl: './producer-movie-detail.component.scss',
+  styleUrls: ['./producer-movie-detail.component.scss', './producer-movie-detail.overlays.scss'],
 })
 export class ProducerMovieDetailComponent implements OnInit, OnDestroy {
   @ViewChild('analyticsChart') analyticsCanvas?: ElementRef<HTMLCanvasElement>;
