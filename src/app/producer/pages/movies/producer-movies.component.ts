@@ -4,8 +4,8 @@ import { TranslatePipe, TranslateDirective } from '@ngx-translate/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
-import { firstValueFrom } from 'rxjs';
 import { ProducerService, ProducerMovie } from '../../services/producer.service';
+import { MultipartUploadService, UploadAbortedError } from '../../../shared/services/multipart-upload.service';
 
 type SortCol = 'title' | 'views' | 'price' | 'release_date' | 'created_at';
 type StatusTab = 'all' | 'live' | 'pending' | 'rejected';
@@ -16,7 +16,6 @@ const ALL_GENRES = [
   'Mystery', 'Romance', 'Sci-Fi', 'Thriller', 'Western',
 ];
 
-const CHUNK_SIZE = 10 * 1024 * 1024;
 
 @Component({
   selector: 'app-producer-movies',
@@ -26,6 +25,7 @@ const CHUNK_SIZE = 10 * 1024 * 1024;
 })
 export class ProducerMoviesComponent implements OnInit, OnDestroy {
   private readonly producerService = inject(ProducerService);
+  private readonly uploader        = inject(MultipartUploadService);
   private readonly fb              = inject(FormBuilder);
   private readonly router          = inject(Router);
   private readonly platformId      = inject(PLATFORM_ID);
@@ -76,7 +76,7 @@ export class ProducerMoviesComponent implements OnInit, OnDestroy {
   isUploadingRTrailer  = signal(false);
   resubmitTrailerError = signal<string | null>(null);
   isDraggingRTrailer   = signal(false);
-  private rTrailerCtx: { uploadId: string; fileKey: string } | null = null;
+  private rTrailerUpload: AbortController | null = null;
 
   // Film upload
   resubmitFilmFile   = signal<File | null>(null);
@@ -85,7 +85,7 @@ export class ProducerMoviesComponent implements OnInit, OnDestroy {
   isUploadingRFilm   = signal(false);
   resubmitFilmError  = signal<string | null>(null);
   isDraggingRFilm    = signal(false);
-  private rFilmCtx: { uploadId: string; fileKey: string } | null = null;
+  private rFilmUpload: AbortController | null = null;
 
   // Image uploads
   resubmitThumbnailFile    = signal<File | null>(null);
@@ -237,8 +237,8 @@ export class ProducerMoviesComponent implements OnInit, OnDestroy {
     this.resubmitFilmPct.set(0);
     this.isUploadingRFilm.set(false);
     this.resubmitFilmError.set(null);
-    this.rTrailerCtx = null;
-    this.rFilmCtx = null;
+    this.rTrailerUpload = null;
+    this.rFilmUpload = null;
     this.resubmitThumbnailFile.set(null);
     this.resubmitThumbnailPreview.set(null);
     this.resubmitBackdropFile.set(null);
@@ -259,14 +259,10 @@ export class ProducerMoviesComponent implements OnInit, OnDestroy {
   }
 
   private abortPendingUploads(): void {
-    if (this.rTrailerCtx && !this.resubmitTrailerKey()) {
-      this.producerService.abortUpload(this.rTrailerCtx.uploadId, this.rTrailerCtx.fileKey).subscribe();
-      this.rTrailerCtx = null;
-    }
-    if (this.rFilmCtx && !this.resubmitFilmKey()) {
-      this.producerService.abortUpload(this.rFilmCtx.uploadId, this.rFilmCtx.fileKey).subscribe();
-      this.rFilmCtx = null;
-    }
+    this.rTrailerUpload?.abort();
+    this.rTrailerUpload = null;
+    this.rFilmUpload?.abort();
+    this.rFilmUpload = null;
   }
 
   // Cast tag input
@@ -341,10 +337,8 @@ export class ProducerMoviesComponent implements OnInit, OnDestroy {
   }
 
   removeRTrailer(): void {
-    if (this.rTrailerCtx && !this.resubmitTrailerKey()) {
-      this.producerService.abortUpload(this.rTrailerCtx.uploadId, this.rTrailerCtx.fileKey).subscribe();
-      this.rTrailerCtx = null;
-    }
+    this.rTrailerUpload?.abort();
+    this.rTrailerUpload = null;
     this.resubmitTrailerFile.set(null);
     this.resubmitTrailerKey.set(null);
     this.resubmitTrailerPct.set(0);
@@ -381,10 +375,8 @@ export class ProducerMoviesComponent implements OnInit, OnDestroy {
   }
 
   removeRFilm(): void {
-    if (this.rFilmCtx && !this.resubmitFilmKey()) {
-      this.producerService.abortUpload(this.rFilmCtx.uploadId, this.rFilmCtx.fileKey).subscribe();
-      this.rFilmCtx = null;
-    }
+    this.rFilmUpload?.abort();
+    this.rFilmUpload = null;
     this.resubmitFilmFile.set(null);
     this.resubmitFilmKey.set(null);
     this.resubmitFilmPct.set(0);
@@ -418,46 +410,29 @@ export class ProducerMoviesComponent implements OnInit, OnDestroy {
       this.resubmitFilmError.set(null);
     }
 
-    this.doRMultipartUpload(
-      file,
-      fieldName,
-      pct => { if (isTrailer) this.resubmitTrailerPct.set(pct); else this.resubmitFilmPct.set(pct); },
-      ctx  => { if (isTrailer) this.rTrailerCtx = ctx; else this.rFilmCtx = ctx; },
-    ).then(key => {
-      if (isTrailer) { this.resubmitTrailerKey.set(key); this.isUploadingRTrailer.set(false); }
-      else           { this.resubmitFilmKey.set(key);    this.isUploadingRFilm.set(false); }
+    const controller = new AbortController();
+    if (isTrailer) { this.rTrailerUpload?.abort(); this.rTrailerUpload = controller; }
+    else           { this.rFilmUpload?.abort();    this.rFilmUpload = controller; }
+
+    this.uploader.upload(file, this.producerService.movieUploadApi(fieldName), {
+      signal: controller.signal,
+      onProgress: pct => { if (isTrailer) this.resubmitTrailerPct.set(pct); else this.resubmitFilmPct.set(pct); },
+    }).then(key => {
+      if (isTrailer) { this.resubmitTrailerKey.set(key); this.isUploadingRTrailer.set(false); this.rTrailerUpload = null; }
+      else           { this.resubmitFilmKey.set(key);    this.isUploadingRFilm.set(false);    this.rFilmUpload = null; }
     }).catch(err => {
+      if (err instanceof UploadAbortedError) {
+        // Leave the flag alone if a newer upload replaced this one.
+        const current = isTrailer ? this.rTrailerUpload : this.rFilmUpload;
+        if (current === null || current === controller) {
+          if (isTrailer) this.isUploadingRTrailer.set(false); else this.isUploadingRFilm.set(false);
+        }
+        return;
+      }
       const msg = err?.message ?? 'Upload failed. Please try again.';
       if (isTrailer) { this.resubmitTrailerError.set(msg); this.isUploadingRTrailer.set(false); }
       else           { this.resubmitFilmError.set(msg);    this.isUploadingRFilm.set(false); }
     });
-  }
-
-  private async doRMultipartUpload(
-    file: File,
-    fieldName: 'video_file' | 'trailer_file',
-    onProgress: (pct: number) => void,
-    onInitiated: (ctx: { uploadId: string; fileKey: string }) => void,
-  ): Promise<string> {
-    const { upload_id, file_key } = await firstValueFrom(
-      this.producerService.initiateUpload(file.name, file.type, fieldName)
-    );
-    onInitiated({ uploadId: upload_id, fileKey: file_key });
-
-    const totalChunks = Math.ceil(file.size / CHUNK_SIZE);
-    const parts: { PartNumber: number; ETag: string }[] = [];
-
-    for (let i = 0; i < totalChunks; i++) {
-      const chunk = file.slice(i * CHUNK_SIZE, (i + 1) * CHUNK_SIZE);
-      const { url } = await firstValueFrom(this.producerService.signPart(upload_id, file_key, i + 1));
-      const res = await fetch(url, { method: 'PUT', body: chunk });
-      if (!res.ok) throw new Error(`Part ${i + 1} failed (${res.status})`);
-      parts.push({ PartNumber: i + 1, ETag: res.headers.get('ETag') ?? '' });
-      onProgress(Math.round(((i + 1) / totalChunks) * 100));
-    }
-
-    await firstValueFrom(this.producerService.completeUpload(upload_id, file_key, parts));
-    return file_key;
   }
 
   submitResubmit(): void {
