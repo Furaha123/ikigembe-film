@@ -76,8 +76,9 @@ export class PaymentModalComponent implements OnDestroy {
       },
       error: (err) => {
         this.loading.set(false);
+        // Backend errors are { error } (e.g. 402 already purchased, 409 payment pending).
         this.error.set(
-          err?.error?.message ?? err?.error?.detail ?? 'Payment failed. Please try again.'
+          err?.error?.error ?? err?.error?.message ?? err?.error?.detail ?? 'Payment failed. Please try again.'
         );
       }
     });
