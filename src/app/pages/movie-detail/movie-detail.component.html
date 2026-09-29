@@ -123,6 +123,7 @@
 
       <!-- Right: Similar Movies -->
       <div class="similar-col">
+        <app-ad-slot placement="sidebar" />
         <h2 class="similar-title">You May Also Like</h2>
         <div class="similar-grid">
           @for (similar of similarMovies(); track similar.id) {
@@ -142,6 +143,8 @@
       </div>
     </div>
   </section>
+
+  <app-ad-slot placement="movie_detail" />
 
   <!-- More from Producer -->
   @if (moreFromProducer().length > 0 && movie.producer_profile?.id) {

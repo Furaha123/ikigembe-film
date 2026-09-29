@@ -3,6 +3,7 @@ import { SeoService } from '../../core/services/seo.service';
 import { CommonModule } from '@angular/common';
 import { forkJoin, of, catchError } from 'rxjs';
 import { BannerComponent } from '../../core/components/banner/banner.component';
+import { AdSlotComponent } from '../../shared/components/ad-slot/ad-slot.component';
 import { FooterComponent } from '../../core/components/footer/footer.component';
 import { HeaderComponent } from '../../core/components/header/header.component';
 import { MovieService } from '../../shared/services/movie.service';
@@ -13,7 +14,7 @@ import { AuthService } from '../../shared/services/auth.service';
 @Component({
   selector: 'app-browse',
   standalone: true,
-  imports: [CommonModule, HeaderComponent, BannerComponent, MovieCarouselComponent, FooterComponent],
+  imports: [CommonModule, HeaderComponent, BannerComponent, MovieCarouselComponent, FooterComponent, AdSlotComponent],
   templateUrl: './browse.component.html',
   styleUrls: ['./browse.component.scss']
 })

@@ -1,0 +1,37 @@
+:host { display: contents; }
+
+.ad-slot {
+  position: relative;
+  display: block;
+  margin: 1.25rem auto;
+  max-width: 1200px;
+  padding: 0 1rem;
+}
+
+.ad-label {
+  display: inline-block;
+  margin-bottom: 0.35rem;
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #9a9a9a;
+}
+
+.ad-link {
+  display: block;
+  border-radius: 10px;
+  overflow: hidden;
+  line-height: 0;
+
+  &:focus-visible { outline: 2px solid #c9a84c; outline-offset: 3px; }
+}
+
+.ad-img {
+  display: block;
+  width: 100%;
+  height: auto;
+  object-fit: cover;
+}
+
+.ad-slot--sidebar { max-width: 320px; }

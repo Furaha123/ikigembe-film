@@ -15,11 +15,12 @@ import { VideoPlayerComponent } from '../../shared/components/video-player/video
 import { PaymentModalComponent } from '../../shared/components/payment-modal/payment-modal.component';
 import { PaymentService } from '../../core/services/payment.service';
 import { DataSaverService } from '../../core/services/data-saver.service';
+import { AdSlotComponent } from '../../shared/components/ad-slot/ad-slot.component';
 
 @Component({
   selector: 'app-movie-detail',
   standalone: true,
-  imports: [CommonModule, RouterLink, TranslatePipe, HeaderComponent, FooterComponent, VideoPlayerComponent, PaymentModalComponent],
+  imports: [CommonModule, RouterLink, TranslatePipe, HeaderComponent, FooterComponent, VideoPlayerComponent, PaymentModalComponent, AdSlotComponent],
   templateUrl: './movie-detail.component.html',
   styleUrls: ['./movie-detail.component.scss']
 })
