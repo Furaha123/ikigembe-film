@@ -74,6 +74,18 @@ export class PaymentService {
     }
   }
 
+  /** Drop the local "purchased" hint when the server says the purchase is no longer usable. */
+  forgetPurchase(movieId: number): void {
+    if (!isPlatformBrowser(this.platformId)) return;
+    try {
+      const stored = localStorage.getItem(PURCHASED_KEY);
+      const ids: number[] = stored ? JSON.parse(stored) : [];
+      if (ids.includes(movieId)) {
+        localStorage.setItem(PURCHASED_KEY, JSON.stringify(ids.filter(id => id !== movieId)));
+      }
+    } catch { /* ignore */ }
+  }
+
   savePurchase(movieId: number): void {
     if (!isPlatformBrowser(this.platformId)) return;
     try {

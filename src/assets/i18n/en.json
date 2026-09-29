@@ -528,7 +528,12 @@
     },
     "stream": {
       "purchaseRequired": "Purchase required to stream this movie.",
-      "failed": "We couldn't start playback. Please try again."
+      "failed": "We couldn't start playback. Please try again.",
+      "viewUsed": "Your view of this movie has been used. Purchase it again to watch.",
+      "otherDevice": "This purchase is already being watched on another device.",
+      "notFound": "This movie is no longer available.",
+      "buyAgain": "Buy again — RWF {{price}}",
+      "buyAgainShort": "Buy again"
     }
   }
 }

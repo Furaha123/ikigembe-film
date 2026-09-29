@@ -1,6 +1,7 @@
 import { Injectable, inject } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { environment } from '../../../environments/environment';
+import { DeviceIdService } from '../../core/services/device-id.service';
 import { of } from 'rxjs';
 import {
   MovieListResponse,
@@ -12,6 +13,8 @@ import {
   ProducerMoviesResponse,
   StreamResponse,
   PlaybackSource,
+  WatchProgressPayload,
+  WatchProgressResponse,
 } from '../models/movie-api.interface';
 
 @Injectable({
@@ -19,6 +22,7 @@ import {
 })
 export class MovieService {
   private readonly http = inject(HttpClient);
+  private readonly deviceId = inject(DeviceIdService);
   private readonly baseUrl = `${environment.apiUrl}/movies`;
 
   getMovies() {
@@ -83,21 +87,27 @@ export class MovieService {
   /**
    * Entitlement-checked playback URLs. Increments the film's view counter on every
    * call, so request it once per playback session (plus one retry on token expiry).
-   * Errors: 403 `{ error }` purchase required / not entitled, 404 movie not found.
+   * Sends `X-Device-Id` (this endpoint only) for the single-device view policy.
+   * Errors: 400 missing device id, 403 `{ error }` not entitled / view used /
+   * another device, 404 movie not found — see classifyStreamError().
    */
   getStream(id: number) {
-    return this.http.get<StreamResponse>(`${this.baseUrl}/${id}/stream/`);
+    const deviceId = this.deviceId.getId();
+    const headers = deviceId ? new HttpHeaders({ 'X-Device-Id': deviceId }) : undefined;
+    return this.http.get<StreamResponse>(`${this.baseUrl}/${id}/stream/`, { headers });
+  }
+
+  progressUrl(movieId: number): string {
+    return `${this.baseUrl}/${movieId}/progress/`;
   }
 
   getMyList() {
     return this.http.get<MyListMovie[]>(`${this.baseUrl}/my-list/`);
   }
 
-  saveProgress(movieId: number, secondsWatched: number, completed: boolean) {
-    return this.http.post(`${this.baseUrl}/${movieId}/progress/`, {
-      seconds_watched: Math.floor(secondsWatched),
-      completed,
-    });
+  /** Completion (>= 90 %) is decided server-side and consumes the view under the single-device policy. */
+  saveProgress(movieId: number, payload: WatchProgressPayload) {
+    return this.http.post<WatchProgressResponse>(this.progressUrl(movieId), payload);
   }
 
   search(query: string) {
@@ -123,8 +133,8 @@ export interface MyListMovie {
   genres: string[];
   rating: number;
   price: number | null;
-  progress_seconds: string;
-  duration_seconds: string;
-  completed: string;
-  last_watched_at: string;
+  progress_seconds: number;
+  duration_seconds: number;
+  completed: boolean;
+  last_watched_at: string | null;
 }

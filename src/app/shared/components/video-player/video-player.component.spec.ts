@@ -2,7 +2,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideTranslateService } from '@ngx-translate/core';
 import { of, throwError } from 'rxjs';
 import Hls from 'hls.js';
-import { PlaybackSource } from '../../models/movie-api.interface';
+import { PlaybackProgress, PlaybackSource } from '../../models/movie-api.interface';
 import { VideoPlayerComponent } from './video-player.component';
 
 type Handler = (event: string, data: unknown) => void;
@@ -138,5 +138,59 @@ describe('VideoPlayerComponent', () => {
   it('does not set crossorigin when there are no subtitles', () => {
     load(hlsSource);
     expect(video().getAttribute('crossorigin')).toBeNull();
+  });
+
+  describe('progress reporting', () => {
+    let events: PlaybackProgress[];
+    const reasons = () => events.map(e => e.reason);
+
+    beforeEach(() => {
+      events = [];
+      component.progressUpdate.subscribe(e => events.push(e));
+      load({ src: 'https://r2.test/film.mp4?sig', type: 'mp4', fallbackSrc: null, subtitles: [] });
+    });
+
+    it('emits every 15 s while playing and stops on pause', () => {
+      jasmine.clock().install();
+      try {
+        video().dispatchEvent(new Event('play'));
+        jasmine.clock().tick(15_000);
+        jasmine.clock().tick(15_000);
+        video().dispatchEvent(new Event('pause'));
+        jasmine.clock().tick(30_000);
+      } finally {
+        jasmine.clock().uninstall();
+      }
+      expect(reasons()).toEqual(['interval', 'interval', 'pause']);
+    });
+
+    it('emits ended before videoEnded', () => {
+      const order: string[] = [];
+      component.progressUpdate.subscribe(e => order.push(e.reason));
+      component.videoEnded.subscribe(() => order.push('videoEnded'));
+      video().dispatchEvent(new Event('ended'));
+      expect(order).toEqual(['ended', 'videoEnded']);
+    });
+
+    it('emits unload on pagehide and when the page becomes hidden', () => {
+      window.dispatchEvent(new Event('pagehide'));
+      const vis = spyOnProperty(document, 'visibilityState').and.returnValue('hidden');
+      document.dispatchEvent(new Event('visibilitychange'));
+      vis.and.returnValue('visible');
+      document.dispatchEvent(new Event('visibilitychange'));
+      expect(reasons()).toEqual(['unload', 'unload']);
+    });
+
+    it('emits close on destroy and then stops listening', () => {
+      fixture.destroy();
+      window.dispatchEvent(new Event('pagehide'));
+      expect(reasons()).toEqual(['close']);
+    });
+
+    it('includes the position and duration from the video element', () => {
+      window.dispatchEvent(new Event('pagehide'));
+      expect(events[0]).toEqual(jasmine.objectContaining({ position: video().currentTime, reason: 'unload' }));
+      expect('duration' in events[0]).toBeTrue();
+    });
   });
 });

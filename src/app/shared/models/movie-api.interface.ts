@@ -118,3 +118,24 @@ export interface PlaybackSource {
   fallbackSrc: string | null;
   subtitles: SubtitleTrack[];
 }
+
+/** POST /api/movies/<id>/progress/ — whole seconds; a view is consumed at >= 90 %. */
+export interface WatchProgressPayload {
+  progress_seconds: number;
+  duration_seconds: number;
+}
+
+export interface WatchProgressResponse extends WatchProgressPayload {
+  movie: number;
+  completed: boolean;
+  last_watched_at: string | null;
+}
+
+export type PlaybackProgressReason = 'interval' | 'pause' | 'ended' | 'close' | 'unload';
+
+/** Emitted by the video player; `unload` means the page is being hidden or closed. */
+export interface PlaybackProgress {
+  position: number;
+  duration: number;
+  reason: PlaybackProgressReason;
+}

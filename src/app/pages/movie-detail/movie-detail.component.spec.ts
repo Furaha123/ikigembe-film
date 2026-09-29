@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { Component, EventEmitter, Input, OnDestroy, Output } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { HttpErrorResponse, provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
@@ -13,7 +13,8 @@ import { HeaderComponent } from '../../core/components/header/header.component';
 import { FooterComponent } from '../../core/components/footer/footer.component';
 import { VideoPlayerComponent } from '../../shared/components/video-player/video-player.component';
 import { PaymentModalComponent } from '../../shared/components/payment-modal/payment-modal.component';
-import { MovieDetailResponse, PlaybackSource } from '../../shared/models/movie-api.interface';
+import { MovieDetailResponse, PlaybackProgress, PlaybackSource } from '../../shared/models/movie-api.interface';
+import { WatchProgressService } from '../../shared/services/watch-progress.service';
 import { makeStreamResponse } from '../../shared/testing/stream-fixtures';
 
 @Component({ selector: 'app-header', template: '' })
@@ -23,7 +24,7 @@ class HeaderStub { @Input() userImg = ''; }
 class FooterStub {}
 
 @Component({ selector: 'app-video-player', template: '' })
-class PlayerStub {
+class PlayerStub implements OnDestroy {
   @Input() src = '';
   @Input() source: PlaybackSource | null = null;
   @Input() refreshSource: (() => Observable<PlaybackSource>) | null = null;
@@ -32,6 +33,10 @@ class PlayerStub {
   @Input() autoplay = false;
   @Input() showCloseButton = false;
   @Output() closed = new EventEmitter<void>();
+  @Output() progressUpdate = new EventEmitter<PlaybackProgress>();
+  /** Like the real player: the final 'close' report is emitted from ngOnDestroy. */
+  closeReport: PlaybackProgress | null = null;
+  ngOnDestroy() { if (this.closeReport) this.progressUpdate.emit(this.closeReport); }
 }
 
 @Component({ selector: 'app-payment-modal', template: '' })
@@ -54,10 +59,16 @@ function movieDetails(overrides: Record<string, unknown> = {}) {
 
 describe('MovieDetailComponent (viewer playback)', () => {
   let movieService: jasmine.SpyObj<MovieService>;
+  let watchProgress: jasmine.SpyObj<WatchProgressService>;
+  let payments: jasmine.SpyObj<PaymentService>;
   let harness: RouterTestingHarness;
 
-  async function open(details: ReturnType<typeof movieDetails>) {
-    movieService.getMovieDetails.and.returnValue(of(details as unknown as MovieDetailResponse));
+  const asDetail = (d: ReturnType<typeof movieDetails>) => d as unknown as MovieDetailResponse;
+
+  /** `after` is what the server returns on later detail reads (entitlement refresh). */
+  async function open(details: ReturnType<typeof movieDetails>, after?: ReturnType<typeof movieDetails>) {
+    const later = asDetail(after ?? details);
+    movieService.getMovieDetails.and.returnValues(of(asDetail(details)), of(later), of(later));
     harness = await RouterTestingHarness.create();
     await harness.navigateByUrl('/movie/12', MovieDetailComponent);
     harness.detectChanges();
@@ -72,6 +83,10 @@ describe('MovieDetailComponent (viewer playback)', () => {
       ['getMovieDetails', 'getMovieCredits', 'getSimilarMovies', 'getMoviesByProducer', 'getStream']);
     movieService.getMovieCredits.and.returnValue(of({ cast: [] }));
     movieService.getSimilarMovies.and.returnValue(of({ results: [] }));
+    watchProgress = jasmine.createSpyObj<WatchProgressService>('WatchProgressService', ['report']);
+    watchProgress.report.and.resolveTo();
+    payments = jasmine.createSpyObj<PaymentService>('PaymentService', ['hasPurchased', 'forgetPurchase']);
+    payments.hasPurchased.and.returnValue(false);
 
     TestBed.configureTestingModule({
       providers: [
@@ -80,7 +95,8 @@ describe('MovieDetailComponent (viewer playback)', () => {
         provideHttpClientTesting(),
         provideTranslateService(),
         { provide: MovieService, useValue: movieService },
-        { provide: PaymentService, useValue: jasmine.createSpyObj('PaymentService', { hasPurchased: false }) },
+        { provide: PaymentService, useFactory: () => payments },
+        { provide: WatchProgressService, useFactory: () => watchProgress },
       ],
     });
     TestBed.overrideComponent(MovieDetailComponent, {
@@ -121,12 +137,13 @@ describe('MovieDetailComponent (viewer playback)', () => {
     movieService.getStream.and.returnValue(throwError(() => new HttpErrorResponse({
       status: 403, error: { error: 'Purchase required to stream this movie.' },
     })));
-    await open(movieDetails({ has_purchased: true }));
+    await open(movieDetails({ has_purchased: true }), movieDetails({ has_purchased: false }));
 
     watchButton().click();
     harness.detectChanges();
 
     expect(el().querySelector('[role="alert"]')?.textContent).toContain('Purchase required to stream this movie.');
+    expect(payments.forgetPurchase).toHaveBeenCalledWith(12);
     expect(watchButton().textContent).toContain('viewer.detail.buyToWatch');
     expect(player()).toBeUndefined();
   });
@@ -166,5 +183,95 @@ describe('MovieDetailComponent (viewer playback)', () => {
 
     expect(player()).toBeUndefined();
     expect((harness.routeDebugElement!.componentInstance as MovieDetailComponent).playback()).toBeNull();
+  });
+
+  describe('single-device policy', () => {
+    const refuse = (message: string) => movieService.getStream.and.returnValue(throwError(() =>
+      new HttpErrorResponse({ status: 403, error: { error: message } })));
+
+    it('view used: shows the message and turns the button into Buy again, which opens the payment modal', async () => {
+      refuse('Your view of this movie has been used. Purchase it again to watch.');
+      await open(movieDetails({ has_purchased: true }), movieDetails({ has_purchased: false }));
+
+      watchButton().click();
+      harness.detectChanges();
+
+      expect(el().querySelector('[role="alert"]')?.textContent).toContain('Your view of this movie has been used');
+      expect(watchButton().textContent).toContain('viewer.stream.buyAgain');
+
+      watchButton().click();
+      harness.detectChanges();
+      expect(el().querySelector('app-payment-modal')).not.toBeNull();
+    });
+
+    it('another device: shows the message and offers no purchase', async () => {
+      refuse('This purchase is already being watched on another device.');
+      await open(movieDetails({ has_purchased: true }));
+
+      watchButton().click();
+      harness.detectChanges();
+
+      expect(el().querySelector('[role="alert"]')?.textContent).toContain('already being watched on another device');
+      expect(watchButton().textContent).toContain('viewer.detail.watchMovie');
+      expect(payments.forgetPurchase).not.toHaveBeenCalled();
+    });
+
+    it('re-reads has_purchased after a refused stream (it can flip to false)', async () => {
+      refuse('Your view of this movie has been used. Purchase it again to watch.');
+      await open(movieDetails({ has_purchased: true }), movieDetails({ has_purchased: false }));
+
+      watchButton().click();
+      harness.detectChanges();
+
+      expect(movieService.getMovieDetails).toHaveBeenCalledTimes(2);
+    });
+
+    it('re-reads has_purchased after the full movie player closes', async () => {
+      movieService.getStream.and.returnValue(of(makeStreamResponse()));
+      await open(movieDetails({ has_purchased: true }), movieDetails({ has_purchased: false }));
+      watchButton().click();
+      harness.detectChanges();
+
+      player()!.closed.emit();
+      harness.detectChanges();
+
+      expect(movieService.getMovieDetails).toHaveBeenCalledTimes(2);
+      expect(watchButton().textContent).toContain('viewer.detail.buyToWatch');
+    });
+
+    it('trusts the server has_purchased over the local purchase hint', async () => {
+      payments.hasPurchased.and.returnValue(true);
+      await open(movieDetails({ has_purchased: false }));
+      expect(watchButton().textContent).toContain('viewer.detail.buyToWatch');
+    });
+  });
+
+  describe('watch progress', () => {
+    it('reports full-movie progress, including the final report after close', async () => {
+      movieService.getStream.and.returnValue(of(makeStreamResponse()));
+      await open(movieDetails({ has_purchased: true }));
+      watchButton().click();
+      harness.detectChanges();
+
+      const p: PlaybackProgress = { position: 100, duration: 6000, reason: 'interval' };
+      const stub = player()!;
+      stub.progressUpdate.emit(p);
+      stub.closeReport = { ...p, reason: 'close' };
+      stub.closed.emit();
+      harness.detectChanges();
+
+      expect(watchProgress.report).toHaveBeenCalledWith(12, p);
+      expect(watchProgress.report).toHaveBeenCalledWith(12, { ...p, reason: 'close' });
+    });
+
+    it('does not report trailer playback', async () => {
+      await open(movieDetails({ trailer_url: 'https://cdn.test/trailer.mp4' }));
+      el().querySelector<HTMLButtonElement>('.btn-trailer')!.click();
+      harness.detectChanges();
+
+      player()!.progressUpdate.emit({ position: 30, duration: 90, reason: 'pause' });
+
+      expect(watchProgress.report).not.toHaveBeenCalled();
+    });
   });
 });

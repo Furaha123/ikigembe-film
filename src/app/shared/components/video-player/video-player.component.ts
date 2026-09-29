@@ -8,7 +8,7 @@ import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { TranslatePipe } from '@ngx-translate/core';
 import { Observable, Subscription } from 'rxjs';
 import Hls from 'hls.js';
-import { PlaybackSource, SubtitleTrack } from '../../models/movie-api.interface';
+import { PlaybackProgress, PlaybackProgressReason, PlaybackSource, SubtitleTrack } from '../../models/movie-api.interface';
 
 interface QualityLevel {
   index: number; // -1 = auto
@@ -39,7 +39,8 @@ export class VideoPlayerComponent implements AfterViewInit, OnChanges, OnDestroy
   @Input() autoplay = false;
   @Input() showCloseButton = false;
 
-  @Output() progressUpdate = new EventEmitter<number>();
+  /** Every 15 s while playing, on pause/end/close, and when the page is hidden or unloaded. */
+  @Output() progressUpdate = new EventEmitter<PlaybackProgress>();
   @Output() videoEnded     = new EventEmitter<void>();
   @Output() closed         = new EventEmitter<void>();
 
@@ -92,6 +93,8 @@ export class VideoPlayerComponent implements AfterViewInit, OnChanges, OnDestroy
     if (!isPlatformBrowser(this.platformId)) return;
     this.viewReady = true;
     this.attachVideoEvents();
+    document.addEventListener('visibilitychange', this.onVisibilityChange);
+    window.addEventListener('pagehide', this.onPageHide);
     this.loadFromInputs();
   }
 
@@ -105,12 +108,25 @@ export class VideoPlayerComponent implements AfterViewInit, OnChanges, OnDestroy
   ngOnDestroy() {
     if (this.hideTimer) clearTimeout(this.hideTimer);
     this.stopProgressTimer();
+    if (isPlatformBrowser(this.platformId)) {
+      document.removeEventListener('visibilitychange', this.onVisibilityChange);
+      window.removeEventListener('pagehide', this.onPageHide);
+      this.emitProgress('close'); // before teardown resets currentTime
+    }
     this.destroyHls();
     this.refreshSub?.unsubscribe();
     this.active = null;
-    if (isPlatformBrowser(this.platformId) && this.videoRef?.nativeElement) {
-      this.progressUpdate.emit(this.videoRef.nativeElement.currentTime);
-    }
+  }
+
+  private readonly onPageHide = () => this.emitProgress('unload');
+  private readonly onVisibilityChange = () => {
+    if (document.visibilityState === 'hidden') this.emitProgress('unload');
+  };
+
+  private emitProgress(reason: PlaybackProgressReason): void {
+    if (!this.active || !this.videoRef?.nativeElement) return;
+    const v = this.videoRef.nativeElement;
+    this.progressUpdate.emit({ position: v.currentTime, duration: v.duration, reason });
   }
 
   @HostListener('document:keydown', ['$event'])
@@ -303,11 +319,12 @@ export class VideoPlayerComponent implements AfterViewInit, OnChanges, OnDestroy
     v.addEventListener('pause', () => {
       this.playing.set(false);
       this.stopProgressTimer();
-      this.progressUpdate.emit(v.currentTime);
+      this.emitProgress('pause');
     });
     v.addEventListener('ended', () => {
       this.playing.set(false);
       this.stopProgressTimer();
+      this.emitProgress('ended');
       this.videoEnded.emit();
     });
     v.addEventListener('error', () => {
@@ -405,7 +422,7 @@ export class VideoPlayerComponent implements AfterViewInit, OnChanges, OnDestroy
 
   private startProgressTimer() {
     this.stopProgressTimer();
-    this.progressTimer = setInterval(() => this.progressUpdate.emit(this.video.currentTime), 15_000);
+    this.progressTimer = setInterval(() => this.emitProgress('interval'), 15_000);
   }
 
   private stopProgressTimer() {
