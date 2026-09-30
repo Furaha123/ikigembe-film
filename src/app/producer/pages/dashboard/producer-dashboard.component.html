@@ -263,21 +263,21 @@
               <div class="wp-field-label">{{ 'dashboard.withdraw.bankName' | translate }}</div>
               <div class="wp-input-wrap">
                 <input type="text" formControlName="bank_name"
-                       placeholder="e.g. Bank of Kigali" />
+                       [placeholder]="'producerUi.dashboard.bankPlaceholder' | translate" />
               </div>
             </div>
             <div class="wp-field">
               <div class="wp-field-label">{{ 'dashboard.withdraw.accountNumber' | translate }}</div>
               <div class="wp-input-wrap">
                 <input type="text" formControlName="account_number"
-                       placeholder="Enter account number" />
+                       [placeholder]="'producerUi.dashboard.accountPlaceholder' | translate" />
               </div>
             </div>
             <div class="wp-field">
               <div class="wp-field-label">{{ 'dashboard.withdraw.accountHolder' | translate }}</div>
               <div class="wp-input-wrap">
                 <input type="text" formControlName="account_holder_name"
-                       placeholder="Full name as on account" />
+                       [placeholder]="'producerUi.dashboard.holderPlaceholder' | translate" />
               </div>
             </div>
           </div>

@@ -45,7 +45,7 @@
               <svg class="rule-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
                 <polyline points="20 6 9 17 4 12"/>
               </svg>
-              <span>{{ rule }}</span>
+              <span>{{ rule | translate }}</span>
             </li>
           }
         </ul>
@@ -126,7 +126,7 @@
             <!-- Title -->
             <div class="field" [class.has-error]="title?.invalid && title?.touched">
               <label>{{ 'upload.details.movieTitle' | translate }} <span class="required">*</span></label>
-              <input type="text" formControlName="title" placeholder="Enter movie title" />
+              <input type="text" formControlName="title" [placeholder]="'producerUi.upload.titlePlaceholder' | translate" />
               @if (title?.touched && title?.hasError('required')) {
                 <span class="field-error">{{ 'upload.details.titleRequired' | translate }}</span>
               }
@@ -176,18 +176,18 @@
             <!-- Director + Writer -->
             <div class="field-row">
               <div class="field">
-                <label>{{ 'upload.details.director' | translate }} <span class="optional">(Optional)</span></label>
+                <label>{{ 'upload.details.director' | translate }} <span class="optional">{{ 'producerUi.common.optional' | translate }}</span></label>
                 <input type="text" formControlName="director" [placeholder]="'upload.details.directorHint' | translate" />
               </div>
               <div class="field">
-                <label>{{ 'upload.details.writer' | translate }} <span class="optional">(Optional)</span></label>
+                <label>{{ 'upload.details.writer' | translate }} <span class="optional">{{ 'producerUi.common.optional' | translate }}</span></label>
                 <input type="text" formControlName="writer" [placeholder]="'upload.details.writerHint' | translate" />
               </div>
             </div>
 
             <!-- Cast -->
             <div class="field">
-              <label>{{ 'upload.details.cast' | translate }} <span class="optional">(Optional — comma separated)</span></label>
+              <label>{{ 'upload.details.cast' | translate }} <span class="optional">{{ 'producerUi.upload.castOptional' | translate }}</span></label>
               <input type="text" formControlName="cast" [placeholder]="'upload.details.castHint' | translate" />
             </div>
 
@@ -230,7 +230,7 @@
               </div>
             } @else {
               <div class="thumbnail-preview">
-                <img [src]="thumbnailPreview()" alt="Thumbnail preview" />
+                <img [src]="thumbnailPreview()" [alt]="'producerUi.upload.thumbnailAlt' | translate" />
                 <button type="button" class="thumb-remove" (click)="removeThumbnail()">
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
                     <line x1="18" y1="6" x2="6" y2="18"/>
@@ -244,17 +244,17 @@
                    class="hidden-input" (change)="onThumbnailSelect($event)" />
 
             @if (thumbnailError()) {
-              <span class="field-error">{{ thumbnailError() }}</span>
+              <span class="field-error">{{ thumbnailError()! | translate }}</span>
             }
           </div>
 
           <!-- Backdrop / Hero Image -->
           <div class="field-section">
             <label class="section-label">
-              Backdrop / Hero Image
-              <span class="optional">(Optional — 1920 × 1080 recommended)</span>
+              {{ 'producerUi.upload.backdropLabel' | translate }}
+              <span class="optional">{{ 'producerUi.upload.backdropOptional' | translate }}</span>
             </label>
-            <p class="field-hint">This wide image appears as the cinematic hero banner on your movie page and producer profile.</p>
+            <p class="field-hint">{{ 'producerUi.upload.backdropHint' | translate }}</p>
 
             @if (!backdropFile()) {
               <div class="backdrop-drop"
@@ -266,19 +266,19 @@
                   <path d="M3 11l5-4 4 3.5 3-2.5 6 5"/>
                   <circle cx="8" cy="7.5" r="1.5"/>
                 </svg>
-                <p>Upload backdrop image</p>
-                <span>Wide 16:9 or 21:9 · JPG, PNG, WebP · max 5 MB</span>
+                <p>{{ 'producerUi.upload.backdropUpload' | translate }}</p>
+                <span>{{ 'producerUi.upload.backdropFormats' | translate }}</span>
               </div>
             } @else {
               <div class="backdrop-preview">
-                <img [src]="backdropPreview()" alt="Backdrop preview" />
+                <img [src]="backdropPreview()" [alt]="'producerUi.upload.backdropAlt' | translate" />
                 <div class="backdrop-overlay">
                   <button type="button" class="backdrop-remove" (click)="removeBackdrop()">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
                       <line x1="18" y1="6" x2="6" y2="18"/>
                       <line x1="6" y1="6" x2="18" y2="18"/>
                     </svg>
-                    Remove
+                    {{ 'producerUi.common.remove' | translate }}
                   </button>
                 </div>
                 <div class="backdrop-filename">
@@ -294,7 +294,7 @@
                    class="hidden-input" (change)="onBackdropSelect($event)" />
 
             @if (backdropError()) {
-              <span class="field-error">{{ backdropError() }}</span>
+              <span class="field-error">{{ backdropError()! | translate }}</span>
             }
           </div>
 
@@ -371,7 +371,7 @@
           </div>
 
           @if (trailerUploadError()) {
-            <div class="error-box single">{{ trailerUploadError() }}</div>
+            <div class="error-box single">{{ trailerUploadError()! | translate }}</div>
           }
 
           <div class="step-actions">
@@ -453,7 +453,7 @@
               <p class="error-title">{{ 'upload.movie.errorsHeader' | translate }}</p>
               <ul>
                 @for (err of movieErrors(); track err) {
-                  <li>{{ err }}</li>
+                  <li>{{ err | translate }}</li>
                 }
               </ul>
             </div>
@@ -471,7 +471,7 @@
         <div class="step-card">
           <div class="step-card-header">
             <h2>{{ 'upload.copyright.title' | translate }}</h2>
-            <p>{{ 'upload.copyright.subtitle' | translate }} <span class="optional">(Optional)</span></p>
+            <p>{{ 'upload.copyright.subtitle' | translate }} <span class="optional">{{ 'producerUi.common.optional' | translate }}</span></p>
           </div>
 
           <div class="upload-zone"
@@ -518,7 +518,7 @@
           </div>
 
           @if (copyrightError()) {
-            <div class="error-box single">{{ copyrightError() }}</div>
+            <div class="error-box single">{{ copyrightError()! | translate }}</div>
           }
 
           <div class="step-actions">
@@ -585,14 +585,14 @@
               <span class="review-val">{{ thumbnailFile()?.name ?? '—' }}</span>
             </div>
             <div class="review-row">
-              <span class="review-key">Backdrop</span>
+              <span class="review-key">{{ 'producerUi.upload.reviewBackdrop' | translate }}</span>
               @if (backdropFile()) {
                 <span class="review-val review-val--preview">
-                  <img class="review-backdrop-thumb" [src]="backdropPreview()!" alt="Backdrop" />
+                  <img class="review-backdrop-thumb" [src]="backdropPreview()!" [alt]="'producerUi.upload.reviewBackdropAlt' | translate" />
                   <span>{{ backdropFile()!.name }}</span>
                 </span>
               } @else {
-                <span class="review-val review-val--muted">Not provided</span>
+                <span class="review-val review-val--muted">{{ 'producerUi.common.notProvided' | translate }}</span>
               }
             </div>
           </div>
@@ -618,24 +618,24 @@
           </div>
 
           <div class="review-section">
-            <h3 class="review-section-title">{{ 'upload.review.sections.copyright' | translate }} <span class="optional">(Optional)</span></h3>
+            <h3 class="review-section-title">{{ 'upload.review.sections.copyright' | translate }} <span class="optional">{{ 'producerUi.common.optional' | translate }}</span></h3>
             <div class="review-row">
               <span class="review-key">{{ 'upload.review.labels.document' | translate }}</span>
-              <span class="review-val">{{ copyrightFile()?.name ?? 'Not provided' }}</span>
+              <span class="review-val">{{ copyrightFile()?.name ?? ('producerUi.common.notProvided' | translate) }}</span>
             </div>
           </div>
 
           @if (submitError()) {
-            <div class="error-box single">{{ submitError() }}</div>
+            <div class="error-box single">{{ submitError()! | translate }}</div>
           }
 
           <div class="field-check terms-check">
             <label class="check-label">
               <input type="checkbox" [checked]="termsAccepted()" (change)="termsAccepted.set($any($event.target).checked)" />
               <span>
-                I confirm that I have read and agree to the
-                <a href="/terms" target="_blank" rel="noopener">Terms &amp; Conditions</a>
-                and that this submission is my original work.
+                {{ 'producerUi.upload.termsPrefix' | translate }}
+                <a href="/terms" target="_blank" rel="noopener">{{ 'producerUi.upload.termsLink' | translate }}</a>
+                {{ 'producerUi.upload.termsSuffix' | translate }}
               </span>
             </label>
           </div>

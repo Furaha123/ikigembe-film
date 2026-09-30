@@ -110,7 +110,7 @@ export class ProducerOnboardingComponent implements OnInit {
           this.finishOnboarding();
         } else {
           this.isSaving.set(false);
-          this.saveError.set('Failed to save your profile. Please try again.');
+          this.saveError.set('producerUi.onboarding.saveFailed');
         }
       },
     });

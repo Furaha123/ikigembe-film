@@ -2,7 +2,7 @@ import { Component, HostListener, inject, signal, PLATFORM_ID, OnInit, computed 
 import { isPlatformBrowser } from '@angular/common';
 import { CommonModule } from '@angular/common';
 import { Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
-import { TranslatePipe, TranslateDirective } from '@ngx-translate/core';
+import { TranslatePipe, TranslateDirective, TranslateService } from '@ngx-translate/core';
 import { AuthService } from '../../core/services/auth.service';
 import { LanguageService, AppLang } from '../../core/services/language.service';
 import { ProducerService, ProducerNotification } from '../services/producer.service';
@@ -19,6 +19,7 @@ export class ProducerLayoutComponent implements OnInit {
   private readonly router          = inject(Router);
   private readonly platformId      = inject(PLATFORM_ID);
   readonly lang                    = inject(LanguageService);
+  private readonly translate       = inject(TranslateService);
 
   readonly initials        = this.authService.initials;
   readonly userName        = this.authService.userName;
@@ -170,9 +171,9 @@ export class ProducerLayoutComponent implements OnInit {
   relativeTime(isoDate: string): string {
     const diff = Date.now() - new Date(isoDate).getTime();
     const mins = Math.floor(diff / 60000);
-    if (mins < 60) return `${mins}m ago`;
+    if (mins < 60) return this.translate.instant('producerUi.layout.minutesAgo', { n: mins });
     const hrs = Math.floor(mins / 60);
-    if (hrs < 24) return `${hrs}h ago`;
-    return `${Math.floor(hrs / 24)}d ago`;
+    if (hrs < 24) return this.translate.instant('producerUi.layout.hoursAgo', { n: hrs });
+    return this.translate.instant('producerUi.layout.daysAgo', { n: Math.floor(hrs / 24) });
   }
 }

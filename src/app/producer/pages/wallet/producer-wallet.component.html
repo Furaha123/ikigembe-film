@@ -64,13 +64,13 @@
     @if (successMsg()) {
       <div class="alert success">
         <svg viewBox="0 0 24 24" fill="currentColor"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
-        {{ successMsg() }}
+        {{ successMsg()! | translate }}
       </div>
     }
     @if (apiError()) {
       <div class="alert error">
         <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg>
-        {{ apiError() }}
+        {{ apiError()! | translate }}
       </div>
     }
 
@@ -128,7 +128,7 @@
       @if (isBank()) {
         <div class="field">
           <label>{{ 'wallet.form.bankName' | translate }}</label>
-          <input type="text" formControlName="bank_name" placeholder="e.g. Bank of Kigali" />
+          <input type="text" formControlName="bank_name" [placeholder]="'producerUi.wallet.bankPlaceholder' | translate" />
         </div>
         <div class="field">
           <label>{{ 'wallet.form.accountNumber' | translate }}</label>
@@ -136,12 +136,12 @@
         </div>
         <div class="field">
           <label>{{ 'wallet.form.accountHolder' | translate }}</label>
-          <input type="text" formControlName="account_holder_name" placeholder="Full name as on bank account" />
+          <input type="text" formControlName="account_holder_name" [placeholder]="'producerUi.wallet.holderPlaceholder' | translate" />
         </div>
       } @else {
         <div class="field">
           <label>{{ 'wallet.form.momoNumber' | translate }}</label>
-          <input type="text" formControlName="momo_number" placeholder="e.g. 07X XXX XXXX" />
+          <input type="text" formControlName="momo_number" [placeholder]="'producerUi.wallet.momoPlaceholder' | translate" />
         </div>
         <div class="field">
           <label>{{ 'wallet.form.momoProvider' | translate }}</label>

@@ -28,7 +28,7 @@
         <div class="avatar-row">
           <div class="avatar-preview" (click)="avatarInput.click()">
             @if (avatarPreview()) {
-              <img [src]="avatarPreview()!" alt="Profile photo" />
+              <img [src]="avatarPreview()!" [alt]="'producerUi.onboarding.photoAlt' | translate" />
             } @else {
               <div class="avatar-placeholder">
                 <svg viewBox="0 0 24 24" fill="currentColor" width="32" height="32">
@@ -98,7 +98,7 @@
         </form>
 
         @if (saveError()) {
-          <div class="save-error">{{ saveError() }}</div>
+          <div class="save-error">{{ saveError()! | translate }}</div>
         }
 
         <div class="step-footer">

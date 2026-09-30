@@ -448,9 +448,9 @@ export class ProducerDashboardComponent implements OnInit, AfterViewInit, OnDest
       this.fmtNum(v as number);
 
     const tooltipFmt = (ctx: { raw: unknown }): string =>
-      metric === 'earnings'  ? ` Earnings: ${this.fmt(ctx.raw as number)}` :
-      metric === 'watchTime' ? ` Watch Time: ${(ctx.raw as number).toLocaleString()}h` :
-      ` Views: ${this.fmtNum(ctx.raw as number)}`;
+      ' ' + (metric === 'earnings'  ? this.translate.instant('producerUi.dashboard.tooltip.earnings', { value: this.fmt(ctx.raw as number) }) :
+             metric === 'watchTime' ? this.translate.instant('producerUi.dashboard.tooltip.watchTime', { value: (ctx.raw as number).toLocaleString() }) :
+             this.translate.instant('producerUi.dashboard.tooltip.views', { value: this.fmtNum(ctx.raw as number) }));
 
     this.trendChart = new Chart(canvas, {
       type: 'line',

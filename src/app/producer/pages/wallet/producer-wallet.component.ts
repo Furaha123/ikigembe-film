@@ -83,7 +83,7 @@ export class ProducerWalletComponent implements OnInit {
     this.producerService.requestWithdrawal(payload).subscribe({
       next: () => {
         this.isSaving.set(false);
-        this.successMsg.set('Withdrawal request submitted! It will be reviewed within 1–2 business days.');
+        this.successMsg.set('producerUi.wallet.success');
         this.paymentMethod.set('Bank');
         this.form.reset({ payment_method: 'Bank' });
         // refresh wallet balance
@@ -92,7 +92,7 @@ export class ProducerWalletComponent implements OnInit {
       error: (err) => {
         this.isSaving.set(false);
         const data = err.error;
-        const msg = data?.detail ?? data?.non_field_errors?.[0] ?? data?.amount?.[0] ?? 'Request failed. Please try again.';
+        const msg = data?.detail ?? data?.non_field_errors?.[0] ?? data?.amount?.[0] ?? 'producerUi.wallet.failed';
         this.apiError.set(msg);
       },
     });
