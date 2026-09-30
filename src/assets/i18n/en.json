@@ -1571,7 +1571,9 @@
       "phoneNumber": "Phone number",
       "phoneInvalid": "Enter a valid phone number.",
       "optional": "(optional)",
-      "required": "Required."
+      "required": "Required.",
+      "resendTooMany": "Too many requests. Please try again later.",
+      "resendInMinutes": "Resend in {{n}} min"
     },
     "brand": {
       "headlineLine1": "Beyond the Passion,",
@@ -2212,5 +2214,11 @@
       "viewMyFilms": "View My Films",
       "signatureAlt": "Signature preview"
     }
+  },
+  "uploadErrors": {
+    "sessionExpired": "This upload session is no longer valid. Please start the upload again.",
+    "videoType": "Unsupported file type. Allowed video types: {{types}}.",
+    "documentType": "Unsupported file type. Allowed document types: {{types}}.",
+    "reuploadThenResubmit": "Please upload the file again, then resubmit."
   }
 }
