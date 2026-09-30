@@ -1,7 +1,7 @@
 import { Component, inject, signal, OnInit, OnDestroy } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { AuthService } from '../../core/services/auth.service';
+import { AuthService, resendCooldownLabel } from '../../core/services/auth.service';
 import { TranslatePipe } from '@ngx-translate/core';
 
 @Component({
@@ -57,21 +57,18 @@ export class VerifyEmailComponent implements OnInit, OnDestroy {
     this.resendSuccess.set(false);
     this.resendError.set(null);
 
-    this.authService.resendVerification(email).subscribe({
-      next: () => {
-        this.isResending.set(false);
-        this.resendSuccess.set(true);
-        this.startCooldown(60);
-      },
-      error: (err) => {
-        this.isResending.set(false);
-        const detail = err?.error?.detail ?? err?.error?.email?.[0];
-        this.resendError.set(detail ?? 'auth.verifyEmail.resendFailed');
-      },
+    this.authService.requestVerificationEmail(email).subscribe(result => {
+      this.isResending.set(false);
+      this.resendSuccess.set(result.sent);
+      if (!result.sent) this.resendError.set(result.message ?? 'auth.verifyEmail.resendFailed');
+      if (result.cooldownSeconds > 0) this.startCooldown(result.cooldownSeconds);
     });
   }
 
+  readonly cooldownLabel = resendCooldownLabel;
+
   private startCooldown(seconds: number): void {
+    clearInterval(this.cooldownTimer);
     this.resendCooldown.set(seconds);
     this.cooldownTimer = setInterval(() => {
       const next = this.resendCooldown() - 1;

@@ -5,7 +5,7 @@ import {
 import { isPlatformBrowser, CommonModule } from '@angular/common';
 import { AbstractControl, FormBuilder, ReactiveFormsModule, ValidationErrors, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
-import { AuthService, RegisterErrors } from '../../core/services/auth.service';
+import { AuthService, RegisterErrors, resendCooldownLabel } from '../../core/services/auth.service';
 import { SeoService } from '../../core/services/seo.service';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 
@@ -123,21 +123,18 @@ export class RegisterComponent implements OnInit, AfterViewInit, OnDestroy {
     this.resendSuccess.set(false);
     this.resendError.set(null);
 
-    this.authService.resendVerification(email).subscribe({
-      next: () => {
-        this.isResending.set(false);
-        this.resendSuccess.set(true);
-        this.startCooldown(60);
-      },
-      error: (err) => {
-        this.isResending.set(false);
-        const detail = err?.error?.detail ?? err?.error?.email?.[0];
-        this.resendError.set(detail ?? 'auth.common.resendFailed');
-      },
+    this.authService.requestVerificationEmail(email).subscribe(result => {
+      this.isResending.set(false);
+      this.resendSuccess.set(result.sent);
+      if (!result.sent) this.resendError.set(result.message ?? 'auth.common.resendFailed');
+      if (result.cooldownSeconds > 0) this.startCooldown(result.cooldownSeconds);
     });
   }
 
+  readonly cooldownLabel = resendCooldownLabel;
+
   private startCooldown(seconds: number): void {
+    clearInterval(this.cooldownTimer);
     this.resendCooldown.set(seconds);
     this.cooldownTimer = setInterval(() => {
       const next = this.resendCooldown() - 1;

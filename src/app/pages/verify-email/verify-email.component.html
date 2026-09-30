@@ -74,7 +74,7 @@
                 @if (isResending()) {
                   <span class="btn-spinner"></span> {{ 'auth.common.sending' | translate }}
                 } @else if (resendCooldown() > 0) {
-                  {{ 'auth.common.resendIn' | translate: { n: resendCooldown() } }}
+                  {{ cooldownLabel(resendCooldown()).key | translate: { n: cooldownLabel(resendCooldown()).n } }}
                 } @else {
                   {{ 'auth.verifyEmail.sendNewLink' | translate }}
                 }

@@ -2,7 +2,7 @@ import { Component, inject, signal, OnDestroy } from '@angular/core';
 import { AbstractControl, FormBuilder, ReactiveFormsModule, ValidationErrors, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { CommonModule } from '@angular/common';
-import { AuthService } from '../../core/services/auth.service';
+import { AuthService, resendCooldownLabel } from '../../core/services/auth.service';
 import { RegisterErrors } from '../../core/models/auth.interface';
 import { TranslatePipe } from '@ngx-translate/core';
 
@@ -99,21 +99,18 @@ export class RegisterProducerComponent implements OnDestroy {
     this.resendSuccess.set(false);
     this.resendError.set(null);
 
-    this.authService.resendVerification(emailVal).subscribe({
-      next: () => {
-        this.isResending.set(false);
-        this.resendSuccess.set(true);
-        this.startCooldown(60);
-      },
-      error: (err) => {
-        this.isResending.set(false);
-        const detail = err?.error?.detail ?? err?.error?.email?.[0];
-        this.resendError.set(detail ?? 'auth.common.resendFailed');
-      },
+    this.authService.requestVerificationEmail(emailVal).subscribe(result => {
+      this.isResending.set(false);
+      this.resendSuccess.set(result.sent);
+      if (!result.sent) this.resendError.set(result.message ?? 'auth.common.resendFailed');
+      if (result.cooldownSeconds > 0) this.startCooldown(result.cooldownSeconds);
     });
   }
 
+  readonly cooldownLabel = resendCooldownLabel;
+
   private startCooldown(seconds: number): void {
+    clearInterval(this.cooldownTimer);
     this.resendCooldown.set(seconds);
     this.cooldownTimer = setInterval(() => {
       const next = this.resendCooldown() - 1;

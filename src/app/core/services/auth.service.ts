@@ -1,8 +1,8 @@
 import { Injectable, PLATFORM_ID, inject, signal, computed } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
-import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
-import { tap } from 'rxjs/operators';
+import { HttpClient, HttpErrorResponse } from '@angular/common/http';
+import { Observable, of } from 'rxjs';
+import { catchError, map, tap } from 'rxjs/operators';
 import { RegisterPayload, RegisterResponse, LoginResponse, GoogleAuthPayload, LoginUser, AccountStatus } from '../models/auth.interface';
 import { environment } from '../../../environments/environment';
 
@@ -39,6 +39,30 @@ const ROLE_KEY        = 'ikigembe_role';
 const ACCT_STATUS_KEY = 'ikigembe_account_status';
 const SUSPENSION_KEY  = 'ikigembe_suspension_reason';
 const ONBOARDING_KEY  = 'ikigembe_onboarded';
+
+/** Cooldown after a verification email was requested successfully. */
+export const RESEND_COOLDOWN_SECONDS = 60;
+/** Cooldown after the backend's rate limit (3/hour per IP + email) answered 429. */
+export const RESEND_RATE_LIMITED_COOLDOWN_SECONDS = 15 * 60;
+
+/**
+ * Outcome of a resend-verification request, shaped for the three pages that offer it.
+ * `message` is a translation key or backend text; null when there is nothing to add.
+ * Success is reported identically whether or not the email has an account (the backend
+ * returns 200 either way to prevent account enumeration).
+ */
+export interface ResendVerificationResult {
+  sent: boolean;
+  message: string | null;
+  cooldownSeconds: number;
+}
+
+/** Label for a running resend cooldown: seconds under a minute, whole minutes above. */
+export function resendCooldownLabel(seconds: number): { key: string; n: number } {
+  return seconds > 60
+    ? { key: 'auth.common.resendInMinutes', n: Math.ceil(seconds / 60) }
+    : { key: 'auth.common.resendIn', n: seconds };
+}
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
@@ -283,6 +307,29 @@ export class AuthService {
 
   resendVerification(email: string): Observable<unknown> {
     return this.http.post(`${this.baseUrl}/auth/resend-verification/`, { email });
+  }
+
+  /**
+   * Request a new verification email and map the response for the UI (never errors):
+   * 200 → sent + short cooldown; 429 → translated "too many requests" + long cooldown
+   * (the backend's `detail` is English, so it isn't shown); other errors → backend text.
+   */
+  requestVerificationEmail(email: string): Observable<ResendVerificationResult> {
+    return this.resendVerification(email).pipe(
+      map((): ResendVerificationResult => ({ sent: true, message: null, cooldownSeconds: RESEND_COOLDOWN_SECONDS })),
+      catchError((err: unknown) => {
+        const status = err instanceof HttpErrorResponse ? err.status : 0;
+        if (status === 429) {
+          return of<ResendVerificationResult>({
+            sent: false, message: 'auth.common.resendTooMany', cooldownSeconds: RESEND_RATE_LIMITED_COOLDOWN_SECONDS,
+          });
+        }
+        const body = err instanceof HttpErrorResponse ? err.error as { detail?: string; email?: string[] } | null : null;
+        return of<ResendVerificationResult>({
+          sent: false, message: body?.detail ?? body?.email?.[0] ?? null, cooldownSeconds: 0,
+        });
+      }),
+    );
   }
 
   private clearSession() {
