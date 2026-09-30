@@ -1,4 +1,4 @@
-.hidden { visibility: hidden; height: 0; overflow: hidden; }
+
 
 .sr-only {
   position: absolute;
@@ -256,17 +256,6 @@ $shadow:     0 1px 8px rgba(0, 0, 0, 0.95);
   text-transform: none;
   letter-spacing: 0;
   margin-left: 0.35rem;
-}
-
-/* ── Server error banner ── */
-.server-error-banner {
-  background: rgba(239, 68, 68, 0.12);
-  border: 1px solid rgba(239, 68, 68, 0.35);
-  border-radius: 6px;
-  padding: 0.65rem 0.9rem;
-  color: #fca5a5;
-  font-size: 0.85rem;
-  margin-bottom: 1rem;
 }
 
 /* ── Resend ── */

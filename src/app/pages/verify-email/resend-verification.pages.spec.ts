@@ -8,9 +8,8 @@ import {
 } from '../../core/services/auth.service';
 import { VerifyEmailComponent } from './verify-email.component';
 import { RegisterComponent } from '../register/register.component';
-import { RegisterProducerComponent } from '../register-producer/register-producer.component';
 
-/** The three pages that offer "resend verification email", driven the same way. */
+/** The pages that offer "resend verification email", driven the same way. */
 interface ResendPage {
   isResending(): boolean;
   resendSuccess(): boolean;
@@ -39,18 +38,9 @@ const PAGES: Setup[] = [
       p.resendEmail();
     },
   },
-  {
-    name: 'register-producer',
-    type: RegisterProducerComponent,
-    trigger: (c) => {
-      const p = c as { form: { patchValue(v: object): void }; resendEmail(): void };
-      p.form.patchValue({ email: 'user@example.com' });
-      p.resendEmail();
-    },
-  },
 ];
 
-describe('Resend verification — shared handling on all three pages', () => {
+describe('Resend verification — shared handling on every page', () => {
   for (const page of PAGES) {
     describe(page.name, () => {
       let fixture: ComponentFixture<unknown>;
@@ -58,7 +48,7 @@ describe('Resend verification — shared handling on all three pages', () => {
 
       const setup = (result: Observable<ResendVerificationResult>) => {
         auth = jasmine.createSpyObj<AuthService>('AuthService',
-          ['requestVerificationEmail', 'resendVerification', 'verifyEmail', 'register', 'registerProducer', 'loginWithGoogle'],
+          ['requestVerificationEmail', 'resendVerification', 'verifyEmail', 'register', 'loginWithGoogle'],
           { isLoggedIn: signal(false) } as never);
         auth.requestVerificationEmail.and.returnValue(result);
         auth.verifyEmail.and.returnValue(of({}));

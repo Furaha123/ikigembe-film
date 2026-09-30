@@ -128,33 +128,6 @@ export class AuthService {
     );
   }
 
-  registerProducer(payload: {
-    full_name: string; phone_number: string; studio_name?: string;
-    email: string; password: string; password_confirm: string;
-  }): Observable<LoginResponse> {
-    const [first_name, ...rest] = payload.full_name.trim().split(/\s+/);
-    const last_name = rest.join(' ') || first_name;
-    const body: RegisterPayload = {
-      first_name,
-      last_name,
-      email: payload.email,
-      password: payload.password,
-      password_confirm: payload.password_confirm,
-      role: 'Producer',
-      phone_number: payload.phone_number,
-      studio_name: payload.studio_name,
-    };
-    return this.http.post<LoginResponse>(`${this.baseUrl}/auth/register/`, body).pipe(
-      tap((res) => {
-        this.storeSession(res, payload.email);
-        if (isPlatformBrowser(this.platformId)) {
-          localStorage.setItem(ACCT_STATUS_KEY, 'pending_approval');
-        }
-        this.accountStatus.set('pending_approval');
-      })
-    );
-  }
-
   completeOnboarding() {
     this.onboardingComplete.set(true);
     if (isPlatformBrowser(this.platformId)) {
