@@ -6,6 +6,8 @@ import { FormsModule, ReactiveFormsModule, FormBuilder, Validators } from '@angu
 import { Router } from '@angular/router';
 import { ProducerService, ProducerMovie } from '../../services/producer.service';
 import { MultipartUploadService, UploadAbortedError } from '../../../shared/services/multipart-upload.service';
+import { ALLOWED_VIDEO_EXTENSIONS, extensionList, hasAllowedExtension, VIDEO_ACCEPT } from '../../../shared/models/upload.constants';
+import { uploadErrorMessage } from '../../../shared/utils/upload-error';
 
 type SortCol = 'title' | 'views' | 'price' | 'release_date' | 'created_at';
 type StatusTab = 'all' | 'live' | 'pending' | 'rejected';
@@ -30,6 +32,7 @@ export class ProducerMoviesComponent implements OnInit, OnDestroy {
   private readonly router          = inject(Router);
   private readonly platformId      = inject(PLATFORM_ID);
   private readonly translate       = inject(TranslateService);
+  readonly videoAccept             = VIDEO_ACCEPT;
   private copiedTimer: ReturnType<typeof setTimeout> | null = null;
 
   readonly ALL_GENRES = ALL_GENRES;
@@ -348,8 +351,8 @@ export class ProducerMoviesComponent implements OnInit, OnDestroy {
 
   private handleRTrailerFile(file: File): void {
     this.resubmitTrailerError.set(null);
-    if (!file.name.match(/\.(mp4|mov)$/i)) {
-      this.resubmitTrailerError.set('producerUi.common.videoFormatInvalid');
+    if (!hasAllowedExtension(file.name, ALLOWED_VIDEO_EXTENSIONS)) {
+      this.resubmitTrailerError.set(this.translate.instant('uploadErrors.videoType', { types: extensionList(ALLOWED_VIDEO_EXTENSIONS) }));
       return;
     }
     if (file.size > 100 * 1024 * 1024) {
@@ -386,8 +389,8 @@ export class ProducerMoviesComponent implements OnInit, OnDestroy {
 
   private handleRFilmFile(file: File): void {
     this.resubmitFilmError.set(null);
-    if (!file.name.match(/\.(mp4|mov)$/i)) {
-      this.resubmitFilmError.set('producerUi.common.videoFormatInvalid');
+    if (!hasAllowedExtension(file.name, ALLOWED_VIDEO_EXTENSIONS)) {
+      this.resubmitFilmError.set(this.translate.instant('uploadErrors.videoType', { types: extensionList(ALLOWED_VIDEO_EXTENSIONS) }));
       return;
     }
     if (file.size > 200 * 1024 * 1024) {
@@ -430,7 +433,7 @@ export class ProducerMoviesComponent implements OnInit, OnDestroy {
         }
         return;
       }
-      const msg = err?.message ?? 'producerUi.common.uploadFailed';
+      const msg = uploadErrorMessage(err, 'producerUi.common.uploadFailed');
       if (isTrailer) { this.resubmitTrailerError.set(msg); this.isUploadingRTrailer.set(false); }
       else           { this.resubmitFilmError.set(msg);    this.isUploadingRFilm.set(false); }
     });

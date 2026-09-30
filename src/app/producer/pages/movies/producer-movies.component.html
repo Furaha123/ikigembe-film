@@ -449,7 +449,7 @@
                 <p class="rs-drop-hint">{{ 'producerUi.resubmit.trailerHint' | translate }}</p>
                 <label class="rs-pick-btn">
                   {{ 'producerUi.common.browseFiles' | translate }}
-                  <input type="file" accept=".mp4,.mov" hidden (change)="onRTrailerSelect($event)" />
+                  <input type="file" [accept]="videoAccept" hidden (change)="onRTrailerSelect($event)" />
                 </label>
               </div>
             } @else {
@@ -500,7 +500,7 @@
                 <p class="rs-drop-hint">{{ 'producerUi.resubmit.filmHint' | translate }}</p>
                 <label class="rs-pick-btn">
                   {{ 'producerUi.common.browseFiles' | translate }}
-                  <input type="file" accept=".mp4,.mov" hidden (change)="onRFilmSelect($event)" />
+                  <input type="file" [accept]="videoAccept" hidden (change)="onRFilmSelect($event)" />
                 </label>
               </div>
             } @else {

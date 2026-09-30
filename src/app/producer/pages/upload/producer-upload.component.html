@@ -366,7 +366,7 @@
               }
             }
 
-            <input #trailerInput type="file" accept=".mp4,.mov,video/mp4,video/quicktime"
+            <input #trailerInput type="file" [accept]="videoAccept"
                    class="hidden-input" (change)="onTrailerSelect($event)" />
           </div>
 
@@ -444,9 +444,13 @@
               }
             }
 
-            <input #movieInput type="file" accept=".mp4,.mov,video/mp4,video/quicktime"
+            <input #movieInput type="file" [accept]="videoAccept"
                    class="hidden-input" (change)="onMovieSelect($event)" />
           </div>
+
+          @if (movieUploadError()) {
+            <div class="error-box single" role="alert">{{ movieUploadError()! | translate }}</div>
+          }
 
           @if (movieErrors().length > 0) {
             <div class="error-box list">
@@ -513,7 +517,7 @@
               </div>
             }
 
-            <input #copyrightInput type="file" accept=".pdf,.jpg,.jpeg,.png,application/pdf,image/jpeg,image/png"
+            <input #copyrightInput type="file" [accept]="documentAccept"
                    class="hidden-input" (change)="onCopyrightSelect($event)" />
           </div>
 

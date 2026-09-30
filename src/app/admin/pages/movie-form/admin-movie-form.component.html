@@ -127,7 +127,7 @@
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>
                 <span>{{ (f === 'video' ? 'admin.movieForm.uploadVideo' : 'admin.movieForm.uploadTrailer') | translate }}</span>
                 <span class="file-hint">MP4, MOV, MKV</span>
-                <input [id]="'f-' + f" type="file" accept="video/*" (change)="onVideoChange($event, $any(f))" />
+                <input [id]="'f-' + f" type="file" [accept]="videoAccept" (change)="onVideoChange($event, $any(f))" />
               </label>
             } @else {
               <div class="file-selected">

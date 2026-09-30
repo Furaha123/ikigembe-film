@@ -3,11 +3,13 @@ import { CommonModule } from '@angular/common';
 import { HttpErrorResponse } from '@angular/common/http';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
-import { TranslatePipe } from '@ngx-translate/core';
+import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { AdminService } from '../../services/admin.service';
 import { MovieService } from '../../../shared/services/movie.service';
 import { MovieUploadService } from '../../../shared/services/movie-upload.service';
 import { MultipartUploadService, UploadAbortedError } from '../../../shared/services/multipart-upload.service';
+import { ALLOWED_VIDEO_EXTENSIONS, extensionList, hasAllowedExtension, VIDEO_ACCEPT } from '../../../shared/models/upload.constants';
+import { uploadErrorMessage } from '../../../shared/utils/upload-error';
 import { ProducerItem } from '../../models/admin.interface';
 import { MovieDetailResponse } from '../../../shared/models/movie-api.interface';
 import { apiErrorMessage } from '../../../shared/utils/api-error';
@@ -54,6 +56,9 @@ export class AdminMovieFormComponent implements OnInit, OnDestroy {
   private readonly fb            = inject(FormBuilder);
   private readonly router        = inject(Router);
   private readonly route         = inject(ActivatedRoute);
+  private readonly translate     = inject(TranslateService);
+
+  readonly videoAccept = VIDEO_ACCEPT;
 
   // ── Mode ──────────────────────────────────────────────────────────────
   editId     = signal<number | null>(null);
@@ -156,8 +161,8 @@ export class AdminMovieFormComponent implements OnInit, OnDestroy {
     const file = input.files?.[0] ?? null;
     input.value = '';
     if (!file) return;
-    if (!file.type.startsWith('video/')) {
-      this.state(field).set({ ...EMPTY_UPLOAD, error: 'admin.movieForm.errors.videoType' });
+    if (!hasAllowedExtension(file.name, ALLOWED_VIDEO_EXTENSIONS)) {
+      this.state(field).set({ ...EMPTY_UPLOAD, error: this.translate.instant('uploadErrors.videoType', { types: extensionList(ALLOWED_VIDEO_EXTENSIONS) }) });
       return;
     }
     if (field === 'video') this.filesError.update(e => ({ ...e, video: undefined }));
@@ -190,7 +195,7 @@ export class AdminMovieFormComponent implements OnInit, OnDestroy {
       s.set({ file, key, pct: 100, uploading: false, error: null });
     }).catch((err: unknown) => {
       if (this.controllers[field] !== controller || err instanceof UploadAbortedError) return;
-      s.set({ file, key: null, pct: 0, uploading: false, error: 'admin.movieForm.errors.uploadFailed' });
+      s.set({ file, key: null, pct: 0, uploading: false, error: uploadErrorMessage(err, 'admin.movieForm.errors.uploadFailed') });
     }).finally(() => {
       if (this.controllers[field] === controller) delete this.controllers[field];
     });

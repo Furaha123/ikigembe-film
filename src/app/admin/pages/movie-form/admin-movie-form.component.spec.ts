@@ -7,7 +7,7 @@ import { AdminMovieFormComponent } from './admin-movie-form.component';
 import { AdminService } from '../../services/admin.service';
 import { MovieService } from '../../../shared/services/movie.service';
 import { MovieUploadService } from '../../../shared/services/movie-upload.service';
-import { MultipartUploadService } from '../../../shared/services/multipart-upload.service';
+import { MultipartUploadService, UploadError } from '../../../shared/services/multipart-upload.service';
 import { MultipartUploadApi } from '../../../shared/models/upload.interface';
 import { MovieDetailResponse } from '../../../shared/models/movie-api.interface';
 import { ProducerItem } from '../../models/admin.interface';
@@ -161,7 +161,7 @@ describe('AdminMovieFormComponent (film upload)', () => {
     create();
     pick('#f-video', new File(['x'], 'doc.pdf', { type: 'application/pdf' }));
     expect(uploader.upload).not.toHaveBeenCalled();
-    expect(c.video().error).toBe('admin.movieForm.errors.videoType');
+    expect(c.video().error).toBe('uploadErrors.videoType');
   });
 
   it('edit mode: prefills the producer from producer_profile and only sends a new video_key when replaced', async () => {
@@ -189,5 +189,27 @@ describe('AdminMovieFormComponent (film upload)', () => {
     c.save();
     fixture.detectChanges();
     expect(el().querySelector('.save-error')?.textContent).toContain('video_key: Invalid key.');
+  });
+
+  it('shows the translated session-expired message when the upload no longer belongs to the account', async () => {
+    uploader.upload.and.rejectWith(new UploadError('session', 403, 'This upload does not belong to your account.'));
+    create();
+    pick('#f-video', videoFile);
+    await settle();
+    fixture.detectChanges();
+    expect(c.video().error).toBe('uploadErrors.sessionExpired');
+    expect(uploader.upload).toHaveBeenCalledTimes(1);
+  });
+
+  it('rejects .webm / .exe / .docx without uploading, accepts MOVIE.MP4', async () => {
+    create();
+    for (const name of ['clip.webm', 'setup.exe', 'notes.docx']) {
+      pick('#f-video', new File(['x'], name));
+      expect(c.video().error).withContext(name).toBe('uploadErrors.videoType');
+    }
+    expect(uploader.upload).not.toHaveBeenCalled();
+    pick('#f-video', new File(['x'], 'MOVIE.MP4'));
+    await settle();
+    expect(uploader.upload).toHaveBeenCalledTimes(1);
   });
 });

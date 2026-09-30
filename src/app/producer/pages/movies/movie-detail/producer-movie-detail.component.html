@@ -548,7 +548,7 @@
         <label class="resubmit-file-btn" [class.has-file]="resubmitVideoFile()">
           <svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16"><path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM14 13v4h-4v-4H7l5-5 5 5h-3z"/></svg>
           {{ resubmitVideoFile() ? resubmitVideoFile()!.name : ('producerUi.movieDetail.chooseVideo' | translate) }}
-          <input type="file" accept="video/*" class="hidden-input" (change)="onResubmitVideoSelected($event)" />
+          <input type="file" [accept]="videoAccept" class="hidden-input" (change)="onResubmitVideoSelected($event)" />
         </label>
         @if (resubmitVideoUploading()) {
           <div class="resubmit-progress-bar"><div class="resubmit-progress-fill" [style.width.%]="resubmitVideoProgress()"></div></div>
@@ -563,7 +563,7 @@
         <label class="resubmit-file-btn" [class.has-file]="resubmitCopyrightFile()">
           <svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6zm-1 1.5L18.5 9H13V3.5z"/></svg>
           {{ resubmitCopyrightFile() ? resubmitCopyrightFile()!.name : ('producerUi.movieDetail.chooseCopyright' | translate) }}
-          <input type="file" accept=".pdf,.jpg,.jpeg,.png" class="hidden-input" (change)="onResubmitCopyrightSelected($event)" />
+          <input type="file" [accept]="documentAccept" class="hidden-input" (change)="onResubmitCopyrightSelected($event)" />
         </label>
         @if (resubmitCopyrightUploading()) {
           <div class="resubmit-progress-bar"><div class="resubmit-progress-fill" [style.width.%]="resubmitCopyrightProgress()"></div></div>

@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { HttpErrorResponse } from '@angular/common/http';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { RouterLink } from '@angular/router';
-import { TranslatePipe } from '@ngx-translate/core';
+import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { HeaderComponent } from '../../../core/components/header/header.component';
 import { FooterComponent } from '../../../core/components/footer/footer.component';
 import { ActorNavComponent } from '../actor-nav/actor-nav.component';
@@ -11,11 +11,11 @@ import { PaymentModalComponent } from '../../../shared/components/payment-modal/
 import { VideoPlayerComponent } from '../../../shared/components/video-player/video-player.component';
 import { ActorMarketplaceService } from '../../../shared/services/actor-marketplace.service';
 import { MultipartUploadService, UploadAbortedError } from '../../../shared/services/multipart-upload.service';
+import { ALLOWED_VIDEO_EXTENSIONS, extensionList, hasAllowedExtension, VIDEO_ACCEPT } from '../../../shared/models/upload.constants';
+import { uploadErrorMessage } from '../../../shared/utils/upload-error';
 import { ActorVideo, ServicePurchase } from '../../../shared/models/marketplace.interface';
 import { actorVideoStatusClass } from '../../../shared/utils/marketplace-status';
 import { apiErrorMessage } from '../../../shared/utils/api-error';
-
-const VIDEO_EXT = /\.(mp4|mov|m4v|webm)$/i;
 
 export interface VideoUploadState {
   pct: number;
@@ -37,6 +37,9 @@ export class ActorVideosComponent implements OnInit, OnDestroy {
   private readonly fb = inject(FormBuilder);
   private readonly marketplace = inject(ActorMarketplaceService);
   private readonly uploader = inject(MultipartUploadService);
+  private readonly translate = inject(TranslateService);
+
+  readonly videoAccept = VIDEO_ACCEPT;
 
   videos   = signal<ActorVideo[]>([]);
   loading  = signal(true);
@@ -112,8 +115,8 @@ export class ActorVideosComponent implements OnInit, OnDestroy {
     const file = input.files?.[0];
     input.value = '';
     if (!file) return;
-    if (!file.type.startsWith('video/') || !VIDEO_EXT.test(file.name)) {
-      this.setUpload(video.id, { pct: 0, uploading: false, error: 'marketplace.videos.badFile' });
+    if (!hasAllowedExtension(file.name, ALLOWED_VIDEO_EXTENSIONS)) {
+      this.setUpload(video.id, { pct: 0, uploading: false, error: this.translate.instant('uploadErrors.videoType', { types: extensionList(ALLOWED_VIDEO_EXTENSIONS) }) });
       return;
     }
 
@@ -135,7 +138,7 @@ export class ActorVideosComponent implements OnInit, OnDestroy {
       }
       this.setUpload(video.id, {
         pct: 0, uploading: false,
-        error: apiErrorMessage(err) ?? 'marketplace.videos.uploadFailed',
+        error: uploadErrorMessage(err, 'marketplace.videos.uploadFailed'),
       });
     }).finally(() => {
       if (this.controllers.get(video.id) === controller) this.controllers.delete(video.id);

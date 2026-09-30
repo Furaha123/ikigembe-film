@@ -8,6 +8,10 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { ProducerService, ProducerMovieDetail, FilmResubmitPayload } from '../../../services/producer.service';
 import { MultipartUploadService, UploadAbortedError } from '../../../../shared/services/multipart-upload.service';
 import { apiErrorMessage, UiError } from '../../../../shared/utils/api-error';
+import { staleResubmitKey, uploadErrorMessage } from '../../../../shared/utils/upload-error';
+import {
+  ALLOWED_DOCUMENT_EXTENSIONS, ALLOWED_VIDEO_EXTENSIONS, DOCUMENT_ACCEPT, VIDEO_ACCEPT, extensionList, hasAllowedExtension,
+} from '../../../../shared/models/upload.constants';
 import { VideoPlayerComponent } from '../../../../shared/components/video-player/video-player.component';
 import {
   Chart, LineController, LineElement, PointElement,
@@ -116,6 +120,8 @@ export class ProducerMovieDetailComponent implements OnInit, OnDestroy {
   resubmitCopyrightError       = signal<string | null>(null); // translation key
 
   resubmitLoading = signal(false);
+  readonly videoAccept    = VIDEO_ACCEPT;
+  readonly documentAccept = DOCUMENT_ACCEPT;
   resubmitError   = signal<UiError | null>(null);
   resubmitSuccess = signal(false);
 
@@ -555,6 +561,11 @@ export class ProducerMovieDetailComponent implements OnInit, OnDestroy {
     this.resubmitVideoKey.set(null);
     this.resubmitVideoError.set(null);
     this.resubmitVideoProgress.set(0);
+    if (!hasAllowedExtension(file.name, ALLOWED_VIDEO_EXTENSIONS)) {
+      // Fail fast: `accept` is only a hint and the backend would reject it anyway.
+      this.resubmitVideoError.set(this.translate.instant('uploadErrors.videoType', { types: extensionList(ALLOWED_VIDEO_EXTENSIONS) }));
+      return;
+    }
     this.uploadResubmitFile(file, 'video');
   }
 
@@ -565,6 +576,10 @@ export class ProducerMovieDetailComponent implements OnInit, OnDestroy {
     this.resubmitCopyrightKey.set(null);
     this.resubmitCopyrightError.set(null);
     this.resubmitCopyrightProgress.set(0);
+    if (!hasAllowedExtension(file.name, ALLOWED_DOCUMENT_EXTENSIONS)) {
+      this.resubmitCopyrightError.set(this.translate.instant('uploadErrors.documentType', { types: extensionList(ALLOWED_DOCUMENT_EXTENSIONS) }));
+      return;
+    }
     this.uploadResubmitFile(file, 'copyright');
   }
 
@@ -589,7 +604,7 @@ export class ProducerMovieDetailComponent implements OnInit, OnDestroy {
       setKey.set(key);
       setProgress.set(100);
     }).catch(err => {
-      if (!(err instanceof UploadAbortedError)) setError.set('movieDetail.resubmit.uploadFailed');
+      if (!(err instanceof UploadAbortedError)) setError.set(uploadErrorMessage(err, 'movieDetail.resubmit.uploadFailed'));
     }).finally(() => {
       if (this.resubmitUploads[type] === controller) {
         this.resubmitUploads[type] = null;
@@ -640,6 +655,18 @@ export class ProducerMovieDetailComponent implements OnInit, OnDestroy {
       },
       error: (err) => {
         this.resubmitLoading.set(false);
+        const stale = staleResubmitKey(err);
+        if (stale) {
+          // The stored key can't be used again: drop it so the user uploads the file afresh.
+          const [key, file] = stale === 'video'
+            ? [this.resubmitVideoKey, this.resubmitVideoFile]
+            : [this.resubmitCopyrightKey, this.resubmitCopyrightFile];
+          key.set(null);
+          file.set(null);
+          this.resubmitError.set({ text: null, key: 'uploadErrors.reuploadThenResubmit' });
+          return;
+        }
+        // 400s carry a specific, actionable reason (wrong folder, unsupported extension, …).
         this.resubmitError.set({ text: apiErrorMessage(err), key: 'movieDetail.resubmit.failed' });
       },
     });

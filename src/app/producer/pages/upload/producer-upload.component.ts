@@ -5,6 +5,8 @@ import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { ProducerService } from '../../services/producer.service';
 import { MultipartUploadService } from '../../../shared/services/multipart-upload.service';
+import { ALLOWED_DOCUMENT_EXTENSIONS, ALLOWED_VIDEO_EXTENSIONS, DOCUMENT_ACCEPT, extensionList, hasAllowedExtension, VIDEO_ACCEPT } from '../../../shared/models/upload.constants';
+import { uploadErrorMessage } from '../../../shared/utils/upload-error';
 import { DatePickerComponent } from '../../../shared/components/date-picker/date-picker';
 
 type WizardStep = 'rules' | 'details' | 'trailer' | 'movie' | 'copyright' | 'review';
@@ -227,8 +229,8 @@ export class ProducerUploadComponent {
 
   private handleTrailerFile(file: File) {
     this.trailerUploadError.set(null);
-    if (!file.name.match(/\.(mp4|mov)$/i)) {
-      this.trailerUploadError.set('producerUi.common.videoFormatInvalid');
+    if (!hasAllowedExtension(file.name, ALLOWED_VIDEO_EXTENSIONS)) {
+      this.trailerUploadError.set(this.translate.instant('uploadErrors.videoType', { types: extensionList(ALLOWED_VIDEO_EXTENSIONS) }));
       return;
     }
     if (file.size > 100 * 1024 * 1024) {
@@ -264,7 +266,7 @@ export class ProducerUploadComponent {
 
   private handleMovieFile(file: File) {
     const errors: string[] = [];
-    if (!file.name.match(/\.(mp4|mov)$/i)) errors.push('producerUi.common.videoFormatInvalid');
+    if (!hasAllowedExtension(file.name, ALLOWED_VIDEO_EXTENSIONS)) errors.push(this.translate.instant('uploadErrors.videoType', { types: extensionList(ALLOWED_VIDEO_EXTENSIONS) }));
     if (file.size > 200 * 1024 * 1024) errors.push(this.translate.instant('producerUi.common.fileTooLarge', { size: 200 }));
     if (errors.length) { this.movieErrors.set(errors); return; }
     this.movieErrors.set([]);
@@ -301,9 +303,8 @@ export class ProducerUploadComponent {
   }
 
   private handleCopyrightFile(file: File) {
-    const allowed = /\.(pdf|jpg|jpeg|png)$/i;
-    if (!file.name.match(allowed)) {
-      this.copyrightError.set('producerUi.upload.copyrightType');
+    if (!hasAllowedExtension(file.name, ALLOWED_DOCUMENT_EXTENSIONS)) {
+      this.copyrightError.set(this.translate.instant('uploadErrors.documentType', { types: extensionList(ALLOWED_DOCUMENT_EXTENSIONS) }));
       return;
     }
     if (file.size > 10 * 1024 * 1024) {
@@ -342,7 +343,7 @@ export class ProducerUploadComponent {
         this.isUploadingMovie.set(false);
       }
     }).catch(err => {
-      const msg = err?.message ?? 'producerUi.common.uploadFailed';
+      const msg = uploadErrorMessage(err, 'producerUi.common.uploadFailed'); // null = cancelled
       if (isTrailer) {
         this.trailerUploadError.set(msg);
         this.isUploadingTrailer.set(false);
@@ -352,6 +353,9 @@ export class ProducerUploadComponent {
       }
     });
   }
+
+  readonly videoAccept = VIDEO_ACCEPT;
+  readonly documentAccept = DOCUMENT_ACCEPT;
 
   // ── Submit ────────────────────────────────────────────
   submit() {
