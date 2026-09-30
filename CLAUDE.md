@@ -71,6 +71,7 @@ Actors are **Viewer** accounts with an actor profile — there is no Actor role.
 | `WatchProgressService` | `shared/services/watch-progress.service.ts` | Posts watch progress (interval/pause/end/close; keepalive fetch on unload) |
 | `DeviceIdService` | `core/services/device-id.service.ts` | Per-browser `ikigembe_device_id` for the single-device view policy |
 | `PaymentService` | `core/services/payment.service.ts` | Movie payment initiation, `pollUntilSettled()` (shared by all purchases), history with `purpose` |
+| `MovieUploadService` | `shared/services/movie-upload.service.ts` | `/movies/upload/*` endpoints, bound to a `field_name` (admin + producer) |
 | `MultipartUploadService` | `shared/services/multipart-upload.service.ts` | initiate → sign-part → complete (abort on error/cancel) for any `MultipartUploadApi` |
 | `ActorMarketplaceService` | `shared/services/actor-marketplace.service.ts` | Actor profile, talent videos (+upload API), casting calls, applications |
 | `CastingService` | `producer/services/casting.service.ts` | Producer casting calls, applications, directory pass, actor search, shortlist |
@@ -92,7 +93,7 @@ Actors are **Viewer** accounts with an actor profile — there is no Actor role.
 
 ### Uploads
 
-All uploads use the multipart flow through `MultipartUploadService`. Movie files: `ProducerService.movieUploadApi(field_name)` with `field_name` ∈ `video_file | trailer_file | thumbnail | backdrop | copyright_document` (it decides the storage bucket). Actor talent videos: `ActorMarketplaceService.videoUploadApi(videoId)`.
+All uploads use the multipart flow through `MultipartUploadService`. Movie files (admin **and** producer): `MovieUploadService.api(field_name)` (`ProducerService.movieUploadApi()` delegates to it) with `field_name` ∈ `video_file | trailer_file | thumbnail | backdrop | copyright_document` (it decides the storage bucket). `/movies/create/` and `/movies/<id>/update/` accept only `video_key` / `trailer_key` for video — never post the raw video file; images (thumbnail, backdrop) are sent as files. Admin-created films link the producer via `producer_profile` (account id). Actor talent videos: `ActorMarketplaceService.videoUploadApi(videoId)`.
 
 ### Marketplace purchases
 
