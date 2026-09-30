@@ -95,6 +95,10 @@ Actors are **Viewer** accounts with an actor profile — there is no Actor role.
 
 All uploads use the multipart flow through `MultipartUploadService`. Movie files (admin **and** producer): `MovieUploadService.api(field_name)` (`ProducerService.movieUploadApi()` delegates to it) with `field_name` ∈ `video_file | trailer_file | thumbnail | backdrop | copyright_document` (it decides the storage bucket). `/movies/create/` and `/movies/<id>/update/` accept only `video_key` / `trailer_key` for video — never post the raw video file; images (thumbnail, backdrop) are sent as files. Admin-created films link the producer via `producer_profile` (account id). Actor talent videos: `ActorMarketplaceService.videoUploadApi(videoId)`.
 
+- **Upload errors are typed.** `MultipartUploadService` throws `UploadAbortedError` (user cancel or logout — stay silent) or `UploadError` with `kind: 'session'` (403 from sign-part/complete: the upload belongs to another account/session; ask the user to start again, never auto-retry) or `kind: 'storage'` (part PUT failed; a 403 is re-signed once first). Map errors for the UI with `uploadErrorMessage()` (`shared/utils/upload-error.ts`). Uploads are cancelled automatically when `AuthService.isLoggedIn` turns false.
+- **Allowed file types live in one place:** `shared/models/upload.constants.ts` (`ALLOWED_VIDEO_EXTENSIONS`, `ALLOWED_DOCUMENT_EXTENSIONS`, `hasAllowedExtension()`), mirroring the backend's `_ALLOWED_VIDEO_EXTS`. Check files before calling the API; `accept` attributes are only a hint.
+- **Never parse or build a `file_key`** — it's opaque (`movies/<folder>/<user_id>/<uuid><ext>` today, may change).
+
 ### Marketplace purchases
 
 Every marketplace fee goes through `PaymentModalComponent` with a `ServicePurchase` (`[service]` input) and shares `PaymentService.pollUntilSettled()`. A `503` means pricing isn't configured yet ("This service isn't available yet").
