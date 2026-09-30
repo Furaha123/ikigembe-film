@@ -51,7 +51,7 @@ export class MyListComponent implements OnInit {
   private loadList() {
     this.movieService.getMyList().subscribe({
       next: (list) => { this.movies.set(list); this.loading.set(false); },
-      error: () => { this.error.set('Could not load your list. Please try again.'); this.loading.set(false); }
+      error: () => { this.error.set('myList.loadError'); this.loading.set(false); }
     });
   }
 

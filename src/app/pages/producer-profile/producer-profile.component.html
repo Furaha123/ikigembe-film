@@ -27,13 +27,13 @@
       <circle cx="12" cy="12" r="10"/>
       <path d="m15 9-6 6M9 9l6 6"/>
     </svg>
-    <h2>Producer not found</h2>
-    <p>This producer may not exist or their page is unavailable.</p>
+    <h2>{{ 'producersPage.profile.notFoundTitle' | translate }}</h2>
+    <p>{{ 'producersPage.profile.notFoundBody' | translate }}</p>
     <a routerLink="/producers" class="pp-back-link">
       <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
         <path d="M15.41 16.59L10.83 12l4.58-4.59L14 6l-6 6 6 6z"/>
       </svg>
-      Browse all producers
+      {{ 'producersPage.profile.browseAll' | translate }}
     </a>
   </div>
 }
@@ -54,7 +54,7 @@
             <svg viewBox="0 0 24 24" width="12" height="12" fill="currentColor">
               <path d="M4 6H2v14c0 1.1.9 2 2 2h14v-2H4V6zm16-4H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-8 12.5v-9l6 4.5-6 4.5z"/>
             </svg>
-            {{ totalMovies() }} film{{ totalMovies() === 1 ? '' : 's' }}
+            {{ (totalMovies() === 1 ? 'producersPage.filmCountOne' : 'producersPage.filmCountOther') | translate: { n: totalMovies() } }}
           </span>
           <h1 class="pp-producer-name">{{ p.name }}</h1>
           @if (p.bio) {
@@ -64,7 +64,7 @@
             <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor">
               <path d="M15.41 16.59L10.83 12l4.58-4.59L14 6l-6 6 6 6z"/>
             </svg>
-            All producers
+            {{ 'producersPage.profile.allProducers' | translate }}
           </a>
         </div>
       </div>
@@ -76,10 +76,10 @@
   <section class="pp-films-section">
     <div class="pp-films-header">
       <h2 class="pp-films-title">
-        Films by <span class="pp-films-title__gold">{{ p.name }}</span>
+        {{ 'producersPage.profile.filmsBy' | translate }} <span class="pp-films-title__gold">{{ p.name }}</span>
       </h2>
       @if (totalMovies() > 0 && totalPages() > 1) {
-        <span class="pp-page-indicator">Page {{ currentPage() }} of {{ totalPages() }}</span>
+        <span class="pp-page-indicator">{{ 'producersPage.profile.pageOf' | translate: { page: currentPage(), total: totalPages() } }}</span>
       }
     </div>
 
@@ -100,7 +100,7 @@
           <rect x="2" y="2" width="20" height="20" rx="2.5"/>
           <path d="M10 8l6 4-6 4V8z"/>
         </svg>
-        <p>No films available from this producer yet.</p>
+        <p>{{ 'producersPage.profile.noFilms' | translate }}</p>
       </div>
 
     } @else {
@@ -117,7 +117,7 @@
                 </div>
               </div>
               @if (movie.has_free_preview) {
-                <span class="pp-badge pp-badge--free">Free</span>
+                <span class="pp-badge pp-badge--free">{{ 'producersPage.profile.free' | translate }}</span>
               }
             </div>
             <div class="pp-card-info">
@@ -131,7 +131,7 @@
                   <svg viewBox="0 0 24 24" width="11" height="11" fill="#ffc107">
                     <path d="M12 2l3.09 6.26L22 9.27l-5 4.87L18.18 22 12 18.56 5.82 22 7 14.14l-5-4.87 6.91-1.01z"/>
                   </svg>
-                  {{ movie.rating ? movie.rating.toFixed(1) : 'N/A' }}
+                  {{ movie.rating ? movie.rating.toFixed(1) : ('producersPage.profile.notAvailable' | translate) }}
                 </span>
               </div>
             </div>
@@ -145,7 +145,7 @@
             <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
               <path d="M15.41 16.59L10.83 12l4.58-4.59L14 6l-6 6 6 6z"/>
             </svg>
-            Previous
+            {{ 'producersPage.profile.previous' | translate }}
           </button>
           <div class="pp-pag-info">
             <span class="pp-pag-current">{{ currentPage() }}</span>
@@ -153,7 +153,7 @@
             <span class="pp-pag-total">{{ totalPages() }}</span>
           </div>
           <button class="pp-pag-btn" [disabled]="currentPage() === totalPages()" (click)="nextPage()">
-            Next
+            {{ 'producersPage.profile.next' | translate }}
             <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
               <path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6z"/>
             </svg>

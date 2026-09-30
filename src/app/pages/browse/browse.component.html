@@ -3,7 +3,7 @@
 @if (isLoading) {
   <div class="state-screen">
     <div class="loader-ring"></div>
-    <p>Loading movies…</p>
+    <p>{{ 'browse.loading' | translate }}</p>
   </div>
 } @else if (isEmpty) {
   <div class="state-screen">
@@ -13,19 +13,19 @@
         <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75l2.25 2.25 4.5-4.5"/>
       </svg>
     </div>
-    <h2>No movies available right now</h2>
-    <p>Our team is working on adding new content.<br/>Check back soon — great African cinema is on the way.</p>
-    <div class="empty-badge">Coming Soon</div>
+    <h2>{{ 'browse.emptyTitle' | translate }}</h2>
+    <p>{{ 'browse.emptyLine1' | translate }}<br/>{{ 'browse.emptyLine2' | translate }}</p>
+    <div class="empty-badge">{{ 'browse.comingSoon' | translate }}</div>
   </div>
 } @else {
   <app-banner [bannerTitle]="bannerTitle" [bannerOverview]="bannerOverview" [trailerUrl]="bannerTrailerUrl" [bannerBackdropUrl]="bannerBackdropUrl" [movieId]="bannerId" />
 
   <app-ad-slot placement="home_hero" />
-  <app-movie-carousel [title]="'Now Playing'" [videoContents]="nowPlayingMovies" />
+  <app-movie-carousel [title]="'browse.nowPlaying' | translate" [videoContents]="nowPlayingMovies" />
   <app-ad-slot placement="home_banner" />
-  <app-movie-carousel [title]="'Popular Movies'" [videoContents]="popularMovies" />
+  <app-movie-carousel [title]="'browse.popular' | translate" [videoContents]="popularMovies" />
   <app-ad-slot placement="browse_inline" />
-  <app-movie-carousel [title]="'Upcoming Movies'" [videoContents]="upcomingMovies" />
+  <app-movie-carousel [title]="'browse.upcoming' | translate" [videoContents]="upcomingMovies" />
 }
 
 <app-footer />

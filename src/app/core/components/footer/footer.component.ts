@@ -1,6 +1,7 @@
 import { Component, OnInit, PLATFORM_ID, inject, signal } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { RouterLink } from '@angular/router';
+import { TranslatePipe } from '@ngx-translate/core';
 import { CmsService } from '../../services/cms.service';
 import { CmsPageSummary } from '../../../shared/models/cms.interface';
 
@@ -11,6 +12,8 @@ const CMS_ROUTES: Record<string, string> = {
 
 export interface FooterCmsLink {
   title: string;
+  /** Translation key used instead of `title` (for the built-in fallback link). */
+  titleKey?: string;
   route: string;
 }
 
@@ -24,7 +27,7 @@ export function toFooterLinks(pages: CmsPageSummary[]): FooterCmsLink[] {
 @Component({
   selector: 'app-footer',
   standalone: true,
-  imports: [RouterLink],
+  imports: [RouterLink, TranslatePipe],
   templateUrl: './footer.component.html',
   styleUrls: ['./footer.component.scss']
 })
@@ -35,7 +38,7 @@ export class FooterComponent implements OnInit {
   currentYear = new Date().getFullYear();
 
   /** From GET /api/pages/; the terms link stays available if the request fails. */
-  cmsLinks = signal<FooterCmsLink[]>([{ title: 'Terms & Conditions', route: '/terms' }]);
+  cmsLinks = signal<FooterCmsLink[]>([{ title: 'Terms & Conditions', titleKey: 'footer.termsFallback', route: '/terms' }]);
 
   ngOnInit(): void {
     // Browser only: keeps prerendering from calling the API once per route.
@@ -48,16 +51,16 @@ export class FooterComponent implements OnInit {
 
   footerLinks = [
     {
-      title: 'Browse',
-      links: ['Movies', 'TV Shows', 'Top Rated', 'New Releases', 'Coming Soon']
+      title: 'footer.browse.title',
+      links: ['footer.browse.movies', 'footer.browse.tvShows', 'footer.browse.topRated', 'footer.browse.newReleases', 'footer.browse.comingSoon']
     },
     {
-      title: 'Genres',
-      links: ['Action', 'Drama', 'Comedy', 'Sci-Fi', 'Horror', 'Documentary']
+      title: 'footer.genres.title',
+      links: ['footer.genres.action', 'footer.genres.drama', 'footer.genres.comedy', 'footer.genres.sciFi', 'footer.genres.horror', 'footer.genres.documentary']
     },
     {
-      title: 'Support',
-      links: ['Help Center', 'FAQ']
+      title: 'footer.support.title',
+      links: ['footer.support.helpCenter', 'footer.support.faq']
     }
   ];
 

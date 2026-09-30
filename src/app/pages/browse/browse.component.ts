@@ -1,6 +1,7 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { SeoService } from '../../core/services/seo.service';
 import { CommonModule } from '@angular/common';
+import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { forkJoin, of, catchError } from 'rxjs';
 import { BannerComponent } from '../../core/components/banner/banner.component';
 import { AdSlotComponent } from '../../shared/components/ad-slot/ad-slot.component';
@@ -14,7 +15,7 @@ import { AuthService } from '../../shared/services/auth.service';
 @Component({
   selector: 'app-browse',
   standalone: true,
-  imports: [CommonModule, HeaderComponent, BannerComponent, MovieCarouselComponent, FooterComponent, AdSlotComponent],
+  imports: [CommonModule, HeaderComponent, BannerComponent, MovieCarouselComponent, FooterComponent, AdSlotComponent, TranslatePipe],
   templateUrl: './browse.component.html',
   styleUrls: ['./browse.component.scss']
 })
@@ -22,6 +23,7 @@ export class BrowseComponent implements OnInit {
   auth = inject(AuthService);
   movieService = inject(MovieService);
   private seo = inject(SeoService);
+  private translate = inject(TranslateService);
   userProfileImg = '';
 
   bannerTitle = '';
@@ -55,7 +57,7 @@ export class BrowseComponent implements OnInit {
   ];
 
   ngOnInit(): void {
-    this.seo.set({ title: 'Browse Movies', description: 'Discover the latest African films, documentaries, and short movies on Ikigembe.', noIndex: true });
+    this.seo.set({ title: this.translate.instant('browse.seoTitle'), description: this.translate.instant('browse.seoDescription'), noIndex: true });
     forkJoin(this.sources).subscribe((res: any[]) => {
       const [movies, popular, nowPlaying, upcoming, topRated] = res;
       this.movies = movies.results as IVideoContent[];

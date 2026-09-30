@@ -2,7 +2,7 @@ import { Component, Input, Output, EventEmitter, signal, inject, OnDestroy } fro
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpErrorResponse } from '@angular/common/http';
-import { TranslatePipe } from '@ngx-translate/core';
+import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { Observable, Subject, takeUntil } from 'rxjs';
 import { PaymentService } from '../../../core/services/payment.service';
 import { ServicePurchase } from '../../models/marketplace.interface';
@@ -22,11 +22,12 @@ export class PaymentModalComponent implements OnDestroy {
   @Output() closed = new EventEmitter<void>();
 
   private readonly paymentService = inject(PaymentService);
+  private readonly translate = inject(TranslateService);
   private readonly destroy$ = new Subject<void>();
 
   phoneNumber     = signal('');
   loading         = signal(false);
-  loadingMessage  = signal('Processing...');
+  loadingMessage  = signal('paymentModal.processing'); // translation key
   success         = signal(false);
   error           = signal('');
   errorKey        = signal('');       // translated error when there is no backend message
@@ -59,18 +60,18 @@ export class PaymentModalComponent implements OnDestroy {
   pay() {
     const raw = this.phoneNumber().trim();
     if (!raw) {
-      this.error.set('Please enter your phone number.');
+      this.showErrorKey('paymentModal.errors.phoneRequired');
       return;
     }
 
     const normalised = this.normaliseRwandaPhone(raw);
     if (!normalised) {
-      this.error.set('Enter a valid Rwandan number starting with 072, 073, 078 or 079.');
+      this.showErrorKey('paymentModal.errors.invalidPhone');
       return;
     }
 
     this.loading.set(true);
-    this.loadingMessage.set('Processing...');
+    this.loadingMessage.set('paymentModal.processing');
     this.error.set('');
     this.errorKey.set('');
 
@@ -81,7 +82,7 @@ export class PaymentModalComponent implements OnDestroy {
     start.subscribe({
       next: (res) => {
         this.chargedAmount.set(res.amount ?? null);
-        this.loadingMessage.set('Check your phone to approve the payment...');
+        this.loadingMessage.set('paymentModal.approveOnPhone');
         this.pollStatus(res.deposit_id);
       },
       error: (err: HttpErrorResponse) => {
@@ -93,7 +94,7 @@ export class PaymentModalComponent implements OnDestroy {
         }
         // Backend errors are { error } (e.g. 402 already purchased, 409 payment pending).
         this.error.set(
-          err?.error?.error ?? err?.error?.message ?? err?.error?.detail ?? 'Payment failed. Please try again.'
+          err?.error?.error ?? err?.error?.message ?? err?.error?.detail ?? this.translate.instant('paymentModal.errors.failed')
         );
       }
     });
@@ -111,20 +112,26 @@ export class PaymentModalComponent implements OnDestroy {
           setTimeout(() => this.paid.emit(), 1800);
         } else if (res.status === 'Failed') {
           this.loading.set(false);
-          this.error.set('Payment was declined. Please try again.');
+          this.showErrorKey('paymentModal.errors.declined');
         }
       },
       error: () => {
         this.loading.set(false);
-        this.error.set('Could not verify payment. Please contact support.');
+        this.showErrorKey('paymentModal.errors.verifyFailed');
       },
       complete: () => {
         if (this.loading()) {
           this.loading.set(false);
-          this.error.set('Payment confirmation timed out. If you were charged, please contact support.');
+          this.showErrorKey('paymentModal.errors.timedOut');
         }
       }
     });
+  }
+
+  /** Shows a translated local error (backend messages go through `error`). */
+  private showErrorKey(key: string) {
+    this.error.set('');
+    this.errorKey.set(key);
   }
 
   ngOnDestroy() {

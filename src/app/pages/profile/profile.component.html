@@ -7,14 +7,14 @@
   <!-- ── Account Info ── -->
   <section class="card">
     <div class="card-header-row">
-      <h2 class="card-title">Account</h2>
+      <h2 class="card-title">{{ 'profile.account.title' | translate }}</h2>
       @if (!isLoadingProfile() && profile() && !isEditingProfile()) {
         <button class="btn-edit" (click)="openProfileEdit()">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
             <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
           </svg>
-          Edit
+          {{ 'profile.account.edit' | translate }}
         </button>
       }
     </div>
@@ -35,63 +35,63 @@
         <form [formGroup]="profileEditForm" (ngSubmit)="saveProfile()" class="edit-profile-form">
           <div class="form-row">
             <div class="field">
-              <label for="ef-first">First Name</label>
-              <input id="ef-first" type="text" formControlName="first_name" placeholder="First name" />
+              <label for="ef-first">{{ 'profile.account.firstName' | translate }}</label>
+              <input id="ef-first" type="text" formControlName="first_name" [placeholder]="'profile.account.firstNamePlaceholder' | translate" />
               @if (profileEditForm.get('first_name')?.touched && profileEditForm.get('first_name')?.invalid) {
-                <span class="field-error">Required</span>
+                <span class="field-error">{{ 'profile.account.required' | translate }}</span>
               }
             </div>
             <div class="field">
-              <label for="ef-last">Last Name</label>
-              <input id="ef-last" type="text" formControlName="last_name" placeholder="Last name" />
+              <label for="ef-last">{{ 'profile.account.lastName' | translate }}</label>
+              <input id="ef-last" type="text" formControlName="last_name" [placeholder]="'profile.account.lastNamePlaceholder' | translate" />
               @if (profileEditForm.get('last_name')?.touched && profileEditForm.get('last_name')?.invalid) {
-                <span class="field-error">Required</span>
+                <span class="field-error">{{ 'profile.account.required' | translate }}</span>
               }
             </div>
           </div>
           <div class="field">
-            <label for="ef-phone">Phone Number</label>
-            <input id="ef-phone" type="tel" formControlName="phone_number" placeholder="e.g. +250 7XX XXX XXX" />
+            <label for="ef-phone">{{ 'profile.account.phoneNumber' | translate }}</label>
+            <input id="ef-phone" type="tel" formControlName="phone_number" [placeholder]="'profile.account.phonePlaceholder' | translate" />
           </div>
           @if (profileError()) {
             <div class="error-msg">{{ profileError() }}</div>
           }
           <div class="edit-actions">
-            <button type="button" class="btn" (click)="cancelProfileEdit()">Cancel</button>
+            <button type="button" class="btn" (click)="cancelProfileEdit()">{{ 'profile.common.cancel' | translate }}</button>
             <button type="submit" class="btn gold" [disabled]="isSavingProfile()">
-              {{ isSavingProfile() ? 'Saving…' : 'Save Changes' }}
+              {{ (isSavingProfile() ? 'profile.account.saving' : 'profile.account.saveChanges') | translate }}
             </button>
           </div>
         </form>
       } @else {
         <div class="info-grid">
           <div class="info-item">
-            <span class="info-label">Email</span>
+            <span class="info-label">{{ 'profile.account.email' | translate }}</span>
             <span class="info-val">{{ profile()!.email }}</span>
           </div>
           <div class="info-item">
-            <span class="info-label">Phone</span>
+            <span class="info-label">{{ 'profile.account.phone' | translate }}</span>
             <span class="info-val">{{ profile()!.phone_number ?? '—' }}</span>
           </div>
           <div class="info-item">
-            <span class="info-label">Role</span>
+            <span class="info-label">{{ 'profile.account.role' | translate }}</span>
             <span class="info-val">{{ profile()!.role }}</span>
           </div>
           <div class="info-item">
-            <span class="info-label">Member Since</span>
+            <span class="info-label">{{ 'profile.account.memberSince' | translate }}</span>
             <span class="info-val">{{ profile()!.date_joined | date:'mediumDate' }}</span>
           </div>
           <div class="info-item">
-            <span class="info-label">Account Status</span>
+            <span class="info-label">{{ 'profile.account.accountStatus' | translate }}</span>
             <span class="status-dot" [class.active]="profile()!.is_active">
-              {{ profile()!.is_active ? 'Active' : 'Suspended' }}
+              {{ (profile()!.is_active ? 'profile.account.active' : 'profile.account.suspended') | translate }}
             </span>
           </div>
         </div>
       }
 
       @if (profileSuccess()) {
-        <div class="success-msg">Profile updated successfully.</div>
+        <div class="success-msg">{{ 'profile.account.updated' | translate }}</div>
       }
     }
   </section>
@@ -99,8 +99,8 @@
   <!-- ── Notification Preferences (viewer only) ── -->
   @if (userRole() !== 'Producer') {
   <section class="card">
-    <h2 class="card-title">Notification Preferences</h2>
-    <p class="card-desc">Choose how and when you want to receive notifications.</p>
+    <h2 class="card-title">{{ 'profile.notifications.title' | translate }}</h2>
+    <p class="card-desc">{{ 'profile.notifications.subtitle' | translate }}</p>
 
     @if (isLoadingNotifs()) {
       <div class="skeleton-block"></div>
@@ -110,8 +110,8 @@
         <div class="toggle-list">
           <label class="toggle-row" for="n-trailers">
             <div class="toggle-info">
-              <span class="toggle-label">New Trailer Alerts</span>
-              <span class="toggle-desc">Be notified when new trailers are released</span>
+              <span class="toggle-label">{{ 'profile.notifications.trailersLabel' | translate }}</span>
+              <span class="toggle-desc">{{ 'profile.notifications.trailersDesc' | translate }}</span>
             </div>
             <div class="toggle-wrap">
               <input type="checkbox" id="n-trailers" formControlName="notify_new_trailers" class="toggle-input" />
@@ -121,8 +121,8 @@
 
           <label class="toggle-row" for="n-movies">
             <div class="toggle-info">
-              <span class="toggle-label">New Movie Alerts</span>
-              <span class="toggle-desc">Be notified when new movies are published</span>
+              <span class="toggle-label">{{ 'profile.notifications.moviesLabel' | translate }}</span>
+              <span class="toggle-desc">{{ 'profile.notifications.moviesDesc' | translate }}</span>
             </div>
             <div class="toggle-wrap">
               <input type="checkbox" id="n-movies" formControlName="notify_new_movies" class="toggle-input" />
@@ -132,8 +132,8 @@
 
           <label class="toggle-row" for="n-promo">
             <div class="toggle-info">
-              <span class="toggle-label">Promotions</span>
-              <span class="toggle-desc">Deals, offers and platform news</span>
+              <span class="toggle-label">{{ 'profile.notifications.promotionsLabel' | translate }}</span>
+              <span class="toggle-desc">{{ 'profile.notifications.promotionsDesc' | translate }}</span>
             </div>
             <div class="toggle-wrap">
               <input type="checkbox" id="n-promo" formControlName="notify_promotions" class="toggle-input" />
@@ -143,15 +143,15 @@
         </div>
 
         @if (notifSuccess()) {
-          <div class="success-msg">Preferences saved successfully.</div>
+          <div class="success-msg">{{ 'profile.notifications.saved' | translate }}</div>
         }
         @if (notifError()) {
-          <div class="error-msg">{{ notifError() }}</div>
+          <div class="error-msg">{{ notifError()! | translate }}</div>
         }
 
         <div class="card-actions">
           <button type="submit" class="btn gold" [disabled]="isSavingNotifs()">
-            {{ isSavingNotifs() ? 'Saving...' : 'Save Preferences' }}
+            {{ (isSavingNotifs() ? 'profile.notifications.saving' : 'profile.notifications.save') | translate }}
           </button>
         </div>
       </form>
@@ -161,16 +161,16 @@
 
   <!-- ── Change Password ── -->
   <section class="card">
-    <h2 class="card-title">Change Password</h2>
-    <p class="card-desc">Use a strong password of at least 8 characters.</p>
+    <h2 class="card-title">{{ 'profile.password.title' | translate }}</h2>
+    <p class="card-desc">{{ 'profile.password.subtitle' | translate }}</p>
 
     <form [formGroup]="passwordForm" (ngSubmit)="savePassword()" class="password-form" novalidate>
 
       <div class="field">
-        <label for="p-current">Current Password</label>
-        <input id="p-current" type="password" formControlName="current_password" placeholder="Enter current password" />
+        <label for="p-current">{{ 'profile.password.current' | translate }}</label>
+        <input id="p-current" type="password" formControlName="current_password" [placeholder]="'profile.password.currentPlaceholder' | translate" />
         @if (passwordForm.get('current_password')?.invalid && passwordForm.get('current_password')?.touched) {
-          <span class="field-error">Current password is required</span>
+          <span class="field-error">{{ 'profile.password.currentRequired' | translate }}</span>
         } @else if (passwordErrors().current) {
           <span class="field-error">{{ passwordErrors().current }}</span>
         }
@@ -178,19 +178,19 @@
 
       <div class="form-row">
         <div class="field">
-          <label for="p-new">New Password</label>
-          <input id="p-new" type="password" formControlName="new_password" placeholder="At least 8 characters" />
+          <label for="p-new">{{ 'profile.password.new' | translate }}</label>
+          <input id="p-new" type="password" formControlName="new_password" [placeholder]="'profile.password.newPlaceholder' | translate" />
           @if (passwordForm.get('new_password')?.touched && passwordForm.get('new_password')?.hasError('required')) {
-            <span class="field-error">New password is required</span>
+            <span class="field-error">{{ 'profile.password.newRequired' | translate }}</span>
           } @else if (passwordForm.get('new_password')?.touched && passwordForm.get('new_password')?.hasError('minlength')) {
-            <span class="field-error">Minimum 8 characters</span>
+            <span class="field-error">{{ 'profile.password.minLength' | translate }}</span>
           } @else if (passwordErrors().new) {
             <span class="field-error">{{ passwordErrors().new }}</span>
           }
         </div>
         <div class="field">
-          <label for="p-confirm">Confirm New Password</label>
-          <input id="p-confirm" type="password" formControlName="confirm_password" placeholder="Repeat new password" />
+          <label for="p-confirm">{{ 'profile.password.confirm' | translate }}</label>
+          <input id="p-confirm" type="password" formControlName="confirm_password" [placeholder]="'profile.password.confirmPlaceholder' | translate" />
           @if (passwordErrors()['confirm']) {
             <span class="field-error">{{ passwordErrors()['confirm'] }}</span>
           }
@@ -201,12 +201,12 @@
         <div class="error-msg">{{ passwordErrors().general }}</div>
       }
       @if (passwordSuccess()) {
-        <div class="success-msg">Password changed successfully.</div>
+        <div class="success-msg">{{ 'profile.password.changed' | translate }}</div>
       }
 
       <div class="card-actions">
         <button type="submit" class="btn gold" [disabled]="isSavingPassword()">
-          {{ isSavingPassword() ? 'Updating...' : 'Update Password' }}
+          {{ (isSavingPassword() ? 'profile.password.updating' : 'profile.password.update') | translate }}
         </button>
       </div>
 
@@ -215,22 +215,22 @@
 
   @if (userRole() === 'Viewer') {
     <section class="card">
-      <h2 class="card-title">Become a Producer</h2>
-      <p class="card-desc">Share your stories with the world. Upload your films to Ikigembe and start earning.</p>
+      <h2 class="card-title">{{ 'profile.upgrade.title' | translate }}</h2>
+      <p class="card-desc">{{ 'profile.upgrade.subtitle' | translate }}</p>
 
       @if (!showUpgradeConfirm()) {
         <div class="card-actions">
-          <button class="btn gold" (click)="showUpgradeConfirm.set(true)">Become a Producer</button>
+          <button class="btn gold" (click)="showUpgradeConfirm.set(true)">{{ 'profile.upgrade.cta' | translate }}</button>
         </div>
       } @else {
-        <p class="upgrade-note">Your account will be upgraded to a Producer account. You'll complete a short onboarding to set up your producer profile.</p>
+        <p class="upgrade-note">{{ 'profile.upgrade.note' | translate }}</p>
         @if (upgradeError()) {
           <div class="error-msg">{{ upgradeError() }}</div>
         }
         <div class="edit-actions">
-          <button class="btn" (click)="showUpgradeConfirm.set(false)" [disabled]="isUpgrading()">Cancel</button>
+          <button class="btn" (click)="showUpgradeConfirm.set(false)" [disabled]="isUpgrading()">{{ 'profile.common.cancel' | translate }}</button>
           <button class="btn gold" (click)="upgradeToProducer()" [disabled]="isUpgrading()">
-            {{ isUpgrading() ? 'Upgrading…' : 'Confirm' }}
+            {{ (isUpgrading() ? 'profile.upgrade.upgrading' : 'profile.upgrade.confirm') | translate }}
           </button>
         </div>
       }
@@ -240,22 +240,22 @@
   @if (userRole() !== 'Producer') {
     <!-- Payment History -->
     <section class="card">
-      <h2 class="card-title">Payment History</h2>
+      <h2 class="card-title">{{ 'profile.payments.title' | translate }}</h2>
       <p class="card-desc">{{ 'payments.history.subtitle' | translate }}</p>
 
       @if (isLoadingPayments()) {
-        <div class="ph-loading">Loading...</div>
+        <div class="ph-loading">{{ 'profile.payments.loading' | translate }}</div>
       } @else if (payments().length === 0) {
-        <div class="ph-empty">No payments yet. Purchase a movie to see your history here.</div>
+        <div class="ph-empty">{{ 'profile.payments.empty' | translate }}</div>
       } @else {
         <div class="ph-table-wrap">
           <table class="ph-table">
             <thead>
               <tr>
                 <th>{{ 'payments.history.item' | translate }}</th>
-                <th>Amount</th>
-                <th>Status</th>
-                <th>Date</th>
+                <th>{{ 'profile.payments.amount' | translate }}</th>
+                <th>{{ 'profile.payments.status' | translate }}</th>
+                <th>{{ 'profile.payments.date' | translate }}</th>
               </tr>
             </thead>
             <tbody>

@@ -6,11 +6,12 @@ import { DataSaverService } from '../../core/services/data-saver.service';
 import { VideoPlayerComponent } from '../../shared/components/video-player/video-player.component';
 import { MoviePreview } from '../../shared/models/movie-api.interface';
 import { SeoService } from '../../core/services/seo.service';
+import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 
 @Component({
   selector: 'app-preview',
   standalone: true,
-  imports: [CommonModule, RouterLink, VideoPlayerComponent],
+  imports: [CommonModule, RouterLink, VideoPlayerComponent, TranslatePipe],
   templateUrl: './preview.component.html',
   styleUrl: './preview.component.scss',
 })
@@ -19,6 +20,7 @@ export class PreviewComponent implements OnInit {
   private readonly movieService = inject(MovieService);
   private readonly seo          = inject(SeoService);
   private readonly platformId   = inject(PLATFORM_ID);
+  private readonly translate    = inject(TranslateService);
   readonly dataSaver            = inject(DataSaverService);
 
   movie      = signal<MoviePreview | null>(null);
@@ -35,7 +37,7 @@ export class PreviewComponent implements OnInit {
         this.isLoading.set(false);
         this.seo.set({
           title: data.title,
-          description: data.overview || `Watch ${data.title} on Ikigembe — African cinema streaming.`,
+          description: data.overview || this.translate.instant('preview.seoDescription', { title: data.title }),
           image: data.thumbnail_url ?? undefined,
           type: 'video.movie',
         });
@@ -57,7 +59,9 @@ export class PreviewComponent implements OnInit {
   fmtDuration(mins: number): string {
     const h = Math.floor(mins / 60);
     const m = mins % 60;
-    return h > 0 ? `${h}h ${m}m` : `${m}m`;
+    return h > 0
+      ? this.translate.instant('preview.durationHoursMinutes', { h, m })
+      : this.translate.instant('preview.durationMinutes', { m });
   }
 
   isBrowser(): boolean { return isPlatformBrowser(this.platformId); }

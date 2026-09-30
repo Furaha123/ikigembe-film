@@ -1,9 +1,11 @@
 import { Component, computed, inject, input, signal } from '@angular/core';
 import { Router } from '@angular/router';
+import { TranslatePipe } from '@ngx-translate/core';
 import { DataSaverService } from '../../services/data-saver.service';
 
 @Component({
   selector: 'app-banner',
+  imports: [TranslatePipe],
   templateUrl: './banner.component.html',
   styleUrl: './banner.component.scss'
 })

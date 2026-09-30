@@ -2,6 +2,7 @@ import { PLATFORM_ID } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 import { of } from 'rxjs';
+import { provideTranslateService } from '@ngx-translate/core';
 import { FooterComponent, toFooterLinks } from './footer.component';
 import { CmsService } from '../../services/cms.service';
 
@@ -22,7 +23,7 @@ describe('FooterComponent CMS links', () => {
     cms.listPages.and.returnValue(of([{ slug: 'about', title: 'About us', updated_at: '' }]));
     TestBed.configureTestingModule({
       imports: [FooterComponent],
-      providers: [provideRouter([]), { provide: CmsService, useValue: cms }, { provide: PLATFORM_ID, useValue: platform }],
+      providers: [provideRouter([]), provideTranslateService(), { provide: CmsService, useValue: cms }, { provide: PLATFORM_ID, useValue: platform }],
     });
     const fixture = TestBed.createComponent(FooterComponent);
     fixture.detectChanges();
@@ -38,6 +39,7 @@ describe('FooterComponent CMS links', () => {
   it('keeps the terms fallback and skips the request during SSR/prerender', () => {
     const { fixture, cms } = setup('server');
     expect(cms.listPages).not.toHaveBeenCalled();
-    expect(fixture.nativeElement.textContent).toContain('Terms & Conditions');
+    // No loader in tests, so the pipe renders the fallback link's translation key.
+    expect(fixture.nativeElement.textContent).toContain('footer.termsFallback');
   });
 });

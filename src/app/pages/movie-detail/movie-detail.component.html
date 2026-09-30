@@ -2,10 +2,10 @@
   <app-header [userImg]="''" />
 
   <!-- Breadcrumb -->
-  <nav class="breadcrumb">
-    <a (click)="goBack()">Home</a>
+  <nav class="breadcrumb" [attr.aria-label]="'movieDetailPage.breadcrumb.label' | translate">
+    <a (click)="goBack()">{{ 'movieDetailPage.breadcrumb.home' | translate }}</a>
     <span class="separator">/</span>
-    <a (click)="goBack()">Movies</a>
+    <a (click)="goBack()">{{ 'movieDetailPage.breadcrumb.movies' | translate }}</a>
     <span class="separator">/</span>
     <span class="current">{{ movie.title }}</span>
   </nav>
@@ -14,7 +14,7 @@
   <section class="hero" [style.background-image]="!dataSaver.isActive() && movie.backdrop_url ? 'url(' + movie.backdrop_url + ')' : 'none'">
     <div class="hero-overlay">
       @if (movie.trailer_url) {
-        <button class="hero-play-btn" (click)="playTrailer()" title="Watch Trailer">
+        <button class="hero-play-btn" (click)="playTrailer()" [title]="'movieDetailPage.watchTrailer' | translate" [attr.aria-label]="'movieDetailPage.watchTrailer' | translate">
           <svg viewBox="0 0 24 24" width="48" height="48" fill="currentColor">
             <path d="M8 5v14l11-7z"/>
           </svg>
@@ -25,7 +25,7 @@
             <path d="M15 10l4.553-2.069A1 1 0 0 1 21 8.87v6.26a1 1 0 0 1-1.447.894L15 14M3 8a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8z"/>
             <line x1="3" y1="3" x2="21" y2="21" stroke-width="1.5"/>
           </svg>
-          <span>No trailer available</span>
+          <span>{{ 'movieDetailPage.noTrailer' | translate }}</span>
         </div>
       }
     </div>
@@ -49,10 +49,10 @@
             <svg viewBox="0 0 24 24" width="16" height="16" fill="#ffc107">
               <path d="M12 2l3.09 6.26L22 9.27l-5 4.87L18.18 22 12 18.56 5.82 22 7 14.14l-5-4.87 6.91-1.01z"/>
             </svg>
-            {{ movie.rating?.toFixed(1) ?? 'N/A' }}
+            {{ movie.rating?.toFixed(1) ?? ('movieDetailPage.notAvailable' | translate) }}
           </span>
           @if (movie.duration_minutes) {
-            <span class="runtime">{{ movie.duration_minutes }} min</span>
+            <span class="runtime">{{ 'movieDetailPage.minutes' | translate: { n: movie.duration_minutes } }}</span>
           }
         </div>
 
@@ -61,7 +61,7 @@
           @if (movie.trailer_url) {
             <button class="btn-trailer" (click)="playTrailer()">
               <svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16"><path d="M8 5v14l11-7z"/></svg>
-              Watch Trailer
+              {{ 'movieDetailPage.watchTrailer' | translate }}
             </button>
           }
           @if (purchased()) {
@@ -90,16 +90,16 @@
 
         <div class="detail-rows">
           <div class="detail-row">
-            <span class="label">Released:</span>
-            <span class="value">{{ movie.release_date || 'N/A' }}</span>
+            <span class="label">{{ 'movieDetailPage.released' | translate }}</span>
+            <span class="value">{{ movie.release_date || ('movieDetailPage.notAvailable' | translate) }}</span>
           </div>
           <div class="detail-row">
-            <span class="label">Views:</span>
+            <span class="label">{{ 'movieDetailPage.views' | translate }}</span>
             <span class="value">{{ movie.views ?? 0 }}</span>
           </div>
           @if (movie.cast?.length) {
             <div class="cast-section">
-              <span class="label">Cast</span>
+              <span class="label">{{ 'movieDetailPage.cast' | translate }}</span>
               <div class="cast-list">
                 @for (name of movie.cast; track name) {
                   <span class="cast-chip">{{ name }}</span>
@@ -109,7 +109,7 @@
           }
           @if (movie.producer) {
             <div class="detail-row">
-              <span class="label">Producer:</span>
+              <span class="label">{{ 'movieDetailPage.producer' | translate }}</span>
               @if (movie.producer_profile?.id) {
                 <a class="value producer-value producer-link"
                    [routerLink]="['/producers', movie.producer_profile.id]">{{ movie.producer }}</a>
@@ -124,7 +124,7 @@
       <!-- Right: Similar Movies -->
       <div class="similar-col">
         <app-ad-slot placement="sidebar" />
-        <h2 class="similar-title">You May Also Like</h2>
+        <h2 class="similar-title">{{ 'movieDetailPage.youMayAlsoLike' | translate }}</h2>
         <div class="similar-grid">
           @for (similar of similarMovies(); track similar.id) {
             <button class="similar-card" (click)="goToMovie(similar.id)">
@@ -135,7 +135,7 @@
               <p class="similar-name">{{ similar.title || similar.name }}</p>
               <div class="similar-meta">
                 <span>{{ similar.release_date ? similar.release_date.substring(0, 4) : '' }}</span>
-                <span class="similar-type">Movie</span>
+                <span class="similar-type">{{ 'movieDetailPage.movie' | translate }}</span>
               </div>
             </button>
           }
@@ -151,10 +151,10 @@
     <section class="more-from-section">
       <div class="more-from-header">
         <h2 class="more-from-title">
-          More from <span class="more-from-title__gold">{{ movie.producer }}</span>
+          {{ 'movieDetailPage.moreFrom' | translate }} <span class="more-from-title__gold">{{ movie.producer }}</span>
         </h2>
         <a class="more-from-seeall" [routerLink]="['/producers', movie.producer_profile.id]">
-          See all
+          {{ 'movieDetailPage.seeAll' | translate }}
           <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor">
             <path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6z"/>
           </svg>
@@ -166,7 +166,7 @@
             <div class="mf-poster">
               <img [src]="m.thumbnail_url" [alt]="m.title" loading="lazy" />
               <div class="mf-overlay">
-                <div class="mf-play">
+                <div class="mf-play" aria-hidden="true">
                   <svg viewBox="0 0 24 24" width="20" height="20" fill="white"><path d="M8 5v14l11-7z"/></svg>
                 </div>
                 @if (m.rating) {
@@ -197,7 +197,7 @@
   @if (isPlaying() && (playback() || videoSrc())) {
     <div class="player-backdrop" (click)="closePlayer()">
       <div class="player-container" (click)="$event.stopPropagation()">
-        <button class="player-close" (click)="closePlayer()">
+        <button class="player-close" (click)="closePlayer()" [attr.aria-label]="'movieDetailPage.closePlayer' | translate">
           <svg viewBox="0 0 24 24" width="28" height="28" fill="currentColor">
             <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
           </svg>

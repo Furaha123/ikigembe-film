@@ -12,13 +12,13 @@
   <main class="auth-center">
     <div class="form-card">
 
-      <h1 class="form-title">Sign In</h1>
-      <p class="form-subtitle">Welcome back — continue watching</p>
+      <h1 class="form-title">{{ 'auth.login.title' | translate }}</h1>
+      <p class="form-subtitle">{{ 'auth.login.subtitle' | translate }}</p>
 
       <form [formGroup]="form" (ngSubmit)="onSubmit()" novalidate>
 
         <div class="field" [class.has-error]="identifier?.invalid && identifier?.touched || serverErrors().email">
-          <label for="identifier">Email or Phone</label>
+          <label for="identifier">{{ 'auth.login.identifierLabel' | translate }}</label>
           <input
             id="identifier"
             type="text"
@@ -27,24 +27,24 @@
             autocomplete="username"
           />
           @if (identifier?.touched && identifier?.hasError('required')) {
-            <span class="field-error">Email or phone is required.</span>
+            <span class="field-error">{{ 'auth.login.identifierRequired' | translate }}</span>
           } @else if (serverErrors().email) {
             <span class="field-error">{{ serverErrors().email![0] }}</span>
           }
         </div>
 
         <div class="field" [class.has-error]="password?.invalid && password?.touched || serverErrors().password">
-          <label for="password">Password</label>
+          <label for="password">{{ 'auth.common.password' | translate }}</label>
           <div class="input-wrap">
             <input
               id="password"
               [type]="showPassword() ? 'text' : 'password'"
               formControlName="password"
-              placeholder="Password"
+              [placeholder]="'auth.common.password' | translate"
               [autocomplete]="showPassword() ? 'off' : 'current-password'"
             />
-            <button type="button" class="toggle-btn" (click)="showPassword.set(!showPassword())" tabindex="-1">
-              <span class="sr-only">{{ showPassword() ? 'Hide password' : 'Show password' }}</span>
+            <button type="button" class="toggle-btn" (click)="showPassword.set(!showPassword())" tabindex="-1" [attr.aria-label]="(showPassword() ? 'auth.common.hidePassword' : 'auth.common.showPassword') | translate">
+              <span class="sr-only">{{ (showPassword() ? 'auth.common.hidePassword' : 'auth.common.showPassword') | translate }}</span>
               @if (showPassword()) {
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
               } @else {
@@ -53,14 +53,14 @@
             </button>
           </div>
           @if (password?.touched && password?.hasError('required')) {
-            <span class="field-error">Password is required.</span>
+            <span class="field-error">{{ 'auth.common.passwordRequired' | translate }}</span>
           } @else if (serverErrors().password) {
             <span class="field-error">{{ serverErrors().password![0] }}</span>
           }
         </div>
 
         <div class="forgot-link">
-          <a routerLink="/forgot-password">Forgot password?</a>
+          <a routerLink="/forgot-password">{{ 'auth.login.forgotPassword' | translate }}</a>
         </div>
 
         @if (serverErrors().non_field_errors || serverErrors().detail) {
@@ -71,25 +71,25 @@
 
         <button type="submit" class="submit-btn" [disabled]="isLoading()">
           @if (isLoading()) {
-            <span class="spinner"></span>Signing in…
+            <span class="spinner"></span>{{ 'auth.login.submitting' | translate }}
           } @else {
-            Sign In
+            {{ 'auth.login.submit' | translate }}
           }
         </button>
 
       </form>
 
-      <div class="divider"><span>or</span></div>
+      <div class="divider"><span>{{ 'auth.common.or' | translate }}</span></div>
 
       @if (googleLoading()) {
         <div class="google-loading">
-          <span class="spinner"></span> Signing in with Google…
+          <span class="spinner"></span> {{ 'auth.login.googleLoading' | translate }}
         </div>
       }
       <div #googleBtn class="google-btn-wrap"></div>
 
       <p class="alt-link">
-        New to Ikigembe? <a routerLink="/register">Sign up now</a>
+        {{ 'auth.login.newToIkigembe' | translate }} <a routerLink="/register">{{ 'auth.login.signUpNow' | translate }}</a>
       </p>
 
     </div>

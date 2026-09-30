@@ -7,6 +7,7 @@ import { AbstractControl, FormBuilder, ReactiveFormsModule, ValidationErrors, Va
 import { Router, RouterLink } from '@angular/router';
 import { AuthService, RegisterErrors } from '../../core/services/auth.service';
 import { SeoService } from '../../core/services/seo.service';
+import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 
 declare const google: {
   accounts: {
@@ -21,7 +22,7 @@ const GOOGLE_CLIENT_ID = '315063576340-dokh369lnriqdpermiha2iesqrm097dp.apps.goo
 
 @Component({
   selector: 'app-register',
-  imports: [ReactiveFormsModule, CommonModule, RouterLink],
+  imports: [ReactiveFormsModule, CommonModule, RouterLink, TranslatePipe],
   templateUrl: './register.component.html',
   styleUrl: './register.component.scss'
 })
@@ -31,6 +32,7 @@ export class RegisterComponent implements OnInit, AfterViewInit, OnDestroy {
   private readonly router      = inject(Router);
   private readonly platformId  = inject(PLATFORM_ID);
   private readonly seo         = inject(SeoService);
+  private readonly translate   = inject(TranslateService);
 
   private cooldownTimer?: ReturnType<typeof setInterval>;
 
@@ -72,7 +74,7 @@ export class RegisterComponent implements OnInit, AfterViewInit, OnDestroy {
 
   // ── Lifecycle ────────────────────────────────────────────
   ngOnInit(): void {
-    this.seo.set({ title: 'Create Account', noIndex: true });
+    this.seo.set({ title: this.translate.instant('auth.register.seoTitle'), noIndex: true });
   }
 
   ngAfterViewInit() {
@@ -130,7 +132,7 @@ export class RegisterComponent implements OnInit, AfterViewInit, OnDestroy {
       error: (err) => {
         this.isResending.set(false);
         const detail = err?.error?.detail ?? err?.error?.email?.[0];
-        this.resendError.set(detail ?? 'Failed to resend. Please try again.');
+        this.resendError.set(detail ?? 'auth.common.resendFailed');
       },
     });
   }

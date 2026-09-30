@@ -4,10 +4,11 @@ import { Router, RouterLink } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { AuthService } from '../../core/services/auth.service';
 import { RegisterErrors } from '../../core/models/auth.interface';
+import { TranslatePipe } from '@ngx-translate/core';
 
 @Component({
   selector: 'app-register-producer',
-  imports: [ReactiveFormsModule, CommonModule, RouterLink],
+  imports: [ReactiveFormsModule, CommonModule, RouterLink, TranslatePipe],
   templateUrl: './register-producer.component.html',
   styleUrl: './register-producer.component.scss',
 })
@@ -84,7 +85,7 @@ export class RegisterProducerComponent implements OnDestroy {
         if (err.status === 400 && err.error) {
           this.serverErrors.set(err.error as RegisterErrors);
         } else {
-          this.serverErrors.set({ non_field_errors: ['Registration failed. Please try again.'] });
+          this.serverErrors.set({ non_field_errors: ['auth.registerProducer.failed'] });
         }
       },
     });
@@ -107,7 +108,7 @@ export class RegisterProducerComponent implements OnDestroy {
       error: (err) => {
         this.isResending.set(false);
         const detail = err?.error?.detail ?? err?.error?.email?.[0];
-        this.resendError.set(detail ?? 'Failed to resend. Please try again.');
+        this.resendError.set(detail ?? 'auth.common.resendFailed');
       },
     });
   }

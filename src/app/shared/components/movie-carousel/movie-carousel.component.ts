@@ -11,6 +11,7 @@ import {
   inject,
 } from '@angular/core';
 import { Router } from '@angular/router';
+import { TranslatePipe } from '@ngx-translate/core';
 import Swiper from 'swiper';
 import { Navigation } from 'swiper/modules';
 import { IVideoContent } from '../../models/video-content.interface';
@@ -20,7 +21,7 @@ import { animate, style, transition, trigger } from '@angular/animations';
   selector: 'app-movie-carousel',
   templateUrl: './movie-carousel.component.html',
   styleUrls: ['./movie-carousel.component.scss'],
-  imports: [],
+  imports: [TranslatePipe],
   encapsulation: ViewEncapsulation.None,
   animations: [
     trigger('fade', [

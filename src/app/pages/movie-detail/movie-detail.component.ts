@@ -1,7 +1,7 @@
 import { Component, OnInit, inject, signal, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { TranslatePipe } from '@ngx-translate/core';
+import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { SeoService } from '../../core/services/seo.service';
 import { forkJoin, map } from 'rxjs';
 import { MovieService, toPlaybackSource } from '../../shared/services/movie.service';
@@ -31,6 +31,7 @@ export class MovieDetailComponent implements OnInit, OnDestroy {
   private readonly paymentService = inject(PaymentService);
   private readonly seo            = inject(SeoService);
   private readonly watchProgress  = inject(WatchProgressService);
+  private readonly translate      = inject(TranslateService);
   readonly dataSaver              = inject(DataSaverService);
 
   movie            = signal<any>(null);
@@ -77,7 +78,7 @@ export class MovieDetailComponent implements OnInit, OnDestroy {
       this.purchased.set(details.has_purchased ?? this.paymentService.hasPurchased(id));
       this.seo.set({
         title: details.title,
-        description: details.overview || `Watch ${details.title} on Ikigembe.`,
+        description: details.overview || this.translate.instant('movieDetailPage.seoDescription', { title: details.title }),
         image: details.thumbnail_url ?? undefined,
         type: 'video.movie',
         noIndex: true,
