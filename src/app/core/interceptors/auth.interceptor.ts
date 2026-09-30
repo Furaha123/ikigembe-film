@@ -1,110 +1,34 @@
-import { HttpInterceptorFn, HttpRequest, HttpHandlerFn, HttpErrorResponse } from '@angular/common/http';
-import { inject, PLATFORM_ID } from '@angular/core';
-import { isPlatformBrowser } from '@angular/common';
-import { throwError, BehaviorSubject, Observable } from 'rxjs';
-import { catchError, filter, take, switchMap } from 'rxjs/operators';
-import { HttpClient } from '@angular/common/http';
+import { HttpErrorResponse, HttpInterceptorFn, HttpRequest } from '@angular/common/http';
+import { inject } from '@angular/core';
+import { throwError } from 'rxjs';
+import { catchError, switchMap } from 'rxjs/operators';
+import { AuthService, SKIP_AUTH } from '../services/auth.service';
 import { environment } from '../../../environments/environment';
 
-const BACKEND_URL = environment.backendUrl;
-const TOKEN_KEY   = 'ikigembe_token';
-const REFRESH_KEY = 'ikigembe_refresh';
-
-// Shared refresh state — prevents multiple simultaneous refresh calls
-let isRefreshing = false;
-const refreshDone$ = new BehaviorSubject<string | null>(null);
-
-function addBearer(req: HttpRequest<unknown>, token: string) {
+function withBearer(req: HttpRequest<unknown>, token: string) {
   return req.clone({ setHeaders: { Authorization: `Bearer ${token}` } });
 }
 
-function getToken()   { return localStorage.getItem(TOKEN_KEY); }
-function getRefresh() { return localStorage.getItem(REFRESH_KEY); }
-function saveToken(token: string) { localStorage.setItem(TOKEN_KEY, token); }
+/**
+ * Adds the in-memory access token to API requests. On a 401 it refreshes the
+ * token once (from the httpOnly cookie) and retries; if the refresh is refused,
+ * AuthService ends the session.
+ */
+export const authInterceptor: HttpInterceptorFn = (req, next) => {
+  if (req.context.get(SKIP_AUTH) || !req.url.startsWith(environment.apiUrl)) return next(req);
 
-function doRefresh(http: HttpClient): Observable<string> {
-  const refresh = getRefresh();
-  return new Observable(observer => {
-    if (!refresh) {
-      observer.error('No refresh token');
-      return;
-    }
-    http.post<{ access: string }>(
-      `${BACKEND_URL}/api/auth/token/refresh/`,
-      { refresh }
-    ).subscribe({
-      next: (res) => {
-        saveToken(res.access);
-        observer.next(res.access);
-        observer.complete();
-      },
-      error: (err) => observer.error(err),
-    });
-  });
-}
-
-export const authInterceptor: HttpInterceptorFn = (
-  req: HttpRequest<unknown>,
-  next: HttpHandlerFn
-) => {
-  const platformId = inject(PLATFORM_ID);
-  const http       = inject(HttpClient);
-
-  // Only intercept requests to our backend
-  if (!req.url.startsWith(BACKEND_URL)) return next(req);
-
-  // Skip token injection on SSR
-  if (!isPlatformBrowser(platformId)) return next(req);
-
-  // Attach current access token
-  const token = getToken();
-  const authReq = token ? addBearer(req, token) : req;
-
-  return next(authReq).pipe(
-    catchError((error: HttpErrorResponse) => {
-      // Only handle 401 — and don't retry the refresh endpoint itself
-      if (error.status !== 401 || req.url.includes('/auth/token/refresh/')) {
-        return throwError(() => error);
-      }
-
-      if (isRefreshing) {
-        // Another refresh is already in flight — wait for it then retry
-        return refreshDone$.pipe(
-          filter(t => t !== null),
-          take(1),
-          switchMap(newToken => next(addBearer(req, newToken!)))
+  const auth = inject(AuthService);
+  return auth.ensureAccessToken().pipe(
+    switchMap((token) => next(token ? withBearer(req, token) : req).pipe(
+      catchError((error: unknown) => {
+        if (!token || !(error instanceof HttpErrorResponse) || error.status !== 401) {
+          return throwError(() => error);
+        }
+        return auth.refreshAccessToken(token).pipe(
+          catchError(() => throwError(() => error)),
+          switchMap((fresh) => next(withBearer(req, fresh))),
         );
-      }
-
-      // No refresh token means the user never had a valid session (or only had
-      // a stale access token with an already-expired refresh). Clear the bad
-      // token and retry the original request anonymously so public endpoints
-      // like /preview/:id continue to work without forcing a login redirect.
-      if (!getRefresh()) {
-        localStorage.removeItem(TOKEN_KEY);
-        isRefreshing = false;
-        return next(req);
-      }
-
-      isRefreshing = true;
-      refreshDone$.next(null);
-
-      return doRefresh(http).pipe(
-        switchMap(newToken => {
-          isRefreshing = false;
-          refreshDone$.next(newToken);
-          return next(addBearer(req, newToken));
-        }),
-        catchError(refreshErr => {
-          isRefreshing = false;
-          refreshDone$.next(null);
-          // Refresh failed — clear session and redirect to login
-          localStorage.removeItem(TOKEN_KEY);
-          localStorage.removeItem(REFRESH_KEY);
-          window.location.href = '/login';
-          return throwError(() => refreshErr);
-        })
-      );
-    })
+      }),
+    )),
   );
 };

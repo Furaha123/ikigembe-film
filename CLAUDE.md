@@ -51,8 +51,11 @@ Actors are **Viewer** accounts with an actor profile — there is no Actor role.
 ### Auth flow
 
 `core/services/auth.service.ts` manages all JWT state via Angular Signals:
-- Tokens stored in `localStorage` as `ikigembe_token` / `ikigembe_refresh`
-- `auth.interceptor.ts` injects Bearer tokens and auto-refreshes on 401, queuing concurrent requests during refresh
+- The **refresh token is an httpOnly cookie** set by the API (scoped to `/api/auth/`); the app never sees it. The **access token lives in memory only** — never write a token to `localStorage`, `sessionStorage`, cookies or logs.
+- `localStorage` holds only non-secret hints: `ikigembe_session` (a session cookie should exist) and profile fields (name, role, …) so a reload can render before the first API call. Tokens stored under the old `ikigembe_token` / `ikigembe_refresh` keys are migrated on the first refresh and deleted.
+- After a reload, the first API request triggers `refreshAccessToken()` (`ensureAccessToken()` in the interceptor). Concurrent callers share one request, and tabs take turns through `navigator.locks` because refresh tokens rotate.
+- `auth.interceptor.ts` adds `Authorization: Bearer` to requests under `environment.apiUrl` only, refreshes once on a 401 and retries. A refused refresh (400/401) ends the session and navigates to `/login`; a network error doesn't.
+- Signing out in one tab signs out the others (`storage` event on `ikigembe_session`).
 - Key signals: `isLoggedIn`, `isAdmin`, `userRole`, `accountStatus`
 - `getAccessToken()` is for requests HttpClient can't make (e.g. `fetch(..., { keepalive: true })` on page unload)
 
@@ -120,9 +123,11 @@ ngx-translate with `src/assets/i18n/en.json` and `rw.json`. Add every new key to
 
 ### Environment & API
 
-Backend: `https://ikigembe-backend.onrender.com/api` (same URL for dev and prod by default).
+`environment.apiUrl` is the same-origin path `/api`, so the refresh cookie is first-party:
+- Production: `vercel.json` rewrites `/api/*` to `https://ikigembe-backend.onrender.com/api/*` (change the backend there). Keep that rule above the SPA fallback.
+- Development: `ng serve` proxies `/api` to `http://localhost:8000` (`proxy.conf.json`). Point `target` at the Render URL to develop against the hosted API.
 
-Override in production via Vite env vars `NG_APP_API_URL` / `NG_APP_BACKEND_URL` (see `src/environments/environment.prod.ts`).
+Absolute URLs the API returns (HLS `stream_url`, presigned storage URLs) are still fetched directly.
 
 Backend errors are `{ "error": "<message>" }` (DRF validation: `{ "<field>": ["..."] }`); use `apiErrorMessage()` from `shared/utils/api-error.ts`.
 

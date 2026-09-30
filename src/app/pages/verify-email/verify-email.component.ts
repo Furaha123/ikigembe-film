@@ -1,5 +1,5 @@
 import { Component, inject, signal, OnInit, OnDestroy } from '@angular/core';
-import { ActivatedRoute, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { AuthService, resendCooldownLabel } from '../../core/services/auth.service';
 import { TranslatePipe } from '@ngx-translate/core';
@@ -12,7 +12,8 @@ import { TranslatePipe } from '@ngx-translate/core';
 })
 export class VerifyEmailComponent implements OnInit, OnDestroy {
   private readonly route = inject(ActivatedRoute);
-  private readonly authService = inject(AuthService);
+  private readonly router = inject(Router);
+  protected readonly authService = inject(AuthService);
 
   private cooldownTimer?: ReturnType<typeof setInterval>;
 
@@ -43,6 +44,11 @@ export class VerifyEmailComponent implements OnInit, OnDestroy {
         this.errorMessage.set(detail ?? 'auth.verifyEmail.errorFallback');
       }
     });
+  }
+
+  /** Continue into the app as the user the verification just signed in. */
+  continueToApp(): void {
+    this.router.navigateByUrl(this.authService.homeUrl(), { replaceUrl: true });
   }
 
   ngOnDestroy(): void {

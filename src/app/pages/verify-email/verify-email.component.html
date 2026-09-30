@@ -34,8 +34,13 @@
               </svg>
             </div>
             <h1>{{ 'auth.verifyEmail.successTitle' | translate }}</h1>
-            <p>{{ 'auth.verifyEmail.successBody' | translate }}</p>
-            <a routerLink="/login" class="submit-btn">{{ 'auth.login.submit' | translate }}</a>
+            @if (authService.isLoggedIn()) {
+              <p>{{ 'auth.verifyEmail.successSignedInBody' | translate }}</p>
+              <button type="button" class="submit-btn" (click)="continueToApp()">{{ 'auth.verifyEmail.continue' | translate }}</button>
+            } @else {
+              <p>{{ 'auth.verifyEmail.successBody' | translate }}</p>
+              <a routerLink="/login" class="submit-btn">{{ 'auth.login.submit' | translate }}</a>
+            }
           </div>
         }
 
