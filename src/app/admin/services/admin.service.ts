@@ -10,7 +10,6 @@ import {
   ProducerReport,
   MoviePurchaseList,
   ResetPasswordResponse,
-  CreateProducerRequest,
   TransactionHistory,
   WithdrawalItem,
   AdminMovie,
@@ -57,10 +56,6 @@ export class AdminService {
   // Producers
   getProducers(): Observable<ProducerItem[]> {
     return this.http.get<ProducerItem[]>(`${BASE}/admin/dashboard/producers/`);
-  }
-
-  createProducer(payload: CreateProducerRequest): Observable<ProducerItem> {
-    return this.http.post<ProducerItem>(`${BASE}/admin/dashboard/producers/create/`, payload);
   }
 
   approveProducer(id: number): Observable<unknown> {

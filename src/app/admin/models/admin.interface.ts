@@ -140,13 +140,6 @@ export interface TransactionHistory {
   pending_withdrawals: WithdrawalItem[];
 }
 
-export interface CreateProducerRequest {
-  email: string;
-  phone_number: string;
-  first_name: string;
-  last_name: string;
-}
-
 export interface AdminMovie {
   id: number;
   title: string;
