@@ -1,8 +1,9 @@
 import { Injectable, PLATFORM_ID, inject, signal, computed } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
-import { HttpClient, HttpErrorResponse } from '@angular/common/http';
-import { Observable, of } from 'rxjs';
-import { catchError, map, tap } from 'rxjs/operators';
+import { HttpClient, HttpContext, HttpContextToken, HttpErrorResponse } from '@angular/common/http';
+import { Router } from '@angular/router';
+import { Observable, defer, firstValueFrom, of, throwError } from 'rxjs';
+import { catchError, finalize, map, shareReplay, tap } from 'rxjs/operators';
 import { RegisterPayload, RegisterResponse, LoginResponse, GoogleAuthPayload, LoginUser, AccountStatus } from '../models/auth.interface';
 import { environment } from '../../../environments/environment';
 
@@ -30,8 +31,18 @@ export interface NotificationPreferences {
 
 export type { RegisterPayload, RegisterErrors } from '../models/auth.interface';
 
-const TOKEN_KEY       = 'ikigembe_token';
-const REFRESH_KEY     = 'ikigembe_refresh';
+/** Set on requests the auth interceptor must leave alone (the refresh call itself). */
+export const SKIP_AUTH = new HttpContextToken<boolean>(() => false);
+
+// The refresh token lives in an httpOnly cookie set by the API, and the access
+// token only in memory; localStorage holds nothing secret. SESSION_KEY is just
+// a hint that a session cookie should exist, so a reload knows to refresh.
+const SESSION_KEY     = 'ikigembe_session';
+// Where tokens were kept before the cookie; a stored refresh token is traded for
+// the cookie on the first refresh, then both keys are removed.
+const LEGACY_TOKEN_KEY   = 'ikigembe_token';
+const LEGACY_REFRESH_KEY = 'ikigembe_refresh';
+const REFRESH_LOCK    = 'ikigembe-token-refresh';
 const NAME_KEY        = 'ikigembe_name';
 const EMAIL_KEY       = 'ikigembe_email';
 const IS_STAFF_KEY    = 'ikigembe_is_staff';
@@ -67,11 +78,18 @@ export function resendCooldownLabel(seconds: number): { key: string; n: number }
 @Injectable({ providedIn: 'root' })
 export class AuthService {
   private readonly http = inject(HttpClient);
+  private readonly router = inject(Router);
   private readonly platformId = inject(PLATFORM_ID);
   readonly baseUrl = environment.apiUrl;
 
+  /** In memory only: page scripts can't find it in storage, and it dies with the tab. */
+  private accessToken: string | null = null;
+  private refreshInFlight: Observable<string> | null = null;
+
   readonly isLoggedIn = signal<boolean>(
-    isPlatformBrowser(this.platformId) ? !!localStorage.getItem(TOKEN_KEY) : false
+    isPlatformBrowser(this.platformId)
+      ? localStorage.getItem(SESSION_KEY) === '1' || !!localStorage.getItem(LEGACY_REFRESH_KEY)
+      : false
   );
 
   readonly isAdmin = signal<boolean>(
@@ -103,6 +121,15 @@ export class AuthService {
   readonly onboardingComplete = signal<boolean>(
     isPlatformBrowser(this.platformId) ? localStorage.getItem(ONBOARDING_KEY) === '1' : false
   );
+
+  constructor() {
+    if (isPlatformBrowser(this.platformId)) {
+      // Signed out in another tab: this tab's in-memory token must go too.
+      window.addEventListener('storage', (e) => {
+        if (e.key === SESSION_KEY && e.newValue === null && this.isLoggedIn()) this.clearSession();
+      });
+    }
+  }
 
   readonly initials = computed(() => {
     const name = this.userName().trim();
@@ -171,17 +198,13 @@ export class AuthService {
       res?.token ??
       res?.key;
 
+    // The refresh token arrives as an httpOnly cookie; any copy in the body is ignored.
     if (token && isPlatformBrowser(this.platformId)) {
-      localStorage.setItem(TOKEN_KEY, token);
+      this.accessToken = token;
+      localStorage.setItem(SESSION_KEY, '1');
+      localStorage.removeItem(LEGACY_TOKEN_KEY);
+      localStorage.removeItem(LEGACY_REFRESH_KEY);
       this.isLoggedIn.set(true);
-    }
-
-    const refresh =
-      res?.AuthenticationResult?.RefreshToken ??
-      res?.refresh ??
-      res?.refresh_token;
-    if (refresh && isPlatformBrowser(this.platformId)) {
-      localStorage.setItem(REFRESH_KEY, refresh);
     }
 
     const u: LoginUser | undefined = res?.user;
@@ -224,17 +247,76 @@ export class AuthService {
 
   /** Current access token (browser only). For requests HttpClient can't make, e.g. keepalive fetch on unload. */
   getAccessToken(): string | null {
-    if (!isPlatformBrowser(this.platformId)) return null;
-    try { return localStorage.getItem(TOKEN_KEY); } catch { return null; }
+    return isPlatformBrowser(this.platformId) ? this.accessToken : null;
+  }
+
+  /**
+   * The access token for an API request: the one in memory, or — after a reload,
+   * when only the cookie survives — a fresh one. `null` when signed out.
+   */
+  ensureAccessToken(): Observable<string | null> {
+    if (!isPlatformBrowser(this.platformId)) return of(null);
+    if (this.accessToken) return of(this.accessToken);
+    if (!this.isLoggedIn()) return of(null);
+    return this.refreshAccessToken().pipe(catchError(() => of(null)));
+  }
+
+  /**
+   * Trade the refresh cookie for a new access token. Concurrent callers share one
+   * request. Pass the token the API just rejected: if another request has already
+   * replaced it, that newer token is returned without a second refresh.
+   * If the API rejects the refresh, the session is over: it is cleared and the
+   * user is sent to sign in.
+   */
+  refreshAccessToken(rejected?: string): Observable<string> {
+    if (rejected && this.accessToken && this.accessToken !== rejected) return of(this.accessToken);
+    if (!this.refreshInFlight) {
+      this.refreshInFlight = defer(() => this.withRefreshLock(() => firstValueFrom(this.requestRefresh()))).pipe(
+        finalize(() => { this.refreshInFlight = null; }),
+        shareReplay({ bufferSize: 1, refCount: false }),
+      );
+    }
+    return this.refreshInFlight;
+  }
+
+  private requestRefresh(): Observable<string> {
+    const legacy = localStorage.getItem(LEGACY_REFRESH_KEY);
+    return this.http.post<{ access: string }>(
+      `${this.baseUrl}/auth/token/refresh/`,
+      legacy ? { refresh: legacy } : {},
+      { context: new HttpContext().set(SKIP_AUTH, true) },
+    ).pipe(
+      map((res) => {
+        this.accessToken = res.access;
+        localStorage.setItem(SESSION_KEY, '1');
+        localStorage.removeItem(LEGACY_TOKEN_KEY);
+        localStorage.removeItem(LEGACY_REFRESH_KEY);
+        return res.access;
+      }),
+      catchError((err: unknown) => {
+        const ended = err instanceof HttpErrorResponse && (err.status === 400 || err.status === 401);
+        if (ended && this.isLoggedIn()) {
+          this.clearSession();
+          void this.router.navigateByUrl('/login');
+        }
+        return throwError(() => err);
+      }),
+    );
+  }
+
+  /**
+   * Refresh tokens rotate, so tabs sharing the cookie must not refresh at the same
+   * time: the second request would carry a token the first just revoked.
+   */
+  private withRefreshLock<T>(task: () => Promise<T>): Promise<T> {
+    const locks = typeof navigator !== 'undefined' ? navigator.locks : undefined;
+    return locks ? locks.request(REFRESH_LOCK, task) : task();
   }
 
   logout(onDone?: () => void) {
-    const token = isPlatformBrowser(this.platformId) ? localStorage.getItem(TOKEN_KEY) : null;
-    const refresh = isPlatformBrowser(this.platformId) ? localStorage.getItem(REFRESH_KEY) : null;
-    const headers: Record<string, string> = token ? { Authorization: `Token ${token}` } : {};
-    const body = refresh ? { refresh } : {};
-
-    this.http.post(`${this.baseUrl}/auth/logout/`, body, { headers }).subscribe({
+    // The API revokes the cookie's refresh token and clears the cookie.
+    const legacy = isPlatformBrowser(this.platformId) ? localStorage.getItem(LEGACY_REFRESH_KEY) : null;
+    this.http.post(`${this.baseUrl}/auth/logout/`, legacy ? { refresh: legacy } : {}).subscribe({
       complete: () => { this.clearSession(); onDone?.(); },
       error: () => { this.clearSession(); onDone?.(); },
     });
@@ -306,9 +388,11 @@ export class AuthService {
   }
 
   private clearSession() {
+    this.accessToken = null;
     if (isPlatformBrowser(this.platformId)) {
-      localStorage.removeItem(TOKEN_KEY);
-      localStorage.removeItem(REFRESH_KEY);
+      localStorage.removeItem(SESSION_KEY);
+      localStorage.removeItem(LEGACY_TOKEN_KEY);
+      localStorage.removeItem(LEGACY_REFRESH_KEY);
       localStorage.removeItem(NAME_KEY);
       localStorage.removeItem(EMAIL_KEY);
       localStorage.removeItem(IS_STAFF_KEY);
