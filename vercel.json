@@ -3,6 +3,7 @@
   "buildCommand": "npm run build",
   "outputDirectory": "dist/ikigembe-film/browser",
   "rewrites": [
+    { "source": "/api/(.*)", "destination": "https://ikigembe-backend.onrender.com/api/$1" },
     { "source": "/(.*)", "destination": "/index.html" }
   ]
 }

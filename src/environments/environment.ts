@@ -1,5 +1,5 @@
 export const environment = {
   production: false,
-  apiUrl: 'http://localhost:8000/api',
-  backendUrl: 'http://localhost:8000',
+  // Same-origin: `ng serve` proxies /api/* to the backend (proxy.conf.json).
+  apiUrl: '/api',
 };
