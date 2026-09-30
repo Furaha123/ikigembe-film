@@ -102,9 +102,7 @@
       "amount": "Ingano",
       "share": "Igice Cyawe",
       "status": "Imimerere",
-      "date": "Itariki",
-      "completed": "Byarangiye",
-      "pending": "Bitegerejwe"
+      "date": "Itariki"
     }
   },
   "onboarding": {
@@ -161,19 +159,12 @@
       "synopsisMin": "Incamake igomba kuba nibura inyuguti 20.",
       "releaseDate": "Itariki yo Gutangaza *",
       "releaseDateRequired": "Itariki yo gutangaza irakenewe.",
-      "price": "Igiciro (RWF) *",
-      "pricePlaceholder": "urugero: 2000",
-      "priceRequired": "Igiciro girakenewe.",
-      "priceNegative": "Igiciro ntishobora kuba cyiciro.",
-      "duration": "Igihe (iminota)",
-      "durationHint": "urugero: 25",
       "director": "Umuyobozi",
       "directorHint": "urugero: Yohani Doe",
       "writer": "Umuandishi",
       "writerHint": "urugero: Yane Doe",
       "cast": "Indirimbo",
       "castHint": "urugero: Umukinnyi A, Umukinnyi B",
-      "freePreview": "Emera kureba buntu ifilime iyi",
       "genres": "Ubwoko *",
       "genresRequired": "Hitamo nibura ubwoko bumwe.",
       "thumbnail": "Ifoto Nshingiro *",
@@ -218,12 +209,9 @@
         "synopsis": "Incamake:",
         "genres": "Ubwoko:",
         "releaseDate": "Itariki yo Gutangaza:",
-        "price": "Igiciro:",
-        "duration": "Igihe:",
         "director": "Umuyobozi:",
         "writer": "Umuandishi:",
         "cast": "Indirimbo:",
-        "freePreview": "Kureba Buntu:",
         "image": "Ifoto:",
         "trailerFile": "Dosiye ya Trailer:",
         "movieFile": "Dosiye y'Ifilime:",
@@ -309,7 +297,6 @@
     "totalEarnings": "Inyungu Zose",
     "totalWithdrawn": "Yose Yakuwe",
     "pending": "Bitegerejwe Gutuburwa",
-    "shareNote": "Igice cyawe cy'inyungu ni {{percent}}% y'agaciro k'itike ryose ryagurishijwe.",
     "form": {
       "title": "Saba Gukura Amafaranga",
       "subtitle": "Bikorwa mu minsi 1–2 y'akazi.",
@@ -373,10 +360,7 @@
     "metaStatus": "Imimerere",
     "metaPrice": "Igiciro",
     "metaViews": "Ibyabanywe",
-    "metaDuration": "Igihe",
     "metaHls": "HLS",
-    "metaFreePreview": "Kureba Buntu",
-    "metaFreePreviewEnabled": "Bifunguye",
     "metaReleaseDate": "Itariki yo Gutangaza",
     "metaUploaded": "Yoherejwe",
     "metaLastUpdated": "Ihindurwa rya Nyuma",
@@ -509,8 +493,7 @@
     "notification": {
       "title": "Filime Yemejwe",
       "desc": "Filime yawe yemejwe kugirango ikwirakwizwe. Mbere yo gutangaza, nyamuneka uzuze Amasezerano y'Uwohereza Filime.",
-      "btn": "Suzuma Amasezerano",
-      "signBtn": "Sinyaho Amasezerano"
+      "btn": "Suzuma Amasezerano"
     },
     "widget": {
       "active": "Amasezerano Akorwa",
@@ -650,8 +633,7 @@
       "paymentFailed": "The payment failed. Add the video again to retry.",
       "upload": "Upload video",
       "uploading": "Uploading video",
-      "uploadFailed": "Upload failed. Please try again.",
-      "badFile": "Choose a video file (.mp4, .mov, .m4v or .webm)."
+      "uploadFailed": "Upload failed. Please try again."
     },
     "casting": {
       "title": "Casting calls",
@@ -907,7 +889,6 @@
         "thumbnailRequired": "Thumbnail is required",
         "videoRequired": "Upload the video file before publishing",
         "imageType": "Choose an image file (JPG, PNG or WEBP).",
-        "videoType": "Choose a video file (MP4, MOV or MKV).",
         "uploadFailed": "Upload failed. Check your connection and retry.",
         "waitForUpload": "Please wait for the upload to finish.",
         "saveFailed": "Something went wrong. Please try again."
@@ -1662,12 +1643,6 @@
       "invalidTitle": "Invalid link",
       "invalidBody": "This verification link is missing a token. Please use the link from your email.",
       "backToRegister": "Back to Register"
-    },
-    "modal": {
-      "close": "Close",
-      "title": "Sign in to watch",
-      "body": "Create a free account or sign in to start streaming your favourite movies and shows.",
-      "createAccount": "Create Account"
     }
   },
   "preview": {
@@ -2000,7 +1975,6 @@
       "dismiss": "Dismiss",
       "clearSearch": "Clear search",
       "notProvided": "Not provided",
-      "videoFormatInvalid": "Only .mp4 and .mov formats are accepted.",
       "fileTooLarge": "File size must not exceed {{size}} MB.",
       "imageTypeInvalid": "Only image files are accepted (JPG, PNG, WebP).",
       "imageTooLarge": "Image must be under 5 MB.",
@@ -2148,7 +2122,6 @@
       "titlePlaceholder": "Enter movie title",
       "castOptional": "(Optional — comma separated)",
       "thumbnailAlt": "Thumbnail preview",
-      "removeThumbnail": "Remove thumbnail",
       "backdropLabel": "Backdrop / Hero Image",
       "backdropOptional": "(Optional — 1920 × 1080 recommended)",
       "backdropHint": "This wide image appears as the cinematic hero banner on your movie page and producer profile.",
@@ -2160,7 +2133,6 @@
       "termsPrefix": "I confirm that I have read and agree to the",
       "termsSuffix": "and that this submission is my original work.",
       "thumbnailRequired": "Thumbnail image is required.",
-      "copyrightType": "Only PDF, JPG, or PNG files are accepted.",
       "copyrightSize": "File must not exceed 10 MB.",
       "submitFailed": "Submission failed. Please try again.",
       "termsLink": "Terms & Conditions"
@@ -2187,23 +2159,11 @@
       "notifications": "Notifications"
     },
     "wallet": {
-      "amountPlaceholder": "e.g. 50000",
       "bankPlaceholder": "e.g. Bank of Kigali",
-      "accountPlaceholder": "e.g. 1234567890",
       "holderPlaceholder": "Full name as on bank account",
       "momoPlaceholder": "e.g. 07X XXX XXXX",
       "success": "Withdrawal request submitted! It will be reviewed within 1–2 business days.",
       "failed": "Request failed. Please try again."
-    },
-    "withdrawals": {
-      "status": {
-        "pending": "Pending",
-        "approved": "Approved",
-        "completed": "Completed",
-        "rejected": "Rejected",
-        "processed": "Processed",
-        "cancelled": "Cancelled"
-      }
     },
     "onboarding": {
       "photoAlt": "Profile photo",
