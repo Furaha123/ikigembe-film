@@ -29,6 +29,11 @@
       <div class="table-skeleton">
         @for (i of [1,2,3,4]; track i) { <div class="row-skeleton"></div> }
       </div>
+    } @else if (submissionsError()) {
+      <div class="watch-error" role="alert">
+        {{ 'admin.movies.errors.loadSubmissions' | translate }}
+        <button class="action-btn neutral" (click)="loadSubmissions(submissionsPage())">{{ 'admin.movies.errors.retry' | translate }}</button>
+      </div>
     } @else {
       <div class="table-wrap">
         <table>

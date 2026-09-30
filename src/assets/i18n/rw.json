@@ -1207,7 +1207,9 @@
       "errors": {
         "notAvailable": "Video is not available for playback yet.",
         "loadVideo": "Could not load video. Please try again.",
-        "requestChanges": "Failed to request changes. Please try again."
+        "requestChanges": "Failed to request changes. Please try again.",
+        "loadSubmissions": "Could not load film submissions.",
+        "retry": "Retry"
       },
       "trailerTitle": "{{title}} — Trailer",
       "rejectDialog": {

@@ -38,6 +38,7 @@ export class AdminMoviesComponent implements OnInit, OnDestroy {
   // ── Submissions ─────────────────────────────────────
   submissions          = signal<FilmSubmissionItem[]>([]);
   submissionsLoading   = signal(true);
+  submissionsError     = signal(false);
   submissionsPage      = signal(1);
   submissionsTotalPages = signal(1);
   submissionsTotalCount = signal(0);
@@ -143,6 +144,7 @@ export class AdminMoviesComponent implements OnInit, OnDestroy {
 
   loadSubmissions(page = 1) {
     this.submissionsLoading.set(true);
+    this.submissionsError.set(false);
     this.adminService.getFilmSubmissions(page).subscribe({
       next: ({ submissions, total_results, total_pages }) => {
         this.submissions.set(submissions);
@@ -152,7 +154,9 @@ export class AdminMoviesComponent implements OnInit, OnDestroy {
         this.submissionsLoading.set(false);
       },
       error: () => {
-        this.submissions.set(MOCK_SUBMISSIONS);
+        // Show the failure instead of pretending there are no (or fake) submissions.
+        this.submissions.set([]);
+        this.submissionsError.set(true);
         this.submissionsLoading.set(false);
       },
     });
@@ -373,10 +377,3 @@ export class AdminMoviesComponent implements OnInit, OnDestroy {
     return h > 0 ? `${h}h ${m}m` : `${m}m`;
   }
 }
-
-const MOCK_SUBMISSIONS: FilmSubmissionItem[] = [
-  { id: 101, title: 'The Red Hills', producer_name: 'Amahoro Jean', studio_name: 'Kigali Studio', submission_date: '2025-05-01', genre: 'Drama', duration_minutes: 95, status: 'pending_admin_review', rejection_reason: null, thumbnail_url: null },
-  { id: 102, title: 'Lagos Summer', producer_name: 'Chidi Okafor', studio_name: 'Lagos Films', submission_date: '2025-04-20', genre: 'Comedy', duration_minutes: 110, status: 'pending_admin_review', rejection_reason: null, thumbnail_url: null },
-  { id: 103, title: 'Nairobi Nights', producer_name: 'Wanjiru Kamau', studio_name: null, submission_date: '2025-04-15', genre: 'Thriller', duration_minutes: 85, status: 'approved', rejection_reason: null, thumbnail_url: null },
-  { id: 104, title: 'Sahara Dreams', producer_name: 'Fatima Diallo', studio_name: 'Dakar Creatives', submission_date: '2025-03-30', genre: 'Documentary', duration_minutes: 70, status: 'rejected', rejection_reason: 'Copyright document missing.', thumbnail_url: null },
-];
