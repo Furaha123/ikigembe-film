@@ -60,10 +60,8 @@ $muted:   #888;
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 1rem;
-  &.three-col { grid-template-columns: 1fr 1fr 1fr; }
   @media (max-width: 620px) {
     grid-template-columns: 1fr;
-    &.three-col { grid-template-columns: 1fr; }
   }
 }
 
@@ -265,20 +263,6 @@ $muted:   #888;
   border-radius: 2px;
   margin-top: 6px;
   overflow: hidden;
-
-  .upload-bar {
-    height: 100%;
-    background: $gold;
-    border-radius: 2px;
-    transition: width 0.3s ease;
-  }
-}
-
-.upload-pct {
-  font-size: 0.72rem;
-  color: $gold;
-  margin-top: 3px;
-  display: block;
 }
 
 .upload-done {

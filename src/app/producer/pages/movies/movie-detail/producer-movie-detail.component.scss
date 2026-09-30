@@ -408,7 +408,6 @@ $muted:  #666;
 
 .range-sep { font-size: 0.78rem; color: $muted; }
 
-
 /* Two-column analytics body */
 .analytics-body {
   display: grid;
@@ -511,7 +510,6 @@ $muted:  #666;
   transition: color 0.15s, background 0.15s;
   &:hover { color: #ccc; background: rgba(255,255,255,0.025); }
 }
-
 
 /* ── Analytics right sidebar ── */
 .analytics-sidebar {
@@ -724,23 +722,6 @@ $muted:  #666;
   &:hover { background: #222; }
 }
 
-.ctl-value-chip {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 0.5rem;
-  padding: 0.55rem 0.65rem;
-  background: #1a1a1a;
-  border: 1px solid $border;
-  border-radius: 6px;
-  cursor: pointer;
-  svg { width: 14px; height: 14px; color: $muted; flex-shrink: 0; }
-  &:hover { background: #222; }
-}
-
-.ctl-chip-sub  { font-size: 0.65rem; color: $muted; margin-bottom: 0.1rem; }
-.ctl-chip-main { font-size: 0.78rem; color: #ccc; }
-
 /* Range buttons (in left panel, compact) */
 .ctl-range-btns {
   display: flex;
@@ -882,12 +863,6 @@ $muted:  #666;
 
   &:hover:not(.active) { border-color: #444; }
   &.active { background: $gold; border-color: $gold; color: #000; svg { stroke: #000; } }
-}
-
-.adv-breakdown-badge {
-  font-size: 0.78rem;
-  font-weight: 600;
-  color: $gold;
 }
 
 .adv-chart-wrap {

@@ -150,18 +150,6 @@ table {
   tr:hover td { background: rgba(255,255,255,0.02); }
 }
 
-.th-note {
-  display: inline-block;
-  background: rgba(255,255,255,0.06);
-  border-radius: 4px;
-  padding: 0.05rem 0.35rem;
-  font-size: 0.65rem;
-  margin-left: 0.3rem;
-  font-weight: 500;
-  text-transform: none;
-  letter-spacing: 0;
-}
-
 // ── States ─────────────────────────────────────────────
 .section-skeleton {
   display: flex; flex-direction: column; gap: 0.75rem;

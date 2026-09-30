@@ -295,21 +295,6 @@ $muted:   #888;
   &.status-pending { background: #2d2713; color: #fef9c3; }
 }
 
-.suspended-label {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.35rem;
-  padding: 0.35rem 0.75rem;
-  border-radius: 6px;
-  font-size: 0.78rem;
-  font-weight: 600;
-  background: #220e0e;
-  color: #fecaca;
-  border: 1px solid #3a1515;
-
-  svg { width: 13px; height: 13px; flex-shrink: 0; }
-}
-
 // Confirmation modals
 .overlay {
   position: fixed; inset: 0;
