@@ -6,17 +6,17 @@
     <div class="ctrl-brand">
       <div class="mode-label">
         <svg viewBox="0 0 24 24" fill="currentColor"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 14H7v-2h5v2zm5-4H7v-2h10v2zm0-4H7V7h10v2z"/></svg>
-        Advanced mode
+        {{ 'admin.reports.advancedMode' | translate }}
       </div>
       <span class="admin-badge">
         <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z"/></svg>
-        Admin
+        {{ 'admin.reports.adminBadge' | translate }}
       </span>
     </div>
 
     <!-- Report selector -->
     <div class="ctrl-section">
-      <div class="ctrl-section-label">Report</div>
+      <div class="ctrl-section-label">{{ 'admin.reports.report' | translate }}</div>
       @for (r of reports; track r.key) {
         <button
           class="report-item"
@@ -25,8 +25,8 @@
           [style.--dot-color]="r.color">
           <span class="ri-dot"></span>
           <div class="ri-text">
-            <span class="ri-label">{{ r.label }}</span>
-            <span class="ri-sub">{{ r.sub }}</span>
+            <span class="ri-label">{{ r.label | translate }}</span>
+            <span class="ri-sub">{{ r.sub | translate }}</span>
           </div>
           @if (activeReport() === r.key) {
             <svg class="ri-check" viewBox="0 0 24 24" fill="currentColor"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
@@ -38,7 +38,7 @@
     <!-- Metrics (admin-only) -->
     <div class="ctrl-section">
       <div class="ctrl-section-label">
-        Admin-only metrics
+        {{ 'admin.reports.adminOnlyMetrics' | translate }}
         <span class="label-badge">
           <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z"/></svg>
         </span>
@@ -47,7 +47,7 @@
         @for (m of adminExtras[activeReport()]; track m) {
           <div class="metric-item">
             <svg viewBox="0 0 24 24" fill="currentColor"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
-            {{ m }}
+            {{ m | translate }}
           </div>
         }
       </div>
@@ -61,12 +61,12 @@
     <!-- Main topbar -->
     <div class="main-topbar">
       <div class="topbar-left">
-        <button class="sidebar-toggle" (click)="toggleSidebar()" title="Toggle controls">
+        <button class="sidebar-toggle" (click)="toggleSidebar()" [title]="'admin.reports.toggleControls' | translate" [attr.aria-label]="'admin.reports.toggleControls' | translate">
           <svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"/></svg>
         </button>
         <div class="topbar-heading">
-          <span class="report-tag">Report</span>
-          <span class="report-name">{{ active.label }}</span>
+          <span class="report-tag">{{ 'admin.reports.report' | translate }}</span>
+          <span class="report-name">{{ active.label | translate }}</span>
         </div>
       </div>
 
@@ -85,7 +85,7 @@
 
         <!-- Show chart toggle -->
         <label class="chart-toggle">
-          <span class="ct-label">Chart</span>
+          <span class="ct-label">{{ 'admin.reports.chart' | translate }}</span>
           <button
             class="ct-switch"
             [class.on]="showChart()"
@@ -99,7 +99,7 @@
         <!-- Export -->
         <button class="btn-export" (click)="exportActive()">
           <svg viewBox="0 0 24 24" fill="currentColor"><path d="M19 9h-4V3H9v6H5l7 7 7-7zm-8 2V5h2v6h1.17L12 13.17 9.83 11H11zm-6 7h14v2H5v-2z"/></svg>
-          Export
+          {{ 'admin.reports.export' | translate }}
         </button>
       </div>
     </div>

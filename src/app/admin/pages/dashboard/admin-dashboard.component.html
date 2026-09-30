@@ -3,12 +3,12 @@
   <!-- ── Header ── -->
   <div class="dash-header">
     <div>
-      <h1>Dashboard</h1>
+      <h1>{{ 'admin.dashboard.title' | translate }}</h1>
       <p>{{ today }}</p>
     </div>
     <a routerLink="/admin/reports" class="btn-reports">
       <svg viewBox="0 0 24 24" fill="currentColor"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 14H7v-2h5v2zm5-4H7v-2h10v2zm0-4H7V7h10v2z"/></svg>
-      Full Reports
+      {{ 'admin.dashboard.fullReports' | translate }}
     </a>
   </div>
 
@@ -20,7 +20,7 @@
       <div class="kpi-icon icon-gold">
         <svg viewBox="0 0 24 24" fill="currentColor"><path d="M11.8 10.9c-2.27-.59-3-1.2-3-2.15 0-1.09 1.01-1.85 2.7-1.85 1.78 0 2.44.85 2.5 2.1h2.21c-.07-1.72-1.12-3.3-3.21-3.81V3h-3v2.16c-1.94.42-3.5 1.68-3.5 3.61 0 2.31 1.91 3.46 4.7 4.13 2.5.6 3 1.48 3 2.41 0 .69-.49 1.79-2.7 1.79-2.06 0-2.87-.92-2.98-2.1h-2.2c.12 2.19 1.76 3.42 3.68 3.83V21h3v-2.15c1.95-.37 3.5-1.5 3.5-3.55 0-2.84-2.43-3.81-4.7-4.4z"/></svg>
       </div>
-      <div class="kpi-label">Total Revenue</div>
+      <div class="kpi-label">{{ 'admin.dashboard.kpi.totalRevenue' | translate }}</div>
       <div class="kpi-value">
         @if (loadingOverview()) { <span class="skel skel-val"></span> }
         @else { {{ fmt(totalRevenue()) }} }
@@ -32,7 +32,7 @@
       <div class="kpi-icon icon-purple">
         <svg viewBox="0 0 24 24" fill="currentColor"><path d="M16 6l2.29 2.29-4.88 4.88-4-4L2 16.59 3.41 18l6-6 4 4 6.3-6.29L22 12V6h-6z"/></svg>
       </div>
-      <div class="kpi-label">Platform Commission</div>
+      <div class="kpi-label">{{ 'admin.dashboard.kpi.platformCommission' | translate }}</div>
       <div class="kpi-value">
         @if (loadingOverview()) { <span class="skel skel-val"></span> }
         @else { {{ fmt(totalComm()) }} }
@@ -44,7 +44,7 @@
       <div class="kpi-icon icon-teal">
         <svg viewBox="0 0 24 24" fill="currentColor"><path d="M21 18v1c0 1.1-.9 2-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14c1.1 0 2 .9 2 2v1h-9a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h9zm-9-2h10V8H12v8zm4-2.5a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3z"/></svg>
       </div>
-      <div class="kpi-label">Producer Payouts</div>
+      <div class="kpi-label">{{ 'admin.dashboard.kpi.producerPayouts' | translate }}</div>
       <div class="kpi-value">
         @if (loadingOverview()) { <span class="skel skel-val"></span> }
         @else { {{ fmt(producerPayout()) }} }
@@ -65,7 +65,7 @@
           @if (loadingOverview()) { <span class="skel skel-sm"></span> }
           @else { {{ fmtNum(overview()?.total_viewers ?? 0) }} }
         </div>
-        <div class="stat-label">Total Users</div>
+        <div class="stat-label">{{ 'admin.dashboard.stats.totalUsers' | translate }}</div>
       </div>
       <svg class="stat-arrow" viewBox="0 0 24 24" fill="currentColor"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6z"/></svg>
     </a>
@@ -79,7 +79,7 @@
           @if (loadingOverview()) { <span class="skel skel-sm"></span> }
           @else { {{ fmtNum(overview()?.total_producers ?? 0) }} }
         </div>
-        <div class="stat-label">Producers</div>
+        <div class="stat-label">{{ 'admin.dashboard.stats.producers' | translate }}</div>
       </div>
       <svg class="stat-arrow" viewBox="0 0 24 24" fill="currentColor"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6z"/></svg>
     </a>
@@ -93,7 +93,7 @@
           @if (loadingOverview()) { <span class="skel skel-sm"></span> }
           @else { {{ fmtNum(overview()?.total_movies ?? 0) }} }
         </div>
-        <div class="stat-label">Movies</div>
+        <div class="stat-label">{{ 'admin.dashboard.stats.movies' | translate }}</div>
       </div>
       <svg class="stat-arrow" viewBox="0 0 24 24" fill="currentColor"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6z"/></svg>
     </a>
@@ -107,10 +107,10 @@
           @if (loadingTx()) { <span class="skel skel-sm"></span> }
           @else { {{ pendingCount() }} }
         </div>
-        <div class="stat-label">Pending Withdrawals</div>
+        <div class="stat-label">{{ 'admin.dashboard.stats.pendingWithdrawals' | translate }}</div>
       </div>
       @if (pendingCount() > 0) {
-        <span class="stat-badge">Action needed</span>
+        <span class="stat-badge">{{ 'admin.dashboard.stats.actionNeeded' | translate }}</span>
       } @else {
         <svg class="stat-arrow" viewBox="0 0 24 24" fill="currentColor"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6z"/></svg>
       }
@@ -122,13 +122,13 @@
   <div class="chart-card">
     <div class="chart-hd">
       <div>
-        <h2>Revenue Trend</h2>
-        <p class="chart-sub">Last 12 months · monthly</p>
+        <h2>{{ 'admin.dashboard.chart.title' | translate }}</h2>
+        <p class="chart-sub">{{ 'admin.dashboard.chart.subtitle' | translate }}</p>
       </div>
       <div class="chart-tabs">
-        <button [class.active]="activeTab() === 'revenue'"    (click)="setTab('revenue')">Revenue</button>
-        <button [class.active]="activeTab() === 'commission'" (click)="setTab('commission')">Commission</button>
-        <button [class.active]="activeTab() === 'producer'"   (click)="setTab('producer')">Payouts</button>
+        <button [class.active]="activeTab() === 'revenue'"    (click)="setTab('revenue')">{{ 'admin.dashboard.chart.tabRevenue' | translate }}</button>
+        <button [class.active]="activeTab() === 'commission'" (click)="setTab('commission')">{{ 'admin.dashboard.chart.tabCommission' | translate }}</button>
+        <button [class.active]="activeTab() === 'producer'"   (click)="setTab('producer')">{{ 'admin.dashboard.chart.tabPayouts' | translate }}</button>
       </div>
     </div>
     <div class="chart-body">
@@ -139,7 +139,7 @@
           }
         </div>
       } @else if (trend().length === 0) {
-        <p class="empty-msg">No trend data available.</p>
+        <p class="empty-msg">{{ 'admin.dashboard.chart.empty' | translate }}</p>
       } @else {
         <canvas #trendChart></canvas>
       }
@@ -152,8 +152,8 @@
     <!-- Recent Payments -->
     <div class="panel-card">
       <div class="panel-hd">
-        <h2>Recent Payments</h2>
-        <a routerLink="/admin/users" class="see-all">View all →</a>
+        <h2>{{ 'admin.dashboard.recentPayments.title' | translate }}</h2>
+        <a routerLink="/admin/users" class="see-all">{{ 'admin.dashboard.recentPayments.viewAll' | translate }}</a>
       </div>
 
       @if (loadingTx()) {
@@ -168,7 +168,7 @@
           </div>
         }
       } @else if (recentPayments().length === 0) {
-        <p class="empty-msg">No recent payments.</p>
+        <p class="empty-msg">{{ 'admin.dashboard.recentPayments.empty' | translate }}</p>
       } @else {
         @for (p of recentPayments(); track p.id) {
           <div class="act-item">
@@ -189,7 +189,7 @@
     <!-- Quick Actions -->
     <div class="panel-card">
       <div class="panel-hd">
-        <h2>Quick Actions</h2>
+        <h2>{{ 'admin.dashboard.quickActions.title' | translate }}</h2>
       </div>
 
       <a routerLink="/admin/withdrawals" class="qa-item" [class.qa-urgent]="pendingCount() > 0">
@@ -197,11 +197,11 @@
           <svg viewBox="0 0 24 24" fill="currentColor"><path d="M11.8 10.9c-2.27-.59-3-1.2-3-2.15 0-1.09 1.01-1.85 2.7-1.85 1.78 0 2.44.85 2.5 2.1h2.21c-.07-1.72-1.12-3.3-3.21-3.81V3h-3v2.16c-1.94.42-3.5 1.68-3.5 3.61 0 2.31 1.91 3.46 4.7 4.13 2.5.6 3 1.48 3 2.41 0 .69-.49 1.79-2.7 1.79-2.06 0-2.87-.92-2.98-2.1h-2.2c.12 2.19 1.76 3.42 3.68 3.83V21h3v-2.15c1.95-.37 3.5-1.5 3.5-3.55 0-2.84-2.43-3.81-4.7-4.4z"/></svg>
         </div>
         <div class="qa-text">
-          <span class="qa-title">Manage Withdrawals</span>
+          <span class="qa-title">{{ 'admin.dashboard.quickActions.withdrawals' | translate }}</span>
           @if (pendingCount() > 0) {
-            <span class="qa-badge">{{ pendingCount() }} pending</span>
+            <span class="qa-badge">{{ 'admin.dashboard.quickActions.pendingCount' | translate: { count: pendingCount() } }}</span>
           } @else {
-            <span class="qa-sub">No pending requests</span>
+            <span class="qa-sub">{{ 'admin.dashboard.quickActions.noPending' | translate }}</span>
           }
         </div>
         <svg class="qa-arrow" viewBox="0 0 24 24" fill="currentColor"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6z"/></svg>
@@ -212,8 +212,8 @@
           <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 14.5v-9l6 4.5-6 4.5z"/></svg>
         </div>
         <div class="qa-text">
-          <span class="qa-title">Manage Producers</span>
-          <span class="qa-sub">Approve, suspend, view reports</span>
+          <span class="qa-title">{{ 'admin.dashboard.quickActions.producers' | translate }}</span>
+          <span class="qa-sub">{{ 'admin.dashboard.quickActions.producersSub' | translate }}</span>
         </div>
         <svg class="qa-arrow" viewBox="0 0 24 24" fill="currentColor"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6z"/></svg>
       </a>
@@ -223,8 +223,8 @@
           <svg viewBox="0 0 24 24" fill="currentColor"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg>
         </div>
         <div class="qa-text">
-          <span class="qa-title">Manage Users</span>
-          <span class="qa-sub">View, suspend, payment history</span>
+          <span class="qa-title">{{ 'admin.dashboard.quickActions.users' | translate }}</span>
+          <span class="qa-sub">{{ 'admin.dashboard.quickActions.usersSub' | translate }}</span>
         </div>
         <svg class="qa-arrow" viewBox="0 0 24 24" fill="currentColor"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6z"/></svg>
       </a>
@@ -234,8 +234,8 @@
           <svg viewBox="0 0 24 24" fill="currentColor"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
         </div>
         <div class="qa-text">
-          <span class="qa-title">Upload Movie</span>
-          <span class="qa-sub">Add new content to the platform</span>
+          <span class="qa-title">{{ 'admin.dashboard.quickActions.upload' | translate }}</span>
+          <span class="qa-sub">{{ 'admin.dashboard.quickActions.uploadSub' | translate }}</span>
         </div>
         <svg class="qa-arrow" viewBox="0 0 24 24" fill="currentColor"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6z"/></svg>
       </a>
@@ -245,8 +245,8 @@
           <svg viewBox="0 0 24 24" fill="currentColor"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 14H7v-2h5v2zm5-4H7v-2h10v2zm0-4H7V7h10v2z"/></svg>
         </div>
         <div class="qa-text">
-          <span class="qa-title">Full Reports</span>
-          <span class="qa-sub">Revenue, top movies, user growth</span>
+          <span class="qa-title">{{ 'admin.dashboard.quickActions.reports' | translate }}</span>
+          <span class="qa-sub">{{ 'admin.dashboard.quickActions.reportsSub' | translate }}</span>
         </div>
         <svg class="qa-arrow" viewBox="0 0 24 24" fill="currentColor"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6z"/></svg>
       </a>

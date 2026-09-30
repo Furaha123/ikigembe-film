@@ -4,6 +4,7 @@ import {
 } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { Subscription } from 'rxjs';
+import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { AdminService } from '../../../services/admin.service';
 import { WithdrawalSummaryItem } from '../../../models/admin.interface';
 import { DatePickerComponent, type DateRange } from '../../../../shared/components/date-picker/date-picker';
@@ -18,12 +19,13 @@ Chart.register(CategoryScale, LinearScale, Tooltip, Legend, BarElement, BarContr
 @Component({
   selector: 'app-withdrawal-summary',
   standalone: true,
-  imports: [CommonModule, DatePickerComponent],
+  imports: [CommonModule, DatePickerComponent, TranslatePipe],
   templateUrl: './withdrawal-summary.component.html',
   styleUrl: './withdrawal-summary.component.scss',
 })
 export class WithdrawalSummaryComponent implements OnInit, AfterViewChecked, OnDestroy {
   private readonly adminService = inject(AdminService);
+  private readonly translate    = inject(TranslateService);
   private readonly platformId   = inject(PLATFORM_ID);
 
   dateFrom = signal<string>(this.defaultFrom());
@@ -86,9 +88,9 @@ export class WithdrawalSummaryComponent implements OnInit, AfterViewChecked, OnD
       data: {
         labels,
         datasets: [
-          { label: 'Completed', data: data.map(d => d.completed), backgroundColor: 'rgba(52,211,153,0.8)',  borderRadius: 5, borderSkipped: false as const },
-          { label: 'Pending',   data: data.map(d => d.pending),   backgroundColor: 'rgba(245,158,11,0.8)', borderRadius: 5, borderSkipped: false as const },
-          { label: 'Rejected',  data: data.map(d => d.rejected),  backgroundColor: 'rgba(239,68,68,0.8)',  borderRadius: 5, borderSkipped: false as const },
+          { label: this.translate.instant('admin.reports.withdrawalSummary.completed'), data: data.map(d => d.completed), backgroundColor: 'rgba(52,211,153,0.8)',  borderRadius: 5, borderSkipped: false as const },
+          { label: this.translate.instant('admin.reports.withdrawalSummary.pending'),   data: data.map(d => d.pending),   backgroundColor: 'rgba(245,158,11,0.8)', borderRadius: 5, borderSkipped: false as const },
+          { label: this.translate.instant('admin.reports.withdrawalSummary.rejected'),  data: data.map(d => d.rejected),  backgroundColor: 'rgba(239,68,68,0.8)',  borderRadius: 5, borderSkipped: false as const },
         ],
       },
       options: {
@@ -112,15 +114,15 @@ export class WithdrawalSummaryComponent implements OnInit, AfterViewChecked, OnD
     const wb = XLSX.utils.book_new();
     const dateLabel = new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
     const rows: (string | number)[][] = [
-      ['WITHDRAWAL SUMMARY REPORT'],
-      [`Generated: ${dateLabel}`],
+      [this.translate.instant('admin.reports.withdrawalSummary.exportTitle')],
+      [this.translate.instant('admin.reports.generated', { date: dateLabel })],
       [],
-      ['Month', 'Completed', 'Pending', 'Rejected', 'Total Requests'],
+      [this.translate.instant('admin.reports.withdrawalSummary.colMonth'), this.translate.instant('admin.reports.withdrawalSummary.completed'), this.translate.instant('admin.reports.withdrawalSummary.pending'), this.translate.instant('admin.reports.withdrawalSummary.rejected'), this.translate.instant('admin.reports.withdrawalSummary.colTotalRequests')],
       ...this.summary().map(d => [d.month, d.completed, d.pending, d.rejected, d.request_count]),
     ];
     const ws = XLSX.utils.aoa_to_sheet(rows);
     ws['!cols'] = [{ wch: 16 }, { wch: 14 }, { wch: 12 }, { wch: 12 }, { wch: 16 }];
-    XLSX.utils.book_append_sheet(wb, ws, 'Withdrawals');
+    XLSX.utils.book_append_sheet(wb, ws, this.translate.instant('admin.reports.withdrawalSummary.sheetName'));
     XLSX.writeFile(wb, `withdrawal_summary_${new Date().toISOString().slice(0, 10)}.xlsx`);
   }
 

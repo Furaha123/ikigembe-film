@@ -1,6 +1,7 @@
 import { Component, HostListener, inject, OnInit, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { AdminService } from '../../services/admin.service';
 import {
   ProducerItem,
@@ -18,13 +19,14 @@ interface FieldErrors {
 
 @Component({
   selector: 'app-admin-producers',
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, TranslatePipe],
   templateUrl: './admin-producers.component.html',
   styleUrl: './admin-producers.component.scss'
 })
 export class AdminProducersComponent implements OnInit {
   private readonly adminService = inject(AdminService);
   private readonly fb = inject(FormBuilder);
+  private readonly translate = inject(TranslateService);
 
   producers     = signal<ProducerItem[]>([]);
   statusFilter  = signal<'all' | 'pending' | 'approved' | 'suspended'>('all');
@@ -66,11 +68,12 @@ export class AdminProducersComponent implements OnInit {
   dismissPassword() { this.generatedPassword.set(null); }
 
   exportToCSV() {
-    const headers = ['ID', 'Name', 'Email', 'Phone', 'Movies', 'Earnings (RWF)', 'Balance (RWF)', 'Pending Withdrawals (RWF)', 'Total Withdrawn (RWF)', 'Status', 'Date Joined'];
+    const headers = ['id', 'name', 'email', 'phone', 'movies', 'earnings', 'balance', 'pendingWithdrawals', 'totalWithdrawn', 'status', 'dateJoined']
+      .map(k => this.translate.instant(`admin.producers.csv.${k}`));
     const rows = this.producers().map(p => [
       p.id, p.name, p.email, p.phone_number ?? '', p.movies_uploaded,
       p.total_earnings, p.balance, p.pending_withdrawals, p.total_withdrawn,
-      p.is_active ? 'Active' : 'Inactive', p.date_joined,
+      this.translate.instant(p.is_active ? 'admin.producers.csv.active' : 'admin.producers.csv.inactive'), p.date_joined,
     ]);
     this.downloadCSV('producers.csv', headers, rows);
   }
@@ -358,7 +361,7 @@ export class AdminProducersComponent implements OnInit {
     const id = this.confirmDeleteId();
     if (id === null) return '';
     const match = this.producers().find(p => p.id === id);
-    return match?.name || `Producer #${id}`;
+    return match?.name || '';
   });
 
   openDeleteConfirm(id: number) { this.closeMenu(); this.confirmDeleteId.set(id); }

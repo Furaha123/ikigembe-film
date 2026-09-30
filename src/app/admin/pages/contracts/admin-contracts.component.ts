@@ -1,5 +1,6 @@
 import { Component, inject, signal, computed, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { TranslatePipe } from '@ngx-translate/core';
 import { AdminService } from '../../services/admin.service';
 import { ProducerContractItem } from '../../models/admin.interface';
 
@@ -8,7 +9,7 @@ type ContractFilter = 'all' | 'active' | 'expiring' | 'expired' | 'none';
 @Component({
   selector: 'app-admin-contracts',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, TranslatePipe],
   templateUrl: './admin-contracts.component.html',
   styleUrl: './admin-contracts.component.scss',
 })
@@ -34,7 +35,7 @@ export class AdminContractsComponent implements OnInit {
   ngOnInit() {
     this.adminService.getProducerContracts().subscribe({
       next:  (data) => { this.contracts.set(data); this.loading.set(false); },
-      error: ()     => { this.error.set('Could not load contract data.'); this.loading.set(false); },
+      error: ()     => { this.error.set('admin.contractsPage.loadFailed'); this.loading.set(false); },
     });
   }
 
@@ -51,10 +52,10 @@ export class AdminContractsComponent implements OnInit {
   }
 
   stateLabel(state: string): string {
-    if (state === 'active')   return 'Active';
-    if (state === 'expiring') return 'Expiring Soon';
-    if (state === 'expired')  return 'Expired';
-    return 'None';
+    if (state === 'active')   return 'admin.contractsPage.active';
+    if (state === 'expiring') return 'admin.contractsPage.expiringSoon';
+    if (state === 'expired')  return 'admin.contractsPage.expired';
+    return 'admin.contractsPage.none';
   }
 
   stateClass(state: string): string {

@@ -3,6 +3,7 @@ import {
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Subscription } from 'rxjs';
+import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { AdminService } from '../../../services/admin.service';
 import { TopMovieItem } from '../../../models/admin.interface';
 import { DatePickerComponent, type DateRange } from '../../../../shared/components/date-picker/date-picker';
@@ -11,12 +12,13 @@ import * as XLSX from 'xlsx';
 @Component({
   selector: 'app-top-movies',
   standalone: true,
-  imports: [CommonModule, DatePickerComponent],
+  imports: [CommonModule, DatePickerComponent, TranslatePipe],
   templateUrl: './top-movies.component.html',
   styleUrl: './top-movies.component.scss',
 })
 export class TopMoviesComponent implements OnInit, OnDestroy {
   private readonly adminService = inject(AdminService);
+  private readonly translate    = inject(TranslateService);
 
   dateFrom = signal<string>(this.defaultFrom());
   dateTo   = signal<string>(new Date().toISOString().slice(0, 10));
@@ -74,17 +76,17 @@ export class TopMoviesComponent implements OnInit, OnDestroy {
     const wb = XLSX.utils.book_new();
     const dateLabel = new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
     const rows: (string | number)[][] = [
-      ['TOP MOVIES REPORT'],
-      [`Generated: ${dateLabel}`],
+      [this.translate.instant('admin.reports.topMovies.exportTitle')],
+      [this.translate.instant('admin.reports.generated', { date: dateLabel })],
       [],
-      ['Rank', 'Title', 'Producer', 'Views', 'Purchases', 'Revenue (RWF)', 'Producer Share (RWF)'],
+      [this.translate.instant('admin.reports.topMovies.colRank'), this.translate.instant('admin.reports.topMovies.colTitle'), this.translate.instant('admin.reports.topMovies.colProducer'), this.translate.instant('admin.reports.topMovies.colViews'), this.translate.instant('admin.reports.topMovies.colPurchases'), this.translate.instant('admin.reports.topMovies.colRevenueRwf'), this.translate.instant('admin.reports.topMovies.colProducerShareRwf')],
       ...this.movies().map((m, i) => [
         i + 1, m.title, m.producer, m.views, m.purchase_count, m.total_revenue, m.producer_share,
       ]),
     ];
     const ws = XLSX.utils.aoa_to_sheet(rows);
     ws['!cols'] = [{ wch: 6 }, { wch: 30 }, { wch: 22 }, { wch: 10 }, { wch: 12 }, { wch: 18 }, { wch: 20 }];
-    XLSX.utils.book_append_sheet(wb, ws, 'Top Movies');
+    XLSX.utils.book_append_sheet(wb, ws, this.translate.instant('admin.reports.topMovies.sheetName'));
     XLSX.writeFile(wb, `top_movies_${new Date().toISOString().slice(0, 10)}.xlsx`);
   }
 

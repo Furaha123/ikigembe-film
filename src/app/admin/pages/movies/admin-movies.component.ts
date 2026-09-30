@@ -1,6 +1,6 @@
 import { Component, inject, OnInit, OnDestroy, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { TranslatePipe } from '@ngx-translate/core';
+import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { Subject, interval } from 'rxjs';
@@ -22,6 +22,7 @@ export class AdminMoviesComponent implements OnInit, OnDestroy {
   private readonly adminService = inject(AdminService);
   private readonly fb = inject(FormBuilder);
   private readonly router = inject(Router);
+  private readonly translate = inject(TranslateService);
 
   goToCreate() { this.router.navigate(['/admin/movies/create']); }
   goToEdit(id: number) { this.router.navigate(['/admin/movies/edit', id]); }
@@ -181,18 +182,18 @@ export class AdminMoviesComponent implements OnInit, OnDestroy {
   }
 
   watchDisabledReason(s: FilmSubmissionItem): string {
-    if (s.hls_status === 'processing')   return 'Video is being processed — check back soon';
-    if (s.hls_status === 'failed')       return 'Video processing failed';
-    if (s.hls_status === 'not_started')  return 'Video has not been processed yet';
+    if (s.hls_status === 'processing')   return 'admin.movies.watchDisabled.processing';
+    if (s.hls_status === 'failed')       return 'admin.movies.watchDisabled.failed';
+    if (s.hls_status === 'not_started')  return 'admin.movies.watchDisabled.notStarted';
     return '';
   }
 
   hlsStatusLabel(status: string): string {
     const map: Record<string, string> = {
-      not_started: 'Not queued',
-      processing:  'Processing',
-      ready:       'Ready',
-      failed:      'Failed',
+      not_started: 'admin.movies.hls.notStarted',
+      processing:  'admin.movies.hls.processing',
+      ready:       'admin.movies.hls.ready',
+      failed:      'admin.movies.hls.failed',
     };
     return map[status] ?? status;
   }
@@ -200,7 +201,7 @@ export class AdminMoviesComponent implements OnInit, OnDestroy {
   watchFilm(s: FilmSubmissionItem, type: 'full' | 'trailer'): void {
     if (type === 'trailer') {
       if (!s.trailer_url) return;
-      this.openPlayer(s.trailer_url, s.thumbnail_url ?? '', `${s.title} — Trailer`);
+      this.openPlayer(s.trailer_url, s.thumbnail_url ?? '', this.translate.instant('admin.movies.trailerTitle', { title: s.title }));
       return;
     }
 
@@ -216,12 +217,12 @@ export class AdminMoviesComponent implements OnInit, OnDestroy {
         if (res.hls_url) {
           this.openPlayer(res.hls_url, s.thumbnail_url ?? '', s.title);
         } else {
-          this.watchError.set('Video is not available for playback yet.');
+          this.watchError.set('admin.movies.errors.notAvailable');
         }
       },
       error: () => {
         this.watchLoading.set(null);
-        this.watchError.set('Could not load video. Please try again.');
+        this.watchError.set('admin.movies.errors.loadVideo');
       },
     });
   }
@@ -277,7 +278,7 @@ export class AdminMoviesComponent implements OnInit, OnDestroy {
       },
       error: (err) => {
         this.isRequestingChanges.set(false);
-        this.requestChangesError.set(err?.error?.detail ?? 'Failed to request changes. Please try again.');
+        this.requestChangesError.set(err?.error?.detail ?? 'admin.movies.errors.requestChanges');
       },
     });
   }
@@ -350,11 +351,11 @@ export class AdminMoviesComponent implements OnInit, OnDestroy {
   }
 
   statusLabel(s: FilmSubmissionItem['status']): string {
-    if (s === 'approved') return 'Approved';
-    if (s === 'rejected') return 'Rejected';
-    if (s === 'approved_pending_contract') return 'Pending Contract';
-    if (s === 'changes_requested') return 'Changes Requested';
-    return 'Under Review'; // pending_review | pending_admin_review
+    if (s === 'approved') return 'admin.movies.status.approved';
+    if (s === 'rejected') return 'admin.movies.status.rejected';
+    if (s === 'approved_pending_contract') return 'admin.movies.status.pendingContract';
+    if (s === 'changes_requested') return 'admin.movies.status.changesRequested';
+    return 'admin.movies.status.underReview'; // pending_review | pending_admin_review
   }
 
   statusClass(s: FilmSubmissionItem['status']): string {

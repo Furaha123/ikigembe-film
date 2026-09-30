@@ -2,18 +2,18 @@
 
   <div class="section-header">
     <div>
-      <h3>User Growth</h3>
-      <p>New registrations per month for the selected period</p>
+      <h3>{{ 'admin.reports.userGrowth.title' | translate }}</h3>
+      <p>{{ 'admin.reports.userGrowth.subtitle' | translate }}</p>
     </div>
     <div class="section-actions">
       <procurement-date-picker (dateChange)="onDateRangeChange($event)" />
       <div class="legend-inline">
-        <span class="legend-dot" style="background:#60a5fa"></span> Viewers
-        <span class="legend-dot" style="background:#C5A253; margin-left:0.75rem"></span> Producers
+        <span class="legend-dot" style="background:#60a5fa"></span> {{ 'admin.reports.userGrowth.viewers' | translate }}
+        <span class="legend-dot" style="background:#C5A253; margin-left:0.75rem"></span> {{ 'admin.reports.userGrowth.producers' | translate }}
       </div>
       <button class="btn-export" (click)="export()" [disabled]="isLoading()">
         <svg viewBox="0 0 24 24" fill="currentColor"><path d="M19 9h-4V3H9v6H5l7 7 7-7zm-8 2V5h2v6h1.17L12 13.17 9.83 11H11zm-6 7h14v2H5v-2z"/></svg>
-        Export
+        {{ 'admin.reports.export' | translate }}
       </button>
     </div>
   </div>
@@ -25,11 +25,11 @@
     </div>
   } @else if (hasError()) {
     <div class="section-error">
-      <p>Failed to load user growth data.</p>
-      <button class="btn-retry" (click)="load()">Retry</button>
+      <p>{{ 'admin.reports.userGrowth.loadFailed' | translate }}</p>
+      <button class="btn-retry" (click)="load()">{{ 'admin.reports.retry' | translate }}</button>
     </div>
   } @else if (growth().length === 0) {
-    <div class="empty-state">No growth data for this period.</div>
+    <div class="empty-state">{{ 'admin.reports.userGrowth.empty' | translate }}</div>
   } @else {
 
     <div class="chart-body">
@@ -40,12 +40,12 @@
       <table>
         <thead>
           <tr>
-            <th>Month</th>
-            <th class="r">Viewers</th>
-            <th class="r">Producers</th>
-            <th class="r">Total</th>
-            <th class="r">Active Users</th>
-            <th class="r">Paying Users</th>
+            <th>{{ 'admin.reports.userGrowth.colMonth' | translate }}</th>
+            <th class="r">{{ 'admin.reports.userGrowth.viewers' | translate }}</th>
+            <th class="r">{{ 'admin.reports.userGrowth.producers' | translate }}</th>
+            <th class="r">{{ 'admin.reports.userGrowth.colTotal' | translate }}</th>
+            <th class="r">{{ 'admin.reports.userGrowth.colActiveUsers' | translate }}</th>
+            <th class="r">{{ 'admin.reports.userGrowth.colPayingUsers' | translate }}</th>
           </tr>
         </thead>
         <tbody>

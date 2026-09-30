@@ -2,19 +2,19 @@
 
   <div class="section-header">
     <div>
-      <h3>Withdrawal Summary</h3>
-      <p>Monthly withdrawal request status breakdown</p>
+      <h3>{{ 'admin.reports.withdrawalSummary.title' | translate }}</h3>
+      <p>{{ 'admin.reports.withdrawalSummary.subtitle' | translate }}</p>
     </div>
     <div class="section-actions">
       <procurement-date-picker (dateChange)="onDateRangeChange($event)" />
       <div class="legend-inline">
-        <span class="legend-dot" style="background:#34d399"></span> Completed
-        <span class="legend-dot" style="background:#f59e0b; margin-left:0.5rem"></span> Pending
-        <span class="legend-dot" style="background:#ef4444; margin-left:0.5rem"></span> Rejected
+        <span class="legend-dot" style="background:#34d399"></span> {{ 'admin.reports.withdrawalSummary.completed' | translate }}
+        <span class="legend-dot" style="background:#f59e0b; margin-left:0.5rem"></span> {{ 'admin.reports.withdrawalSummary.pending' | translate }}
+        <span class="legend-dot" style="background:#ef4444; margin-left:0.5rem"></span> {{ 'admin.reports.withdrawalSummary.rejected' | translate }}
       </div>
       <button class="btn-export" (click)="export()" [disabled]="isLoading()">
         <svg viewBox="0 0 24 24" fill="currentColor"><path d="M19 9h-4V3H9v6H5l7 7 7-7zm-8 2V5h2v6h1.17L12 13.17 9.83 11H11zm-6 7h14v2H5v-2z"/></svg>
-        Export
+        {{ 'admin.reports.export' | translate }}
       </button>
     </div>
   </div>
@@ -26,11 +26,11 @@
     </div>
   } @else if (hasError()) {
     <div class="section-error">
-      <p>Failed to load withdrawal data.</p>
-      <button class="btn-retry" (click)="load()">Retry</button>
+      <p>{{ 'admin.reports.withdrawalSummary.loadFailed' | translate }}</p>
+      <button class="btn-retry" (click)="load()">{{ 'admin.reports.retry' | translate }}</button>
     </div>
   } @else if (summary().length === 0) {
-    <div class="empty-state">No withdrawal data for this period.</div>
+    <div class="empty-state">{{ 'admin.reports.withdrawalSummary.empty' | translate }}</div>
   } @else {
 
     <div class="chart-body">
@@ -41,11 +41,11 @@
       <table>
         <thead>
           <tr>
-            <th>Month</th>
-            <th class="r">Completed</th>
-            <th class="r">Pending</th>
-            <th class="r">Rejected</th>
-            <th class="r">Total Requests</th>
+            <th>{{ 'admin.reports.withdrawalSummary.colMonth' | translate }}</th>
+            <th class="r">{{ 'admin.reports.withdrawalSummary.completed' | translate }}</th>
+            <th class="r">{{ 'admin.reports.withdrawalSummary.pending' | translate }}</th>
+            <th class="r">{{ 'admin.reports.withdrawalSummary.rejected' | translate }}</th>
+            <th class="r">{{ 'admin.reports.withdrawalSummary.colTotalRequests' | translate }}</th>
           </tr>
         </thead>
         <tbody>

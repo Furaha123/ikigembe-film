@@ -1,5 +1,6 @@
 import { Component, signal, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { TranslatePipe } from '@ngx-translate/core';
 import { RevenueTrendComponent }      from './revenue-trend/revenue-trend.component';
 import { TopMoviesComponent }         from './top-movies/top-movies.component';
 import { UserGrowthComponent }        from './user-growth/user-growth.component';
@@ -21,6 +22,7 @@ type RangePreset  = '7D' | '14D' | '28D' | '1M' | '3M' | '6M' | '1Y';
     WithdrawalSummaryComponent,
     PayingUsersComponent,
     DatePickerComponent,
+    TranslatePipe,
   ],
   templateUrl: './admin-reports.component.html',
   styleUrl: './admin-reports.component.scss',
@@ -42,19 +44,19 @@ export class AdminReportsComponent {
   readonly rangePresets: RangePreset[] = ['7D', '14D', '28D', '1M', '3M', '6M', '1Y'];
 
   readonly reports: { key: ReportKey; label: string; sub: string; color: string }[] = [
-    { key: 'revenue',     label: 'Revenue Trend',      sub: 'Monthly platform breakdown',  color: '#C8A84B' },
-    { key: 'movies',      label: 'Top Movies',         sub: 'Best performing content',     color: '#2dd4bf' },
-    { key: 'users',       label: 'User Growth',        sub: 'Registrations & activity',    color: '#60a5fa' },
-    { key: 'withdrawals', label: 'Withdrawal Summary', sub: 'Payout status by month',      color: '#34d399' },
-    { key: 'paying',      label: 'Paying Users',       sub: 'Users with purchases',        color: '#818cf8' },
+    { key: 'revenue',     label: 'admin.reports.list.revenue.label',     sub: 'admin.reports.list.revenue.sub',     color: '#C8A84B' },
+    { key: 'movies',      label: 'admin.reports.list.movies.label',      sub: 'admin.reports.list.movies.sub',      color: '#2dd4bf' },
+    { key: 'users',       label: 'admin.reports.list.users.label',       sub: 'admin.reports.list.users.sub',       color: '#60a5fa' },
+    { key: 'withdrawals', label: 'admin.reports.list.withdrawals.label', sub: 'admin.reports.list.withdrawals.sub', color: '#34d399' },
+    { key: 'paying',      label: 'admin.reports.list.paying.label',      sub: 'admin.reports.list.paying.sub',      color: '#818cf8' },
   ];
 
   readonly adminExtras: Record<ReportKey, string[]> = {
-    revenue:     ['Platform commission', 'Producer share', 'Total purchase count'],
-    movies:      ['Commission per movie', 'Revenue per view', 'Unique viewers'],
-    users:       ['All producers platform-wide', 'Cross-producer paying users', 'Active user count'],
-    withdrawals: ['Completed vs pending vs rejected', 'Monthly request volume'],
-    paying:      ['All users across platform', 'Per-user payment history', 'Contact info (email, phone)'],
+    revenue:     ['admin.reports.extras.platformCommission', 'admin.reports.extras.producerShare', 'admin.reports.extras.totalPurchaseCount'],
+    movies:      ['admin.reports.extras.commissionPerMovie', 'admin.reports.extras.revenuePerView', 'admin.reports.extras.uniqueViewers'],
+    users:       ['admin.reports.extras.allProducers', 'admin.reports.extras.crossProducerPaying', 'admin.reports.extras.activeUserCount'],
+    withdrawals: ['admin.reports.extras.withdrawalStatuses', 'admin.reports.extras.monthlyRequestVolume'],
+    paying:      ['admin.reports.extras.allUsers', 'admin.reports.extras.perUserHistory', 'admin.reports.extras.contactInfo'],
   };
 
   get active() {

@@ -2,19 +2,19 @@
 
   <div class="section-header">
     <div>
-      <h3>Revenue Trend</h3>
-      <p>Monthly breakdown for the selected period</p>
+      <h3>{{ 'admin.reports.revenueTrend.title' | translate }}</h3>
+      <p>{{ 'admin.reports.revenueTrend.subtitle' | translate }}</p>
     </div>
     <div class="section-actions">
       <procurement-date-picker (dateChange)="onDateRangeChange($event)" />
       <div class="tab-group">
-        <button [class.active]="activeTab === 'revenue'"    (click)="switchTab('revenue')">Revenue</button>
-        <button [class.active]="activeTab === 'commission'" (click)="switchTab('commission')">Commission</button>
-        <button [class.active]="activeTab === 'producer'"   (click)="switchTab('producer')">Producer</button>
+        <button [class.active]="activeTab === 'revenue'"    (click)="switchTab('revenue')">{{ 'admin.reports.revenueTrend.tabRevenue' | translate }}</button>
+        <button [class.active]="activeTab === 'commission'" (click)="switchTab('commission')">{{ 'admin.reports.revenueTrend.tabCommission' | translate }}</button>
+        <button [class.active]="activeTab === 'producer'"   (click)="switchTab('producer')">{{ 'admin.reports.revenueTrend.tabProducer' | translate }}</button>
       </div>
       <button class="btn-export" (click)="export()" [disabled]="isLoading()">
         <svg viewBox="0 0 24 24" fill="currentColor"><path d="M19 9h-4V3H9v6H5l7 7 7-7zm-8 2V5h2v6h1.17L12 13.17 9.83 11H11zm-6 7h14v2H5v-2z"/></svg>
-        Export
+        {{ 'admin.reports.export' | translate }}
       </button>
     </div>
   </div>
@@ -26,26 +26,26 @@
     </div>
   } @else if (hasError()) {
     <div class="section-error">
-      <p>Failed to load revenue data.</p>
-      <button class="btn-retry" (click)="load()">Retry</button>
+      <p>{{ 'admin.reports.revenueTrend.loadFailed' | translate }}</p>
+      <button class="btn-retry" (click)="load()">{{ 'admin.reports.retry' | translate }}</button>
     </div>
   } @else {
 
     <div class="kpi-strip">
       <div class="kpi-item">
-        <span class="kpi-label">Total Revenue</span>
+        <span class="kpi-label">{{ 'admin.reports.revenueTrend.totalRevenue' | translate }}</span>
         <span class="kpi-value gold">{{ fmt(totalRevenue()) }}</span>
       </div>
       <div class="kpi-item">
-        <span class="kpi-label">Producer Share</span>
+        <span class="kpi-label">{{ 'admin.reports.revenueTrend.producerShare' | translate }}</span>
         <span class="kpi-value">{{ fmt(totalProd()) }}</span>
       </div>
       <div class="kpi-item">
-        <span class="kpi-label">Commission</span>
+        <span class="kpi-label">{{ 'admin.reports.revenueTrend.commission' | translate }}</span>
         <span class="kpi-value purple">{{ fmt(totalComm()) }}</span>
       </div>
       <div class="kpi-item">
-        <span class="kpi-label">Purchases</span>
+        <span class="kpi-label">{{ 'admin.reports.revenueTrend.purchases' | translate }}</span>
         <span class="kpi-value">{{ totalPurchases() | number }}</span>
       </div>
     </div>
@@ -55,7 +55,7 @@
         <canvas #canvas></canvas>
       </div>
     } @else {
-      <div class="empty-state">No revenue data for this period.</div>
+      <div class="empty-state">{{ 'admin.reports.revenueTrend.empty' | translate }}</div>
     }
 
     @if (trend().length > 0) {
@@ -63,11 +63,11 @@
         <table>
           <thead>
             <tr>
-              <th>Period</th>
-              <th class="r">Total Revenue</th>
-              <th class="r">Producer Share</th>
-              <th class="r">Commission</th>
-              <th class="r">Purchases</th>
+              <th>{{ 'admin.reports.revenueTrend.period' | translate }}</th>
+              <th class="r">{{ 'admin.reports.revenueTrend.totalRevenue' | translate }}</th>
+              <th class="r">{{ 'admin.reports.revenueTrend.producerShare' | translate }}</th>
+              <th class="r">{{ 'admin.reports.revenueTrend.commission' | translate }}</th>
+              <th class="r">{{ 'admin.reports.revenueTrend.purchases' | translate }}</th>
             </tr>
           </thead>
           <tbody>
@@ -83,7 +83,7 @@
           </tbody>
           <tfoot>
             <tr>
-              <td class="fw">Totals</td>
+              <td class="fw">{{ 'admin.reports.revenueTrend.totals' | translate }}</td>
               <td class="r gold fw">{{ fmt(totalRevenue()) }}</td>
               <td class="r fw">{{ fmt(totalProd()) }}</td>
               <td class="r purple fw">{{ fmt(totalComm()) }}</td>
