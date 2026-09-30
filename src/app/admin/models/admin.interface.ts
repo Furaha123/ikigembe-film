@@ -80,7 +80,6 @@ export interface FilmSubmissionItem {
   copyright_url?: string | null;
 }
 
-
 export type HlsStatus = 'not_started' | 'processing' | 'ready' | 'failed';
 
 export interface FilmHlsStatusResponse {
@@ -162,15 +161,6 @@ export interface AdminMovie {
   trailer_url: string | null;
   thumbnail_url: string | null;
   is_featured?: boolean;
-}
-
-export interface MovieFormData {
-  title: string;
-  producer: string;
-  duration_minutes: number;
-  price: number;
-  release_date: string;
-  trailer_url: string;
 }
 
 // ── Producer report ───────────────────────────────────

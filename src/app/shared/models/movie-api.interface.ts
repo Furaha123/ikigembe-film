@@ -9,11 +9,6 @@ export interface MovieListResponse {
 
 export interface MovieDetailResponse extends IVideoContent {}
 
-export interface TrailerResponse {
-  id: number;
-  trailer_url: string | null;
-}
-
 export interface MovieCreditsResponse {
   cast: CastMember[];
 }

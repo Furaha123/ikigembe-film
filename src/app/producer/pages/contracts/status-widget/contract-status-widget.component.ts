@@ -1,12 +1,12 @@
 import { Component, input, computed } from '@angular/core';
 import { RouterLink } from '@angular/router';
-import { TranslatePipe, TranslateDirective } from '@ngx-translate/core';
+import { TranslatePipe } from '@ngx-translate/core';
 import { ContractStatus } from '../../../services/contract.service';
 
 @Component({
   selector: 'app-contract-status-widget',
   standalone: true,
-  imports: [RouterLink, TranslatePipe, TranslateDirective],
+  imports: [RouterLink, TranslatePipe],
   templateUrl: './contract-status-widget.component.html',
   styleUrl: './contract-status-widget.component.scss',
 })

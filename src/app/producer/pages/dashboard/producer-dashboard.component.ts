@@ -2,12 +2,11 @@ import {
   Component, inject, signal, computed,
   AfterViewInit, OnDestroy, OnInit, ElementRef, ViewChild,
 } from '@angular/core';
-import { TranslatePipe, TranslateDirective, TranslateService } from '@ngx-translate/core';
+import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { Subscription } from 'rxjs';
-import { AuthService } from '../../../core/services/auth.service';
 import {
   ProducerService, ProducerWallet, DashboardMovie, DashboardTransaction,
   AnalyticsResponse, ProducerWithdrawal, WithdrawalRequest, ProducerMovie,
@@ -38,7 +37,7 @@ const MONTHLY_LABELS = ['Dec 25', 'Jan 26', 'Feb 26', 'Mar 26', 'Apr 26', 'May 2
 @Component({
   selector: 'app-producer-dashboard',
   standalone: true,
-  imports: [TranslatePipe, TranslateDirective, 
+  imports: [TranslatePipe, 
     CommonModule, ReactiveFormsModule, RouterLink,
     MovieApprovalContractNotificationComponent,
     ContractStatusWidgetComponent,
@@ -51,7 +50,6 @@ export class ProducerDashboardComponent implements OnInit, AfterViewInit, OnDest
   @ViewChild('earningsChart')    earningsCanvas!:    ElementRef<HTMLCanvasElement>;
   @ViewChild('movieDetailChart') movieDetailCanvas?: ElementRef<HTMLCanvasElement>;
 
-  private readonly authService      = inject(AuthService);
   private readonly producerService  = inject(ProducerService);
   private readonly contractService  = inject(ContractService);
   private readonly translate        = inject(TranslateService);

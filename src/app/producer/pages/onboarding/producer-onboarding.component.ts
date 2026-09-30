@@ -1,5 +1,5 @@
-import { Component, inject, signal, computed, OnInit } from '@angular/core';
-import { TranslatePipe, TranslateDirective } from '@ngx-translate/core';
+import { Component, inject, signal, OnInit } from '@angular/core';
+import { TranslatePipe } from '@ngx-translate/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -44,7 +44,7 @@ const COUNTRIES = [
 
 @Component({
   selector: 'app-producer-onboarding',
-  imports: [TranslatePipe, TranslateDirective, CommonModule, ReactiveFormsModule],
+  imports: [TranslatePipe, CommonModule, ReactiveFormsModule],
   templateUrl: './producer-onboarding.component.html',
   styleUrl: './producer-onboarding.component.scss',
 })

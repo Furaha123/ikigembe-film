@@ -1,6 +1,6 @@
 import { Component, inject, OnInit, OnDestroy, signal, computed, PLATFORM_ID } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
-import { TranslatePipe, TranslateDirective, TranslateService } from '@ngx-translate/core';
+import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -21,7 +21,7 @@ const ALL_GENRES = [
 
 @Component({
   selector: 'app-producer-movies',
-  imports: [TranslatePipe, TranslateDirective, CommonModule, FormsModule, ReactiveFormsModule],
+  imports: [TranslatePipe, CommonModule, FormsModule, ReactiveFormsModule],
   templateUrl: './producer-movies.component.html',
   styleUrl: './producer-movies.component.scss',
 })

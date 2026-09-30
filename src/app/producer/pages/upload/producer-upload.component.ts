@@ -1,5 +1,5 @@
 import { Component, inject, signal, computed } from '@angular/core';
-import { TranslatePipe, TranslateDirective, TranslateService } from '@ngx-translate/core';
+import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -28,7 +28,7 @@ const ALL_GENRES = [
 
 @Component({
   selector: 'app-producer-upload',
-  imports: [TranslatePipe, TranslateDirective, CommonModule, ReactiveFormsModule, DatePickerComponent],
+  imports: [TranslatePipe, CommonModule, ReactiveFormsModule, DatePickerComponent],
   templateUrl: './producer-upload.component.html',
   styleUrl: './producer-upload.component.scss',
 })

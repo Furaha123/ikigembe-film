@@ -1,14 +1,14 @@
 import { Component, inject, OnInit, signal, PLATFORM_ID } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { Router } from '@angular/router';
-import { TranslatePipe, TranslateDirective } from '@ngx-translate/core';
+import { TranslatePipe } from '@ngx-translate/core';
 import { ContractService, ProducerContract } from '../../../services/contract.service';
 import { ContractFlowService } from '../contract-flow.service';
 
 @Component({
   selector: 'app-contract-verification',
   standalone: true,
-  imports: [TranslatePipe, TranslateDirective],
+  imports: [TranslatePipe],
   templateUrl: './contract-verification.component.html',
   styleUrl: './contract-verification.component.scss',
 })
