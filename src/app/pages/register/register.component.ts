@@ -5,8 +5,9 @@ import {
 import { isPlatformBrowser, CommonModule } from '@angular/common';
 import { AbstractControl, FormBuilder, ReactiveFormsModule, ValidationErrors, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
-import { AuthService, RegisterErrors } from '../../core/services/auth.service';
+import { AuthService, RegisterErrors, resendCooldownLabel } from '../../core/services/auth.service';
 import { SeoService } from '../../core/services/seo.service';
+import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 
 declare const google: {
   accounts: {
@@ -21,7 +22,7 @@ const GOOGLE_CLIENT_ID = '315063576340-dokh369lnriqdpermiha2iesqrm097dp.apps.goo
 
 @Component({
   selector: 'app-register',
-  imports: [ReactiveFormsModule, CommonModule, RouterLink],
+  imports: [ReactiveFormsModule, CommonModule, RouterLink, TranslatePipe],
   templateUrl: './register.component.html',
   styleUrl: './register.component.scss'
 })
@@ -31,6 +32,7 @@ export class RegisterComponent implements OnInit, AfterViewInit, OnDestroy {
   private readonly router      = inject(Router);
   private readonly platformId  = inject(PLATFORM_ID);
   private readonly seo         = inject(SeoService);
+  private readonly translate   = inject(TranslateService);
 
   private cooldownTimer?: ReturnType<typeof setInterval>;
 
@@ -72,7 +74,7 @@ export class RegisterComponent implements OnInit, AfterViewInit, OnDestroy {
 
   // ── Lifecycle ────────────────────────────────────────────
   ngOnInit(): void {
-    this.seo.set({ title: 'Create Account', noIndex: true });
+    this.seo.set({ title: this.translate.instant('auth.register.seoTitle'), noIndex: true });
   }
 
   ngAfterViewInit() {
@@ -121,21 +123,18 @@ export class RegisterComponent implements OnInit, AfterViewInit, OnDestroy {
     this.resendSuccess.set(false);
     this.resendError.set(null);
 
-    this.authService.resendVerification(email).subscribe({
-      next: () => {
-        this.isResending.set(false);
-        this.resendSuccess.set(true);
-        this.startCooldown(60);
-      },
-      error: (err) => {
-        this.isResending.set(false);
-        const detail = err?.error?.detail ?? err?.error?.email?.[0];
-        this.resendError.set(detail ?? 'Failed to resend. Please try again.');
-      },
+    this.authService.requestVerificationEmail(email).subscribe(result => {
+      this.isResending.set(false);
+      this.resendSuccess.set(result.sent);
+      if (!result.sent) this.resendError.set(result.message ?? 'auth.common.resendFailed');
+      if (result.cooldownSeconds > 0) this.startCooldown(result.cooldownSeconds);
     });
   }
 
+  readonly cooldownLabel = resendCooldownLabel;
+
   private startCooldown(seconds: number): void {
+    clearInterval(this.cooldownTimer);
     this.resendCooldown.set(seconds);
     this.cooldownTimer = setInterval(() => {
       const next = this.resendCooldown() - 1;

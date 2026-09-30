@@ -4,6 +4,7 @@ import {
 } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { Subscription } from 'rxjs';
+import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { AdminService } from '../../../services/admin.service';
 import { UserGrowthItem } from '../../../models/admin.interface';
 import { DatePickerComponent, type DateRange } from '../../../../shared/components/date-picker/date-picker';
@@ -18,12 +19,13 @@ Chart.register(CategoryScale, LinearScale, Tooltip, Legend, BarElement, BarContr
 @Component({
   selector: 'app-user-growth',
   standalone: true,
-  imports: [CommonModule, DatePickerComponent],
+  imports: [CommonModule, DatePickerComponent, TranslatePipe],
   templateUrl: './user-growth.component.html',
   styleUrl: './user-growth.component.scss',
 })
 export class UserGrowthComponent implements OnInit, AfterViewChecked, OnDestroy {
   private readonly adminService = inject(AdminService);
+  private readonly translate    = inject(TranslateService);
   private readonly platformId   = inject(PLATFORM_ID);
 
   dateFrom = signal<string>(this.defaultFrom());
@@ -86,8 +88,8 @@ export class UserGrowthComponent implements OnInit, AfterViewChecked, OnDestroy 
       data: {
         labels,
         datasets: [
-          { label: 'Viewers',   data: data.map(d => d.viewers),   backgroundColor: 'rgba(96,165,250,0.75)',  borderRadius: 5, borderSkipped: false as const },
-          { label: 'Producers', data: data.map(d => d.producers), backgroundColor: 'rgba(197,162,83,0.75)', borderRadius: 5, borderSkipped: false as const },
+          { label: this.translate.instant('admin.reports.userGrowth.viewers'),   data: data.map(d => d.viewers),   backgroundColor: 'rgba(96,165,250,0.75)',  borderRadius: 5, borderSkipped: false as const },
+          { label: this.translate.instant('admin.reports.userGrowth.producers'), data: data.map(d => d.producers), backgroundColor: 'rgba(197,162,83,0.75)', borderRadius: 5, borderSkipped: false as const },
         ],
       },
       options: {
@@ -111,15 +113,15 @@ export class UserGrowthComponent implements OnInit, AfterViewChecked, OnDestroy 
     const wb = XLSX.utils.book_new();
     const dateLabel = new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
     const rows: (string | number)[][] = [
-      ['USER GROWTH REPORT'],
-      [`Generated: ${dateLabel}`],
+      [this.translate.instant('admin.reports.userGrowth.exportTitle')],
+      [this.translate.instant('admin.reports.generated', { date: dateLabel })],
       [],
-      ['Month', 'Viewers', 'Producers', 'Total', 'Active Users', 'Paying Users'],
+      [this.translate.instant('admin.reports.userGrowth.colMonth'), this.translate.instant('admin.reports.userGrowth.viewers'), this.translate.instant('admin.reports.userGrowth.producers'), this.translate.instant('admin.reports.userGrowth.colTotal'), this.translate.instant('admin.reports.userGrowth.colActiveUsers'), this.translate.instant('admin.reports.userGrowth.colPayingUsers')],
       ...this.growth().map(d => [d.month, d.viewers, d.producers, d.total, d.active_users, d.paying_users]),
     ];
     const ws = XLSX.utils.aoa_to_sheet(rows);
     ws['!cols'] = [{ wch: 16 }, { wch: 12 }, { wch: 12 }, { wch: 10 }];
-    XLSX.utils.book_append_sheet(wb, ws, 'User Growth');
+    XLSX.utils.book_append_sheet(wb, ws, this.translate.instant('admin.reports.userGrowth.sheetName'));
     XLSX.writeFile(wb, `user_growth_${new Date().toISOString().slice(0, 10)}.xlsx`);
   }
 

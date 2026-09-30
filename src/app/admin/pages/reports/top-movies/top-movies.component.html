@@ -2,18 +2,18 @@
 
   <div class="section-header">
     <div>
-      <h3>Top Movies</h3>
-      <p>Best performing movies for the selected period</p>
+      <h3>{{ 'admin.reports.topMovies.title' | translate }}</h3>
+      <p>{{ 'admin.reports.topMovies.subtitle' | translate }}</p>
     </div>
     <div class="section-actions">
       <procurement-date-picker (dateChange)="onDateRangeChange($event)" />
       <div class="tab-group">
-        <button [class.active]="sort === 'revenue'" (click)="switchSort('revenue')">By Revenue</button>
-        <button [class.active]="sort === 'views'"   (click)="switchSort('views')">By Views</button>
+        <button [class.active]="sort === 'revenue'" (click)="switchSort('revenue')">{{ 'admin.reports.topMovies.byRevenue' | translate }}</button>
+        <button [class.active]="sort === 'views'"   (click)="switchSort('views')">{{ 'admin.reports.topMovies.byViews' | translate }}</button>
       </div>
       <button class="btn-export" (click)="export()" [disabled]="isLoading()">
         <svg viewBox="0 0 24 24" fill="currentColor"><path d="M19 9h-4V3H9v6H5l7 7 7-7zm-8 2V5h2v6h1.17L12 13.17 9.83 11H11zm-6 7h14v2H5v-2z"/></svg>
-        Export
+        {{ 'admin.reports.export' | translate }}
       </button>
     </div>
   </div>
@@ -24,11 +24,11 @@
     </div>
   } @else if (hasError()) {
     <div class="section-error">
-      <p>Failed to load top movies.</p>
-      <button class="btn-retry" (click)="load()">Retry</button>
+      <p>{{ 'admin.reports.topMovies.loadFailed' | translate }}</p>
+      <button class="btn-retry" (click)="load()">{{ 'admin.reports.retry' | translate }}</button>
     </div>
   } @else if (movies().length === 0) {
-    <div class="empty-state">No movie data for this period.</div>
+    <div class="empty-state">{{ 'admin.reports.topMovies.empty' | translate }}</div>
   } @else {
 
     <div class="movies-list">
@@ -41,9 +41,9 @@
           </div>
           <div class="movie-stats">
             <span class="stat-main">
-              {{ sort === 'revenue' ? fmt(m.total_revenue) : (m.views | number) + ' views' }}
+              {{ sort === 'revenue' ? fmt(m.total_revenue) : ('admin.reports.topMovies.viewsCount' | translate: { count: (m.views | number) }) }}
             </span>
-            <span class="stat-sub">{{ m.purchase_count | number }} purchases</span>
+            <span class="stat-sub">{{ 'admin.reports.topMovies.purchasesCount' | translate: { count: (m.purchase_count | number) } }}</span>
           </div>
           <div class="bar-wrap">
             <div class="bar" [style.width.%]="getBarWidth(m)"></div>
@@ -57,12 +57,12 @@
         <thead>
           <tr>
             <th>#</th>
-            <th>Title</th>
-            <th>Producer</th>
-            <th class="r">Views</th>
-            <th class="r">Purchases</th>
-            <th class="r">Revenue</th>
-            <th class="r">Producer Share</th>
+            <th>{{ 'admin.reports.topMovies.colTitle' | translate }}</th>
+            <th>{{ 'admin.reports.topMovies.colProducer' | translate }}</th>
+            <th class="r">{{ 'admin.reports.topMovies.colViews' | translate }}</th>
+            <th class="r">{{ 'admin.reports.topMovies.colPurchases' | translate }}</th>
+            <th class="r">{{ 'admin.reports.topMovies.colRevenue' | translate }}</th>
+            <th class="r">{{ 'admin.reports.topMovies.colProducerShare' | translate }}</th>
           </tr>
         </thead>
         <tbody>

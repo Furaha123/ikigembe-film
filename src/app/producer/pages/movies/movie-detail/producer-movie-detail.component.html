@@ -70,7 +70,7 @@
             <button class="btn-watch" (click)="watchMovie()"
               [disabled]="(!movie()!.hls_url && !movie()!.video_url) || watchLoading()"
               [attr.aria-busy]="watchLoading()"
-              [title]="(!movie()!.hls_url && !movie()!.video_url) ? 'Video not yet processed' : ''">
+              [title]="(!movie()!.hls_url && !movie()!.video_url) ? ('producerUi.movieDetail.videoNotProcessed' | translate) : ''">
               <svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
               {{ 'movieDetail.watchMovie' | translate }}
             </button>
@@ -96,14 +96,14 @@
               </svg>
             </div>
             <div class="changes-banner-body">
-              <span class="changes-banner-title">Changes Requested</span>
+              <span class="changes-banner-title">{{ 'producerUi.movies.changesRequested' | translate }}</span>
               @if (movie()!.changes_requested_note) {
                 <p class="changes-banner-note">{{ movie()!.changes_requested_note }}</p>
               }
             </div>
             <button class="btn-resubmit" (click)="resubmitOpen.set(true)">
               <svg viewBox="0 0 24 24" fill="currentColor" width="15" height="15"><path d="M17.65 6.35A7.958 7.958 0 0 0 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08A5.99 5.99 0 0 1 12 18c-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/></svg>
-              Resubmit Film
+              {{ 'producerUi.resubmit.submit' | translate }}
             </button>
           </div>
         }
@@ -111,7 +111,7 @@
         @if (resubmitSuccess()) {
           <div class="resubmit-success-banner">
             <svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 14.5l-4-4 1.41-1.41L10 13.67l6.59-6.59L18 8.5l-8 8z"/></svg>
-            Your resubmission is under review. You'll be notified once the admin has reviewed it.
+            {{ 'producerUi.movieDetail.resubmitSuccess' | translate }}
           </div>
         }
 
@@ -185,7 +185,7 @@
               <div class="meta-row">
                 <span class="meta-label">{{ 'movieDetail.metaHls' | translate }}</span>
                 <span class="hls-badge" [class]="hlsClass(movie()!.hls_status)">
-                  {{ hlsLabel(movie()!.hls_status) }}
+                  {{ hlsLabel(movie()!.hls_status) | translate }}
                 </span>
               </div>
 
@@ -220,7 +220,7 @@
                 @for (r of ranges; track r) {
                   <button class="range-btn"
                           [class.active]="selectedRange() === r"
-                          (click)="setRange(r)">{{ r }}</button>
+                          (click)="setRange(r)">{{ r === 'Lifetime' ? ('producerUi.movieDetail.lifetime' | translate) : r }}</button>
                 }
               </div>
               <div class="custom-range">
@@ -241,15 +241,15 @@
             <!-- Summary card -->
             <div class="summary-card">
               <p class="summary-text">
-                This movie has had
+                {{ 'producerUi.movieDetail.summaryPrefix' | translate }}
                 @if (movie()!.views === 0) {
-                  <strong>no views</strong>
+                  <strong>{{ 'producerUi.movieDetail.summaryNoViews' | translate }}</strong>
                 } @else if (movie()!.views === 1) {
-                  <strong>one view</strong>
+                  <strong>{{ 'producerUi.movieDetail.summaryOneView' | translate }}</strong>
                 } @else {
-                  <strong>{{ fmtNum(movie()!.views) }} views</strong>
+                  <strong>{{ 'producerUi.movieDetail.summaryViews' | translate: { count: fmtNum(movie()!.views) } }}</strong>
                 }
-                since it was published
+                {{ 'producerUi.movieDetail.summarySuffix' | translate }}
               </p>
 
               <!-- Clickable KPI tiles -->
@@ -279,7 +279,7 @@
                 <canvas #analyticsChart></canvas>
               </div>
 
-              <button class="see-more-link" (click)="openAdvanced()">See more →</button>
+              <button class="see-more-link" (click)="openAdvanced()">{{ 'producerUi.movieDetail.seeMore' | translate }}</button>
             </div>
 
           </div>
@@ -297,7 +297,7 @@
               <div class="rt-value">{{ movie()!.views }}</div>
               <div class="rt-sub">{{ 'movieDetail.realtimeSub' | translate }}</div>
               <div class="rt-divider"></div>
-              <button class="see-more-link rt-see-more" (click)="openAdvanced()">See more →</button>
+              <button class="see-more-link rt-see-more" (click)="openAdvanced()">{{ 'producerUi.movieDetail.seeMore' | translate }}</button>
             </div>
           </div>
 
@@ -321,14 +321,14 @@
           </svg>
           <span class="adv-title">{{ 'movieDetail.advancedMode' | translate }}</span>
           <div class="adv-report-info">
-            <span class="adv-report-label">Report</span>
+            <span class="adv-report-label">{{ 'producerUi.movieDetail.report' | translate }}</span>
             <span class="adv-divider-dot">·</span>
-            <span class="adv-report-value">Top content · Since published</span>
+            <span class="adv-report-value">{{ 'producerUi.movieDetail.reportValue' | translate }}</span>
             <svg viewBox="0 0 24 24" fill="currentColor" style="width:14px;height:14px;color:#666"><path d="M7 10l5 5 5-5z"/></svg>
           </div>
         </div>
         <div class="adv-header-actions">
-          <button class="adv-icon-btn" (click)="exportAdvancedData()" title="Export data as CSV">
+          <button class="adv-icon-btn" (click)="exportAdvancedData()" [title]="'producerUi.movieDetail.exportCsv' | translate" [attr.aria-label]="'producerUi.movieDetail.exportCsv' | translate">
             <svg viewBox="0 0 24 24" fill="currentColor"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg>
           </button>
           <button class="adv-close" (click)="closeAdvanced()">
@@ -344,7 +344,7 @@
         <div class="adv-controls">
 
           <div class="ctl-section">
-            <div class="ctl-label">Controls</div>
+            <div class="ctl-label">{{ 'producerUi.movieDetail.controls' | translate }}</div>
             <div class="ctl-movie-chip">
               @if (movie()!.thumbnail_url) {
                 <img [src]="movie()!.thumbnail_url" [alt]="movie()!.title" />
@@ -355,12 +355,12 @@
           </div>
 
           <div class="ctl-section">
-            <div class="ctl-label">Date range</div>
+            <div class="ctl-label">{{ 'producerUi.movieDetail.dateRange' | translate }}</div>
             <div class="ctl-range-btns">
               @for (r of ranges; track r) {
                 <button class="ctl-range-btn"
                         [class.active]="advRange() === r"
-                        (click)="setAdvRange(r)">{{ r }}</button>
+                        (click)="setAdvRange(r)">{{ r === 'Lifetime' ? ('producerUi.movieDetail.lifetime' | translate) : r }}</button>
               }
             </div>
             <div class="ctl-date-row">
@@ -371,18 +371,18 @@
           </div>
 
           <div class="ctl-section">
-            <div class="ctl-label">Breakdown</div>
+            <div class="ctl-label">{{ 'producerUi.movieDetail.breakdown' | translate }}</div>
             <div class="ctl-pills">
               @for (b of breakdowns; track b) {
                 <button class="ctl-pill"
                         [class.active]="advBreakdown() === b"
-                        (click)="setAdvBreakdown(b)">{{ b }}</button>
+                        (click)="setAdvBreakdown(b)">{{ 'producerUi.movieDetail.breakdowns.' + b | translate }}</button>
               }
             </div>
           </div>
 
           <div class="ctl-section">
-            <div class="ctl-label">Metrics</div>
+            <div class="ctl-label">{{ 'producerUi.movieDetail.metrics' | translate }}</div>
             <label class="ctl-check">
               <input type="checkbox" [checked]="advMetrics().views"
                      (change)="toggleAdvMetric('views')" />
@@ -409,19 +409,19 @@
         <div class="adv-main">
 
           <div class="adv-main-header">
-            <h3>{{ 'dashboard.kpi.views' | translate }} · {{ advBreakdown() }}</h3>
+            <h3>{{ 'dashboard.kpi.views' | translate }} · {{ 'producerUi.movieDetail.breakdowns.' + advBreakdown() | translate }}</h3>
             <div class="adv-chart-controls">
               <button class="chart-ctrl-btn" [class.active]="advChartType() === 'line'" (click)="setAdvChartType('line')">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px">
                   <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
                 </svg>
-                Line
+                {{ 'producerUi.movieDetail.line' | translate }}
               </button>
               <button class="chart-ctrl-btn" [class.active]="advChartType() === 'bar'" (click)="setAdvChartType('bar')">
                 <svg viewBox="0 0 24 24" fill="currentColor" style="width:14px;height:14px">
                   <path d="M5 9.2h3V19H5V9.2zm5.6-4.8H14V19h-3.4V4.4zm5.6 8H20V19h-3.8v-6.6z"/>
                 </svg>
-                Bar
+                {{ 'producerUi.movieDetail.bar' | translate }}
               </button>
             </div>
           </div>
@@ -435,22 +435,22 @@
             <table class="adv-table">
               <thead>
                 <tr>
-                  <th>Content</th>
+                  <th>{{ 'producerUi.movieDetail.table.content' | translate }}</th>
                   <th class="col-sorted">
                     {{ 'dashboard.kpi.views' | translate }}
                     <svg viewBox="0 0 24 24" fill="currentColor" style="width:13px;height:13px;vertical-align:middle">
                       <path d="M7 14l5-5 5 5H7z"/>
                     </svg>
                   </th>
-                  <th>Watch time (hours)</th>
-                  <th>Purchases</th>
-                  <th>Revenue (RWF)</th>
-                  <th>Completion rate (%)</th>
+                  <th>{{ 'producerUi.movieDetail.table.watchTime' | translate }}</th>
+                  <th>{{ 'producerUi.movieDetail.table.purchases' | translate }}</th>
+                  <th>{{ 'producerUi.movieDetail.table.revenue' | translate }}</th>
+                  <th>{{ 'producerUi.movieDetail.table.completionRate' | translate }}</th>
                 </tr>
               </thead>
               <tfoot>
                 <tr class="adv-total-row">
-                  <td>Total</td>
+                  <td>{{ 'producerUi.movieDetail.table.total' | translate }}</td>
                   <td>{{ fmtNum(advTotals().views) }}</td>
                   <td>{{ advTotals().watchTime }}</td>
                   <td>{{ fmtNum(advTotals().purchases) }}</td>
@@ -485,11 +485,11 @@
 <!-- ═══════════════════════ SHARE TRAILER SHEET ═══════════════════ -->
 @if (isShareOpen()) {
   <div class="share-overlay" (click)="closeShare()">
-    <div class="share-sheet" (click)="$event.stopPropagation()" role="dialog" aria-modal="true" aria-label="Share trailer">
+    <div class="share-sheet" (click)="$event.stopPropagation()" role="dialog" aria-modal="true" [attr.aria-label]="'producerUi.movieDetail.shareDialog' | translate">
 
       <div class="share-header">
         <span class="share-title">{{ 'movieDetail.shareTrailer' | translate }}</span>
-        <button class="share-close" (click)="closeShare()" aria-label="Close">
+        <button class="share-close" (click)="closeShare()" [attr.aria-label]="'producerUi.common.close' | translate">
           <svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18">
             <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
           </svg>
@@ -536,51 +536,51 @@
   <div class="resubmit-overlay" (click)="closeResubmit()">
     <div class="resubmit-dialog" (click)="$event.stopPropagation()">
       <div class="resubmit-header">
-        <h3>Resubmit Film</h3>
+        <h3>{{ 'producerUi.resubmit.submit' | translate }}</h3>
         <button class="close-btn" (click)="closeResubmit()" [attr.aria-label]="'movieDetail.resubmit.close' | translate">
           <svg viewBox="0 0 24 24" fill="currentColor"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
         </button>
       </div>
-      <p class="resubmit-hint">Upload new files to replace what the admin asked you to fix. At least one file is required.</p>
+      <p class="resubmit-hint">{{ 'producerUi.movieDetail.resubmitHint' | translate }}</p>
 
       <div class="resubmit-field">
-        <label class="resubmit-label">New Video File <span class="resubmit-optional">(optional)</span></label>
+        <label class="resubmit-label">{{ 'producerUi.movieDetail.newVideo' | translate }} <span class="resubmit-optional">{{ 'producerUi.common.optionalLower' | translate }}</span></label>
         <label class="resubmit-file-btn" [class.has-file]="resubmitVideoFile()">
           <svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16"><path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM14 13v4h-4v-4H7l5-5 5 5h-3z"/></svg>
-          {{ resubmitVideoFile() ? resubmitVideoFile()!.name : 'Choose video file' }}
-          <input type="file" accept="video/*" class="hidden-input" (change)="onResubmitVideoSelected($event)" />
+          {{ resubmitVideoFile() ? resubmitVideoFile()!.name : ('producerUi.movieDetail.chooseVideo' | translate) }}
+          <input type="file" [accept]="videoAccept" class="hidden-input" (change)="onResubmitVideoSelected($event)" />
         </label>
         @if (resubmitVideoUploading()) {
           <div class="resubmit-progress-bar"><div class="resubmit-progress-fill" [style.width.%]="resubmitVideoProgress()"></div></div>
           <span class="resubmit-pct">{{ resubmitVideoProgress() }}%</span>
         }
-        @if (resubmitVideoKey()) { <span class="resubmit-uploaded">Uploaded</span> }
+        @if (resubmitVideoKey()) { <span class="resubmit-uploaded">{{ 'producerUi.common.uploaded' | translate }}</span> }
         @if (resubmitVideoError()) { <span class="resubmit-error" role="alert">{{ resubmitVideoError()! | translate }}</span> }
       </div>
 
       <div class="resubmit-field">
-        <label class="resubmit-label">New Copyright Document <span class="resubmit-optional">(optional)</span></label>
+        <label class="resubmit-label">{{ 'producerUi.movieDetail.newCopyright' | translate }} <span class="resubmit-optional">{{ 'producerUi.common.optionalLower' | translate }}</span></label>
         <label class="resubmit-file-btn" [class.has-file]="resubmitCopyrightFile()">
           <svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6zm-1 1.5L18.5 9H13V3.5z"/></svg>
-          {{ resubmitCopyrightFile() ? resubmitCopyrightFile()!.name : 'Choose PDF or image' }}
-          <input type="file" accept=".pdf,.jpg,.jpeg,.png" class="hidden-input" (change)="onResubmitCopyrightSelected($event)" />
+          {{ resubmitCopyrightFile() ? resubmitCopyrightFile()!.name : ('producerUi.movieDetail.chooseCopyright' | translate) }}
+          <input type="file" [accept]="documentAccept" class="hidden-input" (change)="onResubmitCopyrightSelected($event)" />
         </label>
         @if (resubmitCopyrightUploading()) {
           <div class="resubmit-progress-bar"><div class="resubmit-progress-fill" [style.width.%]="resubmitCopyrightProgress()"></div></div>
           <span class="resubmit-pct">{{ resubmitCopyrightProgress() }}%</span>
         }
-        @if (resubmitCopyrightKey()) { <span class="resubmit-uploaded">Uploaded</span> }
+        @if (resubmitCopyrightKey()) { <span class="resubmit-uploaded">{{ 'producerUi.common.uploaded' | translate }}</span> }
         @if (resubmitCopyrightError()) { <span class="resubmit-error" role="alert">{{ resubmitCopyrightError()! | translate }}</span> }
       </div>
 
       @if (resubmitError(); as e) { <p class="resubmit-dialog-error" role="alert">{{ e.text ?? (e.key | translate) }}</p> }
 
       <div class="resubmit-actions">
-        <button class="btn-cancel" (click)="closeResubmit()">Cancel</button>
+        <button class="btn-cancel" (click)="closeResubmit()">{{ 'producerUi.common.cancel' | translate }}</button>
         <button class="btn-submit-resubmit"
                 [disabled]="!canResubmit() || resubmitLoading() || resubmitVideoUploading() || resubmitCopyrightUploading()"
                 (click)="submitResubmit()">
-          {{ resubmitLoading() ? 'Submitting…' : 'Submit for Review' }}
+          {{ (resubmitLoading() ? 'producerUi.common.submitting' : 'producerUi.movieDetail.submitForReview') | translate }}
         </button>
       </div>
     </div>

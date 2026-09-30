@@ -1,4 +1,4 @@
-.hidden { visibility: hidden; height: 0; overflow: hidden; }
+
 
 .sr-only {
   position: absolute;
@@ -80,44 +80,6 @@ $shadow:     0 1px 8px rgba(0, 0, 0, 0.95);
   width: 100%;
   max-width: 500px;
   padding: 0;
-}
-
-/* ── Role tab switcher ── */
-.tab-switcher {
-  display: flex;
-  background: rgba(255, 255, 255, 0.07);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 8px;
-  padding: 4px;
-  gap: 4px;
-  margin-bottom: 1.75rem;
-
-  .tab-btn {
-    flex: 1;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.4rem;
-    padding: 0.55rem 1rem;
-    background: transparent;
-    border: none;
-    border-radius: 5px;
-    color: $text-muted;
-    font-size: 0.875rem;
-    font-weight: 600;
-    letter-spacing: 0.01em;
-    cursor: pointer;
-    transition: background 0.18s, color 0.18s;
-
-    svg { flex-shrink: 0; transition: color 0.18s; }
-
-    &:hover:not(.active) { color: rgba(255, 255, 255, 0.78); }
-
-    &.active {
-      background: $gold;
-      color: #000;
-    }
-  }
 }
 
 .form-title {
@@ -294,17 +256,6 @@ $shadow:     0 1px 8px rgba(0, 0, 0, 0.95);
   text-transform: none;
   letter-spacing: 0;
   margin-left: 0.35rem;
-}
-
-/* ── Server error banner ── */
-.server-error-banner {
-  background: rgba(239, 68, 68, 0.12);
-  border: 1px solid rgba(239, 68, 68, 0.35);
-  border-radius: 6px;
-  padding: 0.65rem 0.9rem;
-  color: #fca5a5;
-  font-size: 0.85rem;
-  margin-bottom: 1rem;
 }
 
 /* ── Resend ── */

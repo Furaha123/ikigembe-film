@@ -4,6 +4,7 @@ import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
 import { SeoService } from '../../core/services/seo.service';
+import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 
 declare const google: {
   accounts: {
@@ -25,7 +26,7 @@ interface LoginErrors {
 
 @Component({
   selector: 'app-login',
-  imports: [ReactiveFormsModule, CommonModule, RouterLink],
+  imports: [ReactiveFormsModule, CommonModule, RouterLink, TranslatePipe],
   templateUrl: './login.component.html',
   styleUrl: './login.component.scss'
 })
@@ -35,6 +36,7 @@ export class LoginComponent implements AfterViewInit, OnInit {
   private readonly router = inject(Router);
   private readonly platformId = inject(PLATFORM_ID);
   private readonly seo = inject(SeoService);
+  private readonly translate = inject(TranslateService);
 
   googleBtnContainer = viewChild<ElementRef>('googleBtn');
 
@@ -52,7 +54,7 @@ export class LoginComponent implements AfterViewInit, OnInit {
   get password() { return this.form.get('password'); }
 
   ngOnInit() {
-    this.seo.set({ title: 'Sign In', noIndex: true });
+    this.seo.set({ title: this.translate.instant('auth.login.seoTitle'), noIndex: true });
   }
 
   ngAfterViewInit() {

@@ -2,12 +2,12 @@
 
   <div class="section-header">
     <div>
-      <h3>Paying Users</h3>
+      <h3>{{ 'admin.reports.payingUsers.title' | translate }}</h3>
       <p>
         @if (!isLoading()) {
-          {{ totalUsers() | number }} users paid during this period
+          {{ 'admin.reports.payingUsers.summary' | translate: { count: (totalUsers() | number) } }}
         } @else {
-          Loading paying users…
+          {{ 'admin.reports.payingUsers.loading' | translate }}
         }
       </p>
     </div>
@@ -15,7 +15,7 @@
       <procurement-date-picker (dateChange)="onDateRangeChange($event)" />
       <button class="btn-export" (click)="export()" [disabled]="isLoading()">
         <svg viewBox="0 0 24 24" fill="currentColor"><path d="M19 9h-4V3H9v6H5l7 7 7-7zm-8 2V5h2v6h1.17L12 13.17 9.83 11H11zm-6 7h14v2H5v-2z"/></svg>
-        Export
+        {{ 'admin.reports.export' | translate }}
       </button>
     </div>
   </div>
@@ -26,11 +26,11 @@
     </div>
   } @else if (hasError()) {
     <div class="section-error">
-      <p>Failed to load paying users.</p>
-      <button class="btn-retry" (click)="load()">Retry</button>
+      <p>{{ 'admin.reports.payingUsers.loadFailed' | translate }}</p>
+      <button class="btn-retry" (click)="load()">{{ 'admin.reports.retry' | translate }}</button>
     </div>
   } @else if (users().length === 0) {
-    <div class="empty-state">No paying users for this period.</div>
+    <div class="empty-state">{{ 'admin.reports.payingUsers.empty' | translate }}</div>
   } @else {
 
     <div class="table-scroll">
@@ -38,13 +38,13 @@
         <thead>
           <tr>
             <th></th>
-            <th>Name</th>
-            <th>Email</th>
-            <th>Phone</th>
-            <th class="r">Payments</th>
-            <th class="r">Total Paid</th>
-            <th>First Payment</th>
-            <th>Last Payment</th>
+            <th>{{ 'admin.reports.payingUsers.colName' | translate }}</th>
+            <th>{{ 'admin.reports.payingUsers.colEmail' | translate }}</th>
+            <th>{{ 'admin.reports.payingUsers.colPhone' | translate }}</th>
+            <th class="r">{{ 'admin.reports.payingUsers.colPayments' | translate }}</th>
+            <th class="r">{{ 'admin.reports.payingUsers.colTotalPaid' | translate }}</th>
+            <th>{{ 'admin.reports.payingUsers.colFirstPayment' | translate }}</th>
+            <th>{{ 'admin.reports.payingUsers.colLastPayment' | translate }}</th>
           </tr>
         </thead>
         <tbody>
@@ -77,10 +77,10 @@
                     <table>
                       <thead>
                         <tr>
-                          <th>Movie</th>
-                          <th class="r">Amount</th>
-                          <th>Status</th>
-                          <th>Date</th>
+                          <th>{{ 'admin.reports.payingUsers.colMovie' | translate }}</th>
+                          <th class="r">{{ 'admin.reports.payingUsers.colAmount' | translate }}</th>
+                          <th>{{ 'admin.reports.payingUsers.colStatus' | translate }}</th>
+                          <th>{{ 'admin.reports.payingUsers.colDate' | translate }}</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -109,7 +109,7 @@
 
     @if (totalPages() > 1) {
       <div class="pagination">
-        <button class="page-btn" (click)="goToPage(page() - 1)" [disabled]="page() === 1">
+        <button class="page-btn" (click)="goToPage(page() - 1)" [disabled]="page() === 1" [attr.aria-label]="'admin.reports.payingUsers.prevPage' | translate">
           <svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16"><path d="M15.41 16.59L10.83 12l4.58-4.59L14 6l-6 6 6 6z"/></svg>
         </button>
 
@@ -127,11 +127,11 @@
           <button class="page-btn" (click)="goToPage(totalPages())">{{ totalPages() }}</button>
         }
 
-        <button class="page-btn" (click)="goToPage(page() + 1)" [disabled]="page() === totalPages()">
+        <button class="page-btn" (click)="goToPage(page() + 1)" [disabled]="page() === totalPages()" [attr.aria-label]="'admin.reports.payingUsers.nextPage' | translate">
           <svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6z"/></svg>
         </button>
 
-        <span class="page-info">Page {{ page() }} of {{ totalPages() }}</span>
+        <span class="page-info">{{ 'admin.reports.payingUsers.pageInfo' | translate: { page: page(), total: totalPages() } }}</span>
       </div>
     }
 

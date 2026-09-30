@@ -11,7 +11,7 @@
           <div class="movie-card">
             <img [src]="movie.thumbnail_url" [alt]="movie.title" loading="lazy" />
             <div class="quality-badge">HD</div>
-            <button class="play-overlay" (click)="goToMovie(movie)">
+            <button class="play-overlay" (click)="goToMovie(movie)" [attr.aria-label]="'carousel.playMovie' | translate: { title: movie.title }">
               <span class="play-btn">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
                   <path d="M8 5v14l11-7z"/>
@@ -31,13 +31,13 @@
                 </svg>
                 {{ movie.rating.toFixed(1) }}
               </span>
-              <span class="type">Movie</span>
+              <span class="type">{{ 'carousel.movie' | translate }}</span>
             </div>
           </div>
         </div>
       }
     </div>
-    <div class="swiper-button-prev"></div>
-    <div class="swiper-button-next"></div>
+    <div class="swiper-button-prev" role="button" [attr.aria-label]="'carousel.previous' | translate"></div>
+    <div class="swiper-button-next" role="button" [attr.aria-label]="'carousel.next' | translate"></div>
   </div>
 </div>

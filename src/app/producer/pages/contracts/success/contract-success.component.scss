@@ -1,4 +1,4 @@
-@import '../_contract-flow';
+@use '../contract-flow' as *;
 
 .success-card { gap: 20px; }
 

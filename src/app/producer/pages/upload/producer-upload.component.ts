@@ -1,21 +1,23 @@
 import { Component, inject, signal, computed } from '@angular/core';
-import { TranslatePipe, TranslateDirective } from '@ngx-translate/core';
+import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { ProducerService } from '../../services/producer.service';
 import { MultipartUploadService } from '../../../shared/services/multipart-upload.service';
+import { ALLOWED_DOCUMENT_EXTENSIONS, ALLOWED_VIDEO_EXTENSIONS, DOCUMENT_ACCEPT, extensionList, hasAllowedExtension, VIDEO_ACCEPT } from '../../../shared/models/upload.constants';
+import { uploadErrorMessage } from '../../../shared/utils/upload-error';
 import { DatePickerComponent } from '../../../shared/components/date-picker/date-picker';
 
 type WizardStep = 'rules' | 'details' | 'trailer' | 'movie' | 'copyright' | 'review';
 
 const UPLOAD_RULES = [
-  'Movie must be between 10 and 30 minutes.',
-  'File size must not exceed 200 MB per file.',
-  'Video quality must be 4K or HD.',
-  'Good sound quality and clear visuals are required.',
-  'Your movie must have subtitles.',
-  'The story must be original and of high quality.',
+  'producerUi.upload.rules.duration',
+  'producerUi.upload.rules.size',
+  'producerUi.upload.rules.quality',
+  'producerUi.upload.rules.sound',
+  'producerUi.upload.rules.subtitles',
+  'producerUi.upload.rules.original',
 ];
 
 const ALL_GENRES = [
@@ -26,7 +28,7 @@ const ALL_GENRES = [
 
 @Component({
   selector: 'app-producer-upload',
-  imports: [TranslatePipe, TranslateDirective, CommonModule, ReactiveFormsModule, DatePickerComponent],
+  imports: [TranslatePipe, CommonModule, ReactiveFormsModule, DatePickerComponent],
   templateUrl: './producer-upload.component.html',
   styleUrl: './producer-upload.component.scss',
 })
@@ -35,6 +37,7 @@ export class ProducerUploadComponent {
   private readonly producerService = inject(ProducerService);
   private readonly uploader        = inject(MultipartUploadService);
   private readonly router          = inject(Router);
+  private readonly translate       = inject(TranslateService);
 
   readonly RULES      = UPLOAD_RULES;
   readonly ALL_GENRES = ALL_GENRES;
@@ -135,7 +138,7 @@ export class ProducerUploadComponent {
     this.detailsForm.markAllAsTouched();
     if (this.detailsForm.invalid) return;
     if (this.selectedGenres().size === 0) return;
-    if (!this.thumbnailFile()) { this.thumbnailError.set('Thumbnail image is required.'); return; }
+    if (!this.thumbnailFile()) { this.thumbnailError.set('producerUi.upload.thumbnailRequired'); return; }
     this.currentStep.set('trailer');
   }
 
@@ -167,11 +170,11 @@ export class ProducerUploadComponent {
     const file = (event.target as HTMLInputElement).files?.[0];
     if (!file) return;
     if (!file.type.startsWith('image/')) {
-      this.thumbnailError.set('Only image files are accepted (JPG, PNG, WebP).');
+      this.thumbnailError.set('producerUi.common.imageTypeInvalid');
       return;
     }
     if (file.size > 5 * 1024 * 1024) {
-      this.thumbnailError.set('Image must be under 5 MB.');
+      this.thumbnailError.set('producerUi.common.imageTooLarge');
       return;
     }
     this.thumbnailError.set(null);
@@ -191,11 +194,11 @@ export class ProducerUploadComponent {
     const file = (event.target as HTMLInputElement).files?.[0];
     if (!file) return;
     if (!file.type.startsWith('image/')) {
-      this.backdropError.set('Only image files are accepted (JPG, PNG, WebP).');
+      this.backdropError.set('producerUi.common.imageTypeInvalid');
       return;
     }
     if (file.size > 5 * 1024 * 1024) {
-      this.backdropError.set('Image must be under 5 MB.');
+      this.backdropError.set('producerUi.common.imageTooLarge');
       return;
     }
     this.backdropError.set(null);
@@ -226,12 +229,12 @@ export class ProducerUploadComponent {
 
   private handleTrailerFile(file: File) {
     this.trailerUploadError.set(null);
-    if (!file.name.match(/\.(mp4|mov)$/i)) {
-      this.trailerUploadError.set('Only .mp4 and .mov formats are accepted.');
+    if (!hasAllowedExtension(file.name, ALLOWED_VIDEO_EXTENSIONS)) {
+      this.trailerUploadError.set(this.translate.instant('uploadErrors.videoType', { types: extensionList(ALLOWED_VIDEO_EXTENSIONS) }));
       return;
     }
     if (file.size > 100 * 1024 * 1024) {
-      this.trailerUploadError.set('File size must not exceed 100 MB.');
+      this.trailerUploadError.set(this.translate.instant('producerUi.common.fileTooLarge', { size: 100 }));
       return;
     }
     this.trailerFile.set(file);
@@ -263,8 +266,8 @@ export class ProducerUploadComponent {
 
   private handleMovieFile(file: File) {
     const errors: string[] = [];
-    if (!file.name.match(/\.(mp4|mov)$/i)) errors.push('Only .mp4 and .mov formats are accepted.');
-    if (file.size > 200 * 1024 * 1024) errors.push('File size must not exceed 200 MB.');
+    if (!hasAllowedExtension(file.name, ALLOWED_VIDEO_EXTENSIONS)) errors.push(this.translate.instant('uploadErrors.videoType', { types: extensionList(ALLOWED_VIDEO_EXTENSIONS) }));
+    if (file.size > 200 * 1024 * 1024) errors.push(this.translate.instant('producerUi.common.fileTooLarge', { size: 200 }));
     if (errors.length) { this.movieErrors.set(errors); return; }
     this.movieErrors.set([]);
     this.movieFile.set(file);
@@ -300,13 +303,12 @@ export class ProducerUploadComponent {
   }
 
   private handleCopyrightFile(file: File) {
-    const allowed = /\.(pdf|jpg|jpeg|png)$/i;
-    if (!file.name.match(allowed)) {
-      this.copyrightError.set('Only PDF, JPG, or PNG files are accepted.');
+    if (!hasAllowedExtension(file.name, ALLOWED_DOCUMENT_EXTENSIONS)) {
+      this.copyrightError.set(this.translate.instant('uploadErrors.documentType', { types: extensionList(ALLOWED_DOCUMENT_EXTENSIONS) }));
       return;
     }
     if (file.size > 10 * 1024 * 1024) {
-      this.copyrightError.set('File must not exceed 10 MB.');
+      this.copyrightError.set('producerUi.upload.copyrightSize');
       return;
     }
     this.copyrightError.set(null);
@@ -341,7 +343,7 @@ export class ProducerUploadComponent {
         this.isUploadingMovie.set(false);
       }
     }).catch(err => {
-      const msg = err?.message ?? 'Upload failed. Please try again.';
+      const msg = uploadErrorMessage(err, 'producerUi.common.uploadFailed'); // null = cancelled
       if (isTrailer) {
         this.trailerUploadError.set(msg);
         this.isUploadingTrailer.set(false);
@@ -351,6 +353,9 @@ export class ProducerUploadComponent {
       }
     });
   }
+
+  readonly videoAccept = VIDEO_ACCEPT;
+  readonly documentAccept = DOCUMENT_ACCEPT;
 
   // ── Submit ────────────────────────────────────────────
   submit() {
@@ -395,7 +400,7 @@ export class ProducerUploadComponent {
           const first = Object.values(body)[0];
           this.submitError.set(Array.isArray(first) ? (first[0] as string) : String(first));
         } else {
-          this.submitError.set('Submission failed. Please try again.');
+          this.submitError.set('producerUi.upload.submitFailed');
         }
       },
     });

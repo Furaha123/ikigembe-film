@@ -1,11 +1,13 @@
 import { Component, inject, OnInit, OnDestroy, signal, computed, PLATFORM_ID } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
-import { TranslatePipe, TranslateDirective } from '@ngx-translate/core';
+import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { ProducerService, ProducerMovie } from '../../services/producer.service';
 import { MultipartUploadService, UploadAbortedError } from '../../../shared/services/multipart-upload.service';
+import { ALLOWED_VIDEO_EXTENSIONS, extensionList, hasAllowedExtension, VIDEO_ACCEPT } from '../../../shared/models/upload.constants';
+import { uploadErrorMessage } from '../../../shared/utils/upload-error';
 
 type SortCol = 'title' | 'views' | 'price' | 'release_date' | 'created_at';
 type StatusTab = 'all' | 'live' | 'pending' | 'rejected';
@@ -19,7 +21,7 @@ const ALL_GENRES = [
 
 @Component({
   selector: 'app-producer-movies',
-  imports: [TranslatePipe, TranslateDirective, CommonModule, FormsModule, ReactiveFormsModule],
+  imports: [TranslatePipe, CommonModule, FormsModule, ReactiveFormsModule],
   templateUrl: './producer-movies.component.html',
   styleUrl: './producer-movies.component.scss',
 })
@@ -29,6 +31,8 @@ export class ProducerMoviesComponent implements OnInit, OnDestroy {
   private readonly fb              = inject(FormBuilder);
   private readonly router          = inject(Router);
   private readonly platformId      = inject(PLATFORM_ID);
+  private readonly translate       = inject(TranslateService);
+  readonly videoAccept             = VIDEO_ACCEPT;
   private copiedTimer: ReturnType<typeof setTimeout> | null = null;
 
   readonly ALL_GENRES = ALL_GENRES;
@@ -203,7 +207,7 @@ export class ProducerMoviesComponent implements OnInit, OnDestroy {
       },
       error: () => {
         this.isSaving.set(false);
-        this.saveError.set('Failed to save changes. Please try again.');
+        this.saveError.set('producerUi.movies.saveFailed');
       },
     });
   }
@@ -347,12 +351,12 @@ export class ProducerMoviesComponent implements OnInit, OnDestroy {
 
   private handleRTrailerFile(file: File): void {
     this.resubmitTrailerError.set(null);
-    if (!file.name.match(/\.(mp4|mov)$/i)) {
-      this.resubmitTrailerError.set('Only .mp4 and .mov formats are accepted.');
+    if (!hasAllowedExtension(file.name, ALLOWED_VIDEO_EXTENSIONS)) {
+      this.resubmitTrailerError.set(this.translate.instant('uploadErrors.videoType', { types: extensionList(ALLOWED_VIDEO_EXTENSIONS) }));
       return;
     }
     if (file.size > 100 * 1024 * 1024) {
-      this.resubmitTrailerError.set('File size must not exceed 100 MB.');
+      this.resubmitTrailerError.set(this.translate.instant('producerUi.common.fileTooLarge', { size: 100 }));
       return;
     }
     this.resubmitTrailerFile.set(file);
@@ -385,12 +389,12 @@ export class ProducerMoviesComponent implements OnInit, OnDestroy {
 
   private handleRFilmFile(file: File): void {
     this.resubmitFilmError.set(null);
-    if (!file.name.match(/\.(mp4|mov)$/i)) {
-      this.resubmitFilmError.set('Only .mp4 and .mov formats are accepted.');
+    if (!hasAllowedExtension(file.name, ALLOWED_VIDEO_EXTENSIONS)) {
+      this.resubmitFilmError.set(this.translate.instant('uploadErrors.videoType', { types: extensionList(ALLOWED_VIDEO_EXTENSIONS) }));
       return;
     }
     if (file.size > 200 * 1024 * 1024) {
-      this.resubmitFilmError.set('File size must not exceed 200 MB.');
+      this.resubmitFilmError.set(this.translate.instant('producerUi.common.fileTooLarge', { size: 200 }));
       return;
     }
     this.resubmitFilmFile.set(file);
@@ -429,7 +433,7 @@ export class ProducerMoviesComponent implements OnInit, OnDestroy {
         }
         return;
       }
-      const msg = err?.message ?? 'Upload failed. Please try again.';
+      const msg = uploadErrorMessage(err, 'producerUi.common.uploadFailed');
       if (isTrailer) { this.resubmitTrailerError.set(msg); this.isUploadingRTrailer.set(false); }
       else           { this.resubmitFilmError.set(msg);    this.isUploadingRFilm.set(false); }
     });
@@ -461,7 +465,7 @@ export class ProducerMoviesComponent implements OnInit, OnDestroy {
     if (this.resubmitBackdropFile())  { fd.append('backdrop',    this.resubmitBackdropFile()!);     changed = true; }
 
     if (!changed) {
-      this.resubmitError.set('Make at least one change before resubmitting.');
+      this.resubmitError.set('producerUi.resubmit.noChanges');
       return;
     }
 
@@ -478,7 +482,7 @@ export class ProducerMoviesComponent implements OnInit, OnDestroy {
       },
       error: (err) => {
         this.isResubmitting.set(false);
-        this.resubmitError.set(err?.error?.detail ?? 'Failed to resubmit. Please try again.');
+        this.resubmitError.set(err?.error?.detail ?? 'producerUi.resubmit.failed');
       },
     });
   }
@@ -488,7 +492,7 @@ export class ProducerMoviesComponent implements OnInit, OnDestroy {
     if (m.approval_status === 'rejected') return 'movies.chips.rejected';
     if (m.approval_status === 'approved') return 'movies.chips.live';
     if (m.approval_status === 'approved_pending_contract') return 'movies.chips.approvedPendingContract';
-    if (m.approval_status === 'changes_requested') return 'Changes Requested';
+    if (m.approval_status === 'changes_requested') return 'producerUi.movies.changesRequested';
     return 'movies.chips.pendingApproval';
   }
 

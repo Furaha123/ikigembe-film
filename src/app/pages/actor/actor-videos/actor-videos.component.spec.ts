@@ -9,7 +9,7 @@ import { FooterComponent } from '../../../core/components/footer/footer.componen
 import { PaymentModalComponent } from '../../../shared/components/payment-modal/payment-modal.component';
 import { VideoPlayerComponent } from '../../../shared/components/video-player/video-player.component';
 import { ActorMarketplaceService } from '../../../shared/services/actor-marketplace.service';
-import { MultipartUploadService } from '../../../shared/services/multipart-upload.service';
+import { MultipartUploadService, UploadError } from '../../../shared/services/multipart-upload.service';
 import { ActorVideo, ServicePurchase } from '../../../shared/models/marketplace.interface';
 import { MultipartUploadApi } from '../../../shared/models/upload.interface';
 
@@ -135,7 +135,7 @@ describe('ActorVideosComponent', () => {
     selectFile(new File(['x'], 'notes.pdf', { type: 'application/pdf' }));
     fixture.detectChanges();
     expect(uploader.upload).not.toHaveBeenCalled();
-    expect(el().querySelector('[role="alert"]')?.textContent).toContain('marketplace.videos.badFile');
+    expect(el().querySelector('[role="alert"]')?.textContent).toContain('uploadErrors.videoType');
   });
 
   it('shows an upload error', async () => {
@@ -157,5 +157,26 @@ describe('ActorVideosComponent', () => {
     expect(el().textContent).toContain('Too dark');
     expect(el().textContent).toContain('marketplace.videos.paymentPending');
     expect(el().querySelector('input[type="file"]')).toBeNull();
+  });
+
+  it('shows the translated session-expired message on a 403 session error', async () => {
+    marketplace.getMyVideos.and.returnValue(of([video()]));
+    uploader.upload.and.rejectWith(new UploadError('session', 403, 'This upload does not belong to your account.'));
+    create();
+    selectFile(new File(['x'], 'reel.mp4', { type: 'video/mp4' }));
+    await settle();
+    fixture.detectChanges();
+    expect(el().querySelector('[role="alert"]')?.textContent).toContain('uploadErrors.sessionExpired');
+  });
+
+  it('rejects .webm (no longer accepted by the backend) and accepts .MOV', async () => {
+    marketplace.getMyVideos.and.returnValue(of([video()]));
+    uploader.upload.and.resolveTo('actors/videos/9/x.mov');
+    create();
+    selectFile(new File(['x'], 'reel.webm', { type: 'video/webm' }));
+    expect(uploader.upload).not.toHaveBeenCalled();
+    selectFile(new File(['x'], 'REEL.MOV'));
+    await settle();
+    expect(uploader.upload).toHaveBeenCalledTimes(1);
   });
 });

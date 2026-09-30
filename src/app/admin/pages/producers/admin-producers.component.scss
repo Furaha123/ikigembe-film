@@ -36,25 +36,6 @@ $muted:   #888;
   &:disabled { opacity: 0.4; cursor: not-allowed; }
 }
 
-.add-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: .4rem;
-  background: $gold;
-  color: #000;
-  border: none;
-  border-radius: 8px;
-  padding: .55rem 1.1rem;
-  font-size: .875rem;
-  font-weight: 700;
-  cursor: pointer;
-  white-space: nowrap;
-  transition: opacity .2s;
-  flex-shrink: 0;
-  svg { width: 15px; height: 15px; }
-  &:hover { opacity: .85; }
-}
-
 // ── Filter tabs ───────────────────────────────────────
 .filter-tabs {
   display: flex;
@@ -100,13 +81,6 @@ $muted:   #888;
   border-radius: 10px;
   padding: .9rem 1rem;
   margin-bottom: 1.25rem;
-
-  &.create {
-    background: #1e1a0e;
-    border: 1px solid #3a2e0f;
-    .pw-icon { color: $gold; }
-    strong   { color: $gold; }
-  }
   &.reset {
     background: #0e1a1e;
     border: 1px solid #0f3048;
@@ -636,8 +610,6 @@ dialog.add-modal { text-align: left; padding: 0; max-width: 480px; }
   gap: 1.1rem;
 }
 
-.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
-
 .field {
   display: flex;
   flex-direction: column;
@@ -666,8 +638,6 @@ dialog.add-modal { text-align: left; padding: 0; max-width: 480px; }
   &.error input { border-color: rgba(239, 68, 68, .5); }
 }
 
-.field-error { font-size: .75rem; color: #f87171; }
-
 .modal-actions {
   display: flex;
   justify-content: flex-end;
@@ -680,7 +650,6 @@ dialog.add-modal { text-align: left; padding: 0; max-width: 480px; }
     h1 { font-size: 1.35rem; }
     p  { font-size: 0.82rem; }
   }
-  .add-btn { width: 100%; justify-content: center; min-height: 44px; }
   dialog.modal { width: 95%; padding: 1.5rem; }
 }
 

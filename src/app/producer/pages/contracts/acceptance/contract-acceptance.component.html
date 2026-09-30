@@ -38,7 +38,7 @@
           </div>
         } @else {
           <div class="sig-preview">
-            <img [src]="signaturePreview()" alt="Signature preview" />
+            <img [src]="signaturePreview()" [alt]="'producerUi.contracts.signatureAlt' | translate" />
             <div class="sig-overlay">
               <button type="button" class="sig-remove" (click)="removeSignature()">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
@@ -55,7 +55,7 @@
                class="hidden-input" (change)="onSignatureSelect($event)" />
 
         @if (signatureError()) {
-          <span class="field-error">{{ signatureError() }}</span>
+          <span class="field-error">{{ signatureError()! | translate }}</span>
         }
       </div>
 

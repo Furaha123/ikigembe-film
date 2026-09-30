@@ -1,9 +1,9 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, of, map } from 'rxjs';
+import { Observable, map } from 'rxjs';
 import { environment } from '../../../environments/environment';
-import { MultipartUploadApi } from '../../shared/models/upload.interface';
-import { ALL_MOCK_MOVIES } from '../../shared/data/mock-movies.data';
+import { MovieUploadField, MultipartUploadApi } from '../../shared/models/upload.interface';
+import { MovieUploadService } from '../../shared/services/movie-upload.service';
 
 const BASE = environment.apiUrl;
 
@@ -37,8 +37,7 @@ export interface ProducerMovie {
   genres: string[];
 }
 
-/** `field_name` decides the storage folder/bucket on the backend — always send the right one. */
-export type MovieUploadField = 'video_file' | 'trailer_file' | 'thumbnail' | 'backdrop' | 'copyright_document';
+export type { MovieUploadField } from '../../shared/models/upload.interface';
 
 /** POST /producer/films/<id>/resubmit/ — at least one key required. */
 export interface FilmResubmitPayload {
@@ -109,81 +108,8 @@ export interface WithdrawalRequest {
 }
 
 // ── Report interfaces ──────────────────────────────────
-export interface ProducerEarningsKpis {
-  total_gross_revenue: number;
-  total_net_earnings: number;
-  total_platform_commission: number;
-  total_purchases: number;
-  total_movies: number;
-  avg_revenue_per_movie: number;
-  avg_completion_rate: number;
-  best_movie: { id: number; title: string; revenue: number } | null;
-}
-
-export interface ProducerEarningsTrendItem {
-  period_start: string;
-  gross_revenue: number;
-  platform_commission: number;
-  producer_earnings: number;
-  transactions: number;
-}
-
-export interface ProducerEarningsReport {
-  kpis: ProducerEarningsKpis;
-  period: string;
-  trend: ProducerEarningsTrendItem[];
-}
-
-export interface ProducerTopMovieItem {
-  id: number;
-  title: string;
-  views: number;
-  purchase_count: number;
-  total_revenue: number;
-  producer_share: number;
-}
-
-export interface ProducerReportData {
-  trend: ProducerEarningsTrendItem[];
-  top_movies: ProducerTopMovieItem[];
-}
 
 // ── Transactions ───────────────────────────────────────
-export interface ProducerPaymentItem {
-  id: number;
-  movie_title: string;
-  gross_amount: number;
-  producer_earnings: number;
-  date: string;
-}
-
-export interface ProducerWithdrawalTransactionItem {
-  id: number;
-  amount: number;
-  tax_amount: number;
-  amount_after_tax: number;
-  payment_method: string;
-  bank_name: string | null;
-  account_number: string | null;
-  account_holder_name: string | null;
-  momo_number: string | null;
-  momo_provider: string | null;
-  status: string;
-  created_at: string;
-  processed_at: string | null;
-}
-
-export interface ProducerPaginatedList<T> {
-  page: number;
-  total_results: number;
-  total_pages: number;
-  results: T[];
-}
-
-export interface ProducerTransactionResponse {
-  payments: ProducerPaginatedList<ProducerPaymentItem>;
-  withdrawals: ProducerPaginatedList<ProducerWithdrawalTransactionItem>;
-}
 
 export interface ProducerNotification {
   id: number;
@@ -251,6 +177,7 @@ export interface AnalyticsResponse {
 @Injectable({ providedIn: 'root' })
 export class ProducerService {
   private readonly http = inject(HttpClient);
+  private readonly movieUpload = inject(MovieUploadService);
 
   getWallet(): Observable<ProducerWallet> {
     return this.http.get<ProducerWallet>(`${BASE}/producer/dashboard/wallet/`);
@@ -291,24 +218,6 @@ export class ProducerService {
     return this.http.post<ProducerWithdrawal>(`${BASE}/producer/dashboard/withdrawals/`, payload);
   }
 
-  getReport(startDate?: string, endDate?: string): Observable<ProducerReportData> {
-    let url = `${BASE}/producer/dashboard/report/`;
-    if (startDate) url += `?start_date=${startDate}`;
-    if (endDate)   url += `${startDate ? '&' : '?'}end_date=${endDate}`;
-    return this.http.get<ProducerReportData>(url);
-  }
-
-  getEarningsReport(
-    period = 'monthly',
-    startDate?: string,
-    endDate?: string,
-  ): Observable<ProducerEarningsReport> {
-    let url = `${BASE}/producer/dashboard/earnings/report/?period=${period}`;
-    if (startDate) url += `&start_date=${startDate}`;
-    if (endDate)   url += `&end_date=${endDate}`;
-    return this.http.get<ProducerEarningsReport>(url);
-  }
-
   getTransactions(page = 1): Observable<DashboardTransactionResponse> {
     return this.http.get<DashboardTransactionResponse>(
       `${BASE}/producer/dashboard/transactions/?page=${page}`
@@ -319,55 +228,13 @@ export class ProducerService {
     return this.http.post(`${BASE}/movies/create/`, formData);
   }
 
-  initiateUpload(
-    fileName: string,
-    fileType: string,
-    fieldName: MovieUploadField,
-  ): Observable<{ upload_id: string; file_key: string }> {
-    return this.http.post<{ upload_id: string; file_key: string }>(
-      `${BASE}/movies/upload/initiate/`,
-      { file_name: fileName, file_type: fileType, field_name: fieldName },
-    );
-  }
-
-  signPart(
-    uploadId: string,
-    fileKey: string,
-    partNumber: number,
-  ): Observable<{ url: string }> {
-    return this.http.post<{ url: string }>(
-      `${BASE}/movies/upload/sign-part/`,
-      { upload_id: uploadId, file_key: fileKey, part_number: partNumber },
-    );
-  }
-
-  completeUpload(
-    uploadId: string,
-    fileKey: string,
-    parts: { PartNumber: number; ETag: string }[],
-  ): Observable<{ status: string }> {
-    return this.http.post<{ status: string }>(
-      `${BASE}/movies/upload/complete/`,
-      { upload_id: uploadId, file_key: fileKey, parts },
-    );
-  }
-
   /** Movie-file multipart endpoints for MultipartUploadService, bound to one `field_name`. */
   movieUploadApi(fieldName: MovieUploadField): MultipartUploadApi {
-    return {
-      initiate: (file) => this.initiateUpload(file.name, file.type || 'application/octet-stream', fieldName),
-      signPart: (uploadId, fileKey, partNumber) => this.signPart(uploadId, fileKey, partNumber),
-      complete: (uploadId, fileKey, parts) => this.completeUpload(uploadId, fileKey, parts),
-      abort:    (uploadId, fileKey) => this.abortUpload(uploadId, fileKey),
-    };
+    return this.movieUpload.api(fieldName);
   }
 
   updateFilm(id: number, payload: Partial<Pick<ProducerMovie, 'title' | 'overview' | 'genres' | 'price' | 'has_free_preview'>>): Observable<ProducerMovie> {
     return this.http.patch<ProducerMovie>(`${BASE}/producer/films/${id}/`, payload);
-  }
-
-  deleteFilm(id: number): Observable<unknown> {
-    return this.http.delete(`${BASE}/producer/films/${id}/`);
   }
 
   /** Edit metadata/video/trailer of a changes_requested film (multipart PATCH). */
@@ -382,10 +249,6 @@ export class ProducerService {
    */
   resubmitFilmFiles(id: number, payload: FilmResubmitPayload): Observable<ProducerMovieDetail> {
     return this.http.post<ProducerMovieDetail>(`${BASE}/producer/films/${id}/resubmit/`, payload);
-  }
-
-  abortUpload(uploadId: string, fileKey: string): Observable<unknown> {
-    return this.http.post(`${BASE}/movies/upload/abort/`, { upload_id: uploadId, file_key: fileKey });
   }
 
   getNotifications(): Observable<ProducerNotification[]> {

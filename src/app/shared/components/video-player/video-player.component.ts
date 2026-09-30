@@ -10,6 +10,9 @@ import { Observable, Subscription } from 'rxjs';
 import Hls from 'hls.js';
 import { PlaybackProgress, PlaybackProgressReason, PlaybackSource, SubtitleTrack } from '../../models/movie-api.interface';
 
+/** Translation key for the adaptive quality option; level labels (e.g. 1080p) pass through the pipe unchanged. */
+const AUTO_QUALITY_LABEL = 'playerUi.auto';
+
 interface QualityLevel {
   index: number; // -1 = auto
   label: string;
@@ -83,8 +86,8 @@ export class VideoPlayerComponent implements AfterViewInit, OnChanges, OnDestroy
   durationStr    = computed(() => this.formatTime(this.duration()));
   currentQualityLabel = computed(() => {
     const q = this.currentQuality();
-    if (q === -1) return 'Auto';
-    return this.qualityLevels().find(l => l.index === q)?.label ?? 'Auto';
+    if (q === -1) return AUTO_QUALITY_LABEL;
+    return this.qualityLevels().find(l => l.index === q)?.label ?? AUTO_QUALITY_LABEL;
   });
 
   get video(): HTMLVideoElement { return this.videoRef.nativeElement; }
@@ -172,7 +175,7 @@ export class VideoPlayerComponent implements AfterViewInit, OnChanges, OnDestroy
 
         this.hls.on(Hls.Events.MANIFEST_PARSED, (_evt, data) => {
           const levels: QualityLevel[] = [
-            { index: -1, label: 'Auto', bitrate: 0 },
+            { index: -1, label: AUTO_QUALITY_LABEL, bitrate: 0 },
             ...[...data.levels]
               .map((l: any, i: number) => ({
                 index: i,

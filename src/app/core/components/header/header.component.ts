@@ -2,9 +2,9 @@ import {
   Component, HostListener, inject, input, signal, computed,
   ViewChild, ElementRef, OnInit, OnDestroy
 } from '@angular/core';
-import { Router, RouterLink, NavigationEnd } from '@angular/router';
+import { Router, RouterLink, RouterLinkActive, NavigationEnd } from '@angular/router';
 import { CommonModule } from '@angular/common';
-import { TranslatePipe } from '@ngx-translate/core';
+import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { Subject, Subscription } from 'rxjs';
 import { debounceTime, distinctUntilChanged, switchMap, catchError, of, filter } from 'rxjs';
 import { AuthService } from '../../services/auth.service';
@@ -14,7 +14,7 @@ import { IVideoContent } from '../../../shared/models/video-content.interface';
 
 @Component({
   selector: 'app-header',
-  imports: [RouterLink, CommonModule, TranslatePipe],
+  imports: [RouterLink, RouterLinkActive, CommonModule, TranslatePipe],
   templateUrl: './header.component.html',
   styleUrl: './header.component.scss'
 })
@@ -25,6 +25,7 @@ export class HeaderComponent implements OnInit, OnDestroy {
   private readonly router       = inject(Router);
   private readonly movieService = inject(MovieService);
   private readonly inboxService = inject(InboxService);
+  private readonly translate    = inject(TranslateService);
 
   readonly initials       = this.authService.initials;
   readonly isAdmin        = this.authService.isAdmin;
@@ -54,11 +55,11 @@ export class HeaderComponent implements OnInit, OnDestroy {
   private searchSub!: Subscription;
 
   navList: { label: string; labelKey?: string; route: string | null }[] = [
-    { label: 'Home',                route: '/browse' },
-    { label: 'My List',             route: '/my-list' },
-    { label: 'Producers',           route: '/producers' },
-    { label: 'Casting', labelKey: 'marketplace.nav.casting', route: '/casting' },
-    { label: 'Browse by Language',  route: null },
+    { label: 'Home',               labelKey: 'header.nav.home',             route: '/browse' },
+    { label: 'My List',            labelKey: 'header.nav.myList',           route: '/my-list' },
+    { label: 'Producers',          labelKey: 'header.nav.producers',        route: '/producers' },
+    { label: 'Casting',            labelKey: 'marketplace.nav.casting',     route: '/casting' },
+    { label: 'Browse by Language', labelKey: 'header.nav.browseByLanguage', route: null },
   ];
 
   ngOnInit() {
@@ -203,11 +204,11 @@ export class HeaderComponent implements OnInit, OnDestroy {
   relativeTime(isoDate: string): string {
     const diff = Date.now() - new Date(isoDate).getTime();
     const mins = Math.floor(diff / 60000);
-    if (mins < 1) return 'just now';
-    if (mins < 60) return `${mins}m ago`;
+    if (mins < 1) return this.translate.instant('header.time.justNow');
+    if (mins < 60) return this.translate.instant('header.time.minutesAgo', { n: mins });
     const hrs = Math.floor(mins / 60);
-    if (hrs < 24) return `${hrs}h ago`;
-    return `${Math.floor(hrs / 24)}d ago`;
+    if (hrs < 24) return this.translate.instant('header.time.hoursAgo', { n: hrs });
+    return this.translate.instant('header.time.daysAgo', { n: Math.floor(hrs / 24) });
   }
 
   private closeSearch() {

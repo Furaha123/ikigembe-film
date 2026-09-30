@@ -6,11 +6,11 @@ import { of } from 'rxjs';
 import {
   MovieListResponse,
   MovieDetailResponse,
-  TrailerResponse,
   MovieCreditsResponse,
   SimilarMoviesResponse,
   ProducersListResponse,
   ProducerMoviesResponse,
+  MoviePreview,
   StreamResponse,
   PlaybackSource,
   WatchProgressPayload,
@@ -27,22 +27,6 @@ export class MovieService {
 
   getMovies() {
     return this.http.get<MovieListResponse>(`${this.baseUrl}/discover/`);
-  }
-
-  getTvShows() {
-    return of<SimilarMoviesResponse>({ results: [] });
-  }
-
-  getBannerImage(id: number) {
-    return this.http.get<MovieDetailResponse>(`${this.baseUrl}/${id}/images/`);
-  }
-
-  getBannerVideo(id: number) {
-    return this.http.get<TrailerResponse>(`${this.baseUrl}/${id}/trailer/`);
-  }
-
-  getBannerDetail(id: number) {
-    return this.http.get<MovieDetailResponse>(`${this.baseUrl}/${id}/`);
   }
 
   getPopularMovies() {
@@ -63,6 +47,11 @@ export class MovieService {
 
   getMovieDetails(id: number) {
     return this.http.get<MovieDetailResponse>(`${this.baseUrl}/${id}/`);
+  }
+
+  /** Public trailer/preview data (share links); no auth required. */
+  getMoviePreview(id: number) {
+    return this.http.get<MoviePreview>(`${this.baseUrl}/${id}/preview/`);
   }
 
   getMovieCredits(_id: number) {

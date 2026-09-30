@@ -84,7 +84,7 @@
             } @else {
               <label class="mk-btn">
                 {{ 'marketplace.videos.upload' | translate }}
-                <input type="file" accept="video/*" hidden (change)="onFileSelected(v, $event)" />
+                <input type="file" [accept]="videoAccept" hidden (change)="onFileSelected(v, $event)" />
               </label>
             }
             @if (up?.error) { <p class="mk-error" role="alert">{{ up!.error! | translate }}</p> }

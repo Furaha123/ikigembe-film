@@ -1,5 +1,8 @@
 import { Observable } from 'rxjs';
 
+/** `field_name` for /movies/upload/initiate/ — it decides the storage folder/bucket. */
+export type MovieUploadField = 'video_file' | 'trailer_file' | 'thumbnail' | 'backdrop' | 'copyright_document';
+
 export interface MultipartInitiateResponse {
   upload_id: string;
   file_key: string;

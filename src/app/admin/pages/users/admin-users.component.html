@@ -1,12 +1,12 @@
 <div class="admin-page">
   <div class="page-header">
     <div>
-      <h1>Users</h1>
-      <p>Manage all registered viewers on the platform.</p>
+      <h1>{{ 'admin.users.title' | translate }}</h1>
+      <p>{{ 'admin.users.subtitle' | translate }}</p>
     </div>
     <button class="export-btn" (click)="exportToCSV()" [disabled]="isLoading()">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-      Export CSV
+      {{ 'admin.users.exportCsv' | translate }}
     </button>
   </div>
 
@@ -19,7 +19,7 @@
 
   <!-- ── Actions column: single 3-dot button ── -->
   <ng-template #actions let-user>
-    <button class="dots-btn" (click)="toggleMenu({ id: user['id'], is_active: user['is_active'] }, $event)" title="Actions">
+    <button class="dots-btn" (click)="toggleMenu({ id: user['id'], is_active: user['is_active'] }, $event)" [title]="'admin.users.actions' | translate" [attr.aria-label]="'admin.users.actions' | translate">
       <svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16">
         <circle cx="12" cy="5"  r="1.5"/>
         <circle cx="12" cy="12" r="1.5"/>
@@ -41,20 +41,20 @@
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15" height="15">
           <circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/>
         </svg>
-        View Details
+        {{ 'admin.users.viewDetails' | translate }}
       </button>
       <button class="kd-item" (click)="openPayments(menuUser()!.id)">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15" height="15">
           <rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/>
         </svg>
-        Payments
+        {{ 'admin.users.payments' | translate }}
       </button>
       @if (menuUser()!.is_active) {
         <button class="kd-item warn" (click)="openSuspendConfirm(menuUser()!.id)">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15" height="15">
             <circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/>
           </svg>
-          Suspend
+          {{ 'admin.users.suspend' | translate }}
         </button>
       }
       <hr class="kd-divider">
@@ -62,7 +62,7 @@
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15" height="15">
           <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/>
         </svg>
-        Delete
+        {{ 'admin.users.delete' | translate }}
       </button>
     </div>
   }
@@ -73,8 +73,8 @@
       <div class="detail-panel" (click)="$event.stopPropagation()" (keydown)="$event.stopPropagation()">
 
         <div class="panel-header">
-          <h3>User Details</h3>
-          <button class="close-btn" (click)="closeDetail()">
+          <h3>{{ 'admin.users.userDetails' | translate }}</h3>
+          <button class="close-btn" (click)="closeDetail()" [attr.aria-label]="'admin.users.close' | translate">
             <svg viewBox="0 0 24 24" fill="currentColor"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
           </button>
         </div>
@@ -82,7 +82,7 @@
         @if (detailLoading()) {
           <div class="panel-loading">
             <span class="panel-spinner"></span>
-            Loading user details...
+            {{ 'admin.users.loadingDetails' | translate }}
           </div>
         } @else {
         @if (detailUser(); as user) {
@@ -94,30 +94,30 @@
               <p class="detail-email">{{ user.email }}</p>
               <span class="detail-status-badge" [class.active]="user.is_active" [class.inactive]="!user.is_active">
                 <span class="dot"></span>
-                {{ user.is_active ? 'Active' : 'Suspended' }}
+                {{ (user.is_active ? 'admin.users.active' : 'admin.users.suspended') | translate }}
               </span>
             </div>
           </div>
 
           <div class="detail-rows">
             <div class="detail-row">
-              <span class="detail-label">User ID</span>
+              <span class="detail-label">{{ 'admin.users.userId' | translate }}</span>
               <span class="detail-value">#{{ user.id }}</span>
             </div>
             <div class="detail-row">
-              <span class="detail-label">Phone</span>
+              <span class="detail-label">{{ 'admin.users.phone' | translate }}</span>
               <span class="detail-value">{{ user.phone_number || '—' }}</span>
             </div>
             <div class="detail-row">
-              <span class="detail-label">Movies Watched</span>
+              <span class="detail-label">{{ 'admin.users.moviesWatched' | translate }}</span>
               <span class="detail-value">{{ user.movies_watched | number }}</span>
             </div>
             <div class="detail-row">
-              <span class="detail-label">Total Paid</span>
+              <span class="detail-label">{{ 'admin.users.totalPaid' | translate }}</span>
               <span class="detail-value gold">RWF {{ user.total_paid_rwf | number }}</span>
             </div>
             <div class="detail-row">
-              <span class="detail-label">Date Joined</span>
+              <span class="detail-label">{{ 'admin.users.dateJoined' | translate }}</span>
               <span class="detail-value muted">{{ user.date_joined | date:'dd MMM yyyy, h:mm a' }}</span>
             </div>
           </div>
@@ -125,17 +125,17 @@
           <div class="detail-actions">
             <button class="btn secondary full" (click)="closeDetail(); openPayments(user.id)">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
-              View Payment History
+              {{ 'admin.users.viewPaymentHistory' | translate }}
             </button>
             @if (user.is_active) {
               <button class="btn warn full" (click)="openSuspendConfirm(user.id)" [disabled]="actionId() === user.id">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>
-                Suspend User
+                {{ 'admin.users.suspendUser' | translate }}
               </button>
             }
             <button class="btn danger full" (click)="openDeleteConfirm(user.id)" [disabled]="actionId() === user.id">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg>
-              Delete User
+              {{ 'admin.users.deleteUser' | translate }}
             </button>
           </div>
         }
@@ -151,15 +151,12 @@
         <div class="modal-icon warn">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>
         </div>
-        <h3>Suspend User</h3>
-        <p>
-          You are about to suspend <strong>{{ targetUserName() }}</strong>.
-          They will lose access to the platform until their account is reactivated.
-        </p>
+        <h3>{{ 'admin.users.suspendUser' | translate }}</h3>
+        <p>{{ 'admin.users.suspendConfirmBefore' | translate }} <strong>{{ targetUserName() || ('admin.users.userNumber' | translate: { id: confirmSuspendId() }) }}</strong>{{ 'admin.users.suspendConfirmAfter' | translate }}</p>
         <div class="modal-actions">
-          <button class="btn neutral" (click)="cancelSuspend()">Cancel</button>
+          <button class="btn neutral" (click)="cancelSuspend()">{{ 'admin.users.cancel' | translate }}</button>
           <button class="btn warn" (click)="confirmSuspend()" [disabled]="actionId() !== null">
-            @if (actionId() !== null) { Suspending... } @else { Yes, Suspend }
+            @if (actionId() !== null) { {{ 'admin.users.suspending' | translate }} } @else { {{ 'admin.users.yesSuspend' | translate }} }
           </button>
         </div>
       </dialog>
@@ -173,15 +170,12 @@
         <div class="modal-icon danger">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg>
         </div>
-        <h3>Delete User</h3>
-        <p>
-          You are about to permanently delete <strong>{{ targetUserName() }}</strong>.
-          This action <strong>cannot be undone</strong> and all their data will be removed.
-        </p>
+        <h3>{{ 'admin.users.deleteUser' | translate }}</h3>
+        <p>{{ 'admin.users.deleteConfirmBefore' | translate }} <strong>{{ targetUserName() || ('admin.users.userNumber' | translate: { id: confirmDeleteId() }) }}</strong><span [innerHTML]="'admin.users.deleteConfirmAfter' | translate"></span></p>
         <div class="modal-actions">
-          <button class="btn neutral" (click)="cancelDelete()">Cancel</button>
+          <button class="btn neutral" (click)="cancelDelete()">{{ 'admin.users.cancel' | translate }}</button>
           <button class="btn danger" (click)="confirmDelete()" [disabled]="actionId() !== null">
-            @if (actionId() !== null) { Deleting... } @else { Yes, Delete }
+            @if (actionId() !== null) { {{ 'admin.users.deleting' | translate }} } @else { {{ 'admin.users.yesDelete' | translate }} }
           </button>
         </div>
       </dialog>
@@ -194,23 +188,23 @@
       <div class="payments-panel" (click)="$event.stopPropagation()" (keydown)="$event.stopPropagation()">
         <div class="payments-panel__header">
           <div>
-            <h3>Payment History</h3>
-            <p class="payments-panel__sub">User #{{ paymentsUserId() }}</p>
+            <h3>{{ 'admin.users.paymentHistory' | translate }}</h3>
+            <p class="payments-panel__sub">{{ 'admin.users.userNumber' | translate: { id: paymentsUserId() } }}</p>
           </div>
-          <button class="close-btn" (click)="closePayments()">
+          <button class="close-btn" (click)="closePayments()" [attr.aria-label]="'admin.users.close' | translate">
             <svg viewBox="0 0 24 24" fill="currentColor"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
           </button>
         </div>
 
         @if (paymentsLoading()) {
-          <div class="payments-panel__loading">Loading...</div>
+          <div class="payments-panel__loading">{{ 'admin.users.loading' | translate }}</div>
         } @else if (payments().length === 0) {
-          <div class="payments-panel__empty">No payments found for this user.</div>
+          <div class="payments-panel__empty">{{ 'admin.users.noPayments' | translate }}</div>
         } @else {
           <div class="payments-table-wrap">
             <table class="payments-table">
               <thead>
-                <tr><th>Movie</th><th>Amount</th><th>Status</th><th>Date</th></tr>
+                <tr><th>{{ 'admin.users.colMovie' | translate }}</th><th>{{ 'admin.users.colAmount' | translate }}</th><th>{{ 'admin.users.colStatus' | translate }}</th><th>{{ 'admin.users.colDate' | translate }}</th></tr>
               </thead>
               <tbody>
                 @for (p of payments(); track p.id) {

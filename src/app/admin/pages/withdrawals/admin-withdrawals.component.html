@@ -2,8 +2,8 @@
 
   <div class="page-header">
     <div>
-      <h1>Withdrawals</h1>
-      <p>Review and process producer payout requests.</p>
+      <h1>{{ 'admin.withdrawalsPage.title' | translate }}</h1>
+      <p>{{ 'admin.withdrawalsPage.subtitle' | translate }}</p>
     </div>
   </div>
 
@@ -11,7 +11,7 @@
   <div class="filter-tabs">
     @for (f of filters; track f) {
       <button class="filter-tab" [class.active]="activeFilter() === f" (click)="activeFilter.set(f)">
-        {{ f === 'all' ? 'All' : f }}
+        {{ ('admin.withdrawalsPage.status.' + f) | translate }}
         <span class="tab-count">{{ counts()[f] }}</span>
       </button>
     }
@@ -26,7 +26,7 @@
   } @else if (filtered().length === 0) {
     <div class="empty-state">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 14l-4-4 4-4"/><path d="M5 10h11a4 4 0 0 1 0 8h-1"/></svg>
-      <p>No {{ activeFilter() === 'all' ? '' : activeFilter().toLowerCase() + ' ' }}withdrawals found.</p>
+      <p>{{ ('admin.withdrawalsPage.empty.' + activeFilter()) | translate }}</p>
     </div>
   } @else {
     <div class="table-wrap">
@@ -34,12 +34,12 @@
         <thead>
           <tr>
             <th>#</th>
-            <th>Producer</th>
-            <th>Amount</th>
-            <th>Method</th>
-            <th>Status</th>
-            <th>Requested</th>
-            <th>Actions</th>
+            <th>{{ 'admin.withdrawalsPage.colProducer' | translate }}</th>
+            <th>{{ 'admin.withdrawalsPage.colAmount' | translate }}</th>
+            <th>{{ 'admin.withdrawalsPage.colMethod' | translate }}</th>
+            <th>{{ 'admin.withdrawalsPage.colStatus' | translate }}</th>
+            <th>{{ 'admin.withdrawalsPage.colRequested' | translate }}</th>
+            <th>{{ 'admin.withdrawalsPage.colActions' | translate }}</th>
           </tr>
         </thead>
         <tbody>
@@ -56,18 +56,18 @@
               <td class="amount">RWF {{ w.amount | number }}</td>
               <td class="muted">{{ w.payment_method ?? '—' }}</td>
               <td>
-                <span class="badge" [class]="'badge-' + w.status.toLowerCase()">{{ w.status }}</span>
+                <span class="badge" [class]="'badge-' + w.status.toLowerCase()">{{ statusKey(w.status) | translate }}</span>
               </td>
               <td class="muted">{{ w.created_at | date:'mediumDate' }}</td>
               <td class="actions">
-                <button class="action-btn neutral" (click)="openDetail(w)">Details</button>
+                <button class="action-btn neutral" (click)="openDetail(w)">{{ 'admin.withdrawalsPage.details' | translate }}</button>
                 @if (w.status === 'Pending') {
-                  <button class="action-btn success" (click)="openConfirm(w.id, 'approve')" [disabled]="actionId() === w.id">Approve</button>
-                  <button class="action-btn danger" (click)="openConfirm(w.id, 'reject')" [disabled]="actionId() === w.id">Reject</button>
+                  <button class="action-btn success" (click)="openConfirm(w.id, 'approve')" [disabled]="actionId() === w.id">{{ 'admin.withdrawalsPage.approve' | translate }}</button>
+                  <button class="action-btn danger" (click)="openConfirm(w.id, 'reject')" [disabled]="actionId() === w.id">{{ 'admin.withdrawalsPage.reject' | translate }}</button>
                 }
                 @if (w.status === 'Approved') {
-                  <button class="action-btn gold" (click)="openConfirm(w.id, 'complete')" [disabled]="actionId() === w.id">Mark Paid</button>
-                  <button class="action-btn danger" (click)="openConfirm(w.id, 'reject')" [disabled]="actionId() === w.id">Reject</button>
+                  <button class="action-btn gold" (click)="openConfirm(w.id, 'complete')" [disabled]="actionId() === w.id">{{ 'admin.withdrawalsPage.markPaid' | translate }}</button>
+                  <button class="action-btn danger" (click)="openConfirm(w.id, 'reject')" [disabled]="actionId() === w.id">{{ 'admin.withdrawalsPage.reject' | translate }}</button>
                 }
               </td>
             </tr>
@@ -85,70 +85,70 @@
     <dialog open class="detail-modal" (click)="$event.stopPropagation()" (keydown)="$event.stopPropagation()">
 
       <div class="modal-header">
-        <h3>Withdrawal #{{ detailItem()!.id }}</h3>
-        <button class="close-btn" (click)="closeDetail()">
+        <h3>{{ 'admin.withdrawalsPage.detailTitle' | translate: { id: detailItem()!.id } }}</h3>
+        <button class="close-btn" (click)="closeDetail()" [attr.aria-label]="'admin.withdrawalsPage.close' | translate">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
         </button>
       </div>
 
       <div class="detail-body">
         <div class="detail-amount">
-          <span class="detail-amount-label">Amount</span>
+          <span class="detail-amount-label">{{ 'admin.withdrawalsPage.amount' | translate }}</span>
           <span class="detail-amount-value">RWF {{ detailItem()!.amount | number }}</span>
         </div>
 
         <div class="detail-section">
           <div class="detail-row">
-            <span class="detail-key">Status</span>
-            <span class="badge" [class]="'badge-' + detailItem()!.status.toLowerCase()">{{ detailItem()!.status }}</span>
+            <span class="detail-key">{{ 'admin.withdrawalsPage.colStatus' | translate }}</span>
+            <span class="badge" [class]="'badge-' + detailItem()!.status.toLowerCase()">{{ statusKey(detailItem()!.status) | translate }}</span>
           </div>
           <div class="detail-row">
-            <span class="detail-key">Producer</span>
+            <span class="detail-key">{{ 'admin.withdrawalsPage.producer' | translate }}</span>
             <span class="detail-val">{{ detailItem()!.producer_name }}</span>
           </div>
           <div class="detail-row">
-            <span class="detail-key">Email</span>
+            <span class="detail-key">{{ 'admin.withdrawalsPage.email' | translate }}</span>
             <span class="detail-val muted">{{ detailItem()!.producer_email }}</span>
           </div>
           <div class="detail-row">
-            <span class="detail-key">Requested</span>
+            <span class="detail-key">{{ 'admin.withdrawalsPage.requested' | translate }}</span>
             <span class="detail-val muted">{{ detailItem()!.created_at | date:'medium' }}</span>
           </div>
           @if (detailItem()!.processed_at) {
             <div class="detail-row">
-              <span class="detail-key">Processed</span>
+              <span class="detail-key">{{ 'admin.withdrawalsPage.processed' | translate }}</span>
               <span class="detail-val muted">{{ detailItem()!.processed_at | date:'medium' }}</span>
             </div>
           }
         </div>
 
         <div class="detail-section">
-          <p class="section-label">Payment Details</p>
+          <p class="section-label">{{ 'admin.withdrawalsPage.paymentDetails' | translate }}</p>
           <div class="detail-row">
-            <span class="detail-key">Method</span>
+            <span class="detail-key">{{ 'admin.withdrawalsPage.method' | translate }}</span>
             <span class="detail-val">{{ detailItem()!.payment_method ?? '—' }}</span>
           </div>
           @if (detailItem()!.payment_method === 'Bank') {
             <div class="detail-row">
-              <span class="detail-key">Bank</span>
+              <span class="detail-key">{{ 'admin.withdrawalsPage.bank' | translate }}</span>
               <span class="detail-val">{{ detailItem()!.bank_name ?? '—' }}</span>
             </div>
             <div class="detail-row">
-              <span class="detail-key">Account No.</span>
+              <span class="detail-key">{{ 'admin.withdrawalsPage.accountNo' | translate }}</span>
               <span class="detail-val">{{ detailItem()!.account_number ?? '—' }}</span>
             </div>
             <div class="detail-row">
-              <span class="detail-key">Account Name</span>
+              <span class="detail-key">{{ 'admin.withdrawalsPage.accountName' | translate }}</span>
               <span class="detail-val">{{ detailItem()!.account_holder_name ?? '—' }}</span>
             </div>
           }
           @if (detailItem()!.payment_method === 'MoMo') {
             <div class="detail-row">
-              <span class="detail-key">Provider</span>
+              <span class="detail-key">{{ 'admin.withdrawalsPage.provider' | translate }}</span>
               <span class="detail-val">{{ detailItem()!.momo_provider ?? '—' }}</span>
             </div>
             <div class="detail-row">
-              <span class="detail-key">MoMo Number</span>
+              <span class="detail-key">{{ 'admin.withdrawalsPage.momoNumber' | translate }}</span>
               <span class="detail-val">{{ detailItem()!.momo_number ?? '—' }}</span>
             </div>
           }
@@ -157,12 +157,12 @@
         @if (detailItem()!.status === 'Pending' || detailItem()!.status === 'Approved') {
           <div class="modal-actions">
             @if (detailItem()!.status === 'Pending') {
-              <button class="action-btn success" (click)="openConfirm(detailItem()!.id, 'approve'); closeDetail()" [disabled]="actionId() === detailItem()!.id">Approve</button>
+              <button class="action-btn success" (click)="openConfirm(detailItem()!.id, 'approve'); closeDetail()" [disabled]="actionId() === detailItem()!.id">{{ 'admin.withdrawalsPage.approve' | translate }}</button>
             }
             @if (detailItem()!.status === 'Approved') {
-              <button class="action-btn gold" (click)="openConfirm(detailItem()!.id, 'complete'); closeDetail()" [disabled]="actionId() === detailItem()!.id">Mark as Paid</button>
+              <button class="action-btn gold" (click)="openConfirm(detailItem()!.id, 'complete'); closeDetail()" [disabled]="actionId() === detailItem()!.id">{{ 'admin.withdrawalsPage.markAsPaid' | translate }}</button>
             }
-            <button class="action-btn danger" (click)="openConfirm(detailItem()!.id, 'reject'); closeDetail()" [disabled]="actionId() === detailItem()!.id">Reject</button>
+            <button class="action-btn danger" (click)="openConfirm(detailItem()!.id, 'reject'); closeDetail()" [disabled]="actionId() === detailItem()!.id">{{ 'admin.withdrawalsPage.reject' | translate }}</button>
           </div>
         }
       </div>
@@ -185,25 +185,17 @@
         }
       </div>
       <h3>
-        {{ confirmAction()!.type === 'approve' ? 'Approve Withdrawal' : confirmAction()!.type === 'complete' ? 'Mark as Paid' : 'Reject Withdrawal' }}
+        {{ (confirmAction()!.type === 'approve' ? 'admin.withdrawalsPage.approveTitle' : confirmAction()!.type === 'complete' ? 'admin.withdrawalsPage.markAsPaid' : 'admin.withdrawalsPage.rejectTitle') | translate }}
       </h3>
-      <p>
-        @if (confirmAction()!.type === 'approve') {
-          This will move the request to <strong>Approved</strong>. The producer will be notified.
-        } @else if (confirmAction()!.type === 'complete') {
-          Confirm that the bank or MoMo transfer has been completed. This action <strong>cannot be undone</strong>.
-        } @else {
-          The withdrawal will be <strong>rejected</strong> and the amount will be refunded to the producer's wallet.
-        }
-      </p>
+      <p [innerHTML]="(confirmAction()!.type === 'approve' ? 'admin.withdrawalsPage.approveBody' : confirmAction()!.type === 'complete' ? 'admin.withdrawalsPage.completeBody' : 'admin.withdrawalsPage.rejectBody') | translate"></p>
       <div class="modal-actions">
-        <button class="action-btn neutral" (click)="cancelConfirm()">Cancel</button>
+        <button class="action-btn neutral" (click)="cancelConfirm()">{{ 'admin.withdrawalsPage.cancel' | translate }}</button>
         <button class="action-btn"
           [class.success]="confirmAction()!.type === 'approve'"
           [class.gold]="confirmAction()!.type === 'complete'"
           [class.danger]="confirmAction()!.type === 'reject'"
           (click)="runAction()" [disabled]="actionId() !== null">
-          {{ confirmAction()!.type === 'approve' ? 'Yes, Approve' : confirmAction()!.type === 'complete' ? 'Yes, Mark Paid' : 'Yes, Reject' }}
+          {{ (confirmAction()!.type === 'approve' ? 'admin.withdrawalsPage.yesApprove' : confirmAction()!.type === 'complete' ? 'admin.withdrawalsPage.yesMarkPaid' : 'admin.withdrawalsPage.yesReject') | translate }}
         </button>
       </div>
     </dialog>

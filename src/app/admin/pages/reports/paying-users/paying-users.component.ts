@@ -3,6 +3,7 @@ import {
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Subscription } from 'rxjs';
+import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { AdminService } from '../../../services/admin.service';
 import { PayingUserItem, PayingUsersReport } from '../../../models/admin.interface';
 import { DatePickerComponent, type DateRange } from '../../../../shared/components/date-picker/date-picker';
@@ -11,12 +12,13 @@ import * as XLSX from 'xlsx';
 @Component({
   selector: 'app-paying-users',
   standalone: true,
-  imports: [CommonModule, DatePickerComponent],
+  imports: [CommonModule, DatePickerComponent, TranslatePipe],
   templateUrl: './paying-users.component.html',
   styleUrl: './paying-users.component.scss',
 })
 export class PayingUsersComponent implements OnInit, OnDestroy {
   private readonly adminService = inject(AdminService);
+  private readonly translate    = inject(TranslateService);
 
   dateFrom = signal<string>(this.defaultFrom());
   dateTo   = signal<string>(new Date().toISOString().slice(0, 10));
@@ -86,11 +88,11 @@ export class PayingUsersComponent implements OnInit, OnDestroy {
     const wb = XLSX.utils.book_new();
     const dateLabel = new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
     const rows: (string | number | null)[][] = [
-      ['PAYING USERS REPORT'],
-      [`Generated: ${dateLabel}`],
-      [`Total paying users: ${this.totalUsers()}`],
+      [this.translate.instant('admin.reports.payingUsers.exportTitle')],
+      [this.translate.instant('admin.reports.generated', { date: dateLabel })],
+      [this.translate.instant('admin.reports.payingUsers.exportTotal', { count: this.totalUsers() })],
       [],
-      ['Name', 'Email', 'Phone', 'Movie Title', 'Amount (RWF)', 'Status', 'Paid At'],
+      [this.translate.instant('admin.reports.payingUsers.colName'), this.translate.instant('admin.reports.payingUsers.colEmail'), this.translate.instant('admin.reports.payingUsers.colPhone'), this.translate.instant('admin.reports.payingUsers.colMovieTitle'), this.translate.instant('admin.reports.payingUsers.colAmountRwf'), this.translate.instant('admin.reports.payingUsers.colStatus'), this.translate.instant('admin.reports.payingUsers.colPaidAt')],
       ...this.users().flatMap(u =>
         u.payments.length
           ? u.payments.map(p => [
@@ -103,7 +105,7 @@ export class PayingUsersComponent implements OnInit, OnDestroy {
     ];
     const ws = XLSX.utils.aoa_to_sheet(rows);
     ws['!cols'] = [{ wch: 24 }, { wch: 28 }, { wch: 18 }, { wch: 30 }, { wch: 14 }, { wch: 12 }, { wch: 20 }];
-    XLSX.utils.book_append_sheet(wb, ws, 'Paying Users');
+    XLSX.utils.book_append_sheet(wb, ws, this.translate.instant('admin.reports.payingUsers.sheetName'));
     XLSX.writeFile(wb, `paying_users_${new Date().toISOString().slice(0, 10)}.xlsx`);
   }
 

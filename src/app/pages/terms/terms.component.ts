@@ -1,16 +1,18 @@
 import { Component, OnInit, inject } from '@angular/core';
-import { RouterLink } from '@angular/router';
+
 import { SeoService } from '../../core/services/seo.service';
+import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 
 @Component({
   selector: 'app-terms',
-  imports: [RouterLink],
+  imports: [TranslatePipe],
   templateUrl: './terms.component.html',
   styleUrl: './terms.component.scss'
 })
 export class TermsComponent implements OnInit {
   private seo = inject(SeoService);
+  private translate = inject(TranslateService);
   ngOnInit() {
-    this.seo.set({ title: 'Terms & Conditions', description: 'Read the Ikigembe terms and conditions for viewers and producers.' });
+    this.seo.set({ title: this.translate.instant('terms.seoTitle'), description: this.translate.instant('terms.seoDescription') });
   }
 }

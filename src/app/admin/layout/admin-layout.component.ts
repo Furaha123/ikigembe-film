@@ -4,10 +4,11 @@ import { Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/rou
 import { Subscription } from 'rxjs';
 import { AuthService } from '../../core/services/auth.service';
 import { AdminService } from '../services/admin.service';
+import { TranslatePipe } from '@ngx-translate/core';
 
 @Component({
   selector: 'app-admin-layout',
-  imports: [RouterOutlet, RouterLink, RouterLinkActive],
+  imports: [RouterOutlet, RouterLink, RouterLinkActive, TranslatePipe],
   templateUrl: './admin-layout.component.html',
   styleUrl: './admin-layout.component.scss'
 })
@@ -66,16 +67,16 @@ export class AdminLayoutComponent implements OnInit, OnDestroy {
   }
 
   navItems = [
-    { label: 'Dashboard',   path: '/admin/dashboard',   icon: 'dashboard' },
-    { label: 'Users',       path: '/admin/users',       icon: 'users' },
-    { label: 'Producers',   path: '/admin/producers',   icon: 'producers' },
-    { label: 'Movies',      path: '/admin/movies',      icon: 'movies' },
-    { label: 'Withdrawals', path: '/admin/withdrawals', icon: 'withdrawals' },
-    { label: 'Contracts',   path: '/admin/contracts',   icon: 'contracts' },
-    { label: 'Marketplace', path: '/admin/marketplace', icon: 'marketplace' },
-    { label: 'Pages & Ads', path: '/admin/cms/pages',   icon: 'cms' },
-    { label: 'Reports',     path: '/admin/reports',     icon: 'reports' },
-    { label: 'Settings',    path: '/admin/settings',    icon: 'settings' },
+    { label: 'admin.nav.dashboard',   path: '/admin/dashboard',   icon: 'dashboard' },
+    { label: 'admin.nav.users',       path: '/admin/users',       icon: 'users' },
+    { label: 'admin.nav.producers',   path: '/admin/producers',   icon: 'producers' },
+    { label: 'admin.nav.movies',      path: '/admin/movies',      icon: 'movies' },
+    { label: 'admin.nav.withdrawals', path: '/admin/withdrawals', icon: 'withdrawals' },
+    { label: 'admin.nav.contracts',   path: '/admin/contracts',   icon: 'contracts' },
+    { label: 'admin.nav.marketplace', path: '/admin/marketplace', icon: 'marketplace' },
+    { label: 'admin.nav.cms',         path: '/admin/cms/pages',   icon: 'cms' },
+    { label: 'admin.nav.reports',     path: '/admin/reports',     icon: 'reports' },
+    { label: 'admin.nav.settings',    path: '/admin/settings',    icon: 'settings' },
   ];
 
   toggleSidebar() {

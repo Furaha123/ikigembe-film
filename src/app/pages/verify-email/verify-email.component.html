@@ -6,8 +6,8 @@
     <div class="brand-overlay"></div>
     <div class="brand-inner">
       <img src="/assets/ikigembe.log.png" alt="Ikigembe" class="brand-logo" />
-      <h2 class="brand-headline">Beyond the Passion,<br/>Their Purpose</h2>
-      <p class="brand-sub">Discover award-winning films, series and documentaries from across the continent.</p>
+      <h2 class="brand-headline">{{ 'auth.brand.headlineLine1' | translate }}<br/>{{ 'auth.brand.headlineLine2' | translate }}</h2>
+      <p class="brand-sub">{{ 'auth.brand.sub' | translate }}</p>
     </div>
   </div>
 
@@ -21,8 +21,8 @@
         @case ('loading') {
           <div class="status-state">
             <span class="big-spinner"></span>
-            <h1>Verifying your email…</h1>
-            <p>Please wait a moment.</p>
+            <h1>{{ 'auth.verifyEmail.loadingTitle' | translate }}</h1>
+            <p>{{ 'auth.verifyEmail.loadingBody' | translate }}</p>
           </div>
         }
 
@@ -33,9 +33,9 @@
                 <path d="M20 6L9 17l-5-5"/>
               </svg>
             </div>
-            <h1>Email verified</h1>
-            <p>Your account is now active. You can sign in and start watching.</p>
-            <a routerLink="/login" class="submit-btn">Sign In</a>
+            <h1>{{ 'auth.verifyEmail.successTitle' | translate }}</h1>
+            <p>{{ 'auth.verifyEmail.successBody' | translate }}</p>
+            <a routerLink="/login" class="submit-btn">{{ 'auth.login.submit' | translate }}</a>
           </div>
         }
 
@@ -47,12 +47,12 @@
                 <path d="M12 8v4M12 16h.01"/>
               </svg>
             </div>
-            <h1>Verification failed</h1>
-            <p>{{ errorMessage() }}</p>
+            <h1>{{ 'auth.verifyEmail.errorTitle' | translate }}</h1>
+            <p>{{ errorMessage() | translate }}</p>
 
             <div class="resend-section">
-              <p class="resend-label">Request a new verification link</p>
-              <input class="resend-input" type="email" placeholder="Enter your email address"
+              <p class="resend-label">{{ 'auth.verifyEmail.resendLabel' | translate }}</p>
+              <input class="resend-input" type="email" [placeholder]="'auth.verifyEmail.emailPlaceholder' | translate"
                      [ngModel]="resendEmail()"
                      (ngModelChange)="resendEmail.set($event)" />
 
@@ -61,22 +61,22 @@
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="15" height="15">
                     <path d="M20 6L9 17l-5-5"/>
                   </svg>
-                  New link sent! Check your inbox.
+                  {{ 'auth.verifyEmail.resendSuccess' | translate }}
                 </p>
               }
               @if (resendError()) {
-                <p class="resend-err">{{ resendError() }}</p>
+                <p class="resend-err">{{ resendError()! | translate }}</p>
               }
 
               <button class="resend-btn"
                       [disabled]="!resendEmail().trim() || isResending() || resendCooldown() > 0"
                       (click)="requestNewLink()">
                 @if (isResending()) {
-                  <span class="btn-spinner"></span> Sending…
+                  <span class="btn-spinner"></span> {{ 'auth.common.sending' | translate }}
                 } @else if (resendCooldown() > 0) {
-                  Resend in {{ resendCooldown() }}s
+                  {{ cooldownLabel(resendCooldown()).key | translate: { n: cooldownLabel(resendCooldown()).n } }}
                 } @else {
-                  Send new link
+                  {{ 'auth.verifyEmail.sendNewLink' | translate }}
                 }
               </button>
             </div>
@@ -91,9 +91,9 @@
                 <path d="M15 9l-6 6M9 9l6 6"/>
               </svg>
             </div>
-            <h1>Invalid link</h1>
-            <p>This verification link is missing a token. Please use the link from your email.</p>
-            <a routerLink="/register" class="submit-btn">Back to Register</a>
+            <h1>{{ 'auth.verifyEmail.invalidTitle' | translate }}</h1>
+            <p>{{ 'auth.verifyEmail.invalidBody' | translate }}</p>
+            <a routerLink="/register" class="submit-btn">{{ 'auth.verifyEmail.backToRegister' | translate }}</a>
           </div>
         }
 

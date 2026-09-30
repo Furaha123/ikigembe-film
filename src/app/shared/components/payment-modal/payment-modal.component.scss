@@ -113,49 +113,6 @@ $muted:  #888;
   margin: 0;
 }
 
-// Provider toggle
-.pm-providers {
-  display: flex;
-  gap: 0.6rem;
-}
-
-.pm-provider {
-  flex: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-  padding: 0.6rem 0.8rem;
-  background: $bg;
-  border: 1px solid $border;
-  border-radius: 8px;
-  color: $muted;
-  font-size: 0.85rem;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.18s;
-
-  &--active {
-    border-color: $gold;
-    color: $gold;
-    background: rgba($gold, 0.08);
-  }
-
-  &:hover:not(&--active) {
-    border-color: #555;
-    color: $text;
-  }
-}
-
-.pm-provider__dot {
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-
-  &--mtn    { background: #ffcc00; }
-  &--airtel { background: #e5001c; }
-}
-
 // Phone field
 .pm-field {
   display: flex;

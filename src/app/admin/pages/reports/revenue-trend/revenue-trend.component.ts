@@ -4,6 +4,7 @@ import {
 } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { Subscription } from 'rxjs';
+import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { AdminService } from '../../../services/admin.service';
 import { RevenueTrendItem } from '../../../models/admin.interface';
 import { DatePickerComponent, type DateRange } from '../../../../shared/components/date-picker/date-picker';
@@ -18,12 +19,13 @@ Chart.register(CategoryScale, LinearScale, Tooltip, Legend, LineController, Line
 @Component({
   selector: 'app-revenue-trend',
   standalone: true,
-  imports: [CommonModule, DatePickerComponent],
+  imports: [CommonModule, DatePickerComponent, TranslatePipe],
   templateUrl: './revenue-trend.component.html',
   styleUrl: './revenue-trend.component.scss',
 })
 export class RevenueTrendComponent implements OnInit, AfterViewChecked, OnDestroy {
   private readonly adminService = inject(AdminService);
+  private readonly translate    = inject(TranslateService);
   private readonly platformId   = inject(PLATFORM_ID);
 
   dateFrom = signal<string>(this.defaultFrom());
@@ -94,7 +96,7 @@ export class RevenueTrendComponent implements OnInit, AfterViewChecked, OnDestro
     const data   = this.trend();
     const labels = data.map(d => this.shortMonth(d.period_start));
     const colorMap = { revenue: '#C5A253', commission: '#818cf8', producer: '#34d399' };
-    const labelMap = { revenue: 'Total Revenue', commission: 'Platform Commission', producer: 'Producer Share' };
+    const labelMap = { revenue: this.translate.instant('admin.reports.revenueTrend.totalRevenue'), commission: this.translate.instant('admin.reports.revenueTrend.platformCommission'), producer: this.translate.instant('admin.reports.revenueTrend.producerShare') };
     const dataMap  = {
       revenue:    data.map(d => d.total_revenue),
       commission: data.map(d => d.platform_commission),
@@ -142,20 +144,20 @@ export class RevenueTrendComponent implements OnInit, AfterViewChecked, OnDestro
     const wb = XLSX.utils.book_new();
     const dateLabel = new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
     const rows: (string | number)[][] = [
-      ['REVENUE TREND REPORT'],
-      [`Generated: ${dateLabel}`],
+      [this.translate.instant('admin.reports.revenueTrend.exportTitle')],
+      [this.translate.instant('admin.reports.generated', { date: dateLabel })],
       [],
-      ['Period', 'Total Revenue (RWF)', 'Producer Share (RWF)', 'Commission (RWF)', 'Purchases'],
+      [this.translate.instant('admin.reports.revenueTrend.period'), this.translate.instant('admin.reports.revenueTrend.colTotalRevenueRwf'), this.translate.instant('admin.reports.revenueTrend.colProducerShareRwf'), this.translate.instant('admin.reports.revenueTrend.colCommissionRwf'), this.translate.instant('admin.reports.revenueTrend.purchases')],
       ...this.trend().map(d => [
         new Date(d.period_start).toLocaleDateString('en-GB', { month: 'long', year: 'numeric' }),
         d.total_revenue, d.producer_share, d.platform_commission, d.purchase_count,
       ]),
       [],
-      ['TOTALS', this.totalRevenue(), this.totalProd(), this.totalComm(), this.totalPurchases()],
+      [this.translate.instant('admin.reports.revenueTrend.exportTotals'), this.totalRevenue(), this.totalProd(), this.totalComm(), this.totalPurchases()],
     ];
     const ws = XLSX.utils.aoa_to_sheet(rows);
     ws['!cols'] = [{ wch: 20 }, { wch: 22 }, { wch: 22 }, { wch: 20 }, { wch: 12 }];
-    XLSX.utils.book_append_sheet(wb, ws, 'Revenue Trend');
+    XLSX.utils.book_append_sheet(wb, ws, this.translate.instant('admin.reports.revenueTrend.sheetName'));
     XLSX.writeFile(wb, `revenue_trend_${new Date().toISOString().slice(0, 10)}.xlsx`);
   }
 

@@ -2,12 +2,16 @@ import {
   Component, inject, signal, computed,
   OnInit, OnDestroy, ElementRef, ViewChild, PLATFORM_ID,
 } from '@angular/core';
-import { TranslatePipe, TranslateDirective } from '@ngx-translate/core';
+import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ProducerService, ProducerMovieDetail, FilmResubmitPayload } from '../../../services/producer.service';
 import { MultipartUploadService, UploadAbortedError } from '../../../../shared/services/multipart-upload.service';
 import { apiErrorMessage, UiError } from '../../../../shared/utils/api-error';
+import { staleResubmitKey, uploadErrorMessage } from '../../../../shared/utils/upload-error';
+import {
+  ALLOWED_DOCUMENT_EXTENSIONS, ALLOWED_VIDEO_EXTENSIONS, DOCUMENT_ACCEPT, VIDEO_ACCEPT, extensionList, hasAllowedExtension,
+} from '../../../../shared/models/upload.constants';
 import { VideoPlayerComponent } from '../../../../shared/components/video-player/video-player.component';
 import {
   Chart, LineController, LineElement, PointElement,
@@ -65,9 +69,9 @@ const RANGE_CONFIGS: Record<string, RangeConfig> = {
 @Component({
   selector: 'app-producer-movie-detail',
   standalone: true,
-  imports: [TranslatePipe, TranslateDirective, CommonModule, VideoPlayerComponent],
+  imports: [TranslatePipe, CommonModule, VideoPlayerComponent],
   templateUrl: './producer-movie-detail.component.html',
-  styleUrl: './producer-movie-detail.component.scss',
+  styleUrls: ['./producer-movie-detail.component.scss', './producer-movie-detail.overlays.scss'],
 })
 export class ProducerMovieDetailComponent implements OnInit, OnDestroy {
   @ViewChild('analyticsChart') analyticsCanvas?: ElementRef<HTMLCanvasElement>;
@@ -78,6 +82,7 @@ export class ProducerMovieDetailComponent implements OnInit, OnDestroy {
   private readonly producerService = inject(ProducerService);
   private readonly uploader        = inject(MultipartUploadService);
   private readonly platformId      = inject(PLATFORM_ID);
+  private readonly translate       = inject(TranslateService);
 
   readonly ranges     = ['7d', '28d', '90d', '365d', 'Lifetime'];
   readonly breakdowns: Breakdown[] = ['Monthly', 'Weekly', 'Daily'];
@@ -115,6 +120,8 @@ export class ProducerMovieDetailComponent implements OnInit, OnDestroy {
   resubmitCopyrightError       = signal<string | null>(null); // translation key
 
   resubmitLoading = signal(false);
+  readonly videoAccept    = VIDEO_ACCEPT;
+  readonly documentAccept = DOCUMENT_ACCEPT;
   resubmitError   = signal<UiError | null>(null);
   resubmitSuccess = signal(false);
 
@@ -139,7 +146,8 @@ export class ProducerMovieDetailComponent implements OnInit, OnDestroy {
     const cfg        = RANGE_CONFIGS[this.selectedRange()];
     const totalViews = Math.round(m.views * cfg.fraction);
     const dur        = m.duration_minutes ?? 90;
-    return cfg.labels.map((label, i) => {
+    return cfg.labels.map((raw, i) => {
+      const label     = this.axisLabel(raw);
       const views     = Math.round(totalViews * cfg.weights[i]);
       const watchTime = +((views * (dur / 60))).toFixed(1);
       const revenue   = Math.round(views * m.price * (this.shareRatio() ?? 0));
@@ -179,9 +187,10 @@ export class ProducerMovieDetailComponent implements OnInit, OnDestroy {
     const count = countMap[range]?.[breakdown] ?? 6;
 
     const labels =
-      breakdown === 'Monthly' ? ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'].slice(0, count) :
-      breakdown === 'Weekly'  ? Array.from({ length: count }, (_, i) => `Wk ${i + 1}`) :
-                                Array.from({ length: count }, (_, i) => `Day ${i + 1}`);
+      breakdown === 'Monthly' ? ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'].slice(0, count)
+                                  .map(m => this.translate.instant(`producerUi.common.monthsShort.${m}`)) :
+      breakdown === 'Weekly'  ? Array.from({ length: count }, (_, i) => this.translate.instant('producerUi.movieDetail.chart.wk', { n: i + 1 })) :
+                                Array.from({ length: count }, (_, i) => this.translate.instant('producerUi.movieDetail.chart.day', { n: i + 1 }));
 
     const cfg    = RANGE_CONFIGS[range];
     const total  = Math.round(m.views * cfg.fraction);
@@ -319,14 +328,25 @@ export class ProducerMovieDetailComponent implements OnInit, OnDestroy {
     this.watchSrc.set('');
   }
 
+  /** Translation key for an HLS status (unknown statuses pass through the pipe unchanged). */
   hlsLabel(status: string): string {
     const map: Record<string, string> = {
-      not_started: 'Not Processed',
-      processing:  'Processing…',
-      ready:       'Ready',
-      failed:      'Failed',
+      not_started: 'producerUi.movieDetail.hls.notStarted',
+      processing:  'producerUi.movieDetail.hls.processing',
+      ready:       'producerUi.movieDetail.hls.ready',
+      failed:      'producerUi.movieDetail.hls.failed',
     };
     return map[status] ?? status;
+  }
+
+  /** Localise the synthetic chart labels: weekdays, "Week N" and "Mon YY". */
+  private axisLabel(raw: string): string {
+    const week = /^Week (\d+)$/.exec(raw);
+    if (week) return this.translate.instant('producerUi.movieDetail.chart.week', { n: week[1] });
+    const month = /^([A-Z][a-z]{2}) (\d{2})$/.exec(raw);
+    if (month) return `${this.translate.instant(`producerUi.common.monthsShort.${month[1]}`)} ${month[2]}`;
+    if (/^[A-Z][a-z]{2}$/.test(raw)) return this.translate.instant(`producerUi.common.weekdaysShort.${raw}`);
+    return raw;
   }
 
   hlsClass(status: string): string {
@@ -432,20 +452,20 @@ export class ProducerMovieDetailComponent implements OnInit, OnDestroy {
 
     if (metrics.views) {
       datasets.push(isBar
-        ? { label: 'Views',         data: d.map(r => r.views),    backgroundColor: 'rgba(79,158,247,0.7)', borderRadius: 4 }
-        : { label: 'Views',         data: d.map(r => r.views),    borderColor: '#4f9ef7', backgroundColor: 'rgba(79,158,247,0.08)', borderWidth: 2, pointRadius: 3, tension: 0.35, fill: true }
+        ? { label: this.translate.instant('producerUi.movieDetail.chart.views'),         data: d.map(r => r.views),    backgroundColor: 'rgba(79,158,247,0.7)', borderRadius: 4 }
+        : { label: this.translate.instant('producerUi.movieDetail.chart.views'),         data: d.map(r => r.views),    borderColor: '#4f9ef7', backgroundColor: 'rgba(79,158,247,0.08)', borderWidth: 2, pointRadius: 3, tension: 0.35, fill: true }
       );
     }
     if (metrics.watchTime) {
       datasets.push(isBar
-        ? { label: 'Watch Time (h)',    data: d.map(r => r.watchTime), backgroundColor: 'rgba(45,212,191,0.6)',  borderRadius: 4 }
-        : { label: 'Watch Time (h)',    data: d.map(r => r.watchTime), borderColor: '#2dd4bf', backgroundColor: 'transparent', borderWidth: 2, pointRadius: 3, tension: 0.35, fill: false }
+        ? { label: this.translate.instant('producerUi.movieDetail.chart.watchTime'),    data: d.map(r => r.watchTime), backgroundColor: 'rgba(45,212,191,0.6)',  borderRadius: 4 }
+        : { label: this.translate.instant('producerUi.movieDetail.chart.watchTime'),    data: d.map(r => r.watchTime), borderColor: '#2dd4bf', backgroundColor: 'transparent', borderWidth: 2, pointRadius: 3, tension: 0.35, fill: false }
       );
     }
     if (metrics.revenue) {
       datasets.push(isBar
-        ? { label: 'Revenue (K RWF)', data: d.map(r => +(r.revenue / 1000).toFixed(1)), backgroundColor: 'rgba(200,168,75,0.65)', borderRadius: 4 }
-        : { label: 'Revenue (K RWF)', data: d.map(r => +(r.revenue / 1000).toFixed(1)), borderColor: '#C8A84B', backgroundColor: 'transparent', borderWidth: 2, pointRadius: 3, tension: 0.35, fill: false }
+        ? { label: this.translate.instant('producerUi.movieDetail.chart.revenue'), data: d.map(r => +(r.revenue / 1000).toFixed(1)), backgroundColor: 'rgba(200,168,75,0.65)', borderRadius: 4 }
+        : { label: this.translate.instant('producerUi.movieDetail.chart.revenue'), data: d.map(r => +(r.revenue / 1000).toFixed(1)), borderColor: '#C8A84B', backgroundColor: 'transparent', borderWidth: 2, pointRadius: 3, tension: 0.35, fill: false }
       );
     }
 
@@ -487,8 +507,9 @@ export class ProducerMovieDetailComponent implements OnInit, OnDestroy {
     if (!data.length || !movie) return;
 
     const t = this.advTotals();
-    const headers = ['Content', 'Period', 'Views', 'Watch time (hours)', 'Purchases', 'Revenue (RWF)', 'Completion rate (%)'];
-    const totalRow = [movie.title, 'Total', t.views, t.watchTime, t.purchases, t.revenue, t.completionRate + '%'];
+    const headers = ['content', 'period', 'views', 'watchTime', 'purchases', 'revenue', 'completionRate']
+      .map(k => this.translate.instant(`producerUi.movieDetail.table.${k}`));
+    const totalRow = [movie.title, this.translate.instant('producerUi.movieDetail.table.total'), t.views, t.watchTime, t.purchases, t.revenue, t.completionRate + '%'];
     const rows = data.map(r => [movie.title, r.label, r.views, r.watchTime, r.purchases, r.revenue, r.completionRate + '%']);
 
     const csv = [headers, totalRow, ...rows]
@@ -527,9 +548,9 @@ export class ProducerMovieDetailComponent implements OnInit, OnDestroy {
 
   shareOnWhatsApp(): void {
     const url   = this.previewUrl();
-    const title = this.movie()?.title ?? 'this movie';
+    const title = this.movie()?.title ?? this.translate.instant('producerUi.movieDetail.thisMovie');
     if (!url) return;
-    const text = encodeURIComponent(`Watch the trailer for "${title}" on Ikigembe: ${url}`);
+    const text = encodeURIComponent(this.translate.instant('producerUi.movieDetail.whatsappText', { title, url }));
     window.open(`https://wa.me/?text=${text}`, '_blank', 'noopener,noreferrer');
   }
 
@@ -540,6 +561,11 @@ export class ProducerMovieDetailComponent implements OnInit, OnDestroy {
     this.resubmitVideoKey.set(null);
     this.resubmitVideoError.set(null);
     this.resubmitVideoProgress.set(0);
+    if (!hasAllowedExtension(file.name, ALLOWED_VIDEO_EXTENSIONS)) {
+      // Fail fast: `accept` is only a hint and the backend would reject it anyway.
+      this.resubmitVideoError.set(this.translate.instant('uploadErrors.videoType', { types: extensionList(ALLOWED_VIDEO_EXTENSIONS) }));
+      return;
+    }
     this.uploadResubmitFile(file, 'video');
   }
 
@@ -550,6 +576,10 @@ export class ProducerMovieDetailComponent implements OnInit, OnDestroy {
     this.resubmitCopyrightKey.set(null);
     this.resubmitCopyrightError.set(null);
     this.resubmitCopyrightProgress.set(0);
+    if (!hasAllowedExtension(file.name, ALLOWED_DOCUMENT_EXTENSIONS)) {
+      this.resubmitCopyrightError.set(this.translate.instant('uploadErrors.documentType', { types: extensionList(ALLOWED_DOCUMENT_EXTENSIONS) }));
+      return;
+    }
     this.uploadResubmitFile(file, 'copyright');
   }
 
@@ -574,7 +604,7 @@ export class ProducerMovieDetailComponent implements OnInit, OnDestroy {
       setKey.set(key);
       setProgress.set(100);
     }).catch(err => {
-      if (!(err instanceof UploadAbortedError)) setError.set('movieDetail.resubmit.uploadFailed');
+      if (!(err instanceof UploadAbortedError)) setError.set(uploadErrorMessage(err, 'movieDetail.resubmit.uploadFailed'));
     }).finally(() => {
       if (this.resubmitUploads[type] === controller) {
         this.resubmitUploads[type] = null;
@@ -625,6 +655,18 @@ export class ProducerMovieDetailComponent implements OnInit, OnDestroy {
       },
       error: (err) => {
         this.resubmitLoading.set(false);
+        const stale = staleResubmitKey(err);
+        if (stale) {
+          // The stored key can't be used again: drop it so the user uploads the file afresh.
+          const [key, file] = stale === 'video'
+            ? [this.resubmitVideoKey, this.resubmitVideoFile]
+            : [this.resubmitCopyrightKey, this.resubmitCopyrightFile];
+          key.set(null);
+          file.set(null);
+          this.resubmitError.set({ text: null, key: 'uploadErrors.reuploadThenResubmit' });
+          return;
+        }
+        // 400s carry a specific, actionable reason (wrong folder, unsupported extension, …).
         this.resubmitError.set({ text: apiErrorMessage(err), key: 'movieDetail.resubmit.failed' });
       },
     });

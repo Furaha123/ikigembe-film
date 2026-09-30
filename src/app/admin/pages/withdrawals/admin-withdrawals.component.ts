@@ -1,5 +1,6 @@
 import { Component, inject, OnInit, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { TranslatePipe } from '@ngx-translate/core';
 import { AdminService } from '../../services/admin.service';
 import { WithdrawalItem } from '../../models/admin.interface';
 
@@ -7,7 +8,7 @@ type StatusFilter = 'all' | 'Pending' | 'Approved' | 'Completed' | 'Rejected';
 
 @Component({
   selector: 'app-admin-withdrawals',
-  imports: [CommonModule],
+  imports: [CommonModule, TranslatePipe],
   templateUrl: './admin-withdrawals.component.html',
   styleUrl: './admin-withdrawals.component.scss'
 })
@@ -98,6 +99,10 @@ export class AdminWithdrawalsComponent implements OnInit {
       },
       error: () => this.actionId.set(null),
     });
+  }
+
+  statusKey(status: string): string {
+    return (this.filters as string[]).includes(status) ? `admin.withdrawalsPage.status.${status}` : status;
   }
 
   getPaymentSummary(w: WithdrawalItem): string {

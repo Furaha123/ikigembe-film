@@ -2,6 +2,7 @@ import { Component, inject, signal, OnInit } from '@angular/core';
 import { AbstractControl, FormBuilder, ReactiveFormsModule, ValidationErrors, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
+import { TranslatePipe } from '@ngx-translate/core';
 
 interface ResetErrors {
   non_field_errors?: string[];
@@ -12,7 +13,7 @@ interface ResetErrors {
 
 @Component({
   selector: 'app-reset-password',
-  imports: [ReactiveFormsModule, RouterLink],
+  imports: [ReactiveFormsModule, RouterLink, TranslatePipe],
   templateUrl: './reset-password.component.html',
   styleUrl: './reset-password.component.scss'
 })
@@ -72,7 +73,7 @@ export class ResetPasswordComponent implements OnInit {
         if (err.status === 400 && err.error) {
           this.serverErrors.set(err.error);
         } else {
-          this.serverErrors.set({ detail: 'Something went wrong. Please try again.' });
+          this.serverErrors.set({ detail: 'auth.common.genericError' });
         }
       }
     });

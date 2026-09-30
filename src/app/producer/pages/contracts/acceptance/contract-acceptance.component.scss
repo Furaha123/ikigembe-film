@@ -1,4 +1,4 @@
-@import '../_contract-flow';
+@use '../contract-flow' as *;
 
 .accept-card { text-align: left; align-items: flex-start; }
 .flow-title, .flow-subtitle { align-self: center; text-align: center; }

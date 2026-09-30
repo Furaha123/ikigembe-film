@@ -7,17 +7,19 @@ import { HeaderComponent } from '../../core/components/header/header.component';
 import { FooterComponent } from '../../core/components/footer/footer.component';
 import { SeoService } from '../../core/services/seo.service';
 import { ProducerSummary } from '../../shared/models/movie-api.interface';
+import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 
 @Component({
   selector: 'app-producers-list',
   standalone: true,
-  imports: [CommonModule, RouterLink, FormsModule, HeaderComponent, FooterComponent],
+  imports: [CommonModule, RouterLink, FormsModule, HeaderComponent, FooterComponent, TranslatePipe],
   templateUrl: './producers-list.component.html',
   styleUrls: ['./producers-list.component.scss']
 })
 export class ProducersListComponent implements OnInit {
   private readonly movieService = inject(MovieService);
   private readonly seo          = inject(SeoService);
+  private readonly translate    = inject(TranslateService);
   readonly platformId           = inject(PLATFORM_ID);
 
   allProducers = signal<ProducerSummary[]>([]);
@@ -35,8 +37,8 @@ export class ProducersListComponent implements OnInit {
 
   ngOnInit() {
     this.seo.set({
-      title: 'Browse by Producer',
-      description: 'Discover African cinema by the filmmakers behind it. Browse every producer on Ikigembe.',
+      title: this.translate.instant('producersPage.list.seoTitle'),
+      description: this.translate.instant('producersPage.list.seoDescription'),
     });
     this.loadProducers();
   }
@@ -46,7 +48,7 @@ export class ProducersListComponent implements OnInit {
     this.error.set('');
     this.movieService.getProducers().subscribe({
       next: (res) => { this.allProducers.set(res.results); this.loading.set(false); },
-      error: ()   => { this.error.set('Could not load producers. Please try again.'); this.loading.set(false); },
+      error: ()   => { this.error.set('producersPage.list.loadError'); this.loading.set(false); },
     });
   }
 

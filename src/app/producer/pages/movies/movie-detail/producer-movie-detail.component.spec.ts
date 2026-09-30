@@ -1,11 +1,12 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { HttpErrorResponse } from '@angular/common/http';
+import { HttpErrorResponse, provideHttpClient } from '@angular/common/http';
 import { ActivatedRoute, convertToParamMap, provideRouter } from '@angular/router';
 import { provideTranslateService } from '@ngx-translate/core';
 import { of, throwError } from 'rxjs';
 import { ProducerMovieDetailComponent } from './producer-movie-detail.component';
 import { ProducerMovieDetail, ProducerService, ProducerWallet } from '../../../services/producer.service';
-import { MultipartUploadService } from '../../../../shared/services/multipart-upload.service';
+import { MultipartUploadService, UploadError } from '../../../../shared/services/multipart-upload.service';
+import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { MultipartUploadApi } from '../../../../shared/models/upload.interface';
 
 const MOVIE = {
@@ -168,5 +169,80 @@ describe('ProducerMovieDetailComponent (resubmit)', () => {
       expect(component.shareRatio()).toBeNull();
       expect(revenues().every(r => r.revenue === 0)).toBeTrue();
     });
+  });
+
+  describe('security follow-ups', () => {
+    it('shows the translated session-expired message when the upload no longer belongs to the account', async () => {
+      uploader.upload.and.rejectWith(new UploadError('session', 403, 'This upload does not belong to your account.'));
+      component.onResubmitVideoSelected(fileEvent(new File(['x'], 'film.mp4', { type: 'video/mp4' })));
+      await settle();
+      expect(component.resubmitVideoError()).toBe('uploadErrors.sessionExpired');
+      expect(uploader.upload).toHaveBeenCalledTimes(1);
+    });
+
+    it('rejects unsupported types before uploading (video and copyright)', () => {
+      component.onResubmitVideoSelected(fileEvent(new File(['x'], 'film.webm')));
+      component.onResubmitCopyrightSelected(fileEvent(new File(['x'], 'rights.docx')));
+      expect(uploader.upload).not.toHaveBeenCalled();
+      expect(component.resubmitVideoError()).toBe('uploadErrors.videoType');
+      expect(component.resubmitCopyrightError()).toBe('uploadErrors.documentType');
+    });
+
+    it('shows the backend 400 reason on resubmit', async () => {
+      uploader.upload.and.resolveTo('movies/full/7/new.mp4');
+      producer.resubmitFilmFiles.and.returnValue(throwError(() => new HttpErrorResponse({
+        status: 400, error: { error: 'video_key: Unsupported extension ".webm". Allowed: .avi, .mkv, .mov, .mp4' },
+      })));
+      component.onResubmitVideoSelected(fileEvent(new File(['x'], 'film.mp4')));
+      await settle();
+      component.submitResubmit();
+      expect(component.resubmitError()?.text).toContain('Unsupported extension');
+      expect(component.resubmitVideoKey()).toBe('movies/full/7/new.mp4');
+    });
+
+    for (const [field, message] of [
+      ['video', 'video_key was not uploaded by this account or has expired.'],
+      ['copyright', 'copyright_document_key was not uploaded by this account or has expired.'],
+    ] as const) {
+      it(`stale ${field} key → "upload again" message and the stored key is cleared`, async () => {
+        uploader.upload.and.resolveTo(field === 'video' ? 'movies/full/7/a.mp4' : 'movies/copyright/7/a.pdf');
+        producer.resubmitFilmFiles.and.returnValue(throwError(() => new HttpErrorResponse({ status: 400, error: { error: message } })));
+        if (field === 'video') component.onResubmitVideoSelected(fileEvent(new File(['x'], 'film.mp4')));
+        else component.onResubmitCopyrightSelected(fileEvent(new File(['x'], 'rights.pdf')));
+        await settle();
+
+        component.submitResubmit();
+
+        expect(component.resubmitError()).toEqual({ text: null, key: 'uploadErrors.reuploadThenResubmit' });
+        const key = field === 'video' ? component.resubmitVideoKey() : component.resubmitCopyrightKey();
+        expect(key).toBeNull();
+        expect(component.canResubmit()).toBeFalse();
+      });
+    }
+  });
+});
+
+describe('ProducerMovieDetailComponent — rejected files never reach the API', () => {
+  it('no upload request for .webm / .exe / .docx; MOVIE.MP4 starts one', () => {
+    TestBed.configureTestingModule({
+      imports: [ProducerMovieDetailComponent],
+      providers: [
+        provideRouter([]), provideTranslateService(), provideHttpClient(), provideHttpClientTesting(),
+        { provide: ActivatedRoute, useValue: { snapshot: { paramMap: convertToParamMap({ id: '7' }) } } },
+      ],
+    });
+    const f = TestBed.createComponent(ProducerMovieDetailComponent);
+    const c = f.componentInstance;
+    const http = TestBed.inject(HttpTestingController);
+    const isUpload = (r: { url: string }) => r.url.includes('/movies/upload/');
+    const ev = (name: string) => ({ target: { files: [new File(['x'], name)] } }) as unknown as Event;
+
+    c.onResubmitVideoSelected(ev('clip.webm'));
+    c.onResubmitVideoSelected(ev('setup.exe'));
+    c.onResubmitCopyrightSelected(ev('rights.docx'));
+    http.expectNone(isUpload);
+
+    c.onResubmitVideoSelected(ev('MOVIE.MP4'));
+    expect(http.expectOne(isUpload).request.body.field_name).toBe('video_file');
   });
 });

@@ -7,6 +7,7 @@ import {
   output,
   signal
 } from "@angular/core";
+import { TranslatePipe } from "@ngx-translate/core";
 
 export interface DateRange {
   start: Date | null;
@@ -18,7 +19,7 @@ export interface DateRange {
   templateUrl: "./date-picker.html",
   styleUrl: "./date-picker.scss",
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: []
+  imports: [TranslatePipe]
 })
 export class DatePickerComponent {
   public disabled        = input(false);
@@ -33,11 +34,9 @@ export class DatePickerComponent {
   protected endDate     = signal<Date | null>(null);
   protected hovered     = signal<Date | null>(null);
 
-  protected readonly DAYS   = ['Mo','Tu','We','Th','Fr','Sa','Su'];
-  protected readonly MONTHS = [
-    'January','February','March','April','May','June',
-    'July','August','September','October','November','December'
-  ];
+  // Translation keys (Monday-first weekdays, 0-based months).
+  protected readonly DAYS   = [0, 1, 2, 3, 4, 5, 6].map(i => `datePicker.days.${i}`);
+  protected readonly MONTHS = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11].map(i => `datePicker.months.${i}`);
 
   // ── Calendar grid ──────────────────────────────────────
   protected weeks = computed(() => {
@@ -63,10 +62,10 @@ export class DatePickerComponent {
 
   protected label = computed(() => {
     const s = this.startDate(), e = this.endDate();
-    if (this.singleMode()) return s ? this.fmt(s) : 'Select date';
+    if (this.singleMode()) return s ? this.fmt(s) : 'datePicker.selectDate';
     if (s && e) return `${this.fmt(s)}  →  ${this.fmt(e)}`;
     if (s)      return `${this.fmt(s)}  →  …`;
-    return 'Select date range';
+    return 'datePicker.selectRange';
   });
 
   // ── Navigation ─────────────────────────────────────────

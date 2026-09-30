@@ -80,10 +80,6 @@ $ctrl-bg: rgba(0, 0, 0, 0.72);
 
   &:hover {
     height: 6px;
-
-    .vp-progress__thumb {
-      transform: translateX(-50%) scale(1);
-    }
   }
 }
 

@@ -8,11 +8,12 @@ import { FooterComponent } from '../../core/components/footer/footer.component';
 import { SeoService } from '../../core/services/seo.service';
 import { ProducerProfile } from '../../shared/models/movie-api.interface';
 import { IVideoContent } from '../../shared/models/video-content.interface';
+import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 
 @Component({
   selector: 'app-producer-profile',
   standalone: true,
-  imports: [CommonModule, RouterLink, HeaderComponent, FooterComponent],
+  imports: [CommonModule, RouterLink, HeaderComponent, FooterComponent, TranslatePipe],
   templateUrl: './producer-profile.component.html',
   styleUrls: ['./producer-profile.component.scss']
 })
@@ -22,6 +23,7 @@ export class ProducerProfileComponent implements OnInit {
   private readonly movieService = inject(MovieService);
   private readonly seo          = inject(SeoService);
   private readonly dataSaver    = inject(DataSaverService);
+  private readonly translate    = inject(TranslateService);
   readonly platformId           = inject(PLATFORM_ID);
 
   producer    = signal<ProducerProfile | null>(null);
@@ -58,12 +60,12 @@ export class ProducerProfileComponent implements OnInit {
         this.seo.set({
           title: res.producer.name,
           description: res.producer.bio
-            ?? `Watch films by ${res.producer.name} on Ikigembe — African cinema streaming.`,
+            ?? this.translate.instant('producersPage.profile.seoDescription', { name: res.producer.name }),
           image: res.results[0]?.backdrop_url ?? undefined,
         });
       },
       error: () => {
-        this.error.set('Producer not found.');
+        this.error.set('producersPage.profile.notFoundError');
         this.loading.set(false);
       },
     });

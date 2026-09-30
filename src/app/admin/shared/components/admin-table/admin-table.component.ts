@@ -3,6 +3,7 @@ import {
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { TranslatePipe } from '@ngx-translate/core';
 import { TableColumn } from './table-column.interface';
 
 const AVATAR_COLORS = [
@@ -13,7 +14,7 @@ const AVATAR_COLORS = [
 @Component({
   selector: 'app-admin-table',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, TranslatePipe],
   templateUrl: './admin-table.component.html',
   styleUrl: './admin-table.component.scss',
 })
@@ -103,7 +104,7 @@ export class AdminTableComponent implements OnChanges {
   }
 
   statusLabel(value: unknown): string {
-    if (typeof value === 'boolean') return value ? 'Active' : 'Inactive';
+    if (typeof value === 'boolean') return value ? 'admin.table.active' : 'admin.table.inactive';
     return String(value ?? '');
   }
 }

@@ -1,4 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { provideTranslateService } from '@ngx-translate/core';
 
 import { DatePickerComponent, DateRange } from './date-picker';
 
@@ -21,6 +22,7 @@ describe('DatePickerComponent', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [DatePickerComponent],
+      providers: [provideTranslateService()],
     }).compileComponents();
 
     fixture = TestBed.createComponent(DatePickerComponent);
@@ -29,7 +31,7 @@ describe('DatePickerComponent', () => {
   });
 
   it('renders a closed trigger with the range placeholder', () => {
-    expect(label()).toBe('Select date range');
+    expect(label()).toBe('datePicker.selectRange');
     expect(panel()).toBeNull();
   });
 
@@ -66,7 +68,7 @@ describe('DatePickerComponent', () => {
     const emitted: Date[] = [];
     fixture.componentInstance.singleDateChange.subscribe(d => emitted.push(d));
 
-    expect(label()).toBe('Select date');
+    expect(label()).toBe('datePicker.selectDate');
     openPanel();
     dayButton(12).click();
     fixture.detectChanges();
@@ -80,7 +82,7 @@ describe('DatePickerComponent', () => {
     openPanel();
     const title = () => host.querySelector('.dp-nav-title')!.textContent!.trim();
     const before = title();
-    host.querySelector<HTMLButtonElement>('[aria-label="Next month"]')!.click();
+    host.querySelector<HTMLButtonElement>('[aria-label="datePicker.nextMonth"]')!.click();
     fixture.detectChanges();
     expect(title()).not.toBe(before);
   });

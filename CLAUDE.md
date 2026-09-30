@@ -44,6 +44,8 @@ Three user roles (Viewer, Producer, Admin) each have separate lazy-loaded route 
 
 Guest routes (`/login`, `/register`, `/forgot-password`) use `guestGuard` which redirects already-authenticated users to their role's home.
 
+There is **one sign-up and sign-in for everyone** (`/register`, `/login`): accounts start as Viewers, and producers upgrade from their profile ("Become a Producer"). There is no separate producer sign-up page and admins don't create producer accounts.
+
 Actors are **Viewer** accounts with an actor profile — there is no Actor role.
 
 ### Auth flow
@@ -71,6 +73,7 @@ Actors are **Viewer** accounts with an actor profile — there is no Actor role.
 | `WatchProgressService` | `shared/services/watch-progress.service.ts` | Posts watch progress (interval/pause/end/close; keepalive fetch on unload) |
 | `DeviceIdService` | `core/services/device-id.service.ts` | Per-browser `ikigembe_device_id` for the single-device view policy |
 | `PaymentService` | `core/services/payment.service.ts` | Movie payment initiation, `pollUntilSettled()` (shared by all purchases), history with `purpose` |
+| `MovieUploadService` | `shared/services/movie-upload.service.ts` | `/movies/upload/*` endpoints, bound to a `field_name` (admin + producer) |
 | `MultipartUploadService` | `shared/services/multipart-upload.service.ts` | initiate → sign-part → complete (abort on error/cancel) for any `MultipartUploadApi` |
 | `ActorMarketplaceService` | `shared/services/actor-marketplace.service.ts` | Actor profile, talent videos (+upload API), casting calls, applications |
 | `CastingService` | `producer/services/casting.service.ts` | Producer casting calls, applications, directory pass, actor search, shortlist |
@@ -92,7 +95,11 @@ Actors are **Viewer** accounts with an actor profile — there is no Actor role.
 
 ### Uploads
 
-All uploads use the multipart flow through `MultipartUploadService`. Movie files: `ProducerService.movieUploadApi(field_name)` with `field_name` ∈ `video_file | trailer_file | thumbnail | backdrop | copyright_document` (it decides the storage bucket). Actor talent videos: `ActorMarketplaceService.videoUploadApi(videoId)`.
+All uploads use the multipart flow through `MultipartUploadService`. Movie files (admin **and** producer): `MovieUploadService.api(field_name)` (`ProducerService.movieUploadApi()` delegates to it) with `field_name` ∈ `video_file | trailer_file | thumbnail | backdrop | copyright_document` (it decides the storage bucket). `/movies/create/` and `/movies/<id>/update/` accept only `video_key` / `trailer_key` for video — never post the raw video file; images (thumbnail, backdrop) are sent as files. Admin-created films link the producer via `producer_profile` (account id). Actor talent videos: `ActorMarketplaceService.videoUploadApi(videoId)`.
+
+- **Upload errors are typed.** `MultipartUploadService` throws `UploadAbortedError` (user cancel or logout — stay silent) or `UploadError` with `kind: 'session'` (403 from sign-part/complete: the upload belongs to another account/session; ask the user to start again, never auto-retry) or `kind: 'storage'` (part PUT failed; a 403 is re-signed once first). Map errors for the UI with `uploadErrorMessage()` (`shared/utils/upload-error.ts`). Uploads are cancelled automatically when `AuthService.isLoggedIn` turns false.
+- **Allowed file types live in one place:** `shared/models/upload.constants.ts` (`ALLOWED_VIDEO_EXTENSIONS`, `ALLOWED_DOCUMENT_EXTENSIONS`, `hasAllowedExtension()`), mirroring the backend's `_ALLOWED_VIDEO_EXTS`. Check files before calling the API; `accept` attributes are only a hint.
+- **Never parse or build a `file_key`** — it's opaque (`movies/<folder>/<user_id>/<uuid><ext>` today, may change).
 
 ### Marketplace purchases
 

@@ -2,7 +2,7 @@
   <dialog class="pm-card" open (click)="$event.stopPropagation()" (keydown)="$event.stopPropagation()">
 
     <!-- Close -->
-    <button class="pm-close" (click)="closed.emit()" aria-label="Close">
+    <button class="pm-close" (click)="closed.emit()" [attr.aria-label]="'paymentModal.close' | translate">
       <svg viewBox="0 0 24 24" fill="currentColor"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
     </button>
 
@@ -12,11 +12,11 @@
         <div class="pm-success__icon">
           <svg viewBox="0 0 24 24" fill="currentColor"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
         </div>
-        <h3>Payment Successful!</h3>
+        <h3>{{ 'paymentModal.successTitle' | translate }}</h3>
         @if (service) {
           <p>{{ 'marketplace.purchase.success' | translate }}</p>
         } @else {
-          <p>Starting your movie now...</p>
+          <p>{{ 'paymentModal.startingMovie' | translate }}</p>
         }
       </div>
     } @else {
@@ -41,7 +41,7 @@
           <h3 class="pm-title">{{ movie.title }}</h3>
           <span class="pm-price">RWF {{ movie.price | number }}</span>
           @if (movie.duration_minutes) {
-            <span class="pm-duration">{{ movie.duration_minutes }} min</span>
+            <span class="pm-duration">{{ 'paymentModal.minutes' | translate: { n: movie.duration_minutes } }}</span>
           }
         </div>
       </div>
@@ -51,11 +51,11 @@
 
       <!-- Payment form -->
       <div class="pm-form">
-        <p class="pm-label">Pay with Mobile Money</p>
+        <p class="pm-label">{{ 'paymentModal.payWithMomo' | translate }}</p>
 
         <!-- Phone input -->
         <div class="pm-field">
-          <label class="pm-field__label" for="pm-phone">Phone Number (MTN or Airtel)</label>
+          <label class="pm-field__label" for="pm-phone">{{ 'paymentModal.phoneLabel' | translate }}</label>
           <div class="pm-field__row">
             <span class="pm-field__prefix">+250</span>
             <input
@@ -85,7 +85,7 @@
         <button class="pm-pay-btn" (click)="pay()" [disabled]="loading()">
           @if (loading()) {
             <span class="pm-spinner"></span>
-            {{ loadingMessage() }}
+            {{ loadingMessage() | translate }}
           } @else {
             <svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18">
               <path d="M20 4H4c-1.11 0-2 .89-2 2v12c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V6c0-1.11-.89-2-2-2zm0 14H4v-6h16v6zm0-10H4V6h16v2z"/>
@@ -93,7 +93,7 @@
             @if (service) {
               {{ 'marketplace.purchase.pay' | translate }}
             } @else {
-              Pay RWF {{ movie.price | number }}
+              {{ 'paymentModal.payAmount' | translate: { amount: (movie.price | number) } }}
             }
           }
         </button>
@@ -102,7 +102,7 @@
           <svg viewBox="0 0 24 24" fill="currentColor" width="14" height="14">
             <path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"/>
           </svg>
-          Secure payment powered by PawaPay
+          {{ 'paymentModal.securePayment' | translate }}
         </p>
       </div>
     }

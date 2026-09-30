@@ -98,7 +98,7 @@ describe('PaymentModalComponent (service purchase mode)', () => {
     pay();
     poll$.next(settled('Failed'));
     fixture.detectChanges();
-    expect(alertText()).toContain('declined');
+    expect(alertText()).toBe('paymentModal.errors.declined');
     expect(component.success()).toBeFalse();
   });
 
@@ -107,6 +107,6 @@ describe('PaymentModalComponent (service purchase mode)', () => {
     pay();
     fixture.detectChanges();
     expect(initiate).not.toHaveBeenCalled();
-    expect(alertText()).toContain('valid Rwandan number');
+    expect(alertText()).toBe('paymentModal.errors.invalidPhone');
   });
 });

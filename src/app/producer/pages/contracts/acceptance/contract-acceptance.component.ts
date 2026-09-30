@@ -1,12 +1,12 @@
 import { Component, inject, signal, computed } from '@angular/core';
 import { Router } from '@angular/router';
-import { TranslatePipe, TranslateDirective } from '@ngx-translate/core';
+import { TranslatePipe } from '@ngx-translate/core';
 import { ContractFlowService } from '../contract-flow.service';
 
 @Component({
   selector: 'app-contract-acceptance',
   standalone: true,
-  imports: [TranslatePipe, TranslateDirective],
+  imports: [TranslatePipe],
   templateUrl: './contract-acceptance.component.html',
   styleUrl: './contract-acceptance.component.scss',
 })
@@ -25,11 +25,11 @@ export class ContractAcceptanceComponent {
     const file = (event.target as HTMLInputElement).files?.[0];
     if (!file) return;
     if (!file.type.startsWith('image/')) {
-      this.signatureError.set('Only image files are accepted (JPG, PNG, WebP).');
+      this.signatureError.set('producerUi.common.imageTypeInvalid');
       return;
     }
     if (file.size > 5 * 1024 * 1024) {
-      this.signatureError.set('Image must be under 5 MB.');
+      this.signatureError.set('producerUi.common.imageTooLarge');
       return;
     }
     this.signatureError.set(null);

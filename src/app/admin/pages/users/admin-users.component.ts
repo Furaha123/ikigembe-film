@@ -1,5 +1,6 @@
 import { Component, HostListener, inject, OnInit, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { AdminService, ViewerPaymentItem } from '../../services/admin.service';
 import { ViewerItem, ViewerDetail } from '../../models/admin.interface';
 import { AdminTableComponent } from '../../shared/components/admin-table/admin-table.component';
@@ -7,12 +8,13 @@ import { TableColumn } from '../../shared/components/admin-table/table-column.in
 
 @Component({
   selector: 'app-admin-users',
-  imports: [CommonModule, AdminTableComponent],
+  imports: [CommonModule, AdminTableComponent, TranslatePipe],
   templateUrl: './admin-users.component.html',
   styleUrl: './admin-users.component.scss'
 })
 export class AdminUsersComponent implements OnInit {
   private readonly adminService = inject(AdminService);
+  private readonly translate = inject(TranslateService);
 
   users     = signal<ViewerItem[]>([]);
   isLoading = signal(true);
@@ -24,19 +26,19 @@ export class AdminUsersComponent implements OnInit {
   targetUserName = computed(() => {
     const id = this.confirmSuspendId() ?? this.confirmDeleteId();
     if (id === null) return '';
-    return this.detailUser()?.name || `User #${id}`;
+    return this.detailUser()?.name || '';
   });
 
   readonly columns: TableColumn[] = [
-    { key: 'name',     label: 'Name',   type: 'text',   width: '240px' },
-    { key: 'is_active', label: 'Status', type: 'status', width: '110px' },
+    { key: 'name',     label: 'admin.users.colName',   type: 'text',   width: '240px' },
+    { key: 'is_active', label: 'admin.users.colStatus', type: 'status', width: '110px' },
   ];
 
   exportToCSV() {
-    const headers = ['ID', 'Name', 'Payments', 'Total Paid (RWF)', 'Last Payment', 'Status'];
+    const headers = ['id', 'name', 'payments', 'totalPaid', 'lastPayment', 'status'].map(k => this.translate.instant(`admin.users.csv.${k}`));
     const rows = this.users().map(u => [
       u.id, u.name, u.payment_count, u.total_paid_rwf,
-      u.last_payment_date ?? '', u.is_active ? 'Active' : 'Suspended',
+      u.last_payment_date ?? '', this.translate.instant(u.is_active ? 'admin.users.active' : 'admin.users.suspended'),
     ]);
     this.downloadCSV('users.csv', headers, rows);
   }

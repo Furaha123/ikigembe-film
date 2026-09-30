@@ -94,7 +94,7 @@ describe('CmsPageComponent', () => {
     cms.getLocalizedPage.and.returnValue(throwError(() => new HttpErrorResponse({ status: 404 })));
     await open('/terms');
     expect(el().querySelector('app-terms')).not.toBeNull();
-    expect(el().textContent).toContain('Acceptance of Terms');
+    expect(el().textContent).toContain('terms.sections.s1.title');
   });
 
   it('terms: also falls back when the API is unreachable (never a blank legal page)', async () => {

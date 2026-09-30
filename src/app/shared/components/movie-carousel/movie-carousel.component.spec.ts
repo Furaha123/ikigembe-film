@@ -3,6 +3,7 @@ import { waitForAsync, ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { DebugElement } from '@angular/core';
 import { provideRouter } from '@angular/router';
+import { provideTranslateService } from '@ngx-translate/core';
 
 import { MovieCarouselComponent } from './movie-carousel.component';
 
@@ -13,7 +14,7 @@ describe('MovieCarouselComponent', () => {
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
       imports: [ MovieCarouselComponent ],
-      providers: [provideRouter([])]
+      providers: [provideRouter([]), provideTranslateService()]
     })
     .compileComponents();
   }));

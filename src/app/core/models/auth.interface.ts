@@ -13,15 +13,6 @@ export interface RegisterPayload {
   studio_name?: string;
 }
 
-export interface ProducerRegisterPayload {
-  full_name: string;
-  phone_number: string;
-  studio_name?: string;
-  email: string;
-  password: string;
-  password_confirm: string;
-}
-
 export type AccountStatus = 'pending_approval' | 'approved' | 'suspended';
 
 export interface RegisterErrors {

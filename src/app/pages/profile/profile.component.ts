@@ -1,5 +1,5 @@
 import { Component, inject, OnInit, signal } from '@angular/core';
-import { TranslatePipe } from '@ngx-translate/core';
+import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -19,6 +19,7 @@ export class ProfileComponent implements OnInit {
   private readonly paymentService = inject(PaymentService);
   private readonly fb             = inject(FormBuilder);
   private readonly router         = inject(Router);
+  private readonly translate      = inject(TranslateService);
 
   readonly userRole = this.authService.userRole;
 
@@ -120,7 +121,7 @@ export class ProfileComponent implements OnInit {
       },
       error: (err) => {
         this.isSavingProfile.set(false);
-        const msg = err?.error?.detail ?? err?.error?.first_name?.[0] ?? err?.error?.last_name?.[0] ?? 'Update failed.';
+        const msg = err?.error?.detail ?? err?.error?.first_name?.[0] ?? err?.error?.last_name?.[0] ?? this.translate.instant('profile.account.updateFailed');
         this.profileError.set(msg);
       },
     });
@@ -138,7 +139,7 @@ export class ProfileComponent implements OnInit {
       },
       error: () => {
         this.isSavingNotifs.set(false);
-        this.notifError.set('Failed to save preferences. Please try again.');
+        this.notifError.set('profile.notifications.saveFailed');
       },
     });
   }
@@ -148,7 +149,7 @@ export class ProfileComponent implements OnInit {
 
     const { current_password, new_password, confirm_password } = this.passwordForm.value;
     if (new_password !== confirm_password) {
-      this.passwordErrors.set({ confirm: 'Passwords do not match.' } as any);
+      this.passwordErrors.set({ confirm: this.translate.instant('profile.password.mismatch') } as any);
       return;
     }
 
@@ -169,7 +170,7 @@ export class ProfileComponent implements OnInit {
         const errors: { current?: string; new?: string; general?: string } = {};
         if (body.current_password) errors.current = Array.isArray(body.current_password) ? body.current_password[0] : body.current_password;
         if (body.new_password)     errors.new     = Array.isArray(body.new_password) ? body.new_password[0] : body.new_password;
-        if (!Object.keys(errors).length) errors.general = body.detail ?? body.error ?? 'Something went wrong.';
+        if (!Object.keys(errors).length) errors.general = body.detail ?? body.error ?? this.translate.instant('profile.password.genericError');
         this.passwordErrors.set(errors);
       },
     });
@@ -186,7 +187,7 @@ export class ProfileComponent implements OnInit {
       },
       error: (err) => {
         this.isUpgrading.set(false);
-        const msg = err?.error?.error ?? err?.error?.detail ?? 'Upgrade failed. Please try again.';
+        const msg = err?.error?.error ?? err?.error?.detail ?? this.translate.instant('profile.upgrade.failed');
         this.upgradeError.set(msg);
       },
     });
