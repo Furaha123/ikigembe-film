@@ -44,6 +44,8 @@ Three user roles (Viewer, Producer, Admin) each have separate lazy-loaded route 
 
 Guest routes (`/login`, `/register`, `/forgot-password`) use `guestGuard` which redirects already-authenticated users to their role's home.
 
+There is **one sign-up and sign-in for everyone** (`/register`, `/login`): accounts start as Viewers, and producers upgrade from their profile ("Become a Producer"). There is no separate producer sign-up page and admins don't create producer accounts.
+
 Actors are **Viewer** accounts with an actor profile — there is no Actor role.
 
 ### Auth flow
