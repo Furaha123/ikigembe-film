@@ -356,8 +356,16 @@ export class AuthService {
     return this.http.post(`${this.baseUrl}/auth/reset-password/`, { token, new_password, confirm_password });
   }
 
-  verifyEmail(token: string): Observable<unknown> {
-    return this.http.post(`${this.baseUrl}/auth/verify-email/`, { token });
+  /** Verify an email link's token. The API answers with a new session, so the user is signed in. */
+  verifyEmail(token: string): Observable<LoginResponse> {
+    return this.http.post<LoginResponse>(`${this.baseUrl}/auth/verify-email/`, { token }).pipe(
+      tap((res) => this.storeSession(res))
+    );
+  }
+
+  /** Where a signed-in user lands: producer onboarding until it is done, otherwise the catalogue. */
+  homeUrl(): string {
+    return this.userRole() === 'Producer' && !this.onboardingComplete() ? '/producer/onboarding' : '/browse';
   }
 
   resendVerification(email: string): Observable<unknown> {

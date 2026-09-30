@@ -1609,7 +1609,9 @@
       "sendNewLink": "Send new link",
       "invalidTitle": "Invalid link",
       "invalidBody": "This verification link is missing a token. Please use the link from your email.",
-      "backToRegister": "Back to Register"
+      "backToRegister": "Back to Register",
+      "successSignedInBody": "Your account is now active and you're signed in.",
+      "continue": "Continue"
     }
   },
   "preview": {
