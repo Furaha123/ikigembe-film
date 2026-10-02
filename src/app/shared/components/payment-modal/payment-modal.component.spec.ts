@@ -54,6 +54,29 @@ describe('PaymentModalComponent (service purchase mode)', () => {
     expect(fixture.nativeElement.querySelector('.pm-poster')).toBeNull();
   });
 
+  it('opens a named native modal and handles Escape cancellation', () => {
+    const dialog = fixture.nativeElement.querySelector('dialog') as HTMLDialogElement;
+    expect(dialog.matches(':modal')).toBeTrue();
+    expect(dialog.getAttribute('aria-label')).toBeTruthy();
+    const closed = jasmine.createSpy('closed');
+    component.closed.subscribe(closed);
+    const cancel = new Event('cancel', { cancelable: true });
+    dialog.dispatchEvent(cancel);
+    expect(cancel.defaultPrevented).toBeTrue();
+    expect(closed).toHaveBeenCalledTimes(1);
+  });
+
+  it('cancels a delayed success callback when the modal is destroyed', fakeAsync(() => {
+    const paid = jasmine.createSpy('paid');
+    component.paid.subscribe(paid);
+    enterPhone('0788123456');
+    pay();
+    poll$.next(settled('Completed'));
+    fixture.destroy();
+    tick(1800);
+    expect(paid).not.toHaveBeenCalled();
+  }));
+
   it('shows the fee and pass length before initiating a payment', () => {
     expect(fixture.nativeElement.querySelector('.pm-price').textContent).toContain('RWF 5,000');
     expect(fixture.nativeElement.querySelector('.pm-duration').textContent).toContain('marketplace.purchase.passLength');

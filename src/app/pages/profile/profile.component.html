@@ -2,7 +2,7 @@
   <app-header [userImg]="''" />
 }
 
-<div class="profile-page">
+<div class="profile-page" [attr.role]="embedded ? null : 'main'">
 
   <!-- ── Account Info ── -->
   <section class="card">

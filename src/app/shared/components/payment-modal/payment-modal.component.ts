@@ -1,5 +1,5 @@
-import { Component, Input, Output, EventEmitter, signal, inject, OnDestroy, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, Input, Output, EventEmitter, signal, inject, OnDestroy, OnInit, AfterViewInit, ViewChild, ElementRef, PLATFORM_ID } from '@angular/core';
+import { CommonModule, DOCUMENT, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpErrorResponse } from '@angular/common/http';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
@@ -15,7 +15,7 @@ import { ViewingAccessComponent } from '../viewing-access/viewing-access.compone
   templateUrl: './payment-modal.component.html',
   styleUrls: ['./payment-modal.component.scss']
 })
-export class PaymentModalComponent implements OnInit, OnDestroy {
+export class PaymentModalComponent implements OnInit, AfterViewInit, OnDestroy {
   @Input() movie: any;
   /** Non-movie purchase (marketplace fees). When set, `movie` is ignored. */
   @Input() service: ServicePurchase | null = null;
@@ -25,6 +25,25 @@ export class PaymentModalComponent implements OnInit, OnDestroy {
   private readonly paymentService = inject(PaymentService);
   private readonly translate = inject(TranslateService);
   private readonly destroy$ = new Subject<void>();
+  private readonly document = inject(DOCUMENT);
+  private readonly platformId = inject(PLATFORM_ID);
+  @ViewChild('dialog') dialog!: ElementRef<HTMLDialogElement>;
+  private previousFocus: HTMLElement | null = null;
+  private paidTimer?: ReturnType<typeof setTimeout>;
+
+  ngAfterViewInit(): void {
+    if (!isPlatformBrowser(this.platformId)) return;
+    this.previousFocus = this.document.activeElement as HTMLElement | null;
+    this.dialog.nativeElement.showModal();
+  }
+
+  onBackdropClick(event: MouseEvent): void {
+    if (event.target !== this.dialog.nativeElement) return;
+    const rect = this.dialog.nativeElement.getBoundingClientRect();
+    if (event.clientX < rect.left || event.clientX > rect.right || event.clientY < rect.top || event.clientY > rect.bottom) {
+      this.closed.emit();
+    }
+  }
 
   phoneNumber     = signal('');
   loading         = signal(false);
@@ -114,7 +133,7 @@ export class PaymentModalComponent implements OnInit, OnDestroy {
       ? this.service.initiate(normalised)
       : this.paymentService.initiate({ movie_id: this.movie.id, phone_number: normalised });
 
-    start.subscribe({
+    start.pipe(takeUntil(this.destroy$)).subscribe({
       next: (res) => {
         this.chargedAmount.set(res.amount ?? null);
         this.loadingMessage.set('paymentModal.approveOnPhone');
@@ -144,7 +163,7 @@ export class PaymentModalComponent implements OnInit, OnDestroy {
           if (!this.service) this.paymentService.savePurchase(this.movie.id);
           this.loading.set(false);
           this.success.set(true);
-          setTimeout(() => this.paid.emit(), 1800);
+          this.paidTimer = setTimeout(() => this.paid.emit(), 1800);
         } else if (res.status === 'Failed') {
           this.loading.set(false);
           this.showErrorKey('paymentModal.errors.declined');
@@ -170,7 +189,12 @@ export class PaymentModalComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy() {
+    clearTimeout(this.paidTimer);
     this.destroy$.next();
     this.destroy$.complete();
+    if (isPlatformBrowser(this.platformId)) {
+      this.dialog?.nativeElement.close();
+      if (this.previousFocus?.isConnected) this.previousFocus.focus();
+    }
   }
 }

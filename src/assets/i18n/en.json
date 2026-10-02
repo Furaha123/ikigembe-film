@@ -1,4 +1,5 @@
 {
+  "accessibility": { "skipToContent": "Skip to content" },
   "viewingAccess": {
     "title": "One View = One Device",
     "oneRemaining": "1 view remaining",

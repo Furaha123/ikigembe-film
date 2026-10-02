@@ -1,30 +1,21 @@
-$gold:   #c9a84c;
+$gold:   #c5a253;
 $gold-d: #a8893a;
 $bg:     #141414;
 $surface: #1e1e1e;
 $border: #2e2e2e;
 $text:   #e5e5e5;
-$muted:  #888;
+$muted:  #b3b3b3;
 
 // ── Backdrop ──────────────────────────────────────────
-.pm-backdrop {
-  position: fixed;
-  inset: 0;
-  z-index: 10000;
-  background: rgba(0, 0, 0, 0.85);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 1rem;
-}
 
 // ── Card ──────────────────────────────────────────────
 .pm-card {
-  position: relative;
+  margin: auto;
+  position: fixed;
   background: $surface;
   border: 1px solid $border;
   border-radius: 16px;
-  width: 100%;
+  width: calc(100% - 2rem);
   max-width: 420px;
   box-sizing: border-box;
   max-height: calc(100dvh - 2rem);
@@ -33,6 +24,9 @@ $muted:  #888;
   color: $text;
   box-shadow: 0 24px 64px rgba(0, 0, 0, 0.6);
 }
+
+.pm-card::backdrop { background: rgba(0, 0, 0, 0.85); }
+.pm-retry { background: transparent; color: $gold; border: 1px solid $gold; border-radius: 8px; padding: .6rem; min-height: 44px; cursor: pointer; font: inherit; }
 
 .pm-close {
   position: absolute;
@@ -43,6 +37,10 @@ $muted:  #888;
   color: $muted;
   cursor: pointer;
   padding: 4px;
+  min-width: 44px;
+  min-height: 44px;
+  align-items: center;
+  justify-content: center;
   display: flex;
   border-radius: 6px;
   transition: color 0.2s, background 0.2s;
@@ -54,6 +52,7 @@ $muted:  #888;
 
 // ── Movie header ──────────────────────────────────────
 .pm-header {
+  padding-right: 2rem;
   display: flex;
   gap: 1rem;
   align-items: flex-start;
@@ -76,6 +75,7 @@ $muted:  #888;
 }
 
 .pm-title {
+  overflow-wrap: anywhere;
   font-size: 1rem;
   font-weight: 700;
   color: $text;
@@ -156,7 +156,7 @@ $muted:  #888;
     color: $text;
     font-size: 0.95rem;
 
-    &::placeholder { color: #555; }
+    &::placeholder { color: $muted; }
     &:disabled { opacity: 0.5; }
   }
 

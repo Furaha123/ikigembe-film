@@ -70,6 +70,9 @@ export class CmsPageComponent implements OnInit {
       } else {
         this.page.set(null);
         this.missing.set(true);
+        if (this.slug() !== 'terms') {
+          this.seo.setTranslated({ titleKey: 'cms.notFoundTitle', noIndex: true });
+        }
       }
     });
   }

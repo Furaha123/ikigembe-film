@@ -1,12 +1,12 @@
 // Shared layout for marketplace pages (actor hub, casting, producer directory).
 // Components list this file first in `styleUrls`, then their own overrides.
 
-$gold: #c9a84c;
-$bg-card: #1b1b1b;
-$border: #2c2c2c;
-$muted: #9a9a9a;
-$danger: #f87171;
-$ok: #4ade80;
+$gold: #c5a253;
+$bg-card: #1c1c1c;
+$border: #4a4a4a;
+$muted: #b3b3b3;
+$danger: #f2706b;
+$ok: #5cc98b;
 
 :host { display: block; }
 
@@ -64,7 +64,7 @@ $ok: #4ade80;
 
 .mk-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(min(260px, 100%), 1fr));
   gap: 1rem;
 }
 
@@ -118,6 +118,7 @@ $ok: #4ade80;
 }
 
 .mk-btn {
+  min-height: 44px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -169,6 +170,7 @@ $ok: #4ade80;
 }
 
 .mk-check {
+  min-height: 44px;
   display: flex;
   align-items: center;
   gap: 0.5rem;

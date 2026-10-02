@@ -31,11 +31,11 @@
         · <button type="button" class="mk-btn mk-btn--ghost" (click)="buyAccess()">{{ 'marketplace.directory.extend' | translate }}</button>
       </p>
 
-      <div class="mk-tabs" role="tablist">
-        <button type="button" role="tab" [class.active]="tab() === 'search'" [attr.aria-selected]="tab() === 'search'" (click)="tab.set('search')">
+      <div class="mk-tabs" role="group" [attr.aria-label]="'marketplace.directory.title' | translate">
+        <button type="button" [class.active]="tab() === 'search'" [attr.aria-pressed]="tab() === 'search'" (click)="tab.set('search')">
           {{ 'marketplace.directory.tabSearch' | translate }}
         </button>
-        <button type="button" role="tab" [class.active]="tab() === 'shortlist'" [attr.aria-selected]="tab() === 'shortlist'" (click)="tab.set('shortlist')">
+        <button type="button" [class.active]="tab() === 'shortlist'" [attr.aria-pressed]="tab() === 'shortlist'" (click)="tab.set('shortlist')">
           {{ 'marketplace.directory.tabShortlist' | translate }} ({{ shortlist().length }})
         </button>
       </div>

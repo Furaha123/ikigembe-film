@@ -36,6 +36,20 @@ body {
   color: var(--ik-text);
 }
 
+.skip-link {
+  position: fixed;
+  top: .5rem;
+  left: .5rem;
+  z-index: 20000;
+  padding: .75rem 1rem;
+  background: var(--ik-gold);
+  color: var(--ik-on-gold);
+  border-radius: var(--ik-radius);
+  transform: translateY(-200%);
+}
+.skip-link:focus { transform: translateY(0); }
+main, h1 { scroll-margin-top: 80px; }
+
 a {
   color: inherit;
   text-decoration: none;

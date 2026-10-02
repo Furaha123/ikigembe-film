@@ -1,14 +1,14 @@
-<div class="pm-backdrop" (click)="closed.emit()" (keydown.escape)="closed.emit()">
-  <dialog class="pm-card" open (click)="$event.stopPropagation()" (keydown)="$event.stopPropagation()">
+  <dialog #dialog class="pm-card" [attr.aria-label]="'paymentModal.payWithMomo' | translate"
+          (cancel)="$event.preventDefault(); closed.emit()" (click)="onBackdropClick($event)">
 
     <!-- Close -->
-    <button class="pm-close" (click)="closed.emit()" [attr.aria-label]="'paymentModal.close' | translate">
+    <button class="pm-close" autofocus (click)="closed.emit()" [attr.aria-label]="'paymentModal.close' | translate">
       <svg viewBox="0 0 24 24" fill="currentColor"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
     </button>
 
     @if (success()) {
       <!-- Success state -->
-      <div class="pm-success">
+      <div class="pm-success" role="status">
         <div class="pm-success__icon">
           <svg viewBox="0 0 24 24" fill="currentColor"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
         </div>
@@ -41,7 +41,7 @@
           @if (quoteLoading()) {
             <span role="status">{{ 'marketplace.purchase.loadingQuote' | translate }}</span>
           } @else if (!quote()) {
-            <button type="button" (click)="loadQuote()">{{ 'marketplace.purchase.retryQuote' | translate }}</button>
+            <button type="button" class="pm-retry" (click)="loadQuote()">{{ 'marketplace.purchase.retryQuote' | translate }}</button>
           }
         </div>
       </div>
@@ -67,6 +67,9 @@
 
       <!-- Payment form -->
       <div class="pm-form">
+        @if (loading()) {
+          <p class="sr-only" role="status">{{ loadingMessage() | translate }}</p>
+        }
         <p class="pm-label">{{ 'paymentModal.payWithMomo' | translate }}</p>
 
         <!-- Phone input -->
@@ -82,14 +85,16 @@
               placeholder="07X XXX XXXX"
               maxlength="13"
               autocomplete="tel"
+              aria-describedby="pm-phone-hint pm-errors"
+              [attr.aria-invalid]="errorKey() === 'paymentModal.errors.phoneRequired' || errorKey() === 'paymentModal.errors.invalidPhone'"
               [value]="phoneNumber()"
               (input)="onPhoneInput($event)"
               [disabled]="loading()" />
           </div>
-          <span class="pm-field__hint">MTN: 078 / 079 &nbsp;·&nbsp; Airtel: 072 / 073</span>
+          <span id="pm-phone-hint" class="pm-field__hint">MTN: 078 / 079 &nbsp;·&nbsp; Airtel: 072 / 073</span>
         </div>
 
-        <div aria-live="polite">
+        <div id="pm-errors" aria-live="polite">
           @if (error()) {
             <div class="pm-error" role="alert">{{ error() }}</div>
           } @else if (errorKey()) {
@@ -100,7 +105,7 @@
         <!-- Pay button -->
         <button class="pm-pay-btn" (click)="pay()" [disabled]="loading() || (service && !quote())">
           @if (loading()) {
-            <span class="pm-spinner"></span>
+            <span class="pm-spinner" aria-hidden="true"></span>
             {{ loadingMessage() | translate }}
           } @else {
             <svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18">
@@ -124,4 +129,3 @@
     }
 
   </dialog>
-</div>

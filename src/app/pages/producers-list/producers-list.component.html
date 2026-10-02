@@ -16,6 +16,7 @@
         <input
           type="text"
           class="pl-search-input"
+          [attr.aria-label]="'producersPage.list.searchPlaceholder' | translate"
           [placeholder]="'producersPage.list.searchPlaceholder' | translate"
           [(ngModel)]="searchQuery"
         />

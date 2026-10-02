@@ -6,10 +6,10 @@ import { Router, RouterLink, RouterLinkActive, NavigationEnd } from '@angular/ro
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { LanguageService } from '../../services/language.service';
 import { RETURN_URL_PARAM, safeReturnUrl } from '../../../shared/utils/safe-redirect';
-import { CommonModule } from '@angular/common';
+import { CommonModule, DOCUMENT } from '@angular/common';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { Subject, Subscription } from 'rxjs';
-import { debounceTime, distinctUntilChanged, switchMap, catchError, of, filter } from 'rxjs';
+import { distinctUntilChanged, switchMap, catchError, of, filter, timer, map } from 'rxjs';
 import { AuthService } from '../../services/auth.service';
 import { MovieService } from '../../../shared/services/movie.service';
 import { InboxService, UserNotification } from '../../services/inbox.service';
@@ -30,6 +30,7 @@ export class HeaderComponent implements OnInit, OnDestroy {
   private readonly movieService = inject(MovieService);
   private readonly inboxService = inject(InboxService);
   private readonly translate    = inject(TranslateService);
+  private readonly document     = inject(DOCUMENT);
   readonly lang                 = inject(LanguageService);
 
   readonly isLoggedIn     = this.authService.isLoggedIn;
@@ -63,6 +64,11 @@ export class HeaderComponent implements OnInit, OnDestroy {
   unreadCount = signal(0);
 
   @ViewChild('searchInput') searchInput!: ElementRef<HTMLInputElement>;
+  @ViewChild('searchToggle') searchToggle?: ElementRef<HTMLButtonElement>;
+  @ViewChild('accountToggle') accountToggle?: ElementRef<HTMLButtonElement>;
+  @ViewChild('inboxToggle') inboxToggle?: ElementRef<HTMLButtonElement>;
+  @ViewChild('mobileToggle') mobileToggle?: ElementRef<HTMLButtonElement>;
+  private searchFocusTimer?: ReturnType<typeof setTimeout>;
 
   private searchSubject = new Subject<string>();
   private searchSub!: Subscription;
@@ -81,12 +87,16 @@ export class HeaderComponent implements OnInit, OnDestroy {
     ).subscribe(() => this.closeMobileMenu());
 
     this.searchSub = this.searchSubject.pipe(
-      debounceTime(300),
+      map(q => q.trim()),
       distinctUntilChanged(),
       switchMap(q => {
-        if (!q.trim()) { this.searchResults.set([]); return of(null); }
-        this.searchLoading.set(true);
-        return this.movieService.search(q).pipe(catchError(() => of(null)));
+        this.searchResults.set([]);
+        this.searchLoading.set(!!q);
+        if (!q) return of(null);
+        return timer(300).pipe(
+          switchMap(() => this.movieService.search(q)),
+          catchError(() => of(null)),
+        );
       })
     ).subscribe(res => {
       this.searchLoading.set(false);
@@ -131,8 +141,16 @@ export class HeaderComponent implements OnInit, OnDestroy {
 
   @HostListener('document:keydown.escape')
   onEscape() {
+    const active = this.document.activeElement;
+    const trigger = active?.closest('.search-wrapper') ? this.searchToggle
+      : active?.closest('.user-menu') ? this.accountToggle
+      : active?.closest('.inbox-wrapper') ? this.inboxToggle
+      : active?.closest('.mobile-drawer') ? this.mobileToggle : undefined;
     this.closeSearch();
     this.showInbox.set(false);
+    this.showDropdown.set(false);
+    this.closeMobileMenu();
+    trigger?.nativeElement.focus();
   }
 
   toggleMobileMenu() {
@@ -161,13 +179,21 @@ export class HeaderComponent implements OnInit, OnDestroy {
     } else {
       this.showInbox.set(false);
       this.searchOpen.set(true);
-      setTimeout(() => this.searchInput?.nativeElement.focus(), 50);
+      this.searchFocusTimer = setTimeout(() => {
+        if (this.searchOpen()) this.searchInput?.nativeElement.focus();
+      }, 50);
     }
   }
 
   onSearchInput(event: Event) {
     this.searchQuery = (event.target as HTMLInputElement).value;
     this.searchSubject.next(this.searchQuery);
+  }
+
+  clearSearch(): void {
+    this.searchQuery = '';
+    this.searchSubject.next('');
+    if (this.searchInput?.nativeElement) this.searchInput.nativeElement.value = '';
   }
 
   goToMovie(movie: IVideoContent, event: Event) {
@@ -236,6 +262,8 @@ export class HeaderComponent implements OnInit, OnDestroy {
   }
 
   private closeSearch() {
+    clearTimeout(this.searchFocusTimer);
+    this.clearSearch();
     this.searchOpen.set(false);
     this.searchResults.set([]);
     this.searchLoading.set(false);
@@ -254,6 +282,7 @@ export class HeaderComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy() {
+    clearTimeout(this.searchFocusTimer);
     this.searchSub?.unsubscribe();
   }
 }

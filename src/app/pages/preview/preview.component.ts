@@ -43,7 +43,11 @@ export class PreviewComponent implements OnInit {
         });
         this.seo.setMovieJsonLd(data);
       },
-      error: () => { this.notFound.set(true); this.isLoading.set(false); },
+      error: () => {
+        this.notFound.set(true);
+        this.isLoading.set(false);
+        this.seo.setTranslated({ titleKey: 'preview.notFoundTitle', noIndex: true });
+      },
     });
   }
 

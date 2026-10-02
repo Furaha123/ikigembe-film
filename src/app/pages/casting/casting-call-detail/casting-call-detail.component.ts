@@ -1,5 +1,5 @@
-import { Component, OnInit, OnDestroy, computed, inject, signal } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, OnInit, OnDestroy, computed, inject, signal, PLATFORM_ID } from '@angular/core';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { HttpErrorResponse } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, RouterLink } from '@angular/router';
@@ -22,6 +22,7 @@ import { castingDisplayStatus, castingIsOpen, castingCallStatusClass } from '../
 export class CastingCallDetailComponent implements OnInit, OnDestroy {
   private readonly route = inject(ActivatedRoute);
   private readonly marketplace = inject(ActorMarketplaceService);
+  private readonly platformId = inject(PLATFORM_ID);
 
   call        = signal<CastingCall | null>(null);
   loading     = signal(true);
@@ -34,7 +35,7 @@ export class CastingCallDetailComponent implements OnInit, OnDestroy {
   applied     = signal(false);
   unavailable = signal(false);
   now = signal(Date.now());
-  private clock?: ReturnType<typeof setInterval>;
+  private clock?: ReturnType<typeof setTimeout>;
   readonly statusClass = castingCallStatusClass;
   readonly displayStatus = castingDisplayStatus;
   isOpen = computed(() => {
@@ -45,10 +46,9 @@ export class CastingCallDetailComponent implements OnInit, OnDestroy {
   approvedVideos = computed(() => this.myVideos().filter(v => v.status === 'approved'));
 
   ngOnInit(): void {
-    this.clock = setInterval(() => this.now.set(Date.now()), 1000);
     const id = Number(this.route.snapshot.paramMap.get('id'));
     this.marketplace.getCastingCall(id).subscribe({
-      next: (c) => { this.call.set(c); this.loading.set(false); },
+      next: (c) => { this.call.set(c); this.loading.set(false); this.scheduleDeadline(c); },
       error: (err: HttpErrorResponse) => {
         this.loading.set(false);
         this.loadError.set(err.status === 404 ? 'marketplace.casting.notFound' : (apiErrorMessage(err) ?? 'marketplace.errors.loadFailed'));
@@ -94,5 +94,14 @@ export class CastingCallDetailComponent implements OnInit, OnDestroy {
     });
   }
 
-  ngOnDestroy(): void { clearInterval(this.clock); }
+  private scheduleDeadline(call: CastingCall): void {
+    clearTimeout(this.clock);
+    this.now.set(Date.now());
+    if (!isPlatformBrowser(this.platformId) || !castingIsOpen(call, this.now())) return;
+    // Long deadlines are chunked to stay within the browser's signed 32-bit timer limit.
+    const delay = Math.min(new Date(call.deadline_at).getTime() - this.now(), 2147483647);
+    this.clock = setTimeout(() => this.scheduleDeadline(call), delay);
+  }
+
+  ngOnDestroy(): void { clearTimeout(this.clock); }
 }

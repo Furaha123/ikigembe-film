@@ -144,6 +144,7 @@ header {
     }
 
     .search-input-wrap {
+      &:focus-within { outline: 2px solid var(--ik-focus); outline-offset: 2px; }
       display: flex;
       align-items: center;
       gap: 0.5rem;
@@ -178,7 +179,7 @@ header {
         font-family: inherit;
         min-width: 0;
 
-        &::placeholder { color: #777; }
+        &::placeholder { color: var(--ik-text-muted); }
       }
 
       .search-spinner {

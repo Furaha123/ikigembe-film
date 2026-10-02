@@ -2,7 +2,7 @@
   <!-- Built-in terms text: only used when the CMS page is missing or unreachable -->
   <app-terms />
 } @else {
-  <div class="cms-page">
+  <main class="cms-page">
     <div class="cms-container">
       <div aria-live="polite">
         @if (loading() && !page()) {
@@ -21,5 +21,5 @@
         <a routerLink="/" class="back-btn">← {{ 'cms.back' | translate }}</a>
       </nav>
     </div>
-  </div>
+  </main>
 }

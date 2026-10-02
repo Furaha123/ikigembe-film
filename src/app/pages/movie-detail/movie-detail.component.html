@@ -1,11 +1,12 @@
 @if (movie(); as movie) {
   <app-header [userImg]="''" />
+  <main>
 
   <!-- Breadcrumb -->
   <nav class="breadcrumb" [attr.aria-label]="'movieDetailPage.breadcrumb.label' | translate">
-    <a (click)="goBack()">{{ 'movieDetailPage.breadcrumb.home' | translate }}</a>
+    <a routerLink="/browse">{{ 'movieDetailPage.breadcrumb.home' | translate }}</a>
     <span class="separator">/</span>
-    <a (click)="goBack()">{{ 'movieDetailPage.breadcrumb.movies' | translate }}</a>
+    <a routerLink="/browse">{{ 'movieDetailPage.breadcrumb.movies' | translate }}</a>
     <span class="separator">/</span>
     <span class="current">{{ movie.title }}</span>
   </nav>
@@ -194,6 +195,7 @@
     </section>
   }
 
+  </main>
   <app-footer />
 
   <!-- Video Player Overlay -->
