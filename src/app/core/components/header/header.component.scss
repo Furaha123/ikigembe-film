@@ -341,12 +341,29 @@ header {
     min-height: 56px;
     height: 56px;
 
+    // The right-hand controls must stay on screen; the logo gives way instead.
     .left {
+      min-width: 0;
+      gap: 0.75rem;
+
       .nav-list { display: none; }
+
+      > img {
+        min-width: 0;
+        object-fit: contain;
+        object-position: left center;
+      }
     }
 
     .right {
+      flex-shrink: 0;
       gap: 0.75rem;
+
+      .dashboard-btn {
+        padding: 0.4rem;
+
+        .dashboard-label { display: none; }
+      }
 
       .search-input-wrap.open {
         width: min(200px, calc(100vw - 180px));
@@ -419,6 +436,11 @@ header {
       }
     }
   }
+}
+
+@media (max-width: 480px) {
+  // Tapping the avatar still opens the menu.
+  header .right .user-menu-trigger .dropdown-icon { display: none; }
 }
 
 @media (max-width: 380px) {

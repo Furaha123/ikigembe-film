@@ -65,6 +65,8 @@ export const adminRoutes: Routes = [
       {
         path: 'settings',
         loadComponent: () => import('../pages/profile/profile.component').then(m => m.ProfileComponent),
+        // Rendered inside the dashboard layout, so the page skips the site header.
+        data: { embedded: true },
       },
     ],
   },

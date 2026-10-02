@@ -33,6 +33,12 @@ export class HeaderComponent implements OnInit, OnDestroy {
   readonly dashboardRoute = computed(() =>
     this.authService.isAdmin() ? '/admin/dashboard' : '/producer/dashboard'
   );
+  // Producers and admins keep their settings inside their dashboard, which has its own navigation.
+  readonly settingsRoute = computed(() =>
+    this.authService.isAdmin() ? '/admin/settings'
+      : this.authService.userRole() === 'Producer' ? '/producer/settings'
+      : '/profile'
+  );
 
   isScrolled     = signal(false);
   showDropdown   = signal(false);
@@ -59,7 +65,6 @@ export class HeaderComponent implements OnInit, OnDestroy {
     { label: 'My List',            labelKey: 'header.nav.myList',           route: '/my-list' },
     { label: 'Producers',          labelKey: 'header.nav.producers',        route: '/producers' },
     { label: 'Casting',            labelKey: 'marketplace.nav.casting',     route: '/casting' },
-    { label: 'Browse by Language', labelKey: 'header.nav.browseByLanguage', route: null },
   ];
 
   ngOnInit() {

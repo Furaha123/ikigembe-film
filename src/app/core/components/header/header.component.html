@@ -27,11 +27,11 @@
 
     <!-- ── Dashboard shortcut (admin/producer only) ── -->
     @if (isAdmin() || userRole() === 'Producer') {
-      <a class="dashboard-btn" [routerLink]="dashboardRoute()">
-        <svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16">
+      <a class="dashboard-btn" [routerLink]="dashboardRoute()" [attr.aria-label]="'header.dashboard' | translate">
+        <svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16" aria-hidden="true">
           <path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z"/>
         </svg>
-        {{ 'header.dashboard' | translate }}
+        <span class="dashboard-label">{{ 'header.dashboard' | translate }}</span>
       </a>
     }
 
@@ -178,7 +178,7 @@
             <span>{{ 'header.myAccount' | translate }}</span>
           </div>
           <hr class="dropdown-divider">
-          <a class="dropdown-item" [routerLink]="'/profile'">
+          <a class="dropdown-item" [routerLink]="settingsRoute()">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
               <circle cx="12" cy="7" r="4"/>

@@ -2,7 +2,7 @@ import { Component, inject, OnInit, signal } from '@angular/core';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { AuthService, UserProfile, NotificationPreferences } from '../../core/services/auth.service';
 import { PaymentService, PaymentHistoryItem } from '../../core/services/payment.service';
 import { HeaderComponent } from '../../core/components/header/header.component';
@@ -22,6 +22,8 @@ export class ProfileComponent implements OnInit {
   private readonly translate      = inject(TranslateService);
 
   readonly userRole = this.authService.userRole;
+  /** True under /producer/settings and /admin/settings, where the dashboard layout provides navigation. */
+  readonly embedded = !!inject(ActivatedRoute).snapshot.data['embedded'];
 
   profile = signal<UserProfile | null>(null);
   notifications = signal<NotificationPreferences | null>(null);
