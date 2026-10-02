@@ -7,7 +7,7 @@ import { HeaderComponent } from '../../core/components/header/header.component';
 import { FooterComponent } from '../../core/components/footer/footer.component';
 import { SeoService } from '../../core/services/seo.service';
 import { ProducerSummary } from '../../shared/models/movie-api.interface';
-import { TranslatePipe, TranslateService } from '@ngx-translate/core';
+import { TranslatePipe } from '@ngx-translate/core';
 
 @Component({
   selector: 'app-producers-list',
@@ -19,7 +19,6 @@ import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 export class ProducersListComponent implements OnInit {
   private readonly movieService = inject(MovieService);
   private readonly seo          = inject(SeoService);
-  private readonly translate    = inject(TranslateService);
   readonly platformId           = inject(PLATFORM_ID);
 
   allProducers = signal<ProducerSummary[]>([]);
@@ -36,10 +35,7 @@ export class ProducersListComponent implements OnInit {
   }
 
   ngOnInit() {
-    this.seo.set({
-      title: this.translate.instant('producersPage.list.seoTitle'),
-      description: this.translate.instant('producersPage.list.seoDescription'),
-    });
+    this.seo.setTranslated({ titleKey: 'producersPage.list.seoTitle', descriptionKey: 'producersPage.list.seoDescription' });
     this.loadProducers();
   }
 

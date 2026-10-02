@@ -13,6 +13,7 @@ import {
   LineController, LineElement, PointElement, Filler,
 } from 'chart.js';
 import * as XLSX from 'xlsx';
+import { toLocalDateString } from '../../../../shared/utils/local-date';
 
 Chart.register(CategoryScale, LinearScale, Tooltip, Legend, LineController, LineElement, PointElement, Filler);
 
@@ -29,7 +30,7 @@ export class RevenueTrendComponent implements OnInit, AfterViewChecked, OnDestro
   private readonly platformId   = inject(PLATFORM_ID);
 
   dateFrom = signal<string>(this.defaultFrom());
-  dateTo   = signal<string>(new Date().toISOString().slice(0, 10));
+  dateTo   = signal<string>(toLocalDateString(new Date()));
 
   trend      = signal<RevenueTrendItem[]>([]);
   isLoading  = signal(true);
@@ -49,8 +50,8 @@ export class RevenueTrendComponent implements OnInit, AfterViewChecked, OnDestro
   ngOnInit(): void { this.load(); }
 
   onDateRangeChange(range: DateRange): void {
-    if (range.start) this.dateFrom.set(range.start.toISOString().slice(0, 10));
-    if (range.end)   this.dateTo.set(range.end.toISOString().slice(0, 10));
+    if (range.start) this.dateFrom.set(toLocalDateString(range.start));
+    if (range.end)   this.dateTo.set(toLocalDateString(range.end));
     if (range.start && range.end) this.load();
   }
 
@@ -158,7 +159,7 @@ export class RevenueTrendComponent implements OnInit, AfterViewChecked, OnDestro
     const ws = XLSX.utils.aoa_to_sheet(rows);
     ws['!cols'] = [{ wch: 20 }, { wch: 22 }, { wch: 22 }, { wch: 20 }, { wch: 12 }];
     XLSX.utils.book_append_sheet(wb, ws, this.translate.instant('admin.reports.revenueTrend.sheetName'));
-    XLSX.writeFile(wb, `revenue_trend_${new Date().toISOString().slice(0, 10)}.xlsx`);
+    XLSX.writeFile(wb, `revenue_trend_${toLocalDateString(new Date())}.xlsx`);
   }
 
   fmt(n: number): string {
@@ -170,7 +171,7 @@ export class RevenueTrendComponent implements OnInit, AfterViewChecked, OnDestro
   private defaultFrom(): string {
     const d = new Date();
     d.setFullYear(d.getFullYear() - 1);
-    return d.toISOString().slice(0, 10);
+    return toLocalDateString(d);
   }
 
   private shortMonth(s: string): string {

@@ -5,7 +5,7 @@ import {
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
-import { ProducerService, ProducerMovieDetail, FilmResubmitPayload } from '../../../services/producer.service';
+import { AnalyticsPeriod, AnalyticsRange, FilmResubmitPayload, MovieAnalytics, ProducerMovieDetail, ProducerService } from '../../../services/producer.service';
 import { MultipartUploadService, UploadAbortedError } from '../../../../shared/services/multipart-upload.service';
 import { apiErrorMessage, UiError } from '../../../../shared/utils/api-error';
 import { staleResubmitKey, uploadErrorMessage } from '../../../../shared/utils/upload-error';
@@ -30,41 +30,14 @@ type Metric       = 'views' | 'watchTime' | 'revenue';
 type Breakdown    = 'Monthly' | 'Weekly' | 'Daily';
 type AdvChartType = 'line' | 'bar';
 
-interface RangeConfig {
-  labels:   string[];
-  weights:  number[];
-  fraction: number;
-}
+/** UI range → API `range`; and the grouping that keeps each chart readable. */
+const API_RANGE: Record<string, AnalyticsRange> = { '7d': '7d', '28d': '28d', '90d': '90d', '365d': '365d', 'Lifetime': 'lifetime' };
+const MAIN_PERIOD: Record<string, AnalyticsPeriod> = { '7d': 'daily', '28d': 'weekly', '90d': 'monthly', '365d': 'monthly', 'Lifetime': 'monthly' };
+const BREAKDOWN_PERIOD: Record<Breakdown, AnalyticsPeriod> = { Monthly: 'monthly', Weekly: 'weekly', Daily: 'daily' };
+const MONTH_KEYS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
-const RANGE_CONFIGS: Record<string, RangeConfig> = {
-  '7d': {
-    labels:   ['Sat', 'Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri'],
-    weights:  [0.16, 0.15, 0.11, 0.12, 0.13, 0.14, 0.19],
-    fraction: 0.02,
-  },
-  '28d': {
-    labels:   ['Week 1', 'Week 2', 'Week 3', 'Week 4'],
-    weights:  [0.23, 0.26, 0.24, 0.27],
-    fraction: 0.07,
-  },
-  '90d': {
-    labels:   ['Mar 26', 'Apr 26', 'May 26'],
-    weights:  [0.30, 0.34, 0.36],
-    fraction: 0.22,
-  },
-  '365d': {
-    labels:   ['Jun 25', 'Jul 25', 'Aug 25', 'Sep 25', 'Oct 25', 'Nov 25',
-               'Dec 25', 'Jan 26', 'Feb 26', 'Mar 26', 'Apr 26', 'May 26'],
-    weights:  [0.05, 0.06, 0.08, 0.07, 0.09, 0.09, 0.10, 0.07, 0.09, 0.10, 0.11, 0.09],
-    fraction: 0.85,
-  },
-  'Lifetime': {
-    labels:   ['Jun 25', 'Jul 25', 'Aug 25', 'Sep 25', 'Oct 25', 'Nov 25',
-               'Dec 25', 'Jan 26', 'Feb 26', 'Mar 26', 'Apr 26', 'May 26'],
-    weights:  [0.05, 0.06, 0.08, 0.07, 0.09, 0.09, 0.10, 0.07, 0.09, 0.10, 0.11, 0.09],
-    fraction: 1.0,
-  },
-};
+/** One chart/table row, built from the API trend. completionRate is only known for the whole range. */
+interface AnalyticsRow { label: string; views: number; watchTime: number; revenue: number; purchases: number; completionRate: number | null }
 
 @Component({
   selector: 'app-producer-movie-detail',
@@ -129,7 +102,6 @@ export class ProducerMovieDetailComponent implements OnInit, OnDestroy {
    * Producer's share of gross for this film (0–1), from the API — splits are per
    * film, so never assume 70/30. null until known (revenue estimates show 0).
    */
-  shareRatio = signal<number | null>(null);
 
   isChangesRequested = computed(() => this.movie()?.approval_status === 'changes_requested');
   canResubmit        = computed(() => !!(this.resubmitVideoKey() || this.resubmitCopyrightKey()));
@@ -139,89 +111,89 @@ export class ProducerMovieDetailComponent implements OnInit, OnDestroy {
   private copiedTimer: ReturnType<typeof setTimeout> | null = null;
   private resubmitUploads: Record<'video' | 'copyright', AbortController | null> = { video: null, copyright: null };
 
+  /** Real analytics from GET …/movies/<id>/analytics/ (previously invented from lifetime views). */
+  mainAnalytics = signal<MovieAnalytics | null>(null);
+  advAnalytics  = signal<MovieAnalytics | null>(null);
+  analyticsError = signal(false);
+
   // Range-aware data for the main analytics chart
-  rangeData = computed(() => {
-    const m = this.movie();
-    if (!m) return [];
-    const cfg        = RANGE_CONFIGS[this.selectedRange()];
-    const totalViews = Math.round(m.views * cfg.fraction);
-    const dur        = m.duration_minutes ?? 90;
-    return cfg.labels.map((raw, i) => {
-      const label     = this.axisLabel(raw);
-      const views     = Math.round(totalViews * cfg.weights[i]);
-      const watchTime = +((views * (dur / 60))).toFixed(1);
-      const revenue   = Math.round(views * m.price * (this.shareRatio() ?? 0));
-      return { label, views, watchTime, revenue };
-    });
-  });
+  rangeData = computed<AnalyticsRow[]>(() => this.toRows(this.mainAnalytics()));
 
   // KPI totals for the selected range
-  rangeViews = computed(() =>
-    this.rangeData().reduce((s, d) => s + d.views, 0)
-  );
+  rangeViews = computed(() => this.mainAnalytics()?.totals.views ?? 0);
 
   estimatedWatchTime = computed(() => {
-    const total = this.rangeData().reduce((s, d) => s + d.watchTime, 0);
-    return total >= 1_000 ? (total / 1_000).toFixed(1) + 'K' : total.toFixed(0);
+    const total = this.mainAnalytics()?.totals.watch_time_hours ?? 0;
+    return total >= 1_000 ? (total / 1_000).toFixed(1) + 'K' : total.toFixed(1);
   });
 
-  estimatedRevenue = computed(() => {
-    const total = this.rangeData().reduce((s, d) => s + d.revenue, 0);
-    return this.fmt(total);
-  });
+  /** The producer's share for the range (net_earnings), not gross sales. */
+  estimatedRevenue = computed(() => this.fmt(this.mainAnalytics()?.totals.net_earnings ?? 0));
 
-  advChartData = computed(() => {
-    const m = this.movie();
-    if (!m) return [];
-    const range     = this.advRange();
-    const breakdown = this.advBreakdown();
-    const dur       = m.duration_minutes ?? 90;
-
-    const countMap: Record<string, Record<string, number>> = {
-      '7d':       { Monthly: 1, Weekly: 1,  Daily: 7  },
-      '28d':      { Monthly: 1, Weekly: 4,  Daily: 14 },
-      '90d':      { Monthly: 3, Weekly: 12, Daily: 14 },
-      '365d':     { Monthly: 6, Weekly: 26, Daily: 14 },
-      'Lifetime': { Monthly: 6, Weekly: 26, Daily: 14 },
-    };
-    const count = countMap[range]?.[breakdown] ?? 6;
-
-    const labels =
-      breakdown === 'Monthly' ? ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'].slice(0, count)
-                                  .map(m => this.translate.instant(`producerUi.common.monthsShort.${m}`)) :
-      breakdown === 'Weekly'  ? Array.from({ length: count }, (_, i) => this.translate.instant('producerUi.movieDetail.chart.wk', { n: i + 1 })) :
-                                Array.from({ length: count }, (_, i) => this.translate.instant('producerUi.movieDetail.chart.day', { n: i + 1 }));
-
-    const cfg    = RANGE_CONFIGS[range];
-    const total  = Math.round(m.views * cfg.fraction);
-    const weights = Array.from({ length: count }, (_, i) =>
-      count > 1 ? 0.5 + (i / (count - 1)) * 0.5 : 1,
-    );
-    const totalW = weights.reduce((a, b) => a + b, 0);
-
-    const baseCompletion = Math.max(58, Math.min(82, 85 - Math.round((dur / 60) * 8)));
-    return labels.map((label, i) => {
-      const w              = weights[i] / totalW;
-      const views          = Math.round(total * w);
-      const watchTime      = +((views * (dur / 60))).toFixed(1);
-      const revenue        = Math.round(views * m.price * (this.shareRatio() ?? 0));
-      const purchases      = Math.round(views * 0.025);
-      const completionRate = Math.min(95, Math.max(50, baseCompletion + (i % 5 - 2) * 2));
-      return { label, views, watchTime, revenue, purchases, completionRate };
-    });
-  });
+  advChartData = computed<AnalyticsRow[]>(() => this.toRows(this.advAnalytics()));
 
   advTotals = computed(() => {
-    const data = this.advChartData();
-    const views          = data.reduce((a, r) => a + r.views,    0);
-    const watchTime      = +data.reduce((a, r) => a + r.watchTime, 0).toFixed(1);
-    const purchases      = data.reduce((a, r) => a + r.purchases, 0);
-    const revenue        = data.reduce((a, r) => a + r.revenue,  0);
-    const completionRate = data.length
-      ? +(data.reduce((a, r) => a + r.completionRate, 0) / data.length).toFixed(1)
-      : 0;
-    return { views, watchTime, purchases, revenue, completionRate };
+    const a = this.advAnalytics();
+    return {
+      views:          a?.totals.views ?? 0,
+      watchTime:      +(a?.totals.watch_time_hours ?? 0).toFixed(1),
+      purchases:      a?.totals.purchases ?? 0,
+      revenue:        a?.totals.net_earnings ?? 0,
+      completionRate: a ? +(a.watch_stats.completion_rate * 100).toFixed(1) : 0,
+    };
   });
+
+  private toRows(a: MovieAnalytics | null): AnalyticsRow[] {
+    if (!a) return [];
+    return a.trend.map(p => ({
+      label:          this.periodLabel(p.period_start, a.period),
+      views:          p.views,
+      watchTime:      +p.watch_time_hours.toFixed(1),
+      revenue:        p.net_earnings,
+      purchases:      p.purchases,
+      completionRate: null,
+    }));
+  }
+
+  /** "12 Mar" for daily/weekly buckets, "Mar 26" for monthly ones, with translated month names. */
+  private periodLabel(iso: string, period: AnalyticsPeriod): string {
+    const d = new Date(iso);
+    if (isNaN(d.getTime())) return iso;
+    const month = this.translate.instant(`producerUi.common.monthsShort.${MONTH_KEYS[d.getUTCMonth()]}`);
+    return period === 'monthly'
+      ? `${month} ${String(d.getUTCFullYear()).slice(2)}`
+      : `${d.getUTCDate()} ${month}`;
+  }
+
+  private loadMainAnalytics(): void {
+    const id = this.movie()?.id;
+    if (!id) return;
+    const range = this.selectedRange();
+    this.analyticsError.set(false);
+    this.producerService.getMovieAnalytics(id, API_RANGE[range], MAIN_PERIOD[range]).subscribe({
+      next: (a) => {
+        if (this.selectedRange() !== range) return; // a newer range was picked meanwhile
+        this.mainAnalytics.set(a);
+        this.buildMainChart();
+      },
+      error: () => { this.mainAnalytics.set(null); this.analyticsError.set(true); this.buildMainChart(); },
+    });
+  }
+
+  private loadAdvAnalytics(): void {
+    const id = this.movie()?.id;
+    if (!id) return;
+    const range = this.advRange();
+    const breakdown = this.advBreakdown();
+    this.producerService.getMovieAnalytics(id, API_RANGE[range], BREAKDOWN_PERIOD[breakdown]).subscribe({
+      next: (a) => {
+        if (this.advRange() !== range || this.advBreakdown() !== breakdown) return;
+        this.advAnalytics.set(a);
+        this.buildAdvancedChart();
+      },
+      error: () => { this.advAnalytics.set(null); this.buildAdvancedChart(); },
+    });
+  }
 
   ngOnInit(): void {
     const id = Number(this.route.snapshot.paramMap.get('id'));
@@ -230,33 +202,9 @@ export class ProducerMovieDetailComponent implements OnInit, OnDestroy {
       next: (data) => {
         this.movie.set(data);
         this.isLoading.set(false);
-        setTimeout(() => this.buildMainChart(), 80);
+        setTimeout(() => this.loadMainAnalytics(), 80);
       },
       error: () => { this.isLoading.set(false); this.hasError.set(true); },
-    });
-    this.loadShareRatio(id);
-  }
-
-  /** This film's effective share (earned / gross); falls back to the wallet's blended percentage. */
-  private loadShareRatio(id: number): void {
-    const fromWallet = () => this.producerService.getWallet().subscribe({
-      next: (w) => {
-        if (w.producer_share_percentage) this.shareRatio.set(w.producer_share_percentage / 100);
-        this.buildMainChart();
-      },
-      error: () => { /* leave revenue estimates at 0 */ },
-    });
-    this.producerService.getDashboardMovies().subscribe({
-      next: (list) => {
-        const m = list.find(x => x.id === id);
-        if (m && m.total_gross_revenue > 0) {
-          this.shareRatio.set(m.producer_share / m.total_gross_revenue);
-          this.buildMainChart();
-        } else {
-          fromWallet();
-        }
-      },
-      error: () => fromWallet(),
     });
   }
 
@@ -276,11 +224,11 @@ export class ProducerMovieDetailComponent implements OnInit, OnDestroy {
 
   setRange(r: string): void {
     this.selectedRange.set(r);
-    this.buildMainChart();
+    this.loadMainAnalytics();
   }
 
-  setAdvRange(r: string): void       { this.advRange.set(r);         this.buildAdvancedChart(); }
-  setAdvBreakdown(b: Breakdown): void { this.advBreakdown.set(b);     this.buildAdvancedChart(); }
+  setAdvRange(r: string): void       { this.advRange.set(r);         this.loadAdvAnalytics(); }
+  setAdvBreakdown(b: Breakdown): void { this.advBreakdown.set(b);     this.loadAdvAnalytics(); }
   setAdvChartType(t: AdvChartType): void { this.advChartType.set(t);  this.buildAdvancedChart(); }
 
   toggleAdvMetric(key: Metric): void {
@@ -291,7 +239,7 @@ export class ProducerMovieDetailComponent implements OnInit, OnDestroy {
   openAdvanced(): void {
     this.advRange.set(this.selectedRange());
     this.showAdvanced.set(true);
-    setTimeout(() => this.buildAdvancedChart(), 80);
+    setTimeout(() => this.loadAdvAnalytics(), 80);
   }
 
   closeAdvanced(): void {
@@ -337,16 +285,6 @@ export class ProducerMovieDetailComponent implements OnInit, OnDestroy {
       failed:      'producerUi.movieDetail.hls.failed',
     };
     return map[status] ?? status;
-  }
-
-  /** Localise the synthetic chart labels: weekdays, "Week N" and "Mon YY". */
-  private axisLabel(raw: string): string {
-    const week = /^Week (\d+)$/.exec(raw);
-    if (week) return this.translate.instant('producerUi.movieDetail.chart.week', { n: week[1] });
-    const month = /^([A-Z][a-z]{2}) (\d{2})$/.exec(raw);
-    if (month) return `${this.translate.instant(`producerUi.common.monthsShort.${month[1]}`)} ${month[2]}`;
-    if (/^[A-Z][a-z]{2}$/.test(raw)) return this.translate.instant(`producerUi.common.weekdaysShort.${raw}`);
-    return raw;
   }
 
   hlsClass(status: string): string {

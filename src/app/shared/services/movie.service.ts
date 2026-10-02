@@ -29,20 +29,23 @@ export class MovieService {
     return this.http.get<MovieListResponse>(`${this.baseUrl}/discover/`);
   }
 
+  // Each rail has its own endpoint: /discover/ ignores `ordering`, so the old calls
+  // returned the same list for every row.
   getPopularMovies() {
-    return this.http.get<MovieListResponse>(`${this.baseUrl}/discover/`, { params: { ordering: '-views' } });
+    return this.http.get<MovieListResponse>(`${this.baseUrl}/popular/`);
   }
 
   getNowPlayingMovies() {
-    return this.http.get<MovieListResponse>(`${this.baseUrl}/discover/`, { params: { ordering: '-release_date' } });
+    return this.http.get<MovieListResponse>(`${this.baseUrl}/now-playing/`);
   }
 
+  /** Active films whose release date is today or later. */
   getUpcomingMovies() {
-    return this.http.get<MovieListResponse>(`${this.baseUrl}/discover/`);
+    return this.http.get<MovieListResponse>(`${this.baseUrl}/upcoming/`);
   }
 
   getTopRated() {
-    return this.http.get<MovieListResponse>(`${this.baseUrl}/discover/`, { params: { ordering: '-rating' } });
+    return this.http.get<MovieListResponse>(`${this.baseUrl}/top-rated/`);
   }
 
   getMovieDetails(id: number) {
@@ -100,7 +103,8 @@ export class MovieService {
   }
 
   search(query: string) {
-    return this.http.get<MovieListResponse>(`${this.baseUrl}/discover/`, { params: { search: query } });
+    // /discover/ has no search filter (it returned every film); /search/ matches on `q`.
+    return this.http.get<MovieListResponse>(`${this.baseUrl}/search/`, { params: { q: query } });
   }
 }
 

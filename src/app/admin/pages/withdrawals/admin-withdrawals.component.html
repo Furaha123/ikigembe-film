@@ -7,6 +7,14 @@
     </div>
   </div>
 
+  <div class="action-notice" aria-live="polite">
+    @if (notice(); as n) {
+      <p [class]="'action-notice__msg action-notice__msg--' + n.kind" [attr.role]="n.kind === 'error' ? 'alert' : 'status'">
+        {{ n.text ?? (n.key | translate: n.params) }}
+      </p>
+    }
+  </div>
+
   <!-- Status filter tabs -->
   <div class="filter-tabs">
     @for (f of filters; track f) {
@@ -187,7 +195,7 @@
       <h3>
         {{ (confirmAction()!.type === 'approve' ? 'admin.withdrawalsPage.approveTitle' : confirmAction()!.type === 'complete' ? 'admin.withdrawalsPage.markAsPaid' : 'admin.withdrawalsPage.rejectTitle') | translate }}
       </h3>
-      <p [innerHTML]="(confirmAction()!.type === 'approve' ? 'admin.withdrawalsPage.approveBody' : confirmAction()!.type === 'complete' ? 'admin.withdrawalsPage.completeBody' : 'admin.withdrawalsPage.rejectBody') | translate"></p>
+      <p [innerHTML]="(confirmAction()!.type === 'approve' ? 'admin.withdrawalsPage.approveBody' : confirmAction()!.type === 'complete' ? completeBodyKey(confirmAction()!.id) : 'admin.withdrawalsPage.rejectBody') | translate"></p>
       <div class="modal-actions">
         <button class="action-btn neutral" (click)="cancelConfirm()">{{ 'admin.withdrawalsPage.cancel' | translate }}</button>
         <button class="action-btn"

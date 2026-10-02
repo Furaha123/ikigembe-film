@@ -254,25 +254,29 @@
 
               <!-- Clickable KPI tiles -->
               <div class="kpi-tiles">
-                <div class="kpi-tile"
-                     [class.active]="metric() === 'views'"
+                <button type="button" class="kpi-tile"
+                     [class.active]="metric() === 'views'" [attr.aria-pressed]="metric() === 'views'"
                      (click)="setMetric('views')">
-                  <div class="kpi-tile-label">{{ 'dashboard.kpi.views' | translate }}</div>
-                  <div class="kpi-tile-value">{{ fmtNum(rangeViews()) }}</div>
-                </div>
-                <div class="kpi-tile"
-                     [class.active]="metric() === 'watchTime'"
+                  <span class="kpi-tile-label">{{ 'dashboard.kpi.views' | translate }}</span>
+                  <span class="kpi-tile-value">{{ fmtNum(rangeViews()) }}</span>
+                </button>
+                <button type="button" class="kpi-tile"
+                     [class.active]="metric() === 'watchTime'" [attr.aria-pressed]="metric() === 'watchTime'"
                      (click)="setMetric('watchTime')">
-                  <div class="kpi-tile-label">{{ 'dashboard.kpi.watchTime' | translate }}</div>
-                  <div class="kpi-tile-value">{{ estimatedWatchTime() }}</div>
-                </div>
-                <div class="kpi-tile"
-                     [class.active]="metric() === 'revenue'"
+                  <span class="kpi-tile-label">{{ 'dashboard.kpi.watchTime' | translate }}</span>
+                  <span class="kpi-tile-value">{{ estimatedWatchTime() }}</span>
+                </button>
+                <button type="button" class="kpi-tile"
+                     [class.active]="metric() === 'revenue'" [attr.aria-pressed]="metric() === 'revenue'"
                      (click)="setMetric('revenue')">
-                  <div class="kpi-tile-label">{{ 'dashboard.kpi.revenue' | translate }}</div>
-                  <div class="kpi-tile-value">{{ estimatedRevenue() }}</div>
-                </div>
+                  <span class="kpi-tile-label">{{ 'dashboard.kpi.revenue' | translate }}</span>
+                  <span class="kpi-tile-value">{{ estimatedRevenue() }}</span>
+                </button>
               </div>
+
+              @if (analyticsError()) {
+                <p class="action-notice__msg action-notice__msg--error" role="alert">{{ 'producerUi.movieDetail.analyticsFailed' | translate }}</p>
+              }
 
               <!-- Chart -->
               <div class="chart-wrap">
@@ -469,7 +473,7 @@
                     <td>{{ row.watchTime }}</td>
                     <td>{{ fmtNum(row.purchases) }}</td>
                     <td>{{ fmt(row.revenue) }}</td>
-                    <td>{{ row.completionRate }}%</td>
+                    <td>{{ row.completionRate === null ? "—" : row.completionRate + "%" }}</td>
                   </tr>
                 }
               </tbody>

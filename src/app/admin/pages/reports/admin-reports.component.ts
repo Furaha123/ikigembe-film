@@ -7,6 +7,7 @@ import { UserGrowthComponent }        from './user-growth/user-growth.component'
 import { WithdrawalSummaryComponent } from './withdrawal-summary/withdrawal-summary.component';
 import { PayingUsersComponent }       from './paying-users/paying-users.component';
 import { DatePickerComponent, type DateRange } from '../../../shared/components/date-picker/date-picker';
+import { toLocalDateString } from '../../../shared/utils/local-date';
 
 type ReportKey    = 'revenue' | 'movies' | 'users' | 'withdrawals' | 'paying';
 type RangePreset  = '7D' | '14D' | '28D' | '1M' | '3M' | '6M' | '1Y';
@@ -39,7 +40,7 @@ export class AdminReportsComponent {
   sidebarOpen   = signal(true);
   selectedRange = signal<RangePreset | 'custom'>('1Y');
   dateFrom      = signal<string>(this.defaultFrom());
-  dateTo        = signal<string>(new Date().toISOString().slice(0, 10));
+  dateTo        = signal<string>(toLocalDateString(new Date()));
 
   readonly rangePresets: RangePreset[] = ['7D', '14D', '28D', '1M', '3M', '6M', '1Y'];
 
@@ -89,14 +90,14 @@ export class AdminReportsComponent {
       case '6M':  from.setMonth(from.getMonth() - 6);        break;
       case '1Y':  from.setFullYear(from.getFullYear() - 1);  break;
     }
-    this.dateFrom.set(from.toISOString().slice(0, 10));
-    this.dateTo.set(to.toISOString().slice(0, 10));
+    this.dateFrom.set(toLocalDateString(from));
+    this.dateTo.set(toLocalDateString(to));
     this.propagateDates();
   }
 
   onDateChange(range: DateRange): void {
-    if (range.start) this.dateFrom.set(range.start.toISOString().slice(0, 10));
-    if (range.end)   this.dateTo.set(range.end.toISOString().slice(0, 10));
+    if (range.start) this.dateFrom.set(toLocalDateString(range.start));
+    if (range.end)   this.dateTo.set(toLocalDateString(range.end));
     if (range.start && range.end) {
       this.selectedRange.set('custom');
       this.propagateDates();
@@ -117,7 +118,7 @@ export class AdminReportsComponent {
   private defaultFrom(): string {
     const d = new Date();
     d.setFullYear(d.getFullYear() - 1);
-    return d.toISOString().slice(0, 10);
+    return toLocalDateString(d);
   }
 
   exportActive(): void {

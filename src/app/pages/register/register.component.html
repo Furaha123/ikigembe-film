@@ -52,7 +52,7 @@
           </button>
 
           <p class="alt-link" style="margin-top:1.5rem">
-            {{ 'auth.register.alreadyVerified' | translate }} <a routerLink="/login">{{ 'auth.common.signIn' | translate }}</a>
+            {{ 'auth.register.alreadyVerified' | translate }} <a routerLink="/login" [queryParams]="returnUrl ? { returnUrl } : {}">{{ 'auth.common.signIn' | translate }}</a>
           </p>
         </div>
 
@@ -177,7 +177,7 @@
         <div #googleBtn class="google-btn-wrap"></div>
 
         <p class="alt-link">
-          {{ 'auth.common.alreadyHaveAccount' | translate }} <a routerLink="/login">{{ 'auth.common.signIn' | translate }}</a>
+          {{ 'auth.common.alreadyHaveAccount' | translate }} <a routerLink="/login" [queryParams]="returnUrl ? { returnUrl } : {}">{{ 'auth.common.signIn' | translate }}</a>
         </p>
 
       } <!-- end @else registered -->

@@ -1,7 +1,7 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { SeoService } from '../../core/services/seo.service';
 import { CommonModule } from '@angular/common';
-import { TranslatePipe, TranslateService } from '@ngx-translate/core';
+import { TranslatePipe } from '@ngx-translate/core';
 import { forkJoin, of, catchError } from 'rxjs';
 import { BannerComponent } from '../../core/components/banner/banner.component';
 import { AdSlotComponent } from '../../shared/components/ad-slot/ad-slot.component';
@@ -23,7 +23,6 @@ export class BrowseComponent implements OnInit {
   auth = inject(AuthService);
   movieService = inject(MovieService);
   private seo = inject(SeoService);
-  private translate = inject(TranslateService);
   userProfileImg = '';
 
   bannerTitle = '';
@@ -57,7 +56,7 @@ export class BrowseComponent implements OnInit {
   ];
 
   ngOnInit(): void {
-    this.seo.set({ title: this.translate.instant('browse.seoTitle'), description: this.translate.instant('browse.seoDescription'), noIndex: true });
+    this.seo.setTranslated({ titleKey: 'browse.seoTitle', descriptionKey: 'browse.seoDescription', noIndex: true });
     forkJoin(this.sources).subscribe((res: any[]) => {
       const [movies, popular, nowPlaying, upcoming, topRated] = res;
       this.movies = movies.results as IVideoContent[];

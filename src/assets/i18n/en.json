@@ -103,6 +103,10 @@
       "share": "Your Share",
       "status": "Status",
       "date": "Date"
+    },
+    "range": {
+      "from": "From date",
+      "to": "To date"
     }
   },
   "onboarding": {
@@ -317,7 +321,8 @@
       "mtn": "MTN Mobile Money",
       "airtel": "Airtel Money",
       "submitBtn": "Request Withdrawal",
-      "submitting": "Submitting…"
+      "submitting": "Submitting…",
+      "taxNote": "This amount comes out of your balance. Any tax deduction is shown on the withdrawal record once it is created."
     },
     "shareNoteBlended": "Your overall revenue share across your films is {{percent}}%. Each film's contract can set its own split."
   },
@@ -1077,7 +1082,9 @@
       "resetBannerBefore": "Password reset. New temporary password:",
       "resetBannerAfter": "— share this with the producer immediately.",
       "deleteConfirmBefore": "You are about to permanently delete",
-      "deleteConfirmAfter": ". This action <strong>cannot be undone</strong>."
+      "deleteConfirmAfter": ". This action <strong>cannot be undone</strong>.",
+      "actionFailed": "That action didn't go through. Please try again.",
+      "rejectUnsupported": "Rejecting producer applications isn't supported by the server yet. Nothing was changed."
     },
     "withdrawalsPage": {
       "title": "Withdrawals",
@@ -1087,14 +1094,18 @@
         "Pending": "Pending",
         "Approved": "Approved",
         "Completed": "Completed",
-        "Rejected": "Rejected"
+        "Rejected": "Rejected",
+        "Processing": "Processing",
+        "Failed": "Failed"
       },
       "empty": {
         "all": "No withdrawals found.",
         "Pending": "No pending withdrawals found.",
         "Approved": "No approved withdrawals found.",
         "Completed": "No completed withdrawals found.",
-        "Rejected": "No rejected withdrawals found."
+        "Rejected": "No rejected withdrawals found.",
+        "Processing": "No payouts are processing.",
+        "Failed": "No failed payouts."
       },
       "colProducer": "Producer",
       "colAmount": "Amount",
@@ -1129,7 +1140,11 @@
       "cancel": "Cancel",
       "yesApprove": "Yes, Approve",
       "yesMarkPaid": "Yes, Mark Paid",
-      "yesReject": "Yes, Reject"
+      "yesReject": "Yes, Reject",
+      "completeBodyMomo": "This <strong>sends the payout now</strong> to the producer's MoMo number through PawaPay. It will show as <strong>Processing</strong> until PawaPay confirms it.",
+      "updated": "Withdrawal #{{id}} is now {{status}}.",
+      "actionFailed": "The action failed. The list has been refreshed to show the current status.",
+      "loadFailed": "Couldn't load withdrawals. Refresh to try again."
     },
     "contractsPage": {
       "title": "Contracts",
@@ -1572,7 +1587,8 @@
       "submit": "Sign In",
       "googleLoading": "Signing in with Google…",
       "newToIkigembe": "New to Ikigembe?",
-      "signUpNow": "Sign up now"
+      "signUpNow": "Sign up now",
+      "failed": "We couldn't sign you in right now. Check your connection and try again."
     },
     "register": {
       "seoTitle": "Create Account",
@@ -1786,7 +1802,9 @@
       "minutesAgo": "{{n}}m ago",
       "hoursAgo": "{{n}}h ago",
       "daysAgo": "{{n}}d ago"
-    }
+    },
+    "signIn": "Sign in",
+    "switchLanguage": "Switch language to {{lang}}"
   },
   "footer": {
     "tagline": "Your gateway to African cinema and beyond. Stream the best movies and shows, handpicked for you.",
@@ -1816,7 +1834,13 @@
     "copyright": "{{year}} Ikigembe Film Arts. All rights reserved.",
     "privacy": "Privacy",
     "terms": "Terms",
-    "cookies": "Cookies"
+    "cookies": "Cookies",
+    "explore": {
+      "title": "Explore",
+      "films": "Films",
+      "producers": "Producers",
+      "casting": "Casting calls"
+    }
   },
   "browse": {
     "loading": "Loading movies…",
@@ -2091,7 +2115,8 @@
       "newCopyright": "New Copyright Document",
       "chooseVideo": "Choose video file",
       "chooseCopyright": "Choose PDF or image",
-      "submitForReview": "Submit for Review"
+      "submitForReview": "Submit for Review",
+      "analyticsFailed": "Couldn't load analytics for this period. Try another range or refresh."
     },
     "upload": {
       "rules": {
@@ -2163,5 +2188,12 @@
     "videoType": "Unsupported file type. Allowed video types: {{types}}.",
     "documentType": "Unsupported file type. Allowed document types: {{types}}.",
     "reuploadThenResubmit": "Please upload the file again, then resubmit."
+  },
+  "notFound": {
+    "title": "Page not found",
+    "text": "The page you're looking for doesn't exist or has moved.",
+    "home": "Go to films",
+    "signIn": "Sign in",
+    "producers": "Meet the producers"
   }
 }

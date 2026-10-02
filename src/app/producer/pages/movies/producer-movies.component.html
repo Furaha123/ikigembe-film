@@ -257,17 +257,8 @@
 
         <!-- Price -->
         <div class="edit-field">
-          <label class="edit-label">{{ 'movies.edit.price' | translate }}</label>
-          <input class="edit-input" type="number" formControlName="price" min="0" placeholder="0" />
-        </div>
-
-        <!-- Free preview toggle -->
-        <div class="edit-field edit-field--row">
-          <label class="edit-label">{{ 'movies.edit.freePreview' | translate }}</label>
-          <label class="toggle-switch">
-            <input type="checkbox" formControlName="has_free_preview" />
-            <span class="toggle-track"></span>
-          </label>
+          <label class="edit-label" for="edit-price">{{ 'movies.edit.price' | translate }}</label>
+          <input id="edit-price" class="edit-input" type="number" formControlName="price" min="0" placeholder="0" />
         </div>
 
         <!-- Genres -->
@@ -283,7 +274,7 @@
         </div>
 
         @if (saveError()) {
-          <p class="edit-error-msg">{{ saveError()! | translate }}</p>
+          <p class="edit-error-msg" role="alert">{{ saveErrorText() ?? (saveError()! | translate) }}</p>
         }
       </div>
 

@@ -4,7 +4,7 @@ import { ActivatedRoute, convertToParamMap, provideRouter } from '@angular/route
 import { provideTranslateService } from '@ngx-translate/core';
 import { of, throwError } from 'rxjs';
 import { ProducerMovieDetailComponent } from './producer-movie-detail.component';
-import { ProducerMovieDetail, ProducerService, ProducerWallet } from '../../../services/producer.service';
+import { MovieAnalytics, ProducerMovieDetail, ProducerService, ProducerWallet } from '../../../services/producer.service';
 import { MultipartUploadService, UploadError } from '../../../../shared/services/multipart-upload.service';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { MultipartUploadApi } from '../../../../shared/models/upload.interface';
@@ -16,6 +16,16 @@ const MOVIE = {
   is_active: false, cast: null, genres: null, producer: null, created_at: '', updated_at: '',
   approval_status: 'changes_requested', changes_requested_note: 'Fix the audio', rejection_reason: null,
 } as ProducerMovieDetail;
+
+const ANALYTICS: MovieAnalytics = {
+  movie_id: 7, period: 'daily', views: 40, total_buyers: 3, gross_revenue: 3000, producer_earnings: 2400,
+  trend: [
+    { period_start: '2026-09-28T00:00:00Z', views: 10, watch_time_hours: 2.5, gross_revenue: 1000, net_earnings: 800, purchases: 1 },
+    { period_start: '2026-09-29T00:00:00Z', views: 30, watch_time_hours: 7.25, gross_revenue: 2000, net_earnings: 1600, purchases: 2 },
+  ],
+  totals: { views: 40, watch_time_hours: 9.75, gross_revenue: 3000, net_earnings: 2400, purchases: 3 },
+  watch_stats: { total_watchers: 4, completed_count: 3, completion_rate: 0.75, avg_progress_percent: 81 },
+};
 
 const WALLET: ProducerWallet = {
   gross_revenue: 0, platform_commission: 0, total_earnings: 0, wallet_balance: 0,
@@ -34,7 +44,8 @@ describe('ProducerMovieDetailComponent (resubmit)', () => {
 
   beforeEach(() => {
     producer = jasmine.createSpyObj<ProducerService>('ProducerService',
-      ['getMovieDetail', 'movieUploadApi', 'resubmitFilmFiles', 'getDashboardMovies', 'getWallet']);
+      ['getMovieDetail', 'movieUploadApi', 'resubmitFilmFiles', 'getDashboardMovies', 'getWallet', 'getMovieAnalytics']);
+    producer.getMovieAnalytics.and.returnValue(of(ANALYTICS));
     producer.getMovieDetail.and.returnValue(of(MOVIE));
     producer.getDashboardMovies.and.returnValue(of([]));
     producer.getWallet.and.returnValue(of(WALLET));
@@ -134,40 +145,32 @@ describe('ProducerMovieDetailComponent (resubmit)', () => {
     expect(component.isWatching()).toBeTrue();
   });
 
-  describe('revenue estimates use the film\'s split, never a hardcoded 70 %', () => {
-    const recreate = () => {
-      producer.getWallet.calls.reset();
-      fixture = TestBed.createComponent(ProducerMovieDetailComponent);
-      component = fixture.componentInstance;
-      fixture.detectChanges();
-      component.movie.set({ ...MOVIE, views: 100_000, price: 1000 });
-    };
-    const revenues = () => component.rangeData().map(d => ({ views: d.views, revenue: d.revenue }));
-
-    it('uses earned / gross for this film from the dashboard movies endpoint', () => {
-      producer.getDashboardMovies.and.returnValue(of([
-        { id: 7, title: 'Umurage', views: 0, purchases: 10, total_gross_revenue: 10_000, producer_share: 8_000, monthly_views: [] },
-      ]));
-      recreate();
-      expect(component.shareRatio()).toBe(0.8);
-      for (const r of revenues()) {
-        expect(r.revenue).toBe(Math.round(r.views * 1000 * 0.8));
-        if (r.views > 0) expect(r.revenue).not.toBe(Math.round(r.views * 1000 * 0.7));
-      }
-      expect(producer.getWallet).not.toHaveBeenCalled();
+  describe('analytics come from the API, never from invented weights', () => {
+    it('requests the selected range with a matching grouping and shows the API numbers', () => {
+      component.setRange('7d');
+      expect(producer.getMovieAnalytics).toHaveBeenCalledWith(7, '7d', 'daily');
+      expect(component.rangeData().map(r => [r.views, r.revenue, r.purchases])).toEqual([[10, 800, 1], [30, 1600, 2]]);
+      expect(component.rangeViews()).toBe(40);
+      expect(component.estimatedRevenue()).toBe(component.fmt(2400)); // producer share, not gross
     });
 
-    it('falls back to the wallet\'s blended percentage when the film has no sales yet', () => {
-      recreate();
-      expect(component.shareRatio()).toBe(0.65);
-      for (const r of revenues()) expect(r.revenue).toBe(Math.round(r.views * 1000 * 0.65));
+    it('maps Lifetime to the API value and uses monthly buckets', () => {
+      component.setRange('Lifetime');
+      expect(producer.getMovieAnalytics).toHaveBeenCalledWith(7, 'lifetime', 'monthly');
     });
 
-    it('shows no revenue estimate when the split is unknown', () => {
-      producer.getWallet.and.returnValue(throwError(() => new HttpErrorResponse({ status: 500 })));
-      recreate();
-      expect(component.shareRatio()).toBeNull();
-      expect(revenues().every(r => r.revenue === 0)).toBeTrue();
+    it('takes completion from watch_stats and leaves per-period completion unknown', () => {
+      component.setAdvBreakdown('Weekly');
+      expect(producer.getMovieAnalytics).toHaveBeenCalledWith(7, '28d', 'weekly');
+      expect(component.advTotals().completionRate).toBe(75);
+      expect(component.advChartData().every(r => r.completionRate === null)).toBeTrue();
+    });
+
+    it('shows an error instead of numbers when the request fails', () => {
+      producer.getMovieAnalytics.and.returnValue(throwError(() => new HttpErrorResponse({ status: 500 })));
+      component.setRange('90d');
+      expect(component.analyticsError()).toBeTrue();
+      expect(component.rangeData()).toEqual([]);
     });
   });
 

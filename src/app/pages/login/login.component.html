@@ -64,7 +64,7 @@
         </div>
 
         @if (serverErrors().non_field_errors || serverErrors().detail) {
-          <div class="form-error">
+          <div class="form-error" role="alert">
             {{ serverErrors().non_field_errors?.[0] ?? serverErrors().detail }}
           </div>
         }
@@ -89,7 +89,7 @@
       <div #googleBtn class="google-btn-wrap"></div>
 
       <p class="alt-link">
-        {{ 'auth.login.newToIkigembe' | translate }} <a routerLink="/register">{{ 'auth.login.signUpNow' | translate }}</a>
+        {{ 'auth.login.newToIkigembe' | translate }} <a routerLink="/register" [queryParams]="returnUrl ? { returnUrl } : {}">{{ 'auth.login.signUpNow' | translate }}</a>
       </p>
 
     </div>

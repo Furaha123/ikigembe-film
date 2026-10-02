@@ -1,6 +1,29 @@
 @import 'swiper/swiper.css';
 @import 'swiper/css/navigation';
 
+/*
+ * Shared design tokens. Components still declare their own SCSS colours ($gold has three
+ * near-identical values across the codebase); new and touched code should use these so the
+ * palette converges on one set.
+ */
+:root {
+  --ik-bg: #141414;
+  --ik-surface: #1c1c1c;
+  --ik-surface-raised: #242424;
+  --ik-border: #2e2e2e;
+  --ik-border-strong: #4a4a4a;
+  --ik-text: #ffffff;
+  --ik-text-muted: #b3b3b3;   /* 9.6:1 on --ik-bg */
+  --ik-text-subtle: #8f8f8f;  /* 5.6:1 on --ik-bg — smallest text allowed */
+  --ik-gold: #c5a253;
+  --ik-on-gold: #141414;
+  --ik-danger: #f2706b;
+  --ik-success: #5cc98b;
+  --ik-focus: #f3d58c;
+  --ik-radius: 8px;
+  color-scheme: dark;
+}
+
 *, *::before, *::after {
   box-sizing: border-box;
   margin: 0;
@@ -9,11 +32,50 @@
 
 body {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  background-color: #141414;
-  color: #fff;
+  background-color: var(--ik-bg);
+  color: var(--ik-text);
 }
 
 a {
   color: inherit;
   text-decoration: none;
 }
+
+/* Keyboard focus must always be visible (WCAG 2.4.7); mouse clicks don't show the ring. */
+:focus-visible {
+  outline: 2px solid var(--ik-focus);
+  outline-offset: 2px;
+}
+
+/* Visually hidden but announced (status messages, labels for icon-only controls). */
+.sr-only {
+  position: absolute !important;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Outcome of an admin/producer action (wrap in an aria-live region). */
+.action-notice__msg {
+  margin: 0 0 16px;
+  padding: 10px 14px;
+  border-radius: var(--ik-radius);
+  font-size: 0.875rem;
+  line-height: 1.5;
+}
+.action-notice__msg--success { background: rgba(92, 201, 139, 0.12); border: 1px solid rgba(92, 201, 139, 0.45); color: #b9ecd0; }
+.action-notice__msg--error { background: rgba(242, 112, 107, 0.12); border: 1px solid rgba(242, 112, 107, 0.45); color: #ffc9c6; }

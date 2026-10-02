@@ -8,6 +8,7 @@ import { AdminService } from '../../../services/admin.service';
 import { TopMovieItem } from '../../../models/admin.interface';
 import { DatePickerComponent, type DateRange } from '../../../../shared/components/date-picker/date-picker';
 import * as XLSX from 'xlsx';
+import { toLocalDateString } from '../../../../shared/utils/local-date';
 
 @Component({
   selector: 'app-top-movies',
@@ -21,7 +22,7 @@ export class TopMoviesComponent implements OnInit, OnDestroy {
   private readonly translate    = inject(TranslateService);
 
   dateFrom = signal<string>(this.defaultFrom());
-  dateTo   = signal<string>(new Date().toISOString().slice(0, 10));
+  dateTo   = signal<string>(toLocalDateString(new Date()));
 
   movies    = signal<TopMovieItem[]>([]);
   isLoading = signal(true);
@@ -33,8 +34,8 @@ export class TopMoviesComponent implements OnInit, OnDestroy {
   ngOnInit(): void { this.load(); }
 
   onDateRangeChange(range: DateRange): void {
-    if (range.start) this.dateFrom.set(range.start.toISOString().slice(0, 10));
-    if (range.end)   this.dateTo.set(range.end.toISOString().slice(0, 10));
+    if (range.start) this.dateFrom.set(toLocalDateString(range.start));
+    if (range.end)   this.dateTo.set(toLocalDateString(range.end));
     if (range.start && range.end) this.load();
   }
 
@@ -87,7 +88,7 @@ export class TopMoviesComponent implements OnInit, OnDestroy {
     const ws = XLSX.utils.aoa_to_sheet(rows);
     ws['!cols'] = [{ wch: 6 }, { wch: 30 }, { wch: 22 }, { wch: 10 }, { wch: 12 }, { wch: 18 }, { wch: 20 }];
     XLSX.utils.book_append_sheet(wb, ws, this.translate.instant('admin.reports.topMovies.sheetName'));
-    XLSX.writeFile(wb, `top_movies_${new Date().toISOString().slice(0, 10)}.xlsx`);
+    XLSX.writeFile(wb, `top_movies_${toLocalDateString(new Date())}.xlsx`);
   }
 
   fmt(n: number): string {
@@ -99,7 +100,7 @@ export class TopMoviesComponent implements OnInit, OnDestroy {
   private defaultFrom(): string {
     const d = new Date();
     d.setFullYear(d.getFullYear() - 1);
-    return d.toISOString().slice(0, 10);
+    return toLocalDateString(d);
   }
 
   ngOnDestroy(): void { this.sub?.unsubscribe(); }

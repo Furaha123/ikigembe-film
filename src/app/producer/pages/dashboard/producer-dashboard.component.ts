@@ -127,12 +127,14 @@ export class ProducerDashboardComponent implements OnInit, AfterViewInit, OnDest
 
   withdrawAmount = signal<number>(0);
 
+  /**
+   * The backend deducts exactly `amount` from the balance. It used to show "+30% tax" on top,
+   * which no backend path does; any tax is reported on the withdrawal record (tax_amount).
+   */
   taxBreakdown = computed(() => {
     const amount = this.withdrawAmount();
     if (!amount || amount <= 0) return null;
-    const govTax        = Math.round(amount * 0.30);
-    const totalDeducted = amount + govTax;
-    return { amount, govTax, totalDeducted };
+    return { amount, totalDeducted: amount };
   });
 
   private trendChart:       Chart | null = null;

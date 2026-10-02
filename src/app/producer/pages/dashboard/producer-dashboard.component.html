@@ -69,9 +69,9 @@
         }
       </div>
       <div class="custom-range">
-        <input type="date" #startDate (change)="onCustomRange(startDate.value, endDate.value)" />
+        <input type="date" #startDate [attr.aria-label]="'dashboard.range.from' | translate" (change)="onCustomRange(startDate.value, endDate.value)" />
         <span class="to-sep">{{ 'dashboard.dateRangeSep' | translate }}</span>
-        <input type="date" #endDate (change)="onCustomRange(startDate.value, endDate.value)" />
+        <input type="date" #endDate [attr.aria-label]="'dashboard.range.to' | translate" (change)="onCustomRange(startDate.value, endDate.value)" />
       </div>
     </div>
   </div>
@@ -200,17 +200,12 @@
               <span class="wdi-label">{{ 'dashboard.withdraw.summaryAmount' | translate }}</span>
               <span class="wdi-val">RWF {{ taxBreakdown()!.amount | number }}</span>
             </div>
-            <div class="wdi-row">
-              <span class="wdi-label">
-                {{ 'dashboard.withdraw.summaryTax' | translate }}
-              </span>
-              <span class="wdi-val wdi-deduct">+ RWF {{ taxBreakdown()!.govTax | number }}</span>
-            </div>
             <div class="wdi-divider"></div>
             <div class="wdi-row">
               <span class="wdi-label-total">{{ 'dashboard.withdraw.summaryTotal' | translate }}</span>
               <span class="wdi-val-total">RWF {{ taxBreakdown()!.totalDeducted | number }}</span>
             </div>
+            <p class="wdi-label">{{ 'wallet.form.taxNote' | translate }}</p>
           </div>
         }
 
@@ -237,9 +232,9 @@
         @if (paymentMethod() === 'MoMo') {
           <div class="wp-fields-group">
             <div class="wp-field">
-              <div class="wp-field-label">{{ 'dashboard.withdraw.provider' | translate }}</div>
+              <label class="wp-field-label" for="wd-momo-provider">{{ 'dashboard.withdraw.provider' | translate }}</label>
               <div class="wp-select-wrap">
-                <select formControlName="momo_provider">
+                <select id="wd-momo-provider" formControlName="momo_provider">
                   <option value="MTN">MTN MoMo</option>
                   <option value="Airtel">Airtel Money</option>
                 </select>

@@ -4,10 +4,11 @@ import {
 } from '@angular/core';
 import { isPlatformBrowser, CommonModule } from '@angular/common';
 import { AbstractControl, FormBuilder, ReactiveFormsModule, ValidationErrors, Validators } from '@angular/forms';
-import { Router, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { RETURN_URL_PARAM } from '../../shared/utils/safe-redirect';
 import { AuthService, RegisterErrors, resendCooldownLabel } from '../../core/services/auth.service';
 import { SeoService } from '../../core/services/seo.service';
-import { TranslatePipe, TranslateService } from '@ngx-translate/core';
+import { TranslatePipe } from '@ngx-translate/core';
 
 declare const google: {
   accounts: {
@@ -30,9 +31,10 @@ export class RegisterComponent implements OnInit, AfterViewInit, OnDestroy {
   private readonly fb          = inject(FormBuilder);
   private readonly authService = inject(AuthService);
   private readonly router      = inject(Router);
+  private readonly route       = inject(ActivatedRoute);
+  readonly returnUrl           = this.route.snapshot.queryParamMap.get(RETURN_URL_PARAM);
   private readonly platformId  = inject(PLATFORM_ID);
   private readonly seo         = inject(SeoService);
-  private readonly translate   = inject(TranslateService);
 
   private cooldownTimer?: ReturnType<typeof setInterval>;
 
@@ -74,7 +76,7 @@ export class RegisterComponent implements OnInit, AfterViewInit, OnDestroy {
 
   // ── Lifecycle ────────────────────────────────────────────
   ngOnInit(): void {
-    this.seo.set({ title: this.translate.instant('auth.register.seoTitle'), noIndex: true });
+    this.seo.setTranslated({ titleKey: 'auth.register.seoTitle', noIndex: true });
   }
 
   ngAfterViewInit() {
@@ -177,7 +179,7 @@ export class RegisterComponent implements OnInit, AfterViewInit, OnDestroy {
     this.authService.loginWithGoogle(idToken).subscribe({
       next: () => {
         this.googleLoading.set(false);
-        this.router.navigate(['/browse']);
+        this.router.navigateByUrl(this.authService.postLoginUrl(this.returnUrl), { replaceUrl: true });
       },
       error: (err) => {
         this.googleLoading.set(false);

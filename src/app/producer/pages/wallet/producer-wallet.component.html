@@ -95,17 +95,12 @@
             <span class="inv-label">{{ 'wallet.form.summaryAmount' | translate }}</span>
             <span class="inv-val">RWF {{ taxBreakdown()!.amount | number }}</span>
           </div>
-          <div class="invoice-row">
-            <span class="inv-label">
-              {{ 'wallet.form.summaryTax' | translate }}
-            </span>
-            <span class="inv-val deduction">+ RWF {{ taxBreakdown()!.govTax | number }}</span>
-          </div>
           <div class="invoice-divider"></div>
           <div class="invoice-row total">
             <span class="inv-label-total">{{ 'wallet.form.summaryTotal' | translate }}</span>
             <span class="inv-val-total">RWF {{ taxBreakdown()!.totalDeducted | number }}</span>
           </div>
+          <p class="inv-label">{{ 'wallet.form.taxNote' | translate }}</p>
         </div>
       }
 

@@ -5,6 +5,30 @@ import { environment } from '../../../environments/environment';
 import { MovieUploadField, MultipartUploadApi } from '../../shared/models/upload.interface';
 import { MovieUploadService } from '../../shared/services/movie-upload.service';
 
+export type AnalyticsRange = '7d' | '28d' | '90d' | '365d' | 'lifetime';
+export type AnalyticsPeriod = 'daily' | 'weekly' | 'monthly';
+
+export interface MovieAnalyticsPoint {
+  period_start: string;
+  views: number;
+  watch_time_hours: number;
+  gross_revenue: number;
+  net_earnings: number;
+  purchases: number;
+}
+
+export interface MovieAnalytics {
+  movie_id: number;
+  period: AnalyticsPeriod;
+  trend: MovieAnalyticsPoint[];
+  totals: Omit<MovieAnalyticsPoint, 'period_start'>;
+  views: number;
+  total_buyers: number;
+  gross_revenue: number;
+  producer_earnings: number;
+  watch_stats: { total_watchers: number; completed_count: number; completion_rate: number; avg_progress_percent: number };
+}
+
 const BASE = environment.apiUrl;
 
 export interface ProducerWallet {
@@ -209,6 +233,11 @@ export class ProducerService {
     return this.http.get<ProducerMovieDetail>(`${BASE}/producer/dashboard/movies/${id}/`);
   }
 
+  /** Real per-film trend, totals and watch engagement (GET …/movies/<id>/analytics/). */
+  getMovieAnalytics(id: number, range: AnalyticsRange, period: AnalyticsPeriod): Observable<MovieAnalytics> {
+    return this.http.get<MovieAnalytics>(`${BASE}/producer/dashboard/movies/${id}/analytics/`, { params: { range, period } });
+  }
+
   getWithdrawals(page = 1): Observable<ProducerWithdrawalPage> {
     return this.http.get<ProducerWithdrawalPage>(
       `${BASE}/producer/dashboard/withdrawals/?page=${page}`
@@ -234,7 +263,7 @@ export class ProducerService {
     return this.movieUpload.api(fieldName);
   }
 
-  updateFilm(id: number, payload: Partial<Pick<ProducerMovie, 'title' | 'overview' | 'genres' | 'price' | 'has_free_preview'>>): Observable<ProducerMovie> {
+  updateFilm(id: number, payload: Partial<Pick<ProducerMovie, 'title' | 'overview' | 'genres' | 'price'>>): Observable<ProducerMovie> {
     return this.http.patch<ProducerMovie>(`${BASE}/producer/films/${id}/`, payload);
   }
 
