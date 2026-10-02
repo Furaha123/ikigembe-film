@@ -6,6 +6,7 @@ import { Observable, defer, firstValueFrom, of, throwError } from 'rxjs';
 import { catchError, finalize, map, shareReplay, tap } from 'rxjs/operators';
 import { RegisterPayload, RegisterResponse, LoginResponse, GoogleAuthPayload, LoginUser, AccountStatus } from '../models/auth.interface';
 import { environment } from '../../../environments/environment';
+import { RETURN_URL_PARAM, safeReturnUrl } from '../../shared/utils/safe-redirect';
 
 export interface UserProfile {
   id: number;
@@ -297,7 +298,11 @@ export class AuthService {
         const ended = err instanceof HttpErrorResponse && (err.status === 400 || err.status === 401);
         if (ended && this.isLoggedIn()) {
           this.clearSession();
-          void this.router.navigateByUrl('/login');
+          // Come back to the same page after signing in again ('/' only redirects to /login).
+          const here = safeReturnUrl(this.router.url);
+          void this.router.navigateByUrl(here && here !== '/'
+            ? this.router.createUrlTree(['/login'], { queryParams: { [RETURN_URL_PARAM]: here } })
+            : '/login');
         }
         return throwError(() => err);
       }),
@@ -366,6 +371,13 @@ export class AuthService {
   /** Where a signed-in user lands: producer onboarding until it is done, otherwise the catalogue. */
   homeUrl(): string {
     return this.userRole() === 'Producer' && !this.onboardingComplete() ? '/producer/onboarding' : '/browse';
+  }
+
+  /** Where to go after signing in: the requested page if it is safe, unless producer onboarding comes first. */
+  postLoginUrl(returnUrl: string | null | undefined): string {
+    const home = this.homeUrl();
+    if (home === '/producer/onboarding') return home;
+    return safeReturnUrl(returnUrl) ?? home;
   }
 
   resendVerification(email: string): Observable<unknown> {

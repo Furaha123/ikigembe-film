@@ -8,6 +8,7 @@ import { ProducerService, ProducerMovie } from '../../services/producer.service'
 import { MultipartUploadService, UploadAbortedError } from '../../../shared/services/multipart-upload.service';
 import { ALLOWED_VIDEO_EXTENSIONS, extensionList, hasAllowedExtension, VIDEO_ACCEPT } from '../../../shared/models/upload.constants';
 import { uploadErrorMessage } from '../../../shared/utils/upload-error';
+import { apiErrorMessage } from '../../../shared/utils/api-error';
 
 type SortCol = 'title' | 'views' | 'price' | 'release_date' | 'created_at';
 type StatusTab = 'all' | 'live' | 'pending' | 'rejected';
@@ -50,13 +51,14 @@ export class ProducerMoviesComponent implements OnInit, OnDestroy {
   expandedReasons  = signal<Set<number>>(new Set());
   isSaving    = signal(false);
   saveError   = signal<string | null>(null);
+  /** Backend message for a failed save, shown instead of the generic key when present. */
+  saveErrorText = signal<string | null>(null);
   editGenres  = signal<Set<string>>(new Set());
 
   editForm = this.fb.group({
     title:            ['', [Validators.required, Validators.minLength(2)]],
     overview:         [''],
     price:            [0, [Validators.required, Validators.min(0)]],
-    has_free_preview: [false],
   });
 
   // ── Resubmit drawer ───────────────────────────────────
@@ -167,7 +169,6 @@ export class ProducerMoviesComponent implements OnInit, OnDestroy {
       title:            movie.title,
       overview:         movie.overview ?? '',
       price:            movie.price,
-      has_free_preview: movie.has_free_preview,
     });
   }
 
@@ -191,13 +192,13 @@ export class ProducerMoviesComponent implements OnInit, OnDestroy {
 
     this.isSaving.set(true);
     this.saveError.set(null);
+    this.saveErrorText.set(null);
 
     const v = this.editForm.value;
     this.producerService.updateFilm(movie.id, {
       title:            v.title!,
       overview:         v.overview ?? null,
       price:            v.price!,
-      has_free_preview: v.has_free_preview ?? false,
       genres:           Array.from(this.editGenres()),
     }).subscribe({
       next: (updated) => {
@@ -205,8 +206,9 @@ export class ProducerMoviesComponent implements OnInit, OnDestroy {
         this.isSaving.set(false);
         this.closeEdit();
       },
-      error: () => {
+      error: (err: unknown) => {
         this.isSaving.set(false);
+        this.saveErrorText.set(apiErrorMessage(err));
         this.saveError.set('producerUi.movies.saveFailed');
       },
     });

@@ -3,8 +3,10 @@ import { CommonModule } from '@angular/common';
 import { TranslatePipe } from '@ngx-translate/core';
 import { AdminService } from '../../services/admin.service';
 import { WithdrawalItem } from '../../models/admin.interface';
+import { apiErrorMessage } from '../../../shared/utils/api-error';
 
-type StatusFilter = 'all' | 'Pending' | 'Approved' | 'Completed' | 'Rejected';
+// Processing = MoMo payout sent, awaiting PawaPay; Failed = payout refused (backend WithdrawalRequest.STATUS_CHOICES).
+type StatusFilter = 'all' | 'Pending' | 'Approved' | 'Processing' | 'Completed' | 'Failed' | 'Rejected';
 
 @Component({
   selector: 'app-admin-withdrawals',
@@ -22,7 +24,9 @@ export class AdminWithdrawalsComponent implements OnInit {
   detailItem = signal<WithdrawalItem | null>(null);
   confirmAction = signal<{ id: number; type: 'approve' | 'complete' | 'reject' } | null>(null);
 
-  readonly filters: StatusFilter[] = ['all', 'Pending', 'Approved', 'Completed', 'Rejected'];
+  readonly filters: StatusFilter[] = ['all', 'Pending', 'Approved', 'Processing', 'Completed', 'Failed', 'Rejected'];
+  /** Outcome of the last action, announced in an aria-live region. */
+  notice = signal<{ kind: 'success' | 'error'; text: string | null; key: string; params?: Record<string, unknown> } | null>(null);
 
   filtered = computed(() => {
     const f = this.activeFilter();
@@ -33,13 +37,9 @@ export class AdminWithdrawalsComponent implements OnInit {
 
   counts = computed(() => {
     const all = this.withdrawals();
-    return {
-      all: all.length,
-      Pending: all.filter(w => w.status === 'Pending').length,
-      Approved: all.filter(w => w.status === 'Approved').length,
-      Completed: all.filter(w => w.status === 'Completed').length,
-      Rejected: all.filter(w => w.status === 'Rejected').length,
-    };
+    const counts: Record<StatusFilter, number> = { all: all.length, Pending: 0, Approved: 0, Processing: 0, Completed: 0, Failed: 0, Rejected: 0 };
+    for (const w of all) if (w.status in counts) counts[w.status as StatusFilter]++;
+    return counts;
   });
 
   ngOnInit() {
@@ -50,7 +50,10 @@ export class AdminWithdrawalsComponent implements OnInit {
     this.isLoading.set(true);
     this.adminService.getWithdrawals().subscribe({
       next: (res) => { this.withdrawals.set(res.results); this.isLoading.set(false); },
-      error: () => this.isLoading.set(false),
+      error: (err: unknown) => {
+        this.isLoading.set(false);
+        this.notice.set({ kind: 'error', text: apiErrorMessage(err), key: 'admin.withdrawalsPage.loadFailed' });
+      },
     });
   }
 
@@ -76,6 +79,7 @@ export class AdminWithdrawalsComponent implements OnInit {
 
     this.actionId.set(action.id);
     this.confirmAction.set(null);
+    this.notice.set(null);
 
     const call$ = action.type === 'approve'
       ? this.adminService.approveWithdrawal(action.id)
@@ -88,17 +92,32 @@ export class AdminWithdrawalsComponent implements OnInit {
       : 'Rejected';
 
     call$.subscribe({
-      next: () => {
+      next: (res) => {
+        // The server decides the outcome: a MoMo payout comes back 'Processing', not 'Completed'.
+        const status = (res as { status?: unknown } | null)?.status;
+        const newStatus = typeof status === 'string' ? status : nextStatus;
         this.withdrawals.update(list =>
-          list.map(w => w.id === action.id ? { ...w, status: nextStatus } : w)
+          list.map(w => w.id === action.id ? { ...w, status: newStatus } : w)
         );
         this.actionId.set(null);
         if (this.detailItem()?.id === action.id) {
-          this.detailItem.update(d => d ? { ...d, status: nextStatus } : d);
+          this.detailItem.update(d => d ? { ...d, status: newStatus } : d);
         }
+        this.notice.set({ kind: 'success', text: null, key: 'admin.withdrawalsPage.updated', params: { id: action.id, status: newStatus } });
       },
-      error: () => this.actionId.set(null),
+      error: (err: unknown) => {
+        this.actionId.set(null);
+        this.notice.set({ kind: 'error', text: apiErrorMessage(err), key: 'admin.withdrawalsPage.actionFailed' });
+        // A failed payout can still change the record (the backend marks it Failed): re-read it.
+        this.load();
+      },
     });
+  }
+
+  /** MoMo "Mark paid" sends the money through PawaPay; Bank only records a manual transfer. */
+  completeBodyKey(id: number): string {
+    const w = this.withdrawals().find(x => x.id === id);
+    return w?.payment_method === 'MoMo' ? 'admin.withdrawalsPage.completeBodyMomo' : 'admin.withdrawalsPage.completeBody';
   }
 
   statusKey(status: string): string {

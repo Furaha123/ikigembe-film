@@ -1,8 +1,11 @@
 import {
-  Component, HostListener, inject, input, signal, computed,
+  Component, DestroyRef, HostListener, inject, input, signal, computed,
   ViewChild, ElementRef, OnInit, OnDestroy
 } from '@angular/core';
 import { Router, RouterLink, RouterLinkActive, NavigationEnd } from '@angular/router';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { LanguageService } from '../../services/language.service';
+import { RETURN_URL_PARAM, safeReturnUrl } from '../../../shared/utils/safe-redirect';
 import { CommonModule } from '@angular/common';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { Subject, Subscription } from 'rxjs';
@@ -22,10 +25,14 @@ export class HeaderComponent implements OnInit, OnDestroy {
   userImg = input.required<string>();
 
   private readonly authService  = inject(AuthService);
+  private readonly destroyRef   = inject(DestroyRef);
   private readonly router       = inject(Router);
   private readonly movieService = inject(MovieService);
   private readonly inboxService = inject(InboxService);
   private readonly translate    = inject(TranslateService);
+  readonly lang                 = inject(LanguageService);
+
+  readonly isLoggedIn     = this.authService.isLoggedIn;
 
   readonly initials       = this.authService.initials;
   readonly isAdmin        = this.authService.isAdmin;
@@ -69,7 +76,8 @@ export class HeaderComponent implements OnInit, OnDestroy {
 
   ngOnInit() {
     this.router.events.pipe(
-      filter(e => e instanceof NavigationEnd)
+      filter(e => e instanceof NavigationEnd),
+      takeUntilDestroyed(this.destroyRef),
     ).subscribe(() => this.closeMobileMenu());
 
     this.searchSub = this.searchSubject.pipe(
@@ -85,7 +93,18 @@ export class HeaderComponent implements OnInit, OnDestroy {
       if (res) this.searchResults.set(res.results ?? []);
     });
 
-    this.loadInbox();
+    // Guests have no inbox (the call only produced a 401).
+    if (this.isLoggedIn()) this.loadInbox();
+  }
+
+  /** Sign-in link that brings the guest back to this page. */
+  signInParams() {
+    const here = safeReturnUrl(this.router.url);
+    return here ? { [RETURN_URL_PARAM]: here } : {};
+  }
+
+  toggleLanguage() {
+    this.lang.toggle();
   }
 
   @HostListener('window:scroll')

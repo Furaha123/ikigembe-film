@@ -1,10 +1,12 @@
 import { Component, inject, signal, PLATFORM_ID, AfterViewInit, OnInit, ElementRef, viewChild } from '@angular/core';
 import { isPlatformBrowser, CommonModule } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { Router, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { RETURN_URL_PARAM } from '../../shared/utils/safe-redirect';
 import { AuthService } from '../../core/services/auth.service';
 import { SeoService } from '../../core/services/seo.service';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
+import { apiErrorMessage } from '../../shared/utils/api-error';
 
 declare const google: {
   accounts: {
@@ -34,6 +36,9 @@ export class LoginComponent implements AfterViewInit, OnInit {
   private readonly fb = inject(FormBuilder);
   private readonly authService = inject(AuthService);
   private readonly router = inject(Router);
+  private readonly route = inject(ActivatedRoute);
+  /** Page the visitor was sent here from (validated by AuthService.postLoginUrl). */
+  readonly returnUrl = this.route.snapshot.queryParamMap.get(RETURN_URL_PARAM);
   private readonly platformId = inject(PLATFORM_ID);
   private readonly seo = inject(SeoService);
   private readonly translate = inject(TranslateService);
@@ -54,7 +59,7 @@ export class LoginComponent implements AfterViewInit, OnInit {
   get password() { return this.form.get('password'); }
 
   ngOnInit() {
-    this.seo.set({ title: this.translate.instant('auth.login.seoTitle'), noIndex: true });
+    this.seo.setTranslated({ titleKey: 'auth.login.seoTitle', noIndex: true });
   }
 
   ngAfterViewInit() {
@@ -89,7 +94,7 @@ export class LoginComponent implements AfterViewInit, OnInit {
   }
 
   private navigateByRole() {
-    this.router.navigateByUrl(this.authService.homeUrl(), { replaceUrl: true });
+    this.router.navigateByUrl(this.authService.postLoginUrl(this.returnUrl), { replaceUrl: true });
   }
 
   private handleGoogleCredential(idToken: string) {
@@ -128,9 +133,9 @@ export class LoginComponent implements AfterViewInit, OnInit {
       },
       error: (err) => {
         this.isLoading.set(false);
-        if (err.status === 400 && err.error) {
-          this.serverErrors.set(err.error);
-        }
+        this.serverErrors.set(err.status === 400 && err.error
+          ? err.error
+          : { detail: apiErrorMessage(err) ?? this.translate.instant('auth.login.failed') });
       }
     });
   }

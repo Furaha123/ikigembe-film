@@ -8,6 +8,7 @@ import { MultipartUploadService } from '../../../shared/services/multipart-uploa
 import { ALLOWED_DOCUMENT_EXTENSIONS, ALLOWED_VIDEO_EXTENSIONS, DOCUMENT_ACCEPT, extensionList, hasAllowedExtension, VIDEO_ACCEPT } from '../../../shared/models/upload.constants';
 import { uploadErrorMessage } from '../../../shared/utils/upload-error';
 import { DatePickerComponent } from '../../../shared/components/date-picker/date-picker';
+import { toLocalDateString } from '../../../shared/utils/local-date';
 
 type WizardStep = 'rules' | 'details' | 'trailer' | 'movie' | 'copyright' | 'review';
 
@@ -126,7 +127,7 @@ export class ProducerUploadComponent {
   get writer()      { return this.detailsForm.get('writer'); }
 
   onReleaseDateChange(date: Date): void {
-    const iso = date.toISOString().split('T')[0]; // YYYY-MM-DD
+    const iso = toLocalDateString(date); // YYYY-MM-DD
     this.detailsForm.get('release_date')!.setValue(iso);
     this.detailsForm.get('release_date')!.markAsTouched();
   }

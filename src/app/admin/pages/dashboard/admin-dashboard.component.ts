@@ -12,6 +12,7 @@ import {
 } from 'chart.js';
 import { AdminService } from '../../services/admin.service';
 import type { DashboardOverview, RevenueTrendItem, TransactionHistory } from '../../models/admin.interface';
+import { toLocalDateString } from '../../../shared/utils/local-date';
 
 Chart.register(CategoryScale, LinearScale, Tooltip, LineController, LineElement, PointElement, Filler);
 
@@ -76,8 +77,8 @@ export class AdminDashboardComponent implements OnInit, AfterViewChecked, OnDest
     this.subs.push(
       this.adminService.getRevenueTrend(
         'monthly',
-        from.toISOString().slice(0, 10),
-        to.toISOString().slice(0, 10),
+        toLocalDateString(from),
+        toLocalDateString(to),
       ).subscribe({
         next: (d)  => { this.trend.set(d.trend ?? []); this.loadingTrend.set(false); this.needsBuild = true; },
         error: ()  => { this.loadingTrend.set(false); },

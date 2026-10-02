@@ -587,6 +587,19 @@ header .right {
       position: relative;
     }
 
+    .sign-in-btn {
+      display: inline-flex;
+      align-items: center;
+      min-height: 36px;
+      padding: 0 16px;
+      border-radius: 6px;
+      background: var(--ik-gold);
+      color: var(--ik-on-gold);
+      font-size: 0.85rem;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
     .user-menu-trigger {
       display: flex;
       align-items: center;

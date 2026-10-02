@@ -1,5 +1,7 @@
 import { Component, HostListener, inject, OnInit, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { HttpErrorResponse } from '@angular/common/http';
+import { apiErrorMessage } from '../../../shared/utils/api-error';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { AdminService } from '../../services/admin.service';
 import {
@@ -74,29 +76,42 @@ export class AdminProducersComponent implements OnInit {
         if (this.detailReport()?.producer.id === id) this.openDetail(id);
         this.actionId.set(null);
       },
-      error: () => this.actionId.set(null),
+      error: (err: unknown) => {
+        this.actionId.set(null);
+        this.actionError.set(apiErrorMessage(err) ?? this.translate.instant('admin.producers.actionFailed'));
+      },
     });
   }
+
+  /** Last failed list action (approve), shown above the table. */
+  actionError = signal<string | null>(null);
 
   // ── Reject with reason ─────────────────────────────────
   rejectModal    = signal<number | null>(null);
   rejectReason   = signal('');
   isRejecting    = signal(false);
+  rejectError    = signal<string | null>(null);
 
-  openRejectModal(id: number) { this.closeMenu(); this.rejectModal.set(id); this.rejectReason.set(''); }
+  openRejectModal(id: number) { this.closeMenu(); this.rejectModal.set(id); this.rejectReason.set(''); this.rejectError.set(null); }
   closeRejectModal() { this.rejectModal.set(null); this.rejectReason.set(''); }
 
   confirmReject() {
     const id = this.rejectModal();
-    if (id === null) return;
+    if (id === null || !this.rejectReason().trim()) return;
     this.isRejecting.set(true);
-    this.adminService.rejectProducer(id, this.rejectReason()).subscribe({
+    this.rejectError.set(null);
+    this.adminService.rejectProducer(id, this.rejectReason().trim()).subscribe({
       next: () => {
         this.producers.update(list => list.map(p => p.id === id ? { ...p, is_active: false, status: 'pending' } : p));
         this.isRejecting.set(false);
         this.closeRejectModal();
       },
-      error: () => this.isRejecting.set(false),
+      // Never close silently on failure. (Backend: POST …/producers/<id>/reject/ is not implemented yet → 404.)
+      error: (err: unknown) => {
+        this.isRejecting.set(false);
+        this.rejectError.set(apiErrorMessage(err) ?? this.translate.instant(
+          err instanceof HttpErrorResponse && err.status === 404 ? 'admin.producers.rejectUnsupported' : 'admin.producers.actionFailed'));
+      },
     });
   }
 

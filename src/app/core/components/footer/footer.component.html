@@ -5,15 +5,6 @@
       <p class="footer-tagline">
         {{ 'footer.tagline' | translate }}
       </p>
-      <div class="social-links">
-        @for (social of socials; track social.name) {
-          <a class="social-icon" [attr.aria-label]="social.name">
-            <svg viewBox="0 0 24 24" fill="currentColor">
-              <path [attr.d]="social.icon"/>
-            </svg>
-          </a>
-        }
-      </div>
     </div>
 
     <div class="footer-columns">
@@ -25,16 +16,14 @@
           }
         </ul>
       </nav>
-      @for (col of footerLinks; track col.title) {
-        <div class="footer-col">
-          <h4>{{ col.title | translate }}</h4>
-          <ul>
-            @for (link of col.links; track link) {
-              <li><a>{{ link | translate }}</a></li>
-            }
-          </ul>
-        </div>
-      }
+      <nav class="footer-col" aria-labelledby="footer-explore-title">
+        <h4 id="footer-explore-title">{{ 'footer.explore.title' | translate }}</h4>
+        <ul>
+          @for (link of exploreLinks; track link.route) {
+            <li><a [routerLink]="link.route">{{ link.key | translate }}</a></li>
+          }
+        </ul>
+      </nav>
     </div>
   </div>
 
@@ -45,7 +34,6 @@
     <div class="footer-bottom-links">
       <a routerLink="/privacy">{{ 'footer.privacy' | translate }}</a>
       <a routerLink="/terms">{{ 'footer.terms' | translate }}</a>
-      <a>{{ 'footer.cookies' | translate }}</a>
     </div>
   </div>
 </footer>

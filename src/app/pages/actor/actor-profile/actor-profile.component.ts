@@ -9,6 +9,7 @@ import { ActorNavComponent } from '../actor-nav/actor-nav.component';
 import { ActorMarketplaceService } from '../../../shared/services/actor-marketplace.service';
 import { ActorGender, ActorProfilePayload } from '../../../shared/models/marketplace.interface';
 import { apiErrorMessage } from '../../../shared/utils/api-error';
+import { toLocalDateString } from '../../../shared/utils/local-date';
 
 /** Split a comma-separated input into trimmed, non-empty values. */
 export function splitList(value: string | null | undefined): string[] {
@@ -27,7 +28,7 @@ export class ActorProfileComponent implements OnInit {
   private readonly marketplace = inject(ActorMarketplaceService);
 
   readonly genders: ActorGender[] = ['female', 'male', 'other'];
-  readonly today = new Date().toISOString().slice(0, 10);
+  readonly today = toLocalDateString(new Date());
 
   loading   = signal(true);
   saving    = signal(false);

@@ -1,6 +1,6 @@
 <header [class.scrolled]="isScrolled()">
   <div class="left">
-    <button class="hamburger-btn" [class.is-open]="mobileMenuOpen()" (click)="toggleMobileMenu()" [attr.aria-label]="'header.toggleNav' | translate">
+    <button class="hamburger-btn" [class.is-open]="mobileMenuOpen()" (click)="toggleMobileMenu()" [attr.aria-label]="'header.toggleNav' | translate" [attr.aria-expanded]="mobileMenuOpen()">
       <svg class="icon-burger" viewBox="0 0 24 24" fill="currentColor">
         <path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"/>
       </svg>
@@ -108,10 +108,11 @@
       }
     </div>
 
+    @if (isLoggedIn()) {
     <!-- ── Inbox bell ── -->
     <div class="inbox-wrapper">
       <button class="icon-btn notification-btn" [class.active]="showInbox()"
-              (click)="toggleInbox($event)" [attr.aria-label]="'header.notifications' | translate">
+              (click)="toggleInbox($event)" [attr.aria-label]="'header.notifications' | translate" [attr.aria-expanded]="showInbox()">
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
           <path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.63-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.64 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2zm-2 1H8v-6c0-2.48 1.51-4.5 4-4.5s4 2.02 4 4.5v6z"/>
         </svg>
@@ -164,7 +165,7 @@
       }
     </div>
     <div class="user-menu">
-      <button class="user-menu-trigger" (click)="toggleDropdown($event)" type="button" [attr.aria-label]="'header.accountMenu' | translate">
+      <button class="user-menu-trigger" (click)="toggleDropdown($event)" type="button" [attr.aria-label]="'header.accountMenu' | translate" [attr.aria-expanded]="showDropdown()">
         <div class="avatar">{{ initials() }}</div>
         <svg class="dropdown-icon" [class.open]="showDropdown()" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
           <path d="M7 10l5 5 5-5z"/>
@@ -185,6 +186,13 @@
             </svg>
             {{ 'header.profileSettings' | translate }}
           </a>
+          <button class="dropdown-item" type="button" (click)="toggleLanguage()"
+                  [attr.aria-label]="'header.switchLanguage' | translate: { lang: lang.currentLang() === 'en' ? 'Kinyarwanda' : 'English' }">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+              <circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 0 1 0 20M12 2a15.3 15.3 0 0 0 0 20"/>
+            </svg>
+            {{ lang.currentLang() === 'en' ? 'English' : 'Kinyarwanda' }}
+          </button>
           <hr class="dropdown-divider">
           <button class="dropdown-item logout" (click)="logout()" [disabled]="isLoggingOut()">
             @if (isLoggingOut()) {
@@ -202,6 +210,9 @@
         </div>
       }
     </div>
+    } @else {
+      <a class="sign-in-btn" routerLink="/login" [queryParams]="signInParams()">{{ 'header.signIn' | translate }}</a>
+    }
   </div>
 
   @if (mobileMenuOpen()) {

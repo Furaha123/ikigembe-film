@@ -449,6 +449,16 @@ $muted:  #666;
 }
 
 .kpi-tile {
+  // <button> reset (the tiles were clickable divs, unreachable by keyboard)
+  appearance: none;
+  background: none;
+  border: none;
+  font: inherit;
+  color: inherit;
+  text-align: left;
+  width: 100%;
+  .kpi-tile-label, .kpi-tile-value { display: block; }
+
   padding: 1rem 1.25rem;
   cursor: pointer;
   border-right: 1px solid $border;

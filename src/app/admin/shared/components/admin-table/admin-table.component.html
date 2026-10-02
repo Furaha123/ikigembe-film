@@ -10,6 +10,7 @@
         <input
           type="text"
           class="at-search-input"
+          [attr.aria-label]="'admin.table.searchPlaceholder' | translate"
           [placeholder]="'admin.table.searchPlaceholder' | translate"
           [value]="searchQuery()"
           (input)="onSearch($any($event.target).value)"
@@ -110,8 +111,8 @@
     <!-- Pagination -->
     <div class="at-pagination">
       <div class="at-rows-per-page">
-        <span>{{ 'admin.table.rowsPerPage' | translate }}</span>
-        <select [ngModel]="rowsPerPage()" (ngModelChange)="onRowsChange($event)">
+        <label for="at-rows">{{ 'admin.table.rowsPerPage' | translate }}</label>
+        <select id="at-rows" [ngModel]="rowsPerPage()" (ngModelChange)="onRowsChange($event)">
           @for (opt of rowsOptions; track opt) {
             <option [value]="opt">{{ opt }}</option>
           }

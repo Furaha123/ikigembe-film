@@ -1,7 +1,15 @@
 import { Injectable, inject, PLATFORM_ID } from '@angular/core';
 import { Meta, Title } from '@angular/platform-browser';
 import { DOCUMENT, isPlatformBrowser } from '@angular/common';
-import { Router } from '@angular/router';
+import { NavigationStart, Router } from '@angular/router';
+import { TranslateService } from '@ngx-translate/core';
+import { filter } from 'rxjs';
+
+/** Same as SeoConfig, with translation keys that are resolved once the language file has loaded. */
+export interface TranslatedSeoConfig extends Omit<SeoConfig, 'title' | 'description'> {
+  titleKey: string;
+  descriptionKey?: string;
+}
 
 export interface SeoConfig {
   title?: string;
@@ -23,13 +31,39 @@ export class SeoService {
   private readonly router     = inject(Router);
   private readonly document   = inject(DOCUMENT);
   private readonly platformId = inject(PLATFORM_ID);
+  private readonly translate  = inject(TranslateService);
+
+  constructor() {
+    // Pages that don't call set() must not inherit the previous page's title, noindex or canonical.
+    this.router.events.pipe(filter(e => e instanceof NavigationStart)).subscribe(() => {
+      this.title.setTitle(SITE_NAME);
+      this.meta.updateTag({ name: 'description', content: DEFAULT_DESC });
+      this.meta.updateTag({ name: 'robots', content: 'index, follow' });
+      this.removeJsonLd();
+    });
+  }
+
+  /**
+   * set() with translated text. translate.instant() returns the raw key while the
+   * language file is still loading (which put "auth.login.seoTitle" in the tab title).
+   */
+  setTranslated(config: TranslatedSeoConfig) {
+    const { titleKey, descriptionKey, ...rest } = config;
+    const keys = descriptionKey ? [titleKey, descriptionKey] : [titleKey];
+    this.translate.get(keys).subscribe((t: Record<string, string>) => this.set({
+      ...rest,
+      title: t[titleKey],
+      description: descriptionKey ? t[descriptionKey] : undefined,
+    }));
+  }
 
   set(config: SeoConfig) {
     const fullTitle  = config.title ? `${config.title} | ${SITE_NAME}` : SITE_NAME;
     const desc       = config.description ?? DEFAULT_DESC;
     const image      = config.image       ?? DEFAULT_IMAGE;
     const type       = config.type        ?? 'website';
-    const url        = `${BASE_URL}${this.router.url}`;
+    // Canonical URLs drop query strings and fragments (e.g. ?returnUrl=…).
+    const url        = `${BASE_URL}${this.router.url.split(/[?#]/)[0]}`;
 
     this.title.setTitle(fullTitle);
 

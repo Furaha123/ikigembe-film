@@ -12,6 +12,12 @@
     </div>
   </div>
 
+  <div aria-live="polite">
+    @if (actionError()) {
+      <p class="action-notice__msg action-notice__msg--error" role="alert">{{ actionError() }}</p>
+    }
+  </div>
+
   @if (resetPasswordBanner()) {
     <div class="pw-banner reset">
       <div class="pw-content">
@@ -140,13 +146,17 @@
         </div>
         <div class="modal-form">
           <div class="field">
-            <label>{{ 'admin.producers.rejectionReason' | translate }}</label>
-            <textarea rows="3" [value]="rejectReason()" (input)="rejectReason.set($any($event.target).value)"
-                      [placeholder]="'admin.producers.rejectPlaceholder' | translate" class="modal-textarea"></textarea>
+            <label for="reject-reason">{{ 'admin.producers.rejectionReason' | translate }}</label>
+            <textarea id="reject-reason" rows="3" required [value]="rejectReason()" (input)="rejectReason.set($any($event.target).value)"
+                      [placeholder]="'admin.producers.rejectPlaceholder' | translate" class="modal-textarea"
+                      [attr.aria-describedby]="rejectError() ? 'reject-error' : null"></textarea>
           </div>
+          @if (rejectError()) {
+            <p id="reject-error" class="action-notice__msg action-notice__msg--error" role="alert">{{ rejectError() }}</p>
+          }
           <div class="modal-actions">
             <button type="button" class="action-btn neutral" (click)="closeRejectModal()">{{ 'admin.producers.cancel' | translate }}</button>
-            <button type="button" class="action-btn danger-btn" (click)="confirmReject()" [disabled]="isRejecting()">
+            <button type="button" class="action-btn danger-btn" (click)="confirmReject()" [disabled]="isRejecting() || !rejectReason().trim()">
               {{ (isRejecting() ? 'admin.producers.rejecting' : 'admin.producers.rejectAccount') | translate }}
             </button>
           </div>
