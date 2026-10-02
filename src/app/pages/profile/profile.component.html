@@ -1,4 +1,4 @@
-@if (userRole() !== 'Producer') {
+@if (!embedded) {
   <app-header [userImg]="''" />
 }
 

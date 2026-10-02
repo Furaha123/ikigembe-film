@@ -33,6 +33,12 @@ export class HeaderComponent implements OnInit, OnDestroy {
   readonly dashboardRoute = computed(() =>
     this.authService.isAdmin() ? '/admin/dashboard' : '/producer/dashboard'
   );
+  // Producers and admins keep their settings inside their dashboard, which has its own navigation.
+  readonly settingsRoute = computed(() =>
+    this.authService.isAdmin() ? '/admin/settings'
+      : this.authService.userRole() === 'Producer' ? '/producer/settings'
+      : '/profile'
+  );
 
   isScrolled     = signal(false);
   showDropdown   = signal(false);
