@@ -15,12 +15,17 @@ export interface ServicePurchaseAccepted {
   message: string;
   amount: number;
   currency: string;
+  /** Backend PAYMENT_DEMO_MODE: no gateway was called and no money moves. */
+  demo?: boolean;
+  /** Hosted payment page (DPO, or the demo checkout). */
+  payment_url?: string;
   actor_video_id?: number;
   casting_call_id?: number;
 }
 
 export interface PhonePayload {
-  phone_number: string;
+  /** Omitted when the gateway collects payment details itself (DPO). */
+  phone_number?: string;
 }
 
 /**
@@ -30,7 +35,12 @@ export interface PhonePayload {
 export interface ServicePurchase {
   titleKey: string;
   descriptionKey?: string;
-  initiate: (phoneNumber: string) => Observable<ServicePurchaseAccepted>;
+  /** Set to let an unconfirmed payment be resumed after a reload (see PaymentService.rememberPending). */
+  pendingKey?: string;
+  /** In-app page to come back to after a hosted-page payment (DPO). */
+  returnTo?: string;
+  /** phoneNumber is null when the gateway collects payment details itself (DPO). */
+  initiate: (phoneNumber: string | null) => Observable<ServicePurchaseAccepted>;
 }
 
 // ── Actor (Viewer with an actor profile) ────────────────────────────────

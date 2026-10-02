@@ -82,6 +82,8 @@ export class ActorDirectoryComponent implements OnInit {
     this.purchase.set({
       titleKey: 'marketplace.directory.purchaseTitle',
       descriptionKey: 'marketplace.directory.purchaseDesc',
+      pendingKey: 'service:actor_search',
+      returnTo: '/producer/actors',
       initiate: (phone) => this.casting.purchaseSearch(phone),
     });
   }

@@ -108,6 +108,10 @@ All uploads use the multipart flow through `MultipartUploadService`. Movie files
 
 `/producer/contracts/start → language → review → warning → accept → verifying → success`, state in `ContractFlowService` (memory only). The agreement text comes from `ContractService.getAgreement(language)` — never hardcode it; the `terms_version` shown is what gets signed. The warning step shows the API's `sign_deadline` (78 h after approval, enforced server-side) and is skipped when it's null (renewals). Signing sends a PNG from `SignaturePadComponent` plus the typed full name (must match the account) — no photo uploads. Sign errors are `{ error, field }`; `field: 'terms_version'` sends the producer back to review.
 
+### Payment flow
+
+`PaymentModalComponent` reads `PaymentService.getConfig()` (`/payments/config/`): PawaPay asks for a MoMo number and polls in the modal; DPO (`redirect: true`) shows the price → "Continue to secure payment" → `payment_url`, after `rememberPending()` + `rememberReturn()`. Only open a `payment_url` through `paymentPageTarget()` (DPO hosts or the in-app demo checkout; anything else is refused). The buyer comes back to `/payment/return?deposit=…`, which trusts only the server's status. A 409 on initiate means an open payment for the same item: offer continue/cancel, never a second charge. Demo mode is labelled from the response's `demo` flag; `/payment/demo-checkout` stands in for DPO's page. Never fake a successful payment on the frontend.
+
 ### Marketplace purchases
 
 Every marketplace fee goes through `PaymentModalComponent` with a `ServicePurchase` (`[service]` input) and shares `PaymentService.pollUntilSettled()`. A `503` means pricing isn't configured yet ("This service isn't available yet").

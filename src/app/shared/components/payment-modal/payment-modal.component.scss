@@ -172,6 +172,34 @@ $muted:  #888;
   font-size: 0.85rem;
 }
 
+// Backend demo mode: impossible to miss, so a demo is never mistaken for a real charge
+.pm-demo {
+  margin: 0 0 1rem;
+  padding: 0.6rem 0.8rem;
+  border-radius: 8px;
+  border: 1px dashed rgba(96, 165, 250, 0.7);
+  background: rgba(96, 165, 250, 0.1);
+  color: #cfe3ff;
+  font-size: 0.8rem;
+  line-height: 1.5;
+
+  strong { color: #fff; margin-right: 0.25rem; }
+  &--inline { margin: 0.75rem 0 0; text-align: center; }
+}
+
+// Unconfirmed after the polling window: informational, not an error
+.pm-pending {
+  background: rgba(197, 162, 83, 0.1);
+  border: 1px solid rgba(197, 162, 83, 0.45);
+  color: #f1e3bf;
+  padding: 0.65rem 0.85rem;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  line-height: 1.5;
+
+  &__title { font-weight: 700; margin-bottom: 0.25rem; }
+}
+
 // Pay button
 .pm-pay-btn {
   display: flex;
@@ -251,3 +279,35 @@ $muted:  #888;
 
   svg { width: 36px; height: 36px; }
 }
+
+// Hosted-page gateways (DPO): no phone field, a short explanation instead
+.pm-hosted-hint {
+  font-size: 0.8rem;
+  line-height: 1.5;
+  color: var(--ik-text-muted);
+  margin: -0.25rem 0 1rem;
+}
+
+.pm-notice {
+  font-size: 0.85rem;
+  color: var(--ik-text-muted);
+  margin-bottom: 0.75rem;
+}
+
+.pm-secondary-btn {
+  width: 100%;
+  margin-top: 0.6rem;
+  padding: 0.75rem;
+  background: none;
+  border: 1px solid var(--ik-border-strong);
+  border-radius: 10px;
+  color: var(--ik-text);
+  font-weight: 600;
+  font-size: 0.9rem;
+  cursor: pointer;
+
+  &:hover:not(:disabled) { border-color: var(--ik-text-muted); }
+  &:disabled { opacity: 0.6; cursor: not-allowed; }
+}
+
+.pm-form > .pm-pending { margin-bottom: 1rem; }

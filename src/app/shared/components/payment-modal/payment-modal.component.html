@@ -1,18 +1,22 @@
-<div class="pm-backdrop" (click)="closed.emit()" (keydown.escape)="closed.emit()">
-  <dialog class="pm-card" open (click)="$event.stopPropagation()" (keydown)="$event.stopPropagation()">
+<div class="pm-backdrop" (click)="close()">
+  <dialog #card class="pm-card" open aria-modal="true" aria-labelledby="pm-title" tabindex="-1"
+          (click)="$event.stopPropagation()" (keydown)="onKeydown($event)">
 
     <!-- Close -->
-    <button class="pm-close" (click)="closed.emit()" [attr.aria-label]="'paymentModal.close' | translate">
-      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+    <button type="button" class="pm-close" (click)="close()" [attr.aria-label]="'paymentModal.close' | translate">
+      <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
     </button>
 
     @if (success()) {
       <!-- Success state -->
-      <div class="pm-success">
+      <div class="pm-success" role="status">
         <div class="pm-success__icon">
           <svg viewBox="0 0 24 24" fill="currentColor"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
         </div>
-        <h3>{{ 'paymentModal.successTitle' | translate }}</h3>
+        <h3 id="pm-title">{{ 'paymentModal.successTitle' | translate }}</h3>
+        @if (demo()) {
+          <p class="pm-demo pm-demo--inline"><strong>{{ 'paymentModal.demo.label' | translate }}</strong> {{ 'paymentModal.demo.noCharge' | translate }}</p>
+        }
         @if (service) {
           <p>{{ 'marketplace.purchase.success' | translate }}</p>
         } @else {
@@ -24,7 +28,7 @@
       <!-- Service header -->
       <div class="pm-header">
         <div class="pm-info">
-          <h3 class="pm-title">{{ service.titleKey | translate }}</h3>
+          <h3 class="pm-title" id="pm-title">{{ service.titleKey | translate }}</h3>
           @if (service.descriptionKey) {
             <span class="pm-duration">{{ service.descriptionKey | translate }}</span>
           }
@@ -36,9 +40,9 @@
       } @else {
       <!-- Movie header -->
       <div class="pm-header">
-        <img [src]="movie.thumbnail_url" [alt]="movie.title" class="pm-poster" loading="lazy" />
+        <img [src]="movie.thumbnail_url" alt="" class="pm-poster" width="60" height="90" (error)="$any($event.target).style.visibility = 'hidden'" />
         <div class="pm-info">
-          <h3 class="pm-title">{{ movie.title }}</h3>
+          <h3 class="pm-title" id="pm-title">{{ movie.title }}</h3>
           <span class="pm-price">RWF {{ movie.price | number }}</span>
           @if (movie.duration_minutes) {
             <span class="pm-duration">{{ 'paymentModal.minutes' | translate: { n: movie.duration_minutes } }}</span>
@@ -49,61 +53,125 @@
 
       <hr class="pm-divider" />
 
+      @if (demo()) {
+        <p class="pm-demo" role="note">
+          <strong>{{ 'paymentModal.demo.label' | translate }}</strong>
+          {{ (config()?.redirect ? 'paymentModal.demo.textRedirect' : 'paymentModal.demo.text') | translate }}
+        </p>
+      }
+
       <!-- Payment form -->
       <div class="pm-form">
-        <p class="pm-label">{{ 'paymentModal.payWithMomo' | translate }}</p>
-
-        <!-- Phone input -->
-        <div class="pm-field">
-          <label class="pm-field__label" for="pm-phone">{{ 'paymentModal.phoneLabel' | translate }}</label>
-          <div class="pm-field__row">
-            <span class="pm-field__prefix">+250</span>
-            <input
-              id="pm-phone"
-              class="pm-field__input"
-              type="tel"
-              inputmode="numeric"
-              placeholder="07X XXX XXXX"
-              maxlength="13"
-              autocomplete="tel"
-              [value]="phoneNumber()"
-              (input)="onPhoneInput($event)"
-              [disabled]="loading()" />
+        @if (openPayment(); as open) {
+          <!-- An earlier hosted-page payment for this item is still open -->
+          <div class="pm-pending" role="status">
+            <p class="pm-pending__title">{{ 'paymentModal.openTitle' | translate }}</p>
+            <p>{{ 'paymentModal.openText' | translate }}</p>
           </div>
-          <span class="pm-field__hint">MTN: 078 / 079 &nbsp;·&nbsp; Airtel: 072 / 073</span>
-        </div>
+          <div aria-live="polite">
+            @if (error()) {
+              <div class="pm-error" id="pm-error" role="alert">{{ error() }}</div>
+            } @else if (errorKey()) {
+              <div class="pm-error" id="pm-error" role="alert">{{ errorKey() | translate }}</div>
+            }
+          </div>
+          <button type="button" class="pm-pay-btn" (click)="continueOpen()" [disabled]="loading()" [attr.aria-busy]="loading()">
+            @if (loading()) {
+              <span class="pm-spinner"></span>
+              {{ loadingMessage() | translate }}
+            } @else {
+              {{ 'paymentModal.continuePayment' | translate }}
+            }
+          </button>
+          <button type="button" class="pm-secondary-btn" (click)="cancelOpen()" [disabled]="loading()">
+            {{ 'paymentModal.cancelPayment' | translate }}
+          </button>
+        } @else {
+        @if (needsPhone) {
+          <p class="pm-label">{{ 'paymentModal.payWithMomo' | translate }}</p>
+
+          <!-- Phone input (MoMo prompt gateways only) -->
+          <div class="pm-field">
+            <label class="pm-field__label" for="pm-phone">{{ 'paymentModal.phoneLabel' | translate }}</label>
+            <div class="pm-field__row">
+              <span class="pm-field__prefix">+250</span>
+              <input
+                #phoneInput
+                id="pm-phone"
+                [attr.aria-describedby]="phoneInvalid() ? 'pm-phone-hint pm-error' : 'pm-phone-hint'"
+                [attr.aria-invalid]="phoneInvalid() || null"
+                class="pm-field__input"
+                type="tel"
+                inputmode="numeric"
+                placeholder="07X XXX XXXX"
+                maxlength="13"
+                autocomplete="tel"
+                [value]="phoneNumber()"
+                (input)="onPhoneInput($event)"
+                [disabled]="loading()" />
+            </div>
+            <span class="pm-field__hint" id="pm-phone-hint">MTN: 078 / 079 &nbsp;·&nbsp; Airtel: 072 / 073</span>
+          </div>
+        } @else if (config()) {
+          <p class="pm-label">{{ 'paymentModal.hostedLabel' | translate }}</p>
+          <p class="pm-hosted-hint">{{ 'paymentModal.hostedHint' | translate }}</p>
+        }
 
         <div aria-live="polite">
+          @if (stillPending()) {
+            <div class="pm-pending">
+              <p class="pm-pending__title">{{ 'paymentModal.stillPendingTitle' | translate }}</p>
+              <p>{{ 'paymentModal.stillPendingText' | translate }}</p>
+            </div>
+          } @else if (loading()) {
+            <p class="sr-only">{{ loadingMessage() | translate }}</p>
+          }
+          @if (notice()) {
+            <p class="pm-notice" role="status">{{ notice() | translate }}</p>
+          }
           @if (error()) {
-            <div class="pm-error" role="alert">{{ error() }}</div>
+            <div class="pm-error" id="pm-error" role="alert">{{ error() }}</div>
           } @else if (errorKey()) {
-            <div class="pm-error" role="alert">{{ errorKey() | translate }}</div>
+            <div class="pm-error" id="pm-error" role="alert">{{ errorKey() | translate }}</div>
           }
         </div>
 
-        <!-- Pay button -->
-        <button class="pm-pay-btn" (click)="pay()" [disabled]="loading()">
-          @if (loading()) {
+        <!-- Pay button (a still-pending deposit is re-checked, never paid twice) -->
+        @if (stillPending()) {
+          <button type="button" class="pm-pay-btn" (click)="checkAgain()">{{ 'paymentModal.checkAgain' | translate }}</button>
+        } @else {
+        <button type="button" class="pm-pay-btn" (click)="pay()" [disabled]="loading() || !config()" [attr.aria-busy]="loading() || !config()">
+          @if (loading() || !config()) {
             <span class="pm-spinner"></span>
-            {{ loadingMessage() | translate }}
+            {{ (config() ? loadingMessage() : 'paymentModal.processing') | translate }}
           } @else {
-            <svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18">
+            <svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18" aria-hidden="true">
               <path d="M20 4H4c-1.11 0-2 .89-2 2v12c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V6c0-1.11-.89-2-2-2zm0 14H4v-6h16v6zm0-10H4V6h16v2z"/>
             </svg>
-            @if (service) {
+            @if (!needsPhone) {
+              @if (service) {
+                {{ 'paymentModal.continueToPayment' | translate }}
+              } @else {
+                {{ 'paymentModal.continueToPaymentAmount' | translate: { amount: (movie.price | number) } }}
+              }
+            } @else if (service) {
               {{ 'marketplace.purchase.pay' | translate }}
             } @else {
               {{ 'paymentModal.payAmount' | translate: { amount: (movie.price | number) } }}
             }
           }
         </button>
+        }
+        }
 
+        @if (!demo() && config()) {
         <p class="pm-secure">
-          <svg viewBox="0 0 24 24" fill="currentColor" width="14" height="14">
+          <svg viewBox="0 0 24 24" fill="currentColor" width="14" height="14" aria-hidden="true">
             <path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"/>
           </svg>
-          {{ 'paymentModal.securePayment' | translate }}
+          {{ (config()!.gateway === 'dpo' ? 'paymentModal.securePaymentDpo' : 'paymentModal.securePayment') | translate }}
         </p>
+        }
       </div>
     }
 
