@@ -1,4 +1,4 @@
-import { ActorVideoStatus, ApplicationStatus, CastingCallStatus } from '../models/marketplace.interface';
+import { ActorVideo, ActorVideoStatus, ApplicationStatus, CastingCallStatus } from '../models/marketplace.interface';
 
 /** Badge classes (see shared/styles/marketplace-page.scss) for marketplace statuses. */
 export function applicationStatusClass(status: ApplicationStatus): string {
@@ -27,4 +27,9 @@ export function castingCallStatusClass(status: CastingCallStatus): string {
     case 'closed': return 'mk-badge';
     default: return 'mk-badge mk-badge--warn';
   }
+}
+
+/** The fee is paid and the file hasn't been uploaded yet. */
+export function isAwaitingUpload(v: ActorVideo): boolean {
+  return v.status === 'pending_upload' && v.payment_status === 'Completed';
 }

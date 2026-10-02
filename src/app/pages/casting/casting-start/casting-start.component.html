@@ -1,0 +1,90 @@
+<app-header [userImg]="''" />
+
+<main class="mk-page">
+  <section class="cs-hero">
+    <p class="cs-eyebrow">{{ 'marketplace.start.eyebrow' | translate }}</p>
+    <h1>{{ 'marketplace.start.headline' | translate }} <span class="cs-accent">{{ 'marketplace.start.headlineAccent' | translate }}</span></h1>
+    <p class="cs-sub">{{ 'marketplace.start.sub' | translate }}</p>
+  </section>
+
+  <section aria-labelledby="cs-path-title">
+    <h2 id="cs-path-title" class="cs-section-title">{{ 'marketplace.start.chooseTitle' | translate }}</h2>
+    <p class="mk-muted cs-section-sub">{{ 'marketplace.start.chooseSub' | translate }}</p>
+
+    <div class="cs-paths">
+      <!-- Actors -->
+      <article class="mk-card cs-path">
+        <span class="cs-path__icon" aria-hidden="true">🎭</span>
+        <h3>{{ 'marketplace.start.actorTitle' | translate }}</h3>
+        <p class="mk-muted">{{ 'marketplace.start.actorText' | translate }}</p>
+
+        <div class="cs-options">
+          <a class="cs-option" [routerLink]="isLoggedIn() ? '/actor/join' : '/register'">
+            <strong>{{ 'marketplace.start.showTalent' | translate }}</strong>
+            <span>{{ 'marketplace.start.showTalentText' | translate }}</span>
+          </a>
+          <a class="cs-option" [routerLink]="isLoggedIn() ? '/casting' : '/register'">
+            <strong>{{ 'marketplace.start.findCalls' | translate }}</strong>
+            <span>{{ 'marketplace.start.findCallsText' | translate }}</span>
+          </a>
+        </div>
+      </article>
+
+      <!-- Producers -->
+      <article class="mk-card cs-path">
+        <span class="cs-path__icon" aria-hidden="true">🎬</span>
+        <h3>{{ 'marketplace.start.producerTitle' | translate }}</h3>
+        <p class="mk-muted">{{ 'marketplace.start.producerText' | translate }}</p>
+
+        @if (isProducer()) {
+          <div class="cs-options">
+            <a class="cs-option" routerLink="/producer/casting">
+              <strong>{{ 'marketplace.start.postCall' | translate }}</strong>
+              <span>{{ 'marketplace.start.postCallText' | translate }}</span>
+            </a>
+            <a class="cs-option" routerLink="/producer/actors">
+              <strong>{{ 'marketplace.start.directory' | translate }}</strong>
+              <span>{{ 'marketplace.start.directoryText' | translate }}</span>
+            </a>
+          </div>
+        } @else {
+          <p class="mk-banner">{{ (isLoggedIn() ? 'marketplace.start.producerUpgradeHint' : 'marketplace.start.producerGuestHint') | translate }}</p>
+          <a class="mk-btn" [routerLink]="producerLink()">{{ producerCtaKey() | translate }}</a>
+        }
+      </article>
+    </div>
+
+    @if (!isLoggedIn()) {
+      <p class="mk-muted cs-signin">
+        {{ 'marketplace.start.haveAccount' | translate }}
+        <a routerLink="/login">{{ 'marketplace.start.signIn' | translate }}</a>
+      </p>
+    }
+  </section>
+
+  <section class="cs-how" aria-labelledby="cs-how-title">
+    <h2 id="cs-how-title" class="cs-section-title">{{ 'marketplace.start.howTitle' | translate }}</h2>
+    <div class="cs-paths">
+      <div class="mk-card">
+        <h3>{{ 'marketplace.start.howActors' | translate }}</h3>
+        <ol class="cs-how__list">
+          <li>{{ 'marketplace.start.actorStep1' | translate }}</li>
+          <li>{{ 'marketplace.start.actorStep2' | translate: { minutes: maxMinutes } }}</li>
+          <li>{{ 'marketplace.start.actorStep3' | translate }}</li>
+          <li>{{ 'marketplace.start.actorStep4' | translate }}</li>
+        </ol>
+      </div>
+      <div class="mk-card">
+        <h3>{{ 'marketplace.start.howProducers' | translate }}</h3>
+        <ol class="cs-how__list">
+          <li>{{ 'marketplace.start.producerStep1' | translate }}</li>
+          <li>{{ 'marketplace.start.producerStep2' | translate }}</li>
+          <li>{{ 'marketplace.start.producerStep3' | translate }}</li>
+          <li>{{ 'marketplace.start.producerStep4' | translate }}</li>
+        </ol>
+      </div>
+    </div>
+  </section>
+</main>
+
+<app-footer />

@@ -76,6 +76,7 @@ $ok: #4ade80;
 }
 
 .mk-muted { color: $muted; font-size: 0.875rem; }
+.mk-hint  { color: $muted; font-size: 0.75rem; margin: 0.4rem 0 0; }
 .mk-empty { color: $muted; text-align: center; padding: 2.5rem 1rem; }
 .mk-error { color: $danger; font-size: 0.9rem; margin: 0.5rem 0; }
 .mk-success { color: $ok; font-size: 0.9rem; margin: 0.5rem 0; }
@@ -135,8 +136,8 @@ $ok: #4ade80;
 
   &--ghost  { background: transparent; color: #e5e5e5; border-color: $border; }
   &--danger { background: transparent; color: $danger; border-color: rgba($danger, 0.5); }
-  &:disabled { opacity: 0.5; cursor: not-allowed; }
-  &:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
+  &:disabled, &--disabled { opacity: 0.5; cursor: not-allowed; }
+  &:focus-visible, &:focus-within { outline: 2px solid #fff; outline-offset: 2px; }
 }
 
 .mk-form {
@@ -217,4 +218,130 @@ $ok: #4ade80;
     justify-content: space-between;
     margin-bottom: 0.75rem;
   }
+}
+
+// ── Step-by-step flows (actor wizard, apply review) ─────────────────────
+
+.mk-page--narrow { max-width: 760px; }
+
+.mk-back {
+  color: $muted;
+  font-size: 0.875rem;
+  text-decoration: none;
+  &:hover { color: #fff; }
+}
+
+.mk-steps {
+  display: flex;
+  gap: 0.5rem;
+  list-style: none;
+  padding: 0;
+  margin: 0 0 0.4rem;
+
+  li {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 3px solid $border;
+    color: $muted;
+    font-size: 0.85rem;
+    min-width: 0;
+
+    &.done    { border-bottom-color: rgba($gold, 0.5); }
+    &.current { border-bottom-color: $gold; color: #fff; }
+  }
+}
+
+.mk-steps__dot {
+  flex: none;
+  display: inline-grid;
+  place-items: center;
+  width: 1.6rem;
+  height: 1.6rem;
+  border-radius: 50%;
+  border: 1px solid currentColor;
+  font-size: 0.75rem;
+  font-weight: 700;
+
+  .current & { background: $gold; border-color: $gold; color: #111; }
+  .done &    { border-color: $gold; color: $gold; }
+}
+
+.mk-steps__label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+@media (max-width: 480px) {
+  .mk-steps__label { display: none; }
+  .mk-steps li.current .mk-steps__label { display: inline; }
+}
+
+.mk-step-title {
+  font-size: 1.4rem;
+  font-weight: 700;
+  margin: 0 0 0.5rem;
+}
+
+// Headings focused programmatically on step change.
+[tabindex="-1"]:focus { outline: none; }
+
+// Hidden but still focusable (e.g. a file input inside a styled label).
+.mk-visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.mk-actions {
+  justify-content: flex-end;
+  margin-top: 1.1rem;
+}
+
+.mk-list {
+  margin: 0.4rem 0 1rem;
+  padding-left: 1.2rem;
+  display: grid;
+  gap: 0.35rem;
+  color: #ccc;
+  font-size: 0.9rem;
+}
+
+.mk-summary {
+  display: grid;
+  grid-template-columns: minmax(120px, max-content) 1fr;
+  gap: 0.55rem 1.2rem;
+  margin: 1rem 0;
+
+  dt { color: $muted; font-size: 0.85rem; }
+  dd { margin: 0; overflow-wrap: anywhere; }
+}
+
+.mk-done {
+  text-align: center;
+  padding: 1rem 0 1.25rem;
+
+  p { margin: 0.25rem 0 0; }
+}
+
+.mk-done__icon {
+  display: inline-grid;
+  place-items: center;
+  width: 3.5rem;
+  height: 3.5rem;
+  margin-bottom: 0.75rem;
+  border-radius: 50%;
+  background: rgba($ok, 0.15);
+  color: $ok;
+  font-size: 1.75rem;
+  font-weight: 700;
 }

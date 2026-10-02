@@ -10,6 +10,7 @@ import { PaymentModalComponent } from '../../../shared/components/payment-modal/
 import { VideoPlayerComponent } from '../../../shared/components/video-player/video-player.component';
 import { ActorMarketplaceService } from '../../../shared/services/actor-marketplace.service';
 import { MultipartUploadService, UploadError } from '../../../shared/services/multipart-upload.service';
+import { VideoDurationService } from '../../../shared/services/video-duration.service';
 import { ActorVideo, ServicePurchase } from '../../../shared/models/marketplace.interface';
 import { MultipartUploadApi } from '../../../shared/models/upload.interface';
 
@@ -60,6 +61,7 @@ describe('ActorVideosComponent', () => {
         provideTranslateService(),
         { provide: ActorMarketplaceService, useValue: marketplace },
         { provide: MultipartUploadService, useValue: uploader },
+        { provide: VideoDurationService, useValue: { read: () => Promise.resolve(60) } },
       ],
     });
     TestBed.overrideComponent(ActorVideosComponent, {

@@ -37,10 +37,10 @@ Three user roles (Viewer, Producer, Admin) each have separate lazy-loaded route 
 | Role | Paths | Layout | Guard |
 |------|-------|--------|-------|
 | Viewer | `/browse`, `/movie/:id`, `/profile`, `/my-list` | Core `header`/`footer` | `authGuard` + `viewerGuard` |
-| Viewer (actor marketplace) | `/actor/profile`, `/actor/videos`, `/actor/applications`, `/casting`, `/casting/:id` | Core `header`/`footer` + `ActorNavComponent` | `authGuard` + `viewerGuard` |
+| Viewer (actor marketplace) | `/actor/join` (wizard), `/actor/profile`, `/actor/videos`, `/actor/applications`, `/casting`, `/casting/:id` | Core `header`/`footer` + `ActorNavComponent` | `authGuard` + `viewerGuard` |
 | Producer | `/producer/*` incl. `/producer/casting`, `/producer/casting/:id`, `/producer/actors`, `/producer/actors/:id` | `ProducerLayoutComponent` | `producerGuard` (role = Producer) |
 | Admin | `/admin/*` incl. `/admin/marketplace`, `/admin/cms/pages`, `/admin/cms/ads` | `AdminLayoutComponent` | `adminGuard` (is_staff = true) |
-| Public | `/terms`, `/about`, `/privacy`, `/contact`, `/pages/:slug` (CMS), `/preview/:id`, `/producers` | none | — |
+| Public | `/terms`, `/about`, `/privacy`, `/contact`, `/pages/:slug` (CMS), `/preview/:id`, `/producers`, `/casting/start` (casting landing) | none | — |
 
 Guest routes (`/login`, `/register`, `/forgot-password`) use `guestGuard` which redirects already-authenticated users to their role's home.
 

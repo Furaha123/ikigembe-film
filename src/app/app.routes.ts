@@ -53,6 +53,10 @@ export const routes: Routes = [
     children: [
       { path: '', redirectTo: 'profile', pathMatch: 'full' },
       {
+        path: 'join',
+        loadComponent: () => import('./pages/actor/actor-onboarding/actor-onboarding.component').then(a => a.ActorOnboardingComponent)
+      },
+      {
         path: 'profile',
         loadComponent: () => import('./pages/actor/actor-profile/actor-profile.component').then(a => a.ActorProfileComponent)
       },
@@ -65,6 +69,11 @@ export const routes: Routes = [
         loadComponent: () => import('./pages/actor/my-applications/my-applications.component').then(a => a.MyApplicationsComponent)
       },
     ]
+  },
+  // Public "choose your path" landing; declared before casting/:id.
+  {
+    path: 'casting/start',
+    loadComponent: () => import('./pages/casting/casting-start/casting-start.component').then(a => a.CastingStartComponent)
   },
   {
     path: 'casting',

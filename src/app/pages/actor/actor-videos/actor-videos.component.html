@@ -71,23 +71,8 @@
           }
 
           @if (canUpload(v)) {
-            @let up = uploads()[v.id];
-            @if (up?.uploading) {
-              <div class="mk-progress" role="progressbar" [attr.aria-valuenow]="up!.pct" aria-valuemin="0" aria-valuemax="100"
-                   [attr.aria-label]="'marketplace.videos.uploading' | translate">
-                <div [style.width.%]="up!.pct"></div>
-              </div>
-              <div class="mk-row">
-                <span class="mk-muted">{{ up!.pct }}%</span>
-                <button type="button" class="mk-btn mk-btn--ghost" (click)="cancelUpload(v)">{{ 'marketplace.common.cancel' | translate }}</button>
-              </div>
-            } @else {
-              <label class="mk-btn">
-                {{ 'marketplace.videos.upload' | translate }}
-                <input type="file" [accept]="videoAccept" hidden (change)="onFileSelected(v, $event)" />
-              </label>
-            }
-            @if (up?.error) { <p class="mk-error" role="alert">{{ up!.error! | translate }}</p> }
+            <!-- Step 3: upload the paid video -->
+            <app-talent-video-uploader [video]="v" (uploaded)="load()" />
           }
 
           @if (v.video_url && (v.status === 'approved' || v.status === 'pending_review')) {

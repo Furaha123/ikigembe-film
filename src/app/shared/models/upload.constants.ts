@@ -8,6 +8,13 @@
 export const ALLOWED_VIDEO_EXTENSIONS: readonly string[] = ['.mp4', '.mov', '.avi', '.mkv'];
 export const VIDEO_ACCEPT = '.mp4,.mov,.avi,.mkv,video/mp4,video/quicktime,video/x-msvideo,video/x-matroska';
 
+/**
+ * Longest talent video an actor may upload. Checked in the browser only (the
+ * backend doesn't enforce it yet), and skipped when the browser can't read the
+ * file's duration — admin review is the backstop.
+ */
+export const MAX_TALENT_VIDEO_SECONDS = 180;
+
 export const ALLOWED_DOCUMENT_EXTENSIONS: readonly string[] = ['.pdf', '.jpg', '.jpeg', '.png'];
 export const DOCUMENT_ACCEPT = '.pdf,.jpg,.jpeg,.png';
 

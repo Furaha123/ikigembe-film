@@ -1,0 +1,146 @@
+<app-header [userImg]="''" />
+
+<main class="mk-page mk-page--narrow">
+  <p><a routerLink="/casting/start" class="mk-back">← {{ 'marketplace.join.backToStart' | translate }}</a></p>
+
+  @if (loading()) {
+    <p class="mk-muted" aria-live="polite">{{ 'marketplace.common.loading' | translate }}</p>
+  } @else if (loadError()) {
+    <p class="mk-error" role="alert">{{ loadError()! | translate }}</p>
+  } @else {
+    @if (stepIndex() > 0) {
+      <ol class="mk-steps" [attr.aria-label]="'marketplace.join.progress' | translate">
+        @for (s of steps; track s.id; let i = $index) {
+          <li [class.done]="i + 1 < stepIndex()" [class.current]="i + 1 === stepIndex()"
+              [attr.aria-current]="i + 1 === stepIndex() ? 'step' : null">
+            <span class="mk-steps__dot" aria-hidden="true">{{ i + 1 }}</span>
+            <span class="mk-steps__label">{{ s.labelKey | translate }}</span>
+          </li>
+        }
+      </ol>
+      <p class="mk-muted">{{ 'marketplace.join.stepOf' | translate: { n: stepIndex(), total: steps.length } }}</p>
+    }
+
+    <section class="mk-card">
+      @switch (step()) {
+        @case ('welcome') {
+          <h1 #stepHeading tabindex="-1" class="mk-step-title">{{ 'marketplace.join.welcomeTitle' | translate }}</h1>
+          <p>{{ 'marketplace.join.welcomeIntro' | translate }}</p>
+
+          <h2>{{ 'marketplace.join.rulesTitle' | translate }}</h2>
+          <ul class="mk-list">
+            <li>{{ 'marketplace.join.ruleLength' | translate: { minutes: maxMinutes } }}</li>
+            <li>{{ 'marketplace.join.ruleQuality' | translate }}</li>
+            <li>{{ 'marketplace.join.ruleOwn' | translate }}</li>
+            <li>{{ 'marketplace.join.ruleFee' | translate }}</li>
+            <li>{{ 'marketplace.join.ruleReview' | translate }}</li>
+          </ul>
+
+          @if (awaitingVideo(); as v) {
+            <p class="mk-banner">
+              {{ 'marketplace.join.resumeHint' | translate: { title: v.title } }}
+            </p>
+          }
+
+          <div class="mk-row mk-actions">
+            @if (awaitingVideo()) {
+              <button type="button" class="mk-btn mk-btn--ghost" (click)="goTo('profile')">{{ 'marketplace.join.start' | translate }}</button>
+              <button type="button" class="mk-btn" (click)="goTo('upload')">{{ 'marketplace.join.resume' | translate }}</button>
+            } @else {
+              <button type="button" class="mk-btn" (click)="goTo('profile')">{{ 'marketplace.join.start' | translate }}</button>
+            }
+          </div>
+        }
+
+        @case ('profile') {
+          <h1 #stepHeading tabindex="-1" class="mk-step-title">{{ 'marketplace.join.profileTitle' | translate }}</h1>
+          <p class="mk-muted">{{ (profile() ? 'marketplace.join.profileExisting' : 'marketplace.join.profileIntro') | translate }}</p>
+          <app-actor-profile-form [profile]="profile()" submitKey="marketplace.join.saveAndContinue" (saved)="onProfileSaved($event)">
+            <button type="button" class="mk-btn mk-btn--ghost" (click)="goTo('welcome')">{{ 'marketplace.join.back' | translate }}</button>
+          </app-actor-profile-form>
+        }
+
+        @case ('video') {
+          <h1 #stepHeading tabindex="-1" class="mk-step-title">{{ 'marketplace.join.videoTitle' | translate }}</h1>
+          <p class="mk-muted">{{ 'marketplace.join.videoIntro' | translate }}</p>
+
+          <form [formGroup]="videoForm" (ngSubmit)="startPurchase()" novalidate>
+            <div class="mk-form">
+              <div class="mk-field">
+                <label for="aj-title">{{ 'marketplace.videos.fieldTitle' | translate }} *</label>
+                <input id="aj-title" formControlName="title"
+                       [attr.aria-invalid]="videoForm.controls.title.invalid && videoForm.controls.title.touched" />
+                @if (videoForm.controls.title.invalid && videoForm.controls.title.touched) {
+                  <p class="mk-error">{{ 'marketplace.errors.required' | translate }}</p>
+                }
+              </div>
+              <div class="mk-field">
+                <label for="aj-desc">{{ 'marketplace.videos.fieldDescription' | translate }}</label>
+                <input id="aj-desc" formControlName="description" />
+              </div>
+            </div>
+
+            <p class="mk-banner">{{ 'marketplace.join.feeNote' | translate }}</p>
+
+            <div aria-live="polite">
+              @if (paymentPending()) {
+                <p class="mk-muted">{{ 'marketplace.videos.paymentPending' | translate }}</p>
+              }
+              @if (refreshFailed()) {
+                <p class="mk-error" role="alert">{{ 'marketplace.errors.loadFailed' | translate }}</p>
+              }
+            </div>
+
+            <div class="mk-row mk-actions">
+              <button type="button" class="mk-btn mk-btn--ghost" (click)="goTo('profile')">{{ 'marketplace.join.back' | translate }}</button>
+              @if (paymentPending()) {
+                <button type="button" class="mk-btn mk-btn--ghost" (click)="refreshVideos()">{{ 'marketplace.common.refresh' | translate }}</button>
+              }
+              <button type="submit" class="mk-btn">{{ 'marketplace.join.payFee' | translate }}</button>
+            </div>
+          </form>
+        }
+
+        @case ('upload') {
+          <h1 #stepHeading tabindex="-1" class="mk-step-title">{{ 'marketplace.join.uploadTitle' | translate }}</h1>
+          @if (awaitingVideo(); as v) {
+            <p class="mk-muted">{{ 'marketplace.join.uploadIntro' | translate: { title: v.title } }}</p>
+            <ul class="mk-list mk-list--tips">
+              <li>{{ 'marketplace.join.tipLight' | translate }}</li>
+              <li>{{ 'marketplace.join.tipSound' | translate }}</li>
+              <li>{{ 'marketplace.join.tipFrame' | translate }}</li>
+            </ul>
+            <app-talent-video-uploader [video]="v" (uploaded)="goTo('done')" />
+          } @else {
+            <p class="mk-muted">{{ 'marketplace.join.nothingToUpload' | translate }}</p>
+            <button type="button" class="mk-btn" (click)="goTo('video')">{{ 'marketplace.join.back' | translate }}</button>
+          }
+        }
+
+        @case ('done') {
+          <div class="mk-done">
+            <span class="mk-done__icon" aria-hidden="true">✓</span>
+            <h1 #stepHeading tabindex="-1" class="mk-step-title">{{ 'marketplace.join.doneTitle' | translate }}</h1>
+            <p>{{ 'marketplace.join.doneText' | translate }}</p>
+          </div>
+          <h2>{{ 'marketplace.join.nextTitle' | translate }}</h2>
+          <ul class="mk-list">
+            <li>{{ 'marketplace.join.nextReview' | translate }}</li>
+            <li>{{ 'marketplace.join.nextApply' | translate }}</li>
+            <li>{{ 'marketplace.join.nextDirectory' | translate }}</li>
+          </ul>
+          <div class="mk-row mk-actions">
+            <a routerLink="/actor/videos" class="mk-btn mk-btn--ghost">{{ 'marketplace.join.myVideos' | translate }}</a>
+            <a routerLink="/casting" class="mk-btn">{{ 'marketplace.join.browseCalls' | translate }}</a>
+          </div>
+        }
+      }
+    </section>
+  }
+</main>
+
+<app-footer />
+
+@if (purchase(); as p) {
+  <app-payment-modal [service]="p" (paid)="onPaid()" (closed)="closePurchase()" />
+}
