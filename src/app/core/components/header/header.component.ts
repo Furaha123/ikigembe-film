@@ -59,7 +59,6 @@ export class HeaderComponent implements OnInit, OnDestroy {
     { label: 'My List',            labelKey: 'header.nav.myList',           route: '/my-list' },
     { label: 'Producers',          labelKey: 'header.nav.producers',        route: '/producers' },
     { label: 'Casting',            labelKey: 'marketplace.nav.casting',     route: '/casting' },
-    { label: 'Browse by Language', labelKey: 'header.nav.browseByLanguage', route: null },
   ];
 
   ngOnInit() {

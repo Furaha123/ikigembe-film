@@ -1747,8 +1747,7 @@
     "nav": {
       "home": "Home",
       "myList": "My List",
-      "producers": "Producers",
-      "browseByLanguage": "Browse by Language"
+      "producers": "Producers"
     },
     "toggleNav": "Toggle navigation",
     "logoAlt": "Ikigembe logo",
