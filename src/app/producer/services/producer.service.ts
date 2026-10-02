@@ -122,7 +122,8 @@ export interface ProducerNotification {
     | 'document_reminder'
     | 'contract_required'
     | 'contract_expiring'
-    | 'contract_expired';
+    | 'contract_expired'
+    | 'contract_deadline_missed';
   message: string;
   read: boolean;
   created_at: string;

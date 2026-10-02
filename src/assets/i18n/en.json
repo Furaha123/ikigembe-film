@@ -445,41 +445,51 @@
       "download": "Download PDF",
       "scrollHint": "↓ Scroll to the bottom to enable Continue",
       "back": "Back",
-      "continueBtn": "I've Read This — Continue"
+      "continueBtn": "I've Read This — Continue",
+      "termsVersion": "Agreement version {{version}}",
+      "loadFailed": "We couldn't load the agreement. Please try again.",
+      "retry": "Try again"
     },
     "warning": {
       "title": "WARNING",
-      "subtitle": "This agreement must be accepted within 78 hours (3 days and 6 hours) from the time it was sent.",
-      "boxLabel": "If not accepted within 78 hours:",
-      "bullet1": "The contract will be canceled.",
-      "bullet2": "The movie will be returned to Pending Submission.",
-      "bullet3": "The Producer will be required to restart the process.",
+      "subtitle": "This agreement must be signed within 78 hours of your movie being approved.",
+      "boxLabel": "If it is not signed in time:",
+      "bullet1": "Your approved movie will not be published.",
+      "bullet2": "The movie will be returned to Pending Review.",
+      "bullet3": "An admin will need to approve it again.",
       "timeRemaining": "Time remaining",
       "days": "Days",
       "hours": "Hours",
       "minutes": "Minutes",
       "seconds": "Seconds",
       "back": "Back",
-      "understand": "I Understand — Continue"
+      "understand": "I Understand — Continue",
+      "passed": "The deadline has passed, so your movie is being returned to review. You can still sign now — once it is approved again, it will be published straight away."
     },
     "acceptance": {
       "title": "Sign the Agreement",
-      "subtitle": "Upload a photo of your handwritten signature to serve as your legal signature.",
-      "fieldLabel": "Signature Photo *",
-      "uploadPrompt": "Upload signature photo",
-      "uploadHint": "JPG, PNG, WebP · max 5 MB",
-      "removePhoto": "Remove",
+      "subtitle": "Draw your signature and type your full legal name. Together they are your legal signature on this agreement.",
+      "fieldLabel": "Your signature *",
       "agreeText": "I have read and fully agree to the",
       "agreeName": "Producer Distribution Agreement",
       "agreeEnd": "and all its terms.",
       "back": "Back",
-      "acceptBtn": "Accept & Continue"
+      "acceptBtn": "Accept & Continue",
+      "padLabel": "Signature pad",
+      "padHint": "Sign here with your mouse, finger or stylus",
+      "clear": "Clear",
+      "nameLabel": "Full legal name *",
+      "nameHint": "Type the name on your account: {{name}}",
+      "nameMismatch": "This must match the name on your account.",
+      "nameMissing": "Your account has no full name yet. Add your first and last name before signing.",
+      "goToSettings": "Go to Settings"
     },
     "verifying": {
       "submitting": "Submitting Agreement…",
       "pleaseWait": "Please wait while we process your agreement.",
       "failed": "Submission Failed",
-      "tryAgain": "Try Again"
+      "tryAgain": "Try Again",
+      "genericError": "Something went wrong. Please try again."
     },
     "success": {
       "title": "Agreement Approved",
@@ -1138,7 +1148,12 @@
       "colSignedOn": "Signed On",
       "colExpiresOn": "Expires On",
       "colDaysLeft": "Days Left",
-      "daysShort": "{{days}}d"
+      "daysShort": "{{days}}d",
+      "colSignature": "Signature",
+      "signatureAlt": "Signature of {{name}}",
+      "methodDrawn": "Drawn",
+      "methodPhoto": "Photo",
+      "termsVersion": "Terms v{{version}}"
     },
     "movies": {
       "title": "Films",

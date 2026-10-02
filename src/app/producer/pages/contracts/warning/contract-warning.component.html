@@ -1,4 +1,5 @@
 <div class="flow-page">
+  @if (!loading()) {
   <div class="flow-card warn-card">
 
     <div class="step-indicator">
@@ -27,7 +28,10 @@
       </ul>
     </div>
 
-    <!-- ── Countdown ── -->
+    <!-- ── Countdown (deadline from the API) ── -->
+    @if (passed()) {
+      <p class="deadline-passed" role="alert">{{ 'contracts.warning.passed' | translate }}</p>
+    } @else {
     <div class="countdown-wrap">
       <p class="countdown-label">{{ 'contracts.warning.timeRemaining' | translate }}</p>
       <div class="countdown">
@@ -52,6 +56,7 @@
         </div>
       </div>
     </div>
+    }
 
     <div class="flow-actions">
       <button class="btn-outline" (click)="back()">{{ 'contracts.warning.back' | translate }}</button>
@@ -59,4 +64,5 @@
     </div>
 
   </div>
+  }
 </div>

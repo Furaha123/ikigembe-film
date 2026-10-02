@@ -129,6 +129,26 @@ table {
 
 .text-warning { color: #f59e0b; font-weight: 600; }
 
+.signature-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 170px;
+}
+
+// Signatures are dark ink on a transparent background.
+.signature-img {
+  width: 160px;
+  height: 54px;
+  object-fit: contain;
+  background: #fff;
+  border-radius: 6px;
+  padding: 2px 6px;
+}
+
+.signed-name { font-weight: 600; }
+.signature-meta { font-size: 11.5px; color: $muted; }
+
 // ── Status badges ─────────────────────────────────────────
 .badge {
   display: inline-flex;
