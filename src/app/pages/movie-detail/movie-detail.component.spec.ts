@@ -85,8 +85,9 @@ describe('MovieDetailComponent (viewer playback)', () => {
     movieService.getSimilarMovies.and.returnValue(of({ results: [] }));
     watchProgress = jasmine.createSpyObj<WatchProgressService>('WatchProgressService', ['report']);
     watchProgress.report.and.resolveTo();
-    payments = jasmine.createSpyObj<PaymentService>('PaymentService', ['hasPurchased', 'forgetPurchase']);
+    payments = jasmine.createSpyObj<PaymentService>('PaymentService', ['hasPurchased', 'forgetPurchase', 'pendingDeposit']);
     payments.hasPurchased.and.returnValue(false);
+    payments.pendingDeposit.and.returnValue(null);
 
     TestBed.configureTestingModule({
       providers: [
@@ -102,6 +103,44 @@ describe('MovieDetailComponent (viewer playback)', () => {
     TestBed.overrideComponent(MovieDetailComponent, {
       remove: { imports: [HeaderComponent, FooterComponent, VideoPlayerComponent, PaymentModalComponent] },
       add: { imports: [HeaderStub, FooterStub, PlayerStub, PaymentModalStub] },
+    });
+  });
+
+  describe('load states', () => {
+    const openFailing = async (status: number) => {
+      movieService.getMovieDetails.and.returnValue(throwError(() => new HttpErrorResponse({ status })));
+      harness = await RouterTestingHarness.create();
+      await harness.navigateByUrl('/movie/12', MovieDetailComponent);
+      harness.detectChanges();
+    };
+
+    it('404 → "film not available" with a way back, no retry', async () => {
+      await openFailing(404);
+      expect(el().querySelector('h1')!.textContent).toContain('movieDetailPage.notFoundTitle');
+      expect(el().querySelector('a[href="/browse"]')).not.toBeNull();
+      expect(el().querySelector('.detail-error button')).toBeNull();
+    });
+
+    it('a server/network error offers a retry that reloads the film', async () => {
+      await openFailing(0);
+      expect(el().querySelector('h1')!.textContent).toContain('movieDetailPage.loadErrorTitle');
+      movieService.getMovieDetails.and.returnValue(of(asDetail(movieDetails())));
+      el().querySelector<HTMLButtonElement>('.detail-error button')!.click();
+      harness.detectChanges();
+      expect(el().querySelector('h1')!.textContent).toContain('Umurage');
+    });
+
+    it('failing credits or similar films do not take the page down', async () => {
+      movieService.getSimilarMovies.and.returnValue(throwError(() => new HttpErrorResponse({ status: 500 })));
+      await open(movieDetails());
+      expect(el().querySelector('h1')!.textContent).toContain('Umurage');
+      expect(el().querySelector('.similar-title')).toBeNull(); // no empty "You may also like" heading
+    });
+
+    it('offers to check a payment that was started earlier and not confirmed', async () => {
+      payments.pendingDeposit.and.returnValue('dep-1');
+      await open(movieDetails());
+      expect(el().querySelector('.stream-pending')).not.toBeNull();
     });
   });
 

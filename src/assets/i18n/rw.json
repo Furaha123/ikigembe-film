@@ -1885,7 +1885,18 @@
     "moreFrom": "More from",
     "seeAll": "See all",
     "closePlayer": "Close player",
-    "seoDescription": "Watch {{title}} on Ikigembe."
+    "seoDescription": "Watch {{title}} on Ikigembe.",
+    "posterAlt": "Poster for {{title}}",
+    "comingOn": "Release date {{date}}",
+    "pendingPayment": "A payment for this film is waiting for confirmation.",
+    "checkPayment": "Check status",
+    "loading": "Loading film...",
+    "notFoundTitle": "Film not available",
+    "notFoundText": "This film doesn't exist or isn't available right now.",
+    "loadErrorTitle": "We couldn't load this film",
+    "loadErrorText": "Check your connection and try again.",
+    "retry": "Try again",
+    "backToFilms": "Back to films"
   },
   "myList": {
     "title": "My List",
@@ -1916,8 +1927,33 @@
       "failed": "Payment failed. Please try again.",
       "declined": "Payment was declined. Please try again.",
       "verifyFailed": "Could not verify payment. Please contact support.",
-      "timedOut": "Payment confirmation timed out. If you were charged, please contact support."
-    }
+      "timedOut": "Payment confirmation timed out. If you were charged, please contact support.",
+      "badPaymentPage": "We couldn't open the payment page. Please try again or contact support."
+    },
+    "checkingEarlier": "Checking your earlier payment...",
+    "checking": "Checking payment status...",
+    "stillPendingTitle": "Still waiting for confirmation",
+    "stillPendingText": "If you approved the prompt on your phone, confirmation can take a few minutes. Checking again won't start a new charge. You can also close this and come back later.",
+    "checkAgain": "Check again",
+    "demo": {
+      "label": "DEMO PAYMENT",
+      "text": "No money is charged and no phone prompt is sent. It confirms by itself after a few seconds. Use a number ending in 0000 to see a declined payment.",
+      "simulating": "Simulating Mobile Money approval...",
+      "noCharge": "No money was charged.",
+      "textRedirect": "No money is charged. You'll see a demo payment page instead of DPO's, where you can choose to pay or decline."
+    },
+    "hostedLabel": "Secure payment",
+    "hostedHint": "You'll continue to DPO's secure payment page to pay with Mobile Money or card, then come back here automatically.",
+    "continueToPayment": "Continue to secure payment",
+    "continueToPaymentAmount": "Continue to secure payment — RWF {{amount}}",
+    "securePaymentDpo": "Secure payment powered by DPO Pay",
+    "redirecting": "Opening the secure payment page...",
+    "cancelling": "Cancelling...",
+    "cancelled": "That payment was cancelled. You can start a new one.",
+    "openTitle": "You have a payment in progress",
+    "openText": "You started paying for this earlier and haven't finished. Continue it, or cancel it to start again.",
+    "continuePayment": "Continue payment",
+    "cancelPayment": "Cancel this payment"
   },
   "playerUi": {
     "close": "Close",
@@ -2195,5 +2231,49 @@
     "home": "Go to films",
     "signIn": "Sign in",
     "producers": "Meet the producers"
+  },
+  "paymentReturn": {
+    "seoTitle": "Payment",
+    "checkingTitle": "Confirming your payment...",
+    "checkingText": "This usually takes a few seconds. Please keep this page open.",
+    "successTitle": "Payment confirmed",
+    "successMovie": "\"{{title}}\" is ready to watch.",
+    "successService": "Your purchase is active.",
+    "watchNow": "Watch now",
+    "viewFilm": "Go to the film",
+    "continue": "Continue",
+    "failedTitle": "Payment not completed",
+    "failedDeclined": "The payment was declined. No money was taken.",
+    "failedExpired": "The payment window expired before the payment was made.",
+    "failedCancelled": "The payment was cancelled.",
+    "failedGeneric": "The payment didn't go through.",
+    "tryAgain": "Try again",
+    "history": "Payment history",
+    "pendingTitle": "Payment not finished yet",
+    "pendingText": "We haven't received a confirmation. If you completed the payment, it can take a few minutes. You can also go back to the payment page.",
+    "cancelFailed": "We couldn't cancel the payment. Please try again.",
+    "invalidTitle": "Payment not found",
+    "invalidText": "This payment link isn't valid for your account. Your payment history shows all your payments.",
+    "errorTitle": "We couldn't check your payment",
+    "errorText": "Check your connection and try again. If you paid, it will still be applied.",
+    "notFinishedHint": "Didn't finish paying? You can go back to the payment page or cancel it."
+  },
+  "demoCheckout": {
+    "seoTitle": "Demo checkout",
+    "banner": "DEMO PAYMENT PAGE",
+    "bannerText": "This stands in for DPO's secure payment page. No money is charged.",
+    "pay": "Pay RWF {{amount}} (demo)",
+    "decline": "Decline (demo)",
+    "abandon": "Back to Ikigembe without paying",
+    "unavailable": "Demo payments are not enabled.",
+    "alreadySettled": "This payment is already finished.",
+    "back": "Back to Ikigembe",
+    "failed": "Something went wrong. Please try again.",
+    "service": {
+      "actor_video": "Talent video upload",
+      "actor_search": "Actor directory pass",
+      "casting_announcement": "Casting call announcement",
+      "movie": "Film"
+    }
   }
 }

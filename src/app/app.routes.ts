@@ -102,6 +102,17 @@ export const routes: Routes = [
     path: 'admin',
     loadChildren: () => import('./admin/admin.routes').then(m => m.adminRoutes),
   },
+  // ── Hosted-page payments (DPO): the buyer returns here; the demo checkout stands in for DPO ──
+  {
+    path: 'payment/return',
+    canActivate: [authGuard],
+    loadComponent: () => import('./pages/payment/payment-return.component').then(a => a.PaymentReturnComponent)
+  },
+  {
+    path: 'payment/demo-checkout',
+    canActivate: [authGuard],
+    loadComponent: () => import('./pages/payment/demo-checkout.component').then(a => a.DemoCheckoutComponent)
+  },
   {
     path: '**',
     loadComponent: () => import('./pages/not-found/not-found.component').then(a => a.NotFoundComponent)

@@ -128,6 +128,8 @@ export class ProducerCastingComponent implements OnInit {
     this.purchase.set({
       titleKey: 'marketplace.producerCasting.publishTitle',
       descriptionKey: 'marketplace.producerCasting.publishDesc',
+      pendingKey: `service:casting:${c.id}`,
+      returnTo: '/producer/casting',
       initiate: (phone) => this.casting.purchaseCall(c.id, phone),
     });
   }
