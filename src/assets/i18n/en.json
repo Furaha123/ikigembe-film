@@ -1,4 +1,14 @@
 {
+  "viewingAccess": {
+    "title": "One View = One Device",
+    "oneRemaining": "1 view remaining",
+    "noneRemaining": "0 views remaining",
+    "unknown": "Remaining access unavailable",
+    "otherDevice": "Access tied to another device",
+    "singleView": "Each payment gives you one view of this movie on one device.",
+    "sameDevice": "Use the same device and browser to continue watching. Your view cannot be shared across devices.",
+    "usedView": "Once your view is used, you must pay again to watch this movie."
+  },
   "nav": {
     "dashboard": "Dashboard",
     "upload": "Upload Film",

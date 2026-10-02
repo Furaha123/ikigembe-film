@@ -6,11 +6,12 @@ import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { Observable, Subject, takeUntil } from 'rxjs';
 import { PaymentService } from '../../../core/services/payment.service';
 import { ServicePurchase } from '../../models/marketplace.interface';
+import { ViewingAccessComponent } from '../viewing-access/viewing-access.component';
 
 @Component({
   selector: 'app-payment-modal',
   standalone: true,
-  imports: [CommonModule, FormsModule, TranslatePipe],
+  imports: [CommonModule, FormsModule, TranslatePipe, ViewingAccessComponent],
   templateUrl: './payment-modal.component.html',
   styleUrls: ['./payment-modal.component.scss']
 })

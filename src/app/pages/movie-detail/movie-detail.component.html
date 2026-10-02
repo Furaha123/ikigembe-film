@@ -57,6 +57,9 @@
         </div>
 
         <!-- CTA Buttons -->
+        <app-viewing-access
+          [hasAccess]="movie.has_purchased ?? null"
+          [otherDevice]="streamError()?.kind === 'other_device'" />
         <div class="cta-row">
           @if (movie.trailer_url) {
             <button class="btn-trailer" (click)="playTrailer()">

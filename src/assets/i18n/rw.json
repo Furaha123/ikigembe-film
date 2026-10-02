@@ -1,4 +1,14 @@
 {
+  "viewingAccess": {
+    "title": "Kureba rimwe = Igikoresho kimwe",
+    "oneRemaining": "Usigaje kureba inshuro 1",
+    "noneRemaining": "Usigaje kureba inshuro 0",
+    "unknown": "Inshuro usigaje ntiziramenyekana",
+    "otherDevice": "Uburenganzira bwo kureba buri ku kindi gikoresho",
+    "singleView": "Buri kwishyura kuguha kureba iyi filime rimwe ku gikoresho kimwe.",
+    "sameDevice": "Komeza kurebera ku gikoresho na mushakisha bimwe. Ntushobora gusangira uburenganzira bwo kureba ku bikoresho bitandukanye.",
+    "usedView": "Iyo urangije gukoresha uburenganzira bwawe bwo kureba, ugomba kongera kwishyura kugira ngo urebe iyi filime."
+  },
   "nav": {
     "dashboard": "Imbonerahamwe",
     "upload": "Ohereza Filime",

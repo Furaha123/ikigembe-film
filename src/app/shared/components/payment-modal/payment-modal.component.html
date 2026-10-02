@@ -49,6 +49,10 @@
 
       <hr class="pm-divider" />
 
+      @if (!service) {
+        <app-viewing-access [hasAccess]="movie.has_purchased ?? null" />
+      }
+
       <!-- Payment form -->
       <div class="pm-form">
         <p class="pm-label">{{ 'paymentModal.payWithMomo' | translate }}</p>
