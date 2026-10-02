@@ -44,10 +44,11 @@
             <th>{{ 'admin.contractsPage.colSignedOn' | translate }}</th>
             <th>{{ 'admin.contractsPage.colExpiresOn' | translate }}</th>
             <th>{{ 'admin.contractsPage.colDaysLeft' | translate }}</th>
+            <th>{{ 'admin.contractsPage.colSignature' | translate }}</th>
           </tr>
         </thead>
         <tbody>
-          @for (c of filtered(); track c.producer_id) {
+          @for (c of filtered(); track c.id) {
             <tr>
               <td class="name-cell">
                 <div class="producer-avatar">{{ getInitials(c.producer_name) }}</div>
@@ -67,6 +68,19 @@
                 } @else {
                   —
                 }
+              </td>
+              <td class="signature-cell">
+                @if (c.signature_photo_url) {
+                  <img class="signature-img" [src]="c.signature_photo_url"
+                       [alt]="'admin.contractsPage.signatureAlt' | translate: { name: c.producer_name }" />
+                }
+                <span class="signed-name">{{ c.signed_name || '—' }}</span>
+                <span class="signature-meta" [title]="c.user_agent">
+                  {{ (c.signature_method === 'drawn' ? 'admin.contractsPage.methodDrawn' : 'admin.contractsPage.methodPhoto') | translate }}
+                  @if (c.terms_version) { · {{ 'admin.contractsPage.termsVersion' | translate: { version: c.terms_version } }} }
+                  @if (c.language) { · {{ c.language | uppercase }} }
+                  @if (c.ip_address) { · {{ c.ip_address }} }
+                </span>
               </td>
             </tr>
           }

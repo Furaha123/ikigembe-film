@@ -100,7 +100,13 @@ export interface ProducerContractItem {
   signed_at: string;
   expires_at: string;
   signature_photo_url: string | null;
+  signature_method: 'drawn' | 'photo';
+  signed_name: string;
+  language: 'en' | 'rw' | '';
+  terms_version: number | null;
+  terms_sha256: string;
   ip_address: string;
+  user_agent: string;
   created_at: string;
 }
 

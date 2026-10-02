@@ -104,6 +104,10 @@ All uploads use the multipart flow through `MultipartUploadService`. Movie files
 - **Allowed file types live in one place:** `shared/models/upload.constants.ts` (`ALLOWED_VIDEO_EXTENSIONS`, `ALLOWED_DOCUMENT_EXTENSIONS`, `hasAllowedExtension()`), mirroring the backend's `_ALLOWED_VIDEO_EXTS`. Check files before calling the API; `accept` attributes are only a hint.
 - **Never parse or build a `file_key`** — it's opaque (`movies/<folder>/<user_id>/<uuid><ext>` today, may change).
 
+### Distribution agreement (contract signing)
+
+`/producer/contracts/start → language → review → warning → accept → verifying → success`, state in `ContractFlowService` (memory only). The agreement text comes from `ContractService.getAgreement(language)` — never hardcode it; the `terms_version` shown is what gets signed. The warning step shows the API's `sign_deadline` (78 h after approval, enforced server-side) and is skipped when it's null (renewals). Signing sends a PNG from `SignaturePadComponent` plus the typed full name (must match the account) — no photo uploads. Sign errors are `{ error, field }`; `field: 'terms_version'` sends the producer back to review.
+
 ### Marketplace purchases
 
 Every marketplace fee goes through `PaymentModalComponent` with a `ServicePurchase` (`[service]` input) and shares `PaymentService.pollUntilSettled()`. A `503` means pricing isn't configured yet ("This service isn't available yet").

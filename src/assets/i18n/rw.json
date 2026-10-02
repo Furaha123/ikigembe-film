@@ -445,41 +445,51 @@
       "download": "Pakurura PDF",
       "scrollHint": "↓ Manuka hepfo kugirango ubone Komeza",
       "back": "Subira",
-      "continueBtn": "Nasomye — Komeza"
+      "continueBtn": "Nasomye — Komeza",
+      "termsVersion": "Agreement version {{version}}",
+      "loadFailed": "We couldn't load the agreement. Please try again.",
+      "retry": "Try again"
     },
     "warning": {
       "title": "ICYITONDERWA",
-      "subtitle": "Aya masezerano agomba kwemezwa mu gihe kitarenze amasaha 78 (iminsi 3 n'amasaha 6) kuva yoherejwe.",
-      "boxLabel": "Niba atemewe mu gihe cy'amasaha 78, film izasubikwa mu:",
-      "bullet1": "Contract ifite isezerana.",
-      "bullet2": "Film isubukwa muri status ya Pending Submission.",
-      "bullet3": "Ubusobanuro bwose kongera gutangira inzira yo kuyemeza.",
+      "subtitle": "This agreement must be signed within 78 hours of your movie being approved.",
+      "boxLabel": "If it is not signed in time:",
+      "bullet1": "Your approved movie will not be published.",
+      "bullet2": "The movie will be returned to Pending Review.",
+      "bullet3": "An admin will need to approve it again.",
       "timeRemaining": "Igihe gisigaye",
       "days": "Iminsi",
       "hours": "Amasaha",
       "minutes": "Iminota",
       "seconds": "Amasegonda",
       "back": "Subira",
-      "understand": "Ndabizi — Komeza"
+      "understand": "Ndabizi — Komeza",
+      "passed": "The deadline has passed, so your movie is being returned to review. You can still sign now — once it is approved again, it will be published straight away."
     },
     "acceptance": {
       "title": "Sinyaho Amasezerano",
-      "subtitle": "Shyiramo ifoto y'umukono wawe wanditse ku ntoki kugira ngo ikorere nk'umukono wawe w'amategeko.",
-      "fieldLabel": "Ifoto y'Umukono *",
-      "uploadPrompt": "Shyiramo ifoto y'umukono",
-      "uploadHint": "JPG, PNG, WebP · ntarengwa 5 MB",
-      "removePhoto": "Siba",
+      "subtitle": "Draw your signature and type your full legal name. Together they are your legal signature on this agreement.",
+      "fieldLabel": "Your signature *",
       "agreeText": "Nasomye kandi nemeye rwose",
       "agreeName": "Amasezerano y'Uwohereza Filime",
       "agreeEnd": "n'amabwiriza yazo yose.",
       "back": "Subira",
-      "acceptBtn": "Emeza & Komeza"
+      "acceptBtn": "Emeza & Komeza",
+      "padLabel": "Signature pad",
+      "padHint": "Sign here with your mouse, finger or stylus",
+      "clear": "Clear",
+      "nameLabel": "Full legal name *",
+      "nameHint": "Type the name on your account: {{name}}",
+      "nameMismatch": "This must match the name on your account.",
+      "nameMissing": "Your account has no full name yet. Add your first and last name before signing.",
+      "goToSettings": "Go to Settings"
     },
     "verifying": {
       "submitting": "Ohereza Amasezerano…",
       "pleaseWait": "Tegereza duhererejeje amasezerano yawe.",
       "failed": "Kohereza Byanze",
-      "tryAgain": "Gerageza Nanone"
+      "tryAgain": "Gerageza Nanone",
+      "genericError": "Something went wrong. Please try again."
     },
     "success": {
       "title": "Amasezerano Yemejwe",
@@ -1138,7 +1148,12 @@
       "colSignedOn": "Signed On",
       "colExpiresOn": "Expires On",
       "colDaysLeft": "Days Left",
-      "daysShort": "{{days}}d"
+      "daysShort": "{{days}}d",
+      "colSignature": "Signature",
+      "signatureAlt": "Signature of {{name}}",
+      "methodDrawn": "Drawn",
+      "methodPhoto": "Photo",
+      "termsVersion": "Terms v{{version}}"
     },
     "movies": {
       "title": "Films",

@@ -82,6 +82,44 @@
 
 .scroll-anchor { height: 1px; }
 
+.terms-version {
+  margin: 28px 0 0;
+  font-size: 11px;
+  color: $muted;
+  opacity: 0.7;
+}
+
+.agreement-state {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  background: $card;
+  border: 1px solid $border;
+  border-radius: 12px;
+  padding: 28px;
+  color: $muted;
+  font-size: 14px;
+  text-align: center;
+
+  p { margin: 0; }
+}
+
+.spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid $border;
+  border-top-color: $gold;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
 .scroll-hint {
   text-align: center;
   font-size: 12px;
