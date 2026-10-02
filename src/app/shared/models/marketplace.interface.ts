@@ -30,7 +30,14 @@ export interface PhonePayload {
 export interface ServicePurchase {
   titleKey: string;
   descriptionKey?: string;
+  quote: () => Observable<ServiceQuote>;
   initiate: (phoneNumber: string) => Observable<ServicePurchaseAccepted>;
+}
+
+export interface ServiceQuote {
+  amount: number;
+  currency: string;
+  access_days: number | null;
 }
 
 // ── Actor (Viewer with an actor profile) ────────────────────────────────

@@ -4,7 +4,7 @@ import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import {
   ActorProfile, ActorProfilePayload, ActorVideo, ActorVideoPurchasePayload, ApplyPayload,
-  CastingApplication, CastingCall, Paginated, ServicePurchaseAccepted,
+  CastingApplication, CastingCall, Paginated, ServicePurchaseAccepted, ServiceQuote,
 } from '../models/marketplace.interface';
 import { MultipartUploadApi } from '../models/upload.interface';
 
@@ -14,6 +14,10 @@ const BASE = `${environment.apiUrl}/marketplace`;
 @Injectable({ providedIn: 'root' })
 export class ActorMarketplaceService {
   private readonly http = inject(HttpClient);
+
+  getVideoQuote(): Observable<ServiceQuote> {
+    return this.http.get<ServiceQuote>(`${BASE}/pricing/actor_video/`);
+  }
 
   /** 404 when the viewer has no actor profile yet. */
   getProfile(): Observable<ActorProfile> {

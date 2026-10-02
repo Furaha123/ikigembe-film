@@ -7,7 +7,7 @@ import { TranslatePipe } from '@ngx-translate/core';
 import { CastingService } from '../../services/casting.service';
 import { PaymentModalComponent } from '../../../shared/components/payment-modal/payment-modal.component';
 import { CastingCall, CastingCallPayload, ServicePurchase } from '../../../shared/models/marketplace.interface';
-import { castingCallStatusClass } from '../../../shared/utils/marketplace-status';
+import { castingCallStatusClass, castingDisplayStatus } from '../../../shared/utils/marketplace-status';
 import { apiErrorMessage } from '../../../shared/utils/api-error';
 
 /** One role per line (commas also accepted). */
@@ -54,6 +54,7 @@ export class ProducerCastingComponent implements OnInit {
   actionError = signal<string | null>(null);
 
   readonly statusClass = castingCallStatusClass;
+  readonly displayStatus = castingDisplayStatus;
 
   form = this.fb.nonNullable.group({
     title:       ['', [Validators.required, Validators.maxLength(255)]],
@@ -125,9 +126,15 @@ export class ProducerCastingComponent implements OnInit {
 
   /** Pay the announcement fee — the call publishes itself once the payment completes. */
   publish(c: CastingCall): void {
+    if (c.status !== 'draft' || c.payment_status === 'Pending') return;
+    if (new Date(c.deadline_at).getTime() <= Date.now()) {
+      this.actionError.set('marketplace.producerCasting.deadlineFuture');
+      return;
+    }
     this.purchase.set({
       titleKey: 'marketplace.producerCasting.publishTitle',
       descriptionKey: 'marketplace.producerCasting.publishDesc',
+      quote: () => this.casting.getQuote('casting_announcement'),
       initiate: (phone) => this.casting.purchaseCall(c.id, phone),
     });
   }

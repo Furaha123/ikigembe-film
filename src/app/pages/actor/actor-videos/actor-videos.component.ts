@@ -85,6 +85,7 @@ export class ActorVideosComponent implements OnInit, OnDestroy {
     this.purchase.set({
       titleKey: 'marketplace.videos.purchaseTitle',
       descriptionKey: 'marketplace.videos.purchaseDesc',
+      quote: () => this.marketplace.getVideoQuote(),
       initiate: (phone) => this.marketplace.purchaseVideo({
         title: title.trim(),
         description: description.trim() || undefined,

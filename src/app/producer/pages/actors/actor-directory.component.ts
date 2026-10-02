@@ -82,6 +82,7 @@ export class ActorDirectoryComponent implements OnInit {
     this.purchase.set({
       titleKey: 'marketplace.directory.purchaseTitle',
       descriptionKey: 'marketplace.directory.purchaseDesc',
+      quote: () => this.casting.getQuote('actor_search'),
       initiate: (phone) => this.casting.purchaseSearch(phone),
     });
   }

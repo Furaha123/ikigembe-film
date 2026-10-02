@@ -4,7 +4,7 @@ import { provideTranslateService } from '@ngx-translate/core';
 import { Subject, of, throwError } from 'rxjs';
 import { PaymentModalComponent } from './payment-modal.component';
 import { PaymentService, PaymentStatusResponse } from '../../../core/services/payment.service';
-import { ServicePurchase, ServicePurchaseAccepted } from '../../models/marketplace.interface';
+import { ServicePurchase, ServicePurchaseAccepted, ServiceQuote } from '../../models/marketplace.interface';
 
 const accepted: ServicePurchaseAccepted = {
   deposit_id: 'dep-9', status: 'Pending', message: 'Approve on your phone', amount: 5000, currency: 'RWF',
@@ -41,7 +41,10 @@ describe('PaymentModalComponent (service purchase mode)', () => {
     });
     fixture = TestBed.createComponent(PaymentModalComponent);
     component = fixture.componentInstance;
-    const service: ServicePurchase = { titleKey: 'marketplace.directory.purchaseTitle', initiate };
+    const service: ServicePurchase = {
+      titleKey: 'marketplace.directory.purchaseTitle', initiate,
+      quote: () => of({ amount: 5000, currency: 'RWF', access_days: 45 }),
+    };
     fixture.componentRef.setInput('service', service);
     fixture.detectChanges();
   });
@@ -49,6 +52,31 @@ describe('PaymentModalComponent (service purchase mode)', () => {
   it('renders the service title instead of a movie', () => {
     expect(fixture.nativeElement.querySelector('.pm-title').textContent).toContain('marketplace.directory.purchaseTitle');
     expect(fixture.nativeElement.querySelector('.pm-poster')).toBeNull();
+  });
+
+  it('shows the fee and pass length before initiating a payment', () => {
+    expect(fixture.nativeElement.querySelector('.pm-price').textContent).toContain('RWF 5,000');
+    expect(fixture.nativeElement.querySelector('.pm-duration').textContent).toContain('marketplace.purchase.passLength');
+    expect(component.quote()?.access_days).toBe(45);
+    expect(initiate).not.toHaveBeenCalled();
+  });
+
+  it('prevents payment while a quote is loading and after a quote failure, then allows retry', () => {
+    const pending = new Subject<ServiceQuote>();
+    component.service!.quote = () => pending;
+    component.loadQuote();
+    enterPhone('0788123456');
+    component.pay();
+    expect(initiate).not.toHaveBeenCalled();
+    pending.error(new HttpErrorResponse({ status: 503 }));
+    fixture.detectChanges();
+    expect(alertText()).toBe('marketplace.purchase.unavailable');
+    expect(fixture.nativeElement.querySelector('.pm-pay-btn').disabled).toBeTrue();
+    component.service!.quote = () => of({ amount: 7000, currency: 'RWF', access_days: 60 });
+    component.loadQuote();
+    fixture.detectChanges();
+    expect(fixture.nativeElement.querySelector('.pm-price').textContent).toContain('7,000');
+    expect(fixture.nativeElement.querySelector('.pm-pay-btn').disabled).toBeFalse();
   });
 
   it('starts the service deposit with the normalised phone and reuses the shared polling', fakeAsync(() => {

@@ -15,6 +15,7 @@
   @if (call(); as c) {
     <article class="mk-card">
       <h1>{{ c.title }}</h1>
+      <span [class]="statusClass(unavailable() ? 'closed' : displayStatus(c, now()))">{{ 'marketplace.castingStatus.' + (unavailable() ? 'closed' : displayStatus(c, now())) | translate }}</span>
       <p class="mk-muted">{{ c.studio_name || c.producer_name }} · {{ 'marketplace.casting.deadline' | translate }}: {{ c.deadline_at | date:'medium' }}</p>
       <h2>{{ 'marketplace.casting.roles' | translate }}</h2>
       <div class="mk-chips">
@@ -29,6 +30,9 @@
       @if (applied()) {
         <p class="mk-success" role="status">{{ 'marketplace.casting.applied' | translate }}</p>
         <a routerLink="/actor/applications" class="mk-btn mk-btn--ghost">{{ 'marketplace.nav.applications' | translate }}</a>
+      } @else if (!isOpen()) {
+        <p class="mk-muted" role="status">{{ 'marketplace.casting.closed' | translate }}</p>
+        <a routerLink="/casting" class="mk-btn mk-btn--ghost">{{ 'marketplace.casting.backToList' | translate }}</a>
       } @else {
         <fieldset style="border: 0; padding: 0; margin: 0 0 1rem">
           <legend class="mk-muted">{{ 'marketplace.casting.chooseVideos' | translate }}</legend>

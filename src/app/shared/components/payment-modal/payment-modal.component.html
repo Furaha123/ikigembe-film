@@ -29,7 +29,19 @@
             <span class="pm-duration">{{ service.descriptionKey | translate }}</span>
           }
           @if (chargedAmount() !== null) {
-            <span class="pm-price">RWF {{ chargedAmount() | number }}</span>
+            <span class="pm-price">{{ quote()?.currency }} {{ chargedAmount() | number }}</span>
+          } @else if (quote()) {
+            <span class="pm-price">{{ quote()?.currency }} {{ quote()?.amount | number }}</span>
+          }
+          @if (quote(); as q) {
+            @if (q.access_days !== null) {
+              <span class="pm-duration">{{ 'marketplace.purchase.passLength' | translate: { days: q.access_days } }}</span>
+            }
+          }
+          @if (quoteLoading()) {
+            <span role="status">{{ 'marketplace.purchase.loadingQuote' | translate }}</span>
+          } @else if (!quote()) {
+            <button type="button" (click)="loadQuote()">{{ 'marketplace.purchase.retryQuote' | translate }}</button>
           }
         </div>
       </div>
@@ -86,7 +98,7 @@
         </div>
 
         <!-- Pay button -->
-        <button class="pm-pay-btn" (click)="pay()" [disabled]="loading()">
+        <button class="pm-pay-btn" (click)="pay()" [disabled]="loading() || (service && !quote())">
           @if (loading()) {
             <span class="pm-spinner"></span>
             {{ loadingMessage() | translate }}
@@ -95,7 +107,7 @@
               <path d="M20 4H4c-1.11 0-2 .89-2 2v12c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V6c0-1.11-.89-2-2-2zm0 14H4v-6h16v6zm0-10H4V6h16v2z"/>
             </svg>
             @if (service) {
-              {{ 'marketplace.purchase.pay' | translate }}
+              {{ 'marketplace.purchase.payAmount' | translate: { currency: quote()?.currency, amount: (quote()?.amount | number) } }}
             } @else {
               {{ 'paymentModal.payAmount' | translate: { amount: (movie.price | number) } }}
             }

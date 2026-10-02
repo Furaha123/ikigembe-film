@@ -24,6 +24,7 @@
     @for (c of calls(); track c.id) {
       <article class="mk-card">
         <h2><a [routerLink]="['/casting', c.id]">{{ c.title }}</a></h2>
+        <span [class]="statusClass(displayStatus(c))">{{ 'marketplace.castingStatus.' + displayStatus(c) | translate }}</span>
         <p class="mk-muted">{{ c.studio_name || c.producer_name }}</p>
         <div class="mk-chips" [attr.aria-label]="'marketplace.casting.roles' | translate">
           @for (r of c.roles; track $index) { <span>{{ r }}</span> }

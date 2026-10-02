@@ -1,11 +1,11 @@
-import { Component, Input, Output, EventEmitter, signal, inject, OnDestroy } from '@angular/core';
+import { Component, Input, Output, EventEmitter, signal, inject, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpErrorResponse } from '@angular/common/http';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { Observable, Subject, takeUntil } from 'rxjs';
 import { PaymentService } from '../../../core/services/payment.service';
-import { ServicePurchase } from '../../models/marketplace.interface';
+import { ServicePurchase, ServiceQuote } from '../../models/marketplace.interface';
 import { ViewingAccessComponent } from '../viewing-access/viewing-access.component';
 
 @Component({
@@ -15,7 +15,7 @@ import { ViewingAccessComponent } from '../viewing-access/viewing-access.compone
   templateUrl: './payment-modal.component.html',
   styleUrls: ['./payment-modal.component.scss']
 })
-export class PaymentModalComponent implements OnDestroy {
+export class PaymentModalComponent implements OnInit, OnDestroy {
   @Input() movie: any;
   /** Non-movie purchase (marketplace fees). When set, `movie` is ignored. */
   @Input() service: ServicePurchase | null = null;
@@ -33,6 +33,39 @@ export class PaymentModalComponent implements OnDestroy {
   error           = signal('');
   errorKey        = signal('');       // translated error when there is no backend message
   chargedAmount   = signal<number | null>(null);
+  quote = signal<ServiceQuote | null>(null);
+  quoteLoading = signal(false);
+
+  ngOnInit(): void {
+    if (this.service) this.loadQuote();
+  }
+
+  loadQuote(): void {
+    if (!this.service || this.quoteLoading()) return;
+    this.quoteLoading.set(true);
+    this.quote.set(null);
+    this.error.set('');
+    this.errorKey.set('');
+    this.service.quote().pipe(takeUntil(this.destroy$)).subscribe({
+      next: quote => {
+        this.quoteLoading.set(false);
+        if (!Number.isFinite(quote.amount) || quote.amount <= 0 || !quote.currency ||
+            (quote.access_days !== null && (!Number.isInteger(quote.access_days) || quote.access_days <= 0))) {
+          this.showErrorKey('marketplace.purchase.quoteFailed');
+          return;
+        }
+        this.quote.set(quote);
+      },
+      error: (err: HttpErrorResponse) => {
+        this.quoteLoading.set(false);
+        if (err.status === 400 && typeof err.error?.error === 'string') {
+          this.error.set(err.error.error);
+        } else {
+          this.showErrorKey(err.status === 503 ? 'marketplace.purchase.unavailable' : 'marketplace.purchase.quoteFailed');
+        }
+      },
+    });
+  }
 
   onPhoneInput(e: Event) {
     // Allow only digits, spaces, +, hyphens
@@ -59,6 +92,7 @@ export class PaymentModalComponent implements OnDestroy {
   }
 
   pay() {
+    if (this.loading() || (this.service && !this.quote())) return;
     const raw = this.phoneNumber().trim();
     if (!raw) {
       this.showErrorKey('paymentModal.errors.phoneRequired');
