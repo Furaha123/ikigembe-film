@@ -141,14 +141,6 @@
       color: #fff;
     }
 
-    .rating {
-      display: flex;
-      align-items: center;
-      gap: 0.3rem;
-      font-weight: 600;
-      color: #ffc107;
-    }
-
     .runtime {
       color: #aaa;
       font-size: 0.9rem;
@@ -471,24 +463,6 @@
   transition: transform 0.18s;
 
   .mf-card:hover & { transform: scale(1.08); }
-}
-
-.mf-overlay-meta {
-  position: absolute;
-  bottom: 0.5rem;
-  left: 0;
-  right: 0;
-  display: flex;
-  justify-content: center;
-}
-
-.mf-rating {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.25rem;
-  font-size: 0.72rem;
-  font-weight: 600;
-  color: #ffc107;
 }
 
 .mf-title {
