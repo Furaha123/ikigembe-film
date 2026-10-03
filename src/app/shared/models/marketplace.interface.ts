@@ -35,12 +35,19 @@ export interface PhonePayload {
 export interface ServicePurchase {
   titleKey: string;
   descriptionKey?: string;
+  quote: () => Observable<ServiceQuote>;
   /** Set to let an unconfirmed payment be resumed after a reload (see PaymentService.rememberPending). */
   pendingKey?: string;
   /** In-app page to come back to after a hosted-page payment (DPO). */
   returnTo?: string;
   /** phoneNumber is null when the gateway collects payment details itself (DPO). */
   initiate: (phoneNumber: string | null) => Observable<ServicePurchaseAccepted>;
+}
+
+export interface ServiceQuote {
+  amount: number;
+  currency: string;
+  access_days: number | null;
 }
 
 // ── Actor (Viewer with an actor profile) ────────────────────────────────

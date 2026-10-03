@@ -1,4 +1,5 @@
 <app-header [userImg]="userProfileImg" />
+<main>
 
 @if (isLoading) {
   <div class="state-screen">
@@ -28,4 +29,5 @@
   <app-movie-carousel [title]="'browse.upcoming' | translate" [videoContents]="upcomingMovies" />
 }
 
+</main>
 <app-footer />

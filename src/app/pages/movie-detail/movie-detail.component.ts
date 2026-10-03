@@ -17,11 +17,12 @@ import { PaymentModalComponent } from '../../shared/components/payment-modal/pay
 import { PaymentService } from '../../core/services/payment.service';
 import { DataSaverService } from '../../core/services/data-saver.service';
 import { AdSlotComponent } from '../../shared/components/ad-slot/ad-slot.component';
+import { ViewingAccessComponent } from '../../shared/components/viewing-access/viewing-access.component';
 
 @Component({
   selector: 'app-movie-detail',
   standalone: true,
-  imports: [CommonModule, RouterLink, TranslatePipe, HeaderComponent, FooterComponent, VideoPlayerComponent, PaymentModalComponent, AdSlotComponent],
+  imports: [CommonModule, RouterLink, TranslatePipe, HeaderComponent, FooterComponent, VideoPlayerComponent, PaymentModalComponent, AdSlotComponent, ViewingAccessComponent],
   templateUrl: './movie-detail.component.html',
   styleUrls: ['./movie-detail.component.scss']
 })
@@ -162,6 +163,7 @@ export class MovieDetailComponent implements OnInit, OnDestroy {
   onPaymentSuccess() {
     this.pendingPayment.set(false);
     this.purchased.set(true);
+    this.movie.update(movie => ({ ...movie, has_purchased: true }));
     this.showPaymentModal.set(false);
     this.startStream();
   }
@@ -185,6 +187,7 @@ export class MovieDetailComponent implements OnInit, OnDestroy {
         if (denial.canBuy) {
           // Not (or no longer) entitled — offer the purchase again.
           this.purchased.set(false);
+          this.movie.update(movie => ({ ...movie, has_purchased: false }));
           this.paymentService.forgetPurchase(id);
         }
         this.refreshEntitlement(id);

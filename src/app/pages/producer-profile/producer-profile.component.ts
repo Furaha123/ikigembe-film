@@ -1,6 +1,6 @@
 import { Component, OnInit, inject, signal, computed, PLATFORM_ID } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { ActivatedRoute, RouterLink } from '@angular/router';
 import { MovieService } from '../../shared/services/movie.service';
 import { DataSaverService } from '../../core/services/data-saver.service';
 import { HeaderComponent } from '../../core/components/header/header.component';
@@ -19,7 +19,6 @@ import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 })
 export class ProducerProfileComponent implements OnInit {
   private readonly route        = inject(ActivatedRoute);
-  private readonly router       = inject(Router);
   private readonly movieService = inject(MovieService);
   private readonly seo          = inject(SeoService);
   private readonly dataSaver    = inject(DataSaverService);
@@ -49,6 +48,7 @@ export class ProducerProfileComponent implements OnInit {
 
   loadPage(id: number, page: number) {
     this.loading.set(true);
+    this.error.set('');
     this.movieService.getMoviesByProducer(id, page).subscribe({
       next: (res) => {
         this.producer.set(res.producer);
@@ -67,6 +67,9 @@ export class ProducerProfileComponent implements OnInit {
       error: () => {
         this.error.set('producersPage.profile.notFoundError');
         this.loading.set(false);
+        if (!this.producer()) {
+          this.seo.setTranslated({ titleKey: 'producersPage.profile.notFoundTitle', noIndex: true });
+        }
       },
     });
   }
@@ -85,7 +88,4 @@ export class ProducerProfileComponent implements OnInit {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
-  goToMovie(id: number) {
-    this.router.navigate(['/movie', id]);
-  }
 }

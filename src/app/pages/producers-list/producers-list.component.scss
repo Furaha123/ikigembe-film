@@ -84,13 +84,14 @@
   box-sizing: border-box;
 
   &::placeholder {
-    color: #666;
+    color: var(--ik-text-muted);
   }
 
   &:focus {
     border-color: rgba(201, 168, 76, 0.5);
     background: rgba(255, 255, 255, 0.1);
   }
+  &:focus-visible { outline: 2px solid var(--ik-focus); outline-offset: 2px; }
 }
 
 // ── Content area ─────────────────────────────────────────────────────────────

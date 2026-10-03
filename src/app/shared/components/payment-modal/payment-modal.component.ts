@@ -11,9 +11,10 @@ import { Observable, Subject, Subscription, takeUntil } from 'rxjs';
 import {
   PaymentConfig, PaymentPendingConflict, PaymentReturnContext, PaymentService,
 } from '../../../core/services/payment.service';
-import { ServicePurchase } from '../../models/marketplace.interface';
+import { ServicePurchase, ServiceQuote } from '../../models/marketplace.interface';
 import { apiErrorMessage } from '../../utils/api-error';
 import { safeReturnUrl } from '../../utils/safe-redirect';
+import { ViewingAccessComponent } from '../viewing-access/viewing-access.component';
 
 const FOCUSABLE = 'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
 
@@ -28,7 +29,7 @@ type StartResponse = { deposit_id: string; amount: number; demo?: boolean; payme
 @Component({
   selector: 'app-payment-modal',
   standalone: true,
-  imports: [CommonModule, FormsModule, TranslatePipe],
+  imports: [CommonModule, FormsModule, TranslatePipe, ViewingAccessComponent],
   templateUrl: './payment-modal.component.html',
   styleUrls: ['./payment-modal.component.scss']
 })
@@ -61,6 +62,9 @@ export class PaymentModalComponent implements OnInit, AfterViewInit, OnDestroy {
   errorKey        = signal('');       // translated error when there is no backend message
   notice          = signal('');       // neutral, translated (e.g. "cancelled — you can start again")
   chargedAmount   = signal<number | null>(null);
+  quote = signal<ServiceQuote | null>(null);
+  quoteLoading = signal(false);
+
   /** The server is in demo mode: label everything so nobody mistakes it for a real charge. */
   demo            = signal(false);
 
@@ -80,6 +84,7 @@ export class PaymentModalComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   ngOnInit() {
+    if (this.service) this.loadQuote();
     this.paymentService.getConfig().pipe(takeUntil(this.destroy$)).subscribe(cfg => {
       this.config.set(cfg);
       if (cfg.demo) this.demo.set(true);
@@ -148,6 +153,33 @@ export class PaymentModalComponent implements OnInit, AfterViewInit, OnDestroy {
     this.closed.emit();
   }
 
+  loadQuote(): void {
+    if (!this.service || this.quoteLoading()) return;
+    this.quoteLoading.set(true);
+    this.quote.set(null);
+    this.error.set('');
+    this.errorKey.set('');
+    this.service.quote().pipe(takeUntil(this.destroy$)).subscribe({
+      next: quote => {
+        this.quoteLoading.set(false);
+        if (!Number.isFinite(quote.amount) || quote.amount <= 0 || !quote.currency ||
+            (quote.access_days !== null && (!Number.isInteger(quote.access_days) || quote.access_days <= 0))) {
+          this.showErrorKey('marketplace.purchase.quoteFailed');
+          return;
+        }
+        this.quote.set(quote);
+      },
+      error: (err: HttpErrorResponse) => {
+        this.quoteLoading.set(false);
+        if (err.status === 400 && typeof err.error?.error === 'string') {
+          this.error.set(err.error.error);
+        } else {
+          this.showErrorKey(err.status === 503 ? 'marketplace.purchase.unavailable' : 'marketplace.purchase.quoteFailed');
+        }
+      },
+    });
+  }
+
   onPhoneInput(e: Event) {
     const raw = (e.target as HTMLInputElement).value;
     this.phoneNumber.set(raw);
@@ -172,7 +204,7 @@ export class PaymentModalComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   pay() {
-    if (this.loading() || !this.config()) return; // one deposit at a time
+    if (this.loading() || !this.config() || (this.service && !this.quote())) return; // one deposit at a time
     let phone: string | null = null;
     if (this.needsPhone) {
       const raw = this.phoneNumber().trim();

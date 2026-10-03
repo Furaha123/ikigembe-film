@@ -1,9 +1,9 @@
-import { Injectable, inject, PLATFORM_ID } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { Meta, Title } from '@angular/platform-browser';
-import { DOCUMENT, isPlatformBrowser } from '@angular/common';
+import { DOCUMENT } from '@angular/common';
 import { NavigationStart, Router } from '@angular/router';
 import { TranslateService } from '@ngx-translate/core';
-import { filter } from 'rxjs';
+import { filter, takeUntil } from 'rxjs';
 
 /** Same as SeoConfig, with translation keys that are resolved once the language file has loaded. */
 export interface TranslatedSeoConfig extends Omit<SeoConfig, 'title' | 'description'> {
@@ -30,15 +30,12 @@ export class SeoService {
   private readonly title      = inject(Title);
   private readonly router     = inject(Router);
   private readonly document   = inject(DOCUMENT);
-  private readonly platformId = inject(PLATFORM_ID);
   private readonly translate  = inject(TranslateService);
 
   constructor() {
     // Pages that don't call set() must not inherit the previous page's title, noindex or canonical.
-    this.router.events.pipe(filter(e => e instanceof NavigationStart)).subscribe(() => {
-      this.title.setTitle(SITE_NAME);
-      this.meta.updateTag({ name: 'description', content: DEFAULT_DESC });
-      this.meta.updateTag({ name: 'robots', content: 'index, follow' });
+    this.router.events.pipe(filter(e => e instanceof NavigationStart)).subscribe(e => {
+      this.set({}, e.url);
       this.removeJsonLd();
     });
   }
@@ -50,20 +47,24 @@ export class SeoService {
   setTranslated(config: TranslatedSeoConfig) {
     const { titleKey, descriptionKey, ...rest } = config;
     const keys = descriptionKey ? [titleKey, descriptionKey] : [titleKey];
-    this.translate.get(keys).subscribe((t: Record<string, string>) => this.set({
+    this.translate.get(keys).pipe(
+      takeUntil(this.router.events.pipe(filter(e => e instanceof NavigationStart))),
+    ).subscribe((t: Record<string, string>) => this.set({
       ...rest,
       title: t[titleKey],
       description: descriptionKey ? t[descriptionKey] : undefined,
     }));
   }
 
-  set(config: SeoConfig) {
+  set(config: SeoConfig, routeUrl = this.router.url) {
     const fullTitle  = config.title ? `${config.title} | ${SITE_NAME}` : SITE_NAME;
     const desc       = config.description ?? DEFAULT_DESC;
     const image      = config.image       ?? DEFAULT_IMAGE;
     const type       = config.type        ?? 'website';
     // Canonical URLs drop query strings and fragments (e.g. ?returnUrl=…).
-    const url        = `${BASE_URL}${this.router.url.split(/[?#]/)[0]}`;
+    const path       = routeUrl.split(/[?#]/)[0];
+    const url        = `${BASE_URL}${path}`;
+    const privatePage = /^\/(browse|movie|profile|my-list|actor|casting|producer|admin|login|register|forgot-password|reset-password|verify-email)(\/|$)/.test(path);
 
     this.title.setTitle(fullTitle);
 
@@ -85,7 +86,7 @@ export class SeoService {
     this.meta.updateTag({ name: 'twitter:image',       content: image });
 
     // Robots
-    this.meta.updateTag({ name: 'robots', content: config.noIndex ? 'noindex, nofollow' : 'index, follow' });
+    this.meta.updateTag({ name: 'robots', content: config.noIndex || privatePage ? 'noindex, nofollow' : 'index, follow' });
 
     // Canonical
     this.setCanonical(url);
@@ -105,19 +106,12 @@ export class SeoService {
       dateCreated: movie.release_date ?? '',
       duration: movie.duration_minutes ? `PT${movie.duration_minutes}M` : undefined,
       genre: movie.genre ?? '',
-      aggregateRating: movie.rating ? {
-        '@type': 'AggregateRating',
-        ratingValue: movie.rating,
-        bestRating: 10,
-      } : undefined,
-      director: movie.producer_name ? { '@type': 'Person', name: movie.producer_name } : undefined,
       url: `${BASE_URL}/preview/${movie.id}`,
     };
     this.injectJsonLd(schema);
   }
 
   removeJsonLd() {
-    if (!isPlatformBrowser(this.platformId)) return;
     const el = this.document.getElementById('ld-json');
     el?.parentNode?.removeChild(el);
   }

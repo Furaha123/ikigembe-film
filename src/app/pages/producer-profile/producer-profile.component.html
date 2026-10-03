@@ -1,4 +1,5 @@
 <app-header [userImg]="''" />
+<main>
 
 <!-- ① Initial full-page load -->
 @if (loading() && !producer()) {
@@ -27,7 +28,7 @@
       <circle cx="12" cy="12" r="10"/>
       <path d="m15 9-6 6M9 9l6 6"/>
     </svg>
-    <h2>{{ 'producersPage.profile.notFoundTitle' | translate }}</h2>
+    <h1>{{ 'producersPage.profile.notFoundTitle' | translate }}</h1>
     <p>{{ 'producersPage.profile.notFoundBody' | translate }}</p>
     <a routerLink="/producers" class="pp-back-link">
       <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
@@ -106,7 +107,7 @@
     } @else {
       <div class="pp-grid">
         @for (movie of movies(); track movie.id) {
-          <button class="pp-card" (click)="goToMovie(movie.id)">
+          <a class="pp-card" [routerLink]="['/preview', movie.id]">
             <div class="pp-card-poster">
               <img [src]="movie.thumbnail_url" [alt]="movie.title" loading="lazy" />
               <div class="pp-card-overlay">
@@ -125,17 +126,10 @@
               <div class="pp-card-meta">
                 @if (movie.release_date) {
                   <span class="pp-card-year">{{ movie.release_date.substring(0, 4) }}</span>
-                  <span class="pp-meta-dot">·</span>
                 }
-                <span class="pp-card-rating">
-                  <svg viewBox="0 0 24 24" width="11" height="11" fill="#ffc107">
-                    <path d="M12 2l3.09 6.26L22 9.27l-5 4.87L18.18 22 12 18.56 5.82 22 7 14.14l-5-4.87 6.91-1.01z"/>
-                  </svg>
-                  {{ movie.rating ? movie.rating.toFixed(1) : ('producersPage.profile.notAvailable' | translate) }}
-                </span>
               </div>
             </div>
-          </button>
+          </a>
         }
       </div>
 
@@ -165,4 +159,5 @@
 
 }
 
+</main>
 <app-footer />

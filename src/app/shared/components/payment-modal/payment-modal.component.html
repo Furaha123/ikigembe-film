@@ -33,7 +33,19 @@
             <span class="pm-duration">{{ service.descriptionKey | translate }}</span>
           }
           @if (chargedAmount() !== null) {
-            <span class="pm-price">RWF {{ chargedAmount() | number }}</span>
+            <span class="pm-price">{{ quote()?.currency }} {{ chargedAmount() | number }}</span>
+          } @else if (quote()) {
+            <span class="pm-price">{{ quote()?.currency }} {{ quote()?.amount | number }}</span>
+          }
+          @if (quote(); as q) {
+            @if (q.access_days !== null) {
+              <span class="pm-duration">{{ 'marketplace.purchase.passLength' | translate: { days: q.access_days } }}</span>
+            }
+          }
+          @if (quoteLoading()) {
+            <span role="status">{{ 'marketplace.purchase.loadingQuote' | translate }}</span>
+          } @else if (!quote()) {
+            <button type="button" class="pm-retry" (click)="loadQuote()">{{ 'marketplace.purchase.retryQuote' | translate }}</button>
           }
         </div>
       </div>
@@ -52,6 +64,10 @@
       }
 
       <hr class="pm-divider" />
+
+      @if (!service) {
+        <app-viewing-access [hasAccess]="movie.has_purchased ?? null" />
+      }
 
       @if (demo()) {
         <p class="pm-demo" role="note">
@@ -140,9 +156,9 @@
         @if (stillPending()) {
           <button type="button" class="pm-pay-btn" (click)="checkAgain()">{{ 'paymentModal.checkAgain' | translate }}</button>
         } @else {
-        <button type="button" class="pm-pay-btn" (click)="pay()" [disabled]="loading() || !config()" [attr.aria-busy]="loading() || !config()">
+        <button type="button" class="pm-pay-btn" (click)="pay()" [disabled]="loading() || !config() || (service && !quote())" [attr.aria-busy]="loading() || !config()">
           @if (loading() || !config()) {
-            <span class="pm-spinner"></span>
+            <span class="pm-spinner" aria-hidden="true"></span>
             {{ (config() ? loadingMessage() : 'paymentModal.processing') | translate }}
           } @else {
             <svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18" aria-hidden="true">
@@ -155,7 +171,7 @@
                 {{ 'paymentModal.continueToPaymentAmount' | translate: { amount: (movie.price | number) } }}
               }
             } @else if (service) {
-              {{ 'marketplace.purchase.pay' | translate }}
+              {{ 'marketplace.purchase.payAmount' | translate: { currency: quote()?.currency, amount: (quote()?.amount | number) } }}
             } @else {
               {{ 'paymentModal.payAmount' | translate: { amount: (movie.price | number) } }}
             }

@@ -1,4 +1,12 @@
-import { ActorVideoStatus, ApplicationStatus, CastingCallStatus } from '../models/marketplace.interface';
+import { ActorVideoStatus, ApplicationStatus, CastingCall, CastingCallStatus } from '../models/marketplace.interface';
+
+export function castingDisplayStatus(call: CastingCall, now = Date.now()): CastingCallStatus {
+  return call.status === 'published' && !(new Date(call.deadline_at).getTime() > now) ? 'closed' : call.status;
+}
+
+export function castingIsOpen(call: CastingCall, now = Date.now()): boolean {
+  return castingDisplayStatus(call, now) === 'published';
+}
 
 /** Badge classes (see shared/styles/marketplace-page.scss) for marketplace statuses. */
 export function applicationStatusClass(status: ApplicationStatus): string {

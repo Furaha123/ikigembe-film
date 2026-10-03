@@ -1,4 +1,15 @@
 {
+  "accessibility": { "skipToContent": "Jya ku bikubiye ku rupapuro" },
+  "viewingAccess": {
+    "title": "Kureba rimwe = Igikoresho kimwe",
+    "oneRemaining": "Usigaje kureba inshuro 1",
+    "noneRemaining": "Usigaje kureba inshuro 0",
+    "unknown": "Inshuro usigaje ntiziramenyekana",
+    "otherDevice": "Uburenganzira bwo kureba buri ku kindi gikoresho",
+    "singleView": "Buri kwishyura kuguha kureba iyi filime rimwe ku gikoresho kimwe.",
+    "sameDevice": "Komeza kurebera ku gikoresho na mushakisha bimwe. Ntushobora gusangira uburenganzira bwo kureba ku bikoresho bitandukanye.",
+    "usedView": "Iyo urangije gukoresha uburenganzira bwawe bwo kureba, ugomba kongera kwishyura kugira ngo urebe iyi filime."
+  },
   "nav": {
     "dashboard": "Imbonerahamwe",
     "upload": "Ohereza Filime",
@@ -582,6 +593,11 @@
       "email": "Enter a valid email address."
     },
     "purchase": {
+      "payAmount": "Ishyura {{currency}} {{amount}}",
+      "passLength": "Igihe cyo gukoresha: iminsi {{days}}",
+      "loadingQuote": "Turimo gushaka igiciro n'igihe cyo gukoresha…",
+      "quoteFailed": "Igiciro nticyabonetse. Ongera ugerageze mbere yo kwishyura.",
+      "retryQuote": "Ongera ushake igiciro",
       "pay": "Pay with Mobile Money",
       "success": "Your payment is complete.",
       "unavailable": "This service isn't available yet."
@@ -640,7 +656,7 @@
       "fieldDescription": "Description",
       "payAndCreate": "Pay fee and create",
       "purchaseTitle": "Talent video upload fee",
-      "purchaseDesc": "The fee depends on your age. You'll see the amount on your phone.",
+      "purchaseDesc": "Kohereza videwo imwe y'impano. Igiciro gishingira ku myaka yawe.",
       "listTitle": "Your videos",
       "empty": "You haven't added any talent videos yet.",
       "rejectReason": "Reason",
@@ -656,7 +672,8 @@
       "empty": "There are no open casting calls right now.",
       "roles": "Roles",
       "deadline": "Deadline",
-      "notFound": "This casting call is closed or no longer exists.",
+      "notFound": "Iri tangazo ntiriboneka cyangwa ntirikiriho.",
+      "closed": "Iri tangazo ntiricyakira ubusabe.",
       "backToList": "Back to casting calls",
       "applyTitle": "Apply",
       "chooseVideos": "Attach your approved talent videos",
@@ -705,13 +722,13 @@
       "title": "Actor directory",
       "subtitle": "Search actors, watch their approved talent videos and contact them.",
       "gateTitle": "Get access to the actor directory",
-      "gateText": "A directory pass gives you 30 days of search with contact details. Buying again extends your pass.",
+      "gateText": "Uburenganzira bukwemerera gushaka abakinnyi no kubona amakuru yabo yo kuvugana. Reba igiciro n'igihe mbere yo kwishyura. Kongera kugura byongera igihe cyo gukoresha.",
       "buy": "Buy directory access",
       "extend": "Extend",
       "expired": "Your directory access has expired. Buy a new pass to continue.",
       "activeUntil": "Access active until",
-      "purchaseTitle": "Actor directory access (30 days)",
-      "purchaseDesc": "You'll see the amount on your phone.",
+      "purchaseTitle": "Uburenganzira bwo gushaka abakinnyi",
+      "purchaseDesc": "Shaka abakinnyi urebe amakuru yabo yo kuvugana. Kongera kugura byongera igihe usanganywe.",
       "tabSearch": "Search",
       "tabShortlist": "Shortlist",
       "q": "Name or keyword",
@@ -1692,7 +1709,6 @@
       "pageOf": "Page {{page}} of {{total}}",
       "noFilms": "No films available from this producer yet.",
       "free": "Free",
-      "notAvailable": "N/A",
       "previous": "Previous",
       "next": "Next",
       "seoDescription": "Watch films by {{name}} on Ikigembe — African cinema streaming."

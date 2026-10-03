@@ -4,7 +4,7 @@ import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import {
   ActorSearchAccess, ApplicationStatus, CastingApplication, CastingCall, CastingCallPayload,
-  DirectoryActor, DirectoryActorDetail, DirectoryFilters, Paginated, ServicePurchaseAccepted, ShortlistEntry,
+  DirectoryActor, DirectoryActorDetail, DirectoryFilters, Paginated, ServicePurchaseAccepted, ShortlistEntry, ServiceQuote,
 } from '../../shared/models/marketplace.interface';
 
 const BASE = `${environment.apiUrl}/marketplace`;
@@ -13,6 +13,10 @@ const BASE = `${environment.apiUrl}/marketplace`;
 @Injectable({ providedIn: 'root' })
 export class CastingService {
   private readonly http = inject(HttpClient);
+
+  getQuote(purpose: 'actor_search' | 'casting_announcement'): Observable<ServiceQuote> {
+    return this.http.get<ServiceQuote>(`${BASE}/pricing/${purpose}/`);
+  }
 
   // ── Casting calls ─────────────────────────────────────────────────────
 

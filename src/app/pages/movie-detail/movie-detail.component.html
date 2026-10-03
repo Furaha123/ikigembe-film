@@ -1,6 +1,7 @@
 <app-header [userImg]="''" />
 
 @if (movie(); as movie) {
+  <main>
   <!-- Breadcrumb -->
   <nav class="breadcrumb" [attr.aria-label]="'movieDetailPage.breadcrumb.label' | translate">
     <a routerLink="/browse">{{ 'movieDetailPage.breadcrumb.home' | translate }}</a>
@@ -52,18 +53,15 @@
             <span class="badge upcoming">{{ 'movieDetailPage.comingOn' | translate: { date: (movie.release_date | date: 'd MMM yyyy') } }}</span>
           }
           <span class="badge hd">HD</span>
-          <span class="rating">
-            <svg viewBox="0 0 24 24" width="16" height="16" fill="#ffc107">
-              <path d="M12 2l3.09 6.26L22 9.27l-5 4.87L18.18 22 12 18.56 5.82 22 7 14.14l-5-4.87 6.91-1.01z"/>
-            </svg>
-            {{ movie.rating?.toFixed(1) ?? ('movieDetailPage.notAvailable' | translate) }}
-          </span>
           @if (movie.duration_minutes) {
             <span class="runtime">{{ 'movieDetailPage.minutes' | translate: { n: movie.duration_minutes } }}</span>
           }
         </div>
 
         <!-- CTA Buttons -->
+        <app-viewing-access
+          [hasAccess]="movie.has_purchased ?? null"
+          [otherDevice]="streamError()?.kind === 'other_device'" />
         <div class="cta-row">
           @if (movie.trailer_url) {
             <button class="btn-trailer" (click)="playTrailer()">
@@ -184,16 +182,6 @@
                 <div class="mf-play" aria-hidden="true">
                   <svg viewBox="0 0 24 24" width="20" height="20" fill="white"><path d="M8 5v14l11-7z"/></svg>
                 </div>
-                @if (m.rating) {
-                  <div class="mf-overlay-meta">
-                    <span class="mf-rating">
-                      <svg viewBox="0 0 24 24" width="10" height="10" fill="#ffc107">
-                        <path d="M12 2l3.09 6.26L22 9.27l-5 4.87L18.18 22 12 18.56 5.82 22 7 14.14l-5-4.87 6.91-1.01z"/>
-                      </svg>
-                      {{ m.rating.toFixed(1) }}
-                    </span>
-                  </div>
-                }
               </div>
             </div>
             <p class="mf-title">{{ m.title }}</p>
@@ -206,6 +194,7 @@
     </section>
   }
 
+  </main>
   <app-footer />
 
   <!-- Video Player Overlay -->

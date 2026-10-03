@@ -8,6 +8,7 @@ import { ActorNavComponent } from '../../actor/actor-nav/actor-nav.component';
 import { ActorMarketplaceService } from '../../../shared/services/actor-marketplace.service';
 import { CastingCall } from '../../../shared/models/marketplace.interface';
 import { apiErrorMessage } from '../../../shared/utils/api-error';
+import { castingDisplayStatus, castingCallStatusClass } from '../../../shared/utils/marketplace-status';
 
 @Component({
   selector: 'app-casting-calls',
@@ -17,6 +18,8 @@ import { apiErrorMessage } from '../../../shared/utils/api-error';
   styleUrls: ['../../../shared/styles/marketplace-page.scss'],
 })
 export class CastingCallsComponent implements OnInit {
+  readonly displayStatus = castingDisplayStatus;
+  readonly statusClass = castingCallStatusClass;
   private readonly marketplace = inject(ActorMarketplaceService);
 
   calls      = signal<CastingCall[]>([]);
