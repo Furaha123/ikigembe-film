@@ -35,8 +35,8 @@ export class CastingService {
   }
 
   /** Publishes automatically once the fee payment completes. 400/409/503 as documented. */
-  purchaseCall(id: number, phoneNumber: string): Observable<ServicePurchaseAccepted> {
-    return this.http.post<ServicePurchaseAccepted>(`${BASE}/casting-calls/${id}/purchase/`, { phone_number: phoneNumber });
+  purchaseCall(id: number, phoneNumber: string | null): Observable<ServicePurchaseAccepted> {
+    return this.http.post<ServicePurchaseAccepted>(`${BASE}/casting-calls/${id}/purchase/`, phoneNumber ? { phone_number: phoneNumber } : {});
   }
 
   closeCall(id: number): Observable<CastingCall> {
@@ -53,8 +53,8 @@ export class CastingService {
 
   // ── Actor directory (time-boxed paid pass; 403 without it) ────────────
 
-  purchaseSearch(phoneNumber: string): Observable<ServicePurchaseAccepted> {
-    return this.http.post<ServicePurchaseAccepted>(`${BASE}/actor-search/purchase/`, { phone_number: phoneNumber });
+  purchaseSearch(phoneNumber: string | null): Observable<ServicePurchaseAccepted> {
+    return this.http.post<ServicePurchaseAccepted>(`${BASE}/actor-search/purchase/`, phoneNumber ? { phone_number: phoneNumber } : {});
   }
 
   getSearchAccess(): Observable<ActorSearchAccess> {

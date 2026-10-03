@@ -560,3 +560,115 @@
     }
   }
 }
+
+// ── States added in the UX audit ─────────────────────────
+.details-col .meta-badges .upcoming {
+  background: rgba(197, 162, 83, 0.15);
+  color: var(--ik-gold);
+  border: 1px solid rgba(197, 162, 83, 0.5);
+}
+
+.details-col .stream-pending {
+  color: #f1e3bf;
+  font-size: 0.875rem;
+  margin: -0.5rem 0 1rem;
+}
+
+.link-btn {
+  background: none;
+  border: none;
+  padding: 0;
+  margin-left: 0.25rem;
+  color: var(--ik-gold);
+  font: inherit;
+  font-weight: 600;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.poster-col .poster {
+  aspect-ratio: 2 / 3;
+  height: auto;
+  object-fit: cover;
+  background: var(--ik-surface);
+}
+
+.poster-col .poster--empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  text-align: center;
+  color: var(--ik-text-subtle);
+  font-weight: 600;
+}
+
+.detail-skeleton {
+  padding-top: 64px;
+
+  .sk { background: linear-gradient(90deg, #1e1e2c 0%, #262636 50%, #1e1e2c 100%); background-size: 200% 100%; animation: sk-shimmer 1.4s ease-in-out infinite; border-radius: 8px; }
+  .sk--hero { height: 40vh; border-radius: 0; }
+  .sk-row { display: flex; gap: 2rem; max-width: 1200px; margin: 2rem auto; padding: 0 1.5rem; }
+  .sk--poster { width: 180px; aspect-ratio: 2 / 3; flex: none; }
+  .sk-lines { flex: 1; display: flex; flex-direction: column; gap: 0.9rem; }
+  .sk--title { height: 2rem; width: 60%; }
+  .sk--line { height: 1rem; }
+  .sk--line.short { width: 40%; }
+}
+
+@keyframes sk-shimmer {
+  from { background-position: 200% 0; }
+  to { background-position: -200% 0; }
+}
+
+.detail-error {
+  max-width: 560px;
+  margin: 0 auto;
+  padding: 140px 16px 96px;
+  text-align: center;
+
+  h1 { font-size: 1.75rem; margin-bottom: 0.75rem; }
+  p { color: var(--ik-text-muted); line-height: 1.6; }
+
+  &__actions {
+    margin-top: 1.75rem;
+    display: flex;
+    gap: 0.75rem;
+    justify-content: center;
+    flex-wrap: wrap;
+
+    .btn-watch, .btn-trailer {
+      display: inline-flex;
+      align-items: center;
+      min-height: 44px;
+      padding: 0 1.4rem;
+      border-radius: 6px;
+      font-weight: 600;
+      cursor: pointer;
+      border: 1px solid var(--ik-border-strong);
+      background: none;
+      color: var(--ik-text);
+      font-size: 0.95rem;
+    }
+
+    .btn-watch { background: var(--ik-gold); border-color: var(--ik-gold); color: var(--ik-on-gold); }
+  }
+}
+
+// Phones: keep the title, price and Buy/Watch action near the top of the screen.
+@media (max-width: 640px) {
+  .hero {
+    height: 34vh;
+    min-height: 200px;
+  }
+
+  .info-layout.has-backdrop .poster-col {
+    display: none;
+  }
+
+  .poster-col .poster {
+    width: 140px;
+  }
+
+  .detail-skeleton .sk-row { flex-direction: column; }
+}

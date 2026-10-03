@@ -135,6 +135,8 @@ export class ProducerCastingComponent implements OnInit {
       titleKey: 'marketplace.producerCasting.publishTitle',
       descriptionKey: 'marketplace.producerCasting.publishDesc',
       quote: () => this.casting.getQuote('casting_announcement'),
+      pendingKey: `service:casting:${c.id}`,
+      returnTo: '/producer/casting',
       initiate: (phone) => this.casting.purchaseCall(c.id, phone),
     });
   }

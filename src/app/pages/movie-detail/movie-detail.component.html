@@ -1,14 +1,14 @@
-@if (movie(); as movie) {
-  <app-header [userImg]="''" />
-  <main>
+<app-header [userImg]="''" />
 
+@if (movie(); as movie) {
+  <main>
   <!-- Breadcrumb -->
   <nav class="breadcrumb" [attr.aria-label]="'movieDetailPage.breadcrumb.label' | translate">
     <a routerLink="/browse">{{ 'movieDetailPage.breadcrumb.home' | translate }}</a>
-    <span class="separator">/</span>
+    <span class="separator" aria-hidden="true">/</span>
     <a routerLink="/browse">{{ 'movieDetailPage.breadcrumb.movies' | translate }}</a>
-    <span class="separator">/</span>
-    <span class="current">{{ movie.title }}</span>
+    <span class="separator" aria-hidden="true">/</span>
+    <span class="current" aria-current="page">{{ movie.title }}</span>
   </nav>
 
   <!-- Hero Section -->
@@ -34,10 +34,14 @@
 
   <!-- Movie Info Section -->
   <section class="movie-info-section">
-    <div class="info-layout">
+    <div class="info-layout" [class.has-backdrop]="!dataSaver.isActive() && !!movie.backdrop_url">
       <!-- Left: Poster -->
       <div class="poster-col">
-        <img [src]="movie.thumbnail_url" [alt]="movie.title" class="poster" loading="lazy" />
+        @if (movie.thumbnail_url) {
+          <img [src]="movie.thumbnail_url" [alt]="'movieDetailPage.posterAlt' | translate: { title: movie.title }" class="poster" width="220" height="330" />
+        } @else {
+          <div class="poster poster--empty" aria-hidden="true">{{ movie.title }}</div>
+        }
       </div>
 
       <!-- Center: Details -->
@@ -45,6 +49,9 @@
         <h1 class="movie-title">{{ movie.title }}</h1>
 
         <div class="meta-badges">
+          @if (isUpcoming(movie.release_date)) {
+            <span class="badge upcoming">{{ 'movieDetailPage.comingOn' | translate: { date: (movie.release_date | date: 'd MMM yyyy') } }}</span>
+          }
           <span class="badge hd">HD</span>
           @if (movie.duration_minutes) {
             <span class="runtime">{{ 'movieDetailPage.minutes' | translate: { n: movie.duration_minutes } }}</span>
@@ -79,6 +86,12 @@
         </div>
 
         <div class="stream-status" aria-live="polite">
+          @if (pendingPayment() && !purchased()) {
+            <p class="stream-pending">
+              {{ 'movieDetailPage.pendingPayment' | translate }}
+              <button type="button" class="link-btn" (click)="openPayment()">{{ 'movieDetailPage.checkPayment' | translate }}</button>
+            </p>
+          }
           @if (streamError(); as e) {
             <p class="stream-error" role="alert">{{ e.text ?? (e.key | translate) }}</p>
           }
@@ -89,7 +102,7 @@
         <div class="detail-rows">
           <div class="detail-row">
             <span class="label">{{ 'movieDetailPage.released' | translate }}</span>
-            <span class="value">{{ movie.release_date || ('movieDetailPage.notAvailable' | translate) }}</span>
+            <span class="value">{{ movie.release_date ? (movie.release_date | date: 'd MMM yyyy') : ('movieDetailPage.notAvailable' | translate) }}</span>
           </div>
           <div class="detail-row">
             <span class="label">{{ 'movieDetailPage.views' | translate }}</span>
@@ -122,6 +135,7 @@
       <!-- Right: Similar Movies -->
       <div class="similar-col">
         <app-ad-slot placement="sidebar" />
+        @if (similarMovies().length) {
         <h2 class="similar-title">{{ 'movieDetailPage.youMayAlsoLike' | translate }}</h2>
         <div class="similar-grid">
           @for (similar of similarMovies(); track similar.id) {
@@ -138,6 +152,7 @@
             </button>
           }
         </div>
+        }
       </div>
     </div>
   </section>
@@ -211,7 +226,28 @@
     <app-payment-modal
       [movie]="movie"
       (paid)="onPaymentSuccess()"
-      (closed)="showPaymentModal.set(false)">
+      (closed)="onPaymentClosed()">
     </app-payment-modal>
   }
+} @else if (loadState() === 'loading') {
+  <main class="detail-skeleton" aria-busy="true">
+    <span class="sr-only" role="status">{{ 'movieDetailPage.loading' | translate }}</span>
+    <div class="sk sk--hero"></div>
+    <div class="sk-row">
+      <div class="sk sk--poster"></div>
+      <div class="sk-lines"><div class="sk sk--title"></div><div class="sk sk--line"></div><div class="sk sk--line short"></div></div>
+    </div>
+  </main>
+} @else {
+  <main class="detail-error">
+    <h1>{{ (loadState() === 'not_found' ? 'movieDetailPage.notFoundTitle' : 'movieDetailPage.loadErrorTitle') | translate }}</h1>
+    <p>{{ (loadState() === 'not_found' ? 'movieDetailPage.notFoundText' : 'movieDetailPage.loadErrorText') | translate }}</p>
+    <div class="detail-error__actions">
+      @if (loadState() === 'error') {
+        <button type="button" class="btn-watch" (click)="retryLoad()">{{ 'movieDetailPage.retry' | translate }}</button>
+      }
+      <a class="btn-trailer" routerLink="/browse">{{ 'movieDetailPage.backToFilms' | translate }}</a>
+    </div>
+  </main>
+  <app-footer />
 }

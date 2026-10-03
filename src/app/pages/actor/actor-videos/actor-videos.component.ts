@@ -86,10 +86,12 @@ export class ActorVideosComponent implements OnInit, OnDestroy {
       titleKey: 'marketplace.videos.purchaseTitle',
       descriptionKey: 'marketplace.videos.purchaseDesc',
       quote: () => this.marketplace.getVideoQuote(),
+      pendingKey: 'service:actor_video',
+      returnTo: '/actor/videos',
       initiate: (phone) => this.marketplace.purchaseVideo({
         title: title.trim(),
         description: description.trim() || undefined,
-        phone_number: phone,
+        phone_number: phone ?? undefined,
       }),
     });
   }

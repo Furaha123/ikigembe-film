@@ -7,15 +7,25 @@ $text:   #e5e5e5;
 $muted:  #b3b3b3;
 
 // ── Backdrop ──────────────────────────────────────────
+.pm-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  background: rgba(0, 0, 0, 0.85);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+}
 
 // ── Card ──────────────────────────────────────────────
 .pm-card {
-  margin: auto;
-  position: fixed;
+  position: relative;
+  margin: 0;
   background: $surface;
   border: 1px solid $border;
   border-radius: 16px;
-  width: calc(100% - 2rem);
+  width: 100%;
   max-width: 420px;
   box-sizing: border-box;
   max-height: calc(100dvh - 2rem);
@@ -25,7 +35,6 @@ $muted:  #b3b3b3;
   box-shadow: 0 24px 64px rgba(0, 0, 0, 0.6);
 }
 
-.pm-card::backdrop { background: rgba(0, 0, 0, 0.85); }
 .pm-retry { background: transparent; color: $gold; border: 1px solid $gold; border-radius: 8px; padding: .6rem; min-height: 44px; cursor: pointer; font: inherit; }
 
 .pm-close {
@@ -176,6 +185,34 @@ $muted:  #b3b3b3;
   font-size: 0.85rem;
 }
 
+// Backend demo mode: impossible to miss, so a demo is never mistaken for a real charge
+.pm-demo {
+  margin: 0 0 1rem;
+  padding: 0.6rem 0.8rem;
+  border-radius: 8px;
+  border: 1px dashed rgba(96, 165, 250, 0.7);
+  background: rgba(96, 165, 250, 0.1);
+  color: #cfe3ff;
+  font-size: 0.8rem;
+  line-height: 1.5;
+
+  strong { color: #fff; margin-right: 0.25rem; }
+  &--inline { margin: 0.75rem 0 0; text-align: center; }
+}
+
+// Unconfirmed after the polling window: informational, not an error
+.pm-pending {
+  background: rgba(197, 162, 83, 0.1);
+  border: 1px solid rgba(197, 162, 83, 0.45);
+  color: #f1e3bf;
+  padding: 0.65rem 0.85rem;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  line-height: 1.5;
+
+  &__title { font-weight: 700; margin-bottom: 0.25rem; }
+}
+
 // Pay button
 .pm-pay-btn {
   display: flex;
@@ -255,3 +292,35 @@ $muted:  #b3b3b3;
 
   svg { width: 36px; height: 36px; }
 }
+
+// Hosted-page gateways (DPO): no phone field, a short explanation instead
+.pm-hosted-hint {
+  font-size: 0.8rem;
+  line-height: 1.5;
+  color: var(--ik-text-muted);
+  margin: -0.25rem 0 1rem;
+}
+
+.pm-notice {
+  font-size: 0.85rem;
+  color: var(--ik-text-muted);
+  margin-bottom: 0.75rem;
+}
+
+.pm-secondary-btn {
+  width: 100%;
+  margin-top: 0.6rem;
+  padding: 0.75rem;
+  background: none;
+  border: 1px solid var(--ik-border-strong);
+  border-radius: 10px;
+  color: var(--ik-text);
+  font-weight: 600;
+  font-size: 0.9rem;
+  cursor: pointer;
+
+  &:hover:not(:disabled) { border-color: var(--ik-text-muted); }
+  &:disabled { opacity: 0.6; cursor: not-allowed; }
+}
+
+.pm-form > .pm-pending { margin-bottom: 1rem; }
