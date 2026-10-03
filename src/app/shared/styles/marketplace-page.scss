@@ -17,6 +17,13 @@ $ok: #5cc98b;
   color: #e5e5e5;
 }
 
+// Viewer pages sit under the fixed site header (68px, 56px on phones);
+// producer pages use their own layout and keep the plain padding.
+app-header ~ .mk-page { padding-top: calc(68px + 1.5rem); }
+@media (max-width: 768px) {
+  app-header ~ .mk-page { padding-top: calc(56px + 1.25rem); }
+}
+
 .mk-header {
   display: flex;
   flex-wrap: wrap;
