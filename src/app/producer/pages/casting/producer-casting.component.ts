@@ -1,125 +1,76 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { HttpErrorResponse } from '@angular/common/http';
-import { AbstractControl, FormBuilder, ReactiveFormsModule, ValidationErrors, Validators } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { TranslatePipe } from '@ngx-translate/core';
 import { CastingService } from '../../services/casting.service';
 import { PaymentModalComponent } from '../../../shared/components/payment-modal/payment-modal.component';
-import { CastingCall, CastingCallPayload, ServicePurchase } from '../../../shared/models/marketplace.interface';
-import { castingCallStatusClass, castingDisplayStatus } from '../../../shared/utils/marketplace-status';
-import { apiErrorMessage } from '../../../shared/utils/api-error';
+import { CastingCall, ServicePurchase } from '../../../shared/models/marketplace.interface';
+import {
+  CastingPublicationState, castingDisplayStatus, castingPublicationClass, castingPublicationState,
+} from '../../../shared/utils/marketplace-status';
+import { marketplaceErrorMessage } from '../../../shared/utils/marketplace-error';
 
-/** One role per line (commas also accepted). */
-export function parseRoles(value: string): string[] {
-  return value.split(/[\n,]/).map(r => r.trim()).filter(Boolean);
+export type CastingFilter = 'all' | 'draft' | 'published' | 'closed';
+
+/** Which list tab a call belongs to (removed calls only show under "All"). */
+export function castingFilterOf(state: CastingPublicationState): Exclude<CastingFilter, 'all'> | null {
+  if (state === 'published') return 'published';
+  if (state === 'closed') return 'closed';
+  if (state === 'removed') return null;
+  return 'draft';
 }
 
-function futureDate(control: AbstractControl<string>): ValidationErrors | null {
-  if (!control.value) return null;
-  return new Date(control.value).getTime() > Date.now() ? null : { past: true };
-}
-
-function rolesRequired(control: AbstractControl<string>): ValidationErrors | null {
-  return parseRoles(control.value ?? '').length ? null : { roles: true };
-}
-
-/** `datetime-local` value for an ISO timestamp, in local time. */
-function toLocalInput(iso: string): string {
-  const d = new Date(iso);
-  const pad = (n: number) => String(n).padStart(2, '0');
-  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
-}
-
+/**
+ * My Castings: every call this producer created, by state. New calls and
+ * draft edits go through the Post Casting wizard; publishing is the fee
+ * payment, after which the server publishes the call.
+ */
 @Component({
   selector: 'app-producer-casting',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterLink, TranslatePipe, PaymentModalComponent],
+  imports: [CommonModule, RouterLink, TranslatePipe, PaymentModalComponent],
   templateUrl: './producer-casting.component.html',
   styleUrls: ['../../../shared/styles/marketplace-page.scss'],
 })
 export class ProducerCastingComponent implements OnInit {
-  private readonly fb = inject(FormBuilder);
   private readonly casting = inject(CastingService);
+
+  readonly filters: CastingFilter[] = ['all', 'published', 'draft', 'closed'];
+  readonly publicationState = castingPublicationState;
+  readonly publicationClass = castingPublicationClass;
+  readonly displayStatus = castingDisplayStatus;
 
   calls       = signal<CastingCall[]>([]);
   loading     = signal(true);
   error       = signal<string | null>(null);
-  formOpen    = signal(false);
-  editingId   = signal<number | null>(null);
-  saving      = signal(false);
-  formError   = signal<string | null>(null);
+  filter      = signal<CastingFilter>('all');
   purchase    = signal<ServicePurchase | null>(null);
   confirmCloseId = signal<number | null>(null);
+  closingId   = signal<number | null>(null);
   actionError = signal<string | null>(null);
+  actionNotice = signal<string | null>(null);
 
-  readonly statusClass = castingCallStatusClass;
-  readonly displayStatus = castingDisplayStatus;
-
-  form = this.fb.nonNullable.group({
-    title:       ['', [Validators.required, Validators.maxLength(255)]],
-    description: ['', Validators.required],
-    roles:       ['', rolesRequired],
-    deadline_at: ['', [Validators.required, futureDate]],
+  readonly visible = computed(() => {
+    const f = this.filter();
+    return f === 'all' ? this.calls() : this.calls().filter(c => castingFilterOf(castingPublicationState(c)) === f);
   });
+
+  count(f: CastingFilter): number {
+    return f === 'all' ? this.calls().length : this.calls().filter(c => castingFilterOf(castingPublicationState(c)) === f).length;
+  }
 
   ngOnInit(): void {
     this.load();
   }
 
   load(): void {
+    this.loading.set(true);
+    this.error.set(null);
     this.casting.getMyCalls().subscribe({
       next: (list) => { this.calls.set(list); this.loading.set(false); },
       error: (err: unknown) => {
         this.loading.set(false);
-        this.error.set(apiErrorMessage(err) ?? 'marketplace.errors.loadFailed');
-      },
-    });
-  }
-
-  openNew(): void {
-    this.editingId.set(null);
-    this.form.reset();
-    this.formError.set(null);
-    this.formOpen.set(true);
-  }
-
-  edit(c: CastingCall): void {
-    this.editingId.set(c.id);
-    this.form.setValue({
-      title: c.title,
-      description: c.description,
-      roles: c.roles.join('\n'),
-      deadline_at: toLocalInput(c.deadline_at),
-    });
-    this.formError.set(null);
-    this.formOpen.set(true);
-  }
-
-  cancelForm(): void {
-    this.formOpen.set(false);
-  }
-
-  save(): void {
-    this.form.markAllAsTouched();
-    if (this.form.invalid || this.saving()) return;
-    const v = this.form.getRawValue();
-    const payload: CastingCallPayload = {
-      title: v.title.trim(),
-      description: v.description.trim(),
-      roles: parseRoles(v.roles),
-      deadline_at: new Date(v.deadline_at).toISOString(),
-    };
-    const id = this.editingId();
-    const req = id ? this.casting.updateCall(id, payload) : this.casting.createCall(payload);
-
-    this.saving.set(true);
-    this.formError.set(null);
-    req.subscribe({
-      next: () => { this.saving.set(false); this.formOpen.set(false); this.load(); },
-      error: (err: HttpErrorResponse) => {
-        this.saving.set(false);
-        this.formError.set(apiErrorMessage(err) ?? firstFieldError(err) ?? 'marketplace.errors.saveFailed');
+        this.error.set(marketplaceErrorMessage(err) ?? 'marketplace.errors.loadFailed');
       },
     });
   }
@@ -131,6 +82,7 @@ export class ProducerCastingComponent implements OnInit {
       this.actionError.set('marketplace.producerCasting.deadlineFuture');
       return;
     }
+    this.actionError.set(null);
     this.purchase.set({
       titleKey: 'marketplace.producerCasting.publishTitle',
       descriptionKey: 'marketplace.producerCasting.publishDesc',
@@ -152,29 +104,22 @@ export class ProducerCastingComponent implements OnInit {
   }
 
   closeCall(c: CastingCall): void {
+    if (this.closingId()) return;
     this.actionError.set(null);
+    this.actionNotice.set(null);
+    this.closingId.set(c.id);
     this.casting.closeCall(c.id).subscribe({
-      next: () => { this.confirmCloseId.set(null); this.load(); },
-      error: (err: unknown) => {
+      next: () => {
+        this.closingId.set(null);
         this.confirmCloseId.set(null);
-        this.actionError.set(apiErrorMessage(err) ?? 'marketplace.errors.actionFailed');
+        this.actionNotice.set('marketplace.producerCasting.closedNotice');
+        this.load();
+      },
+      error: (err: unknown) => {
+        this.closingId.set(null);
+        this.confirmCloseId.set(null);
+        this.actionError.set(marketplaceErrorMessage(err) ?? 'marketplace.errors.actionFailed');
       },
     });
   }
-
-  invalid(name: keyof typeof this.form.controls): boolean {
-    const c = this.form.controls[name];
-    return c.invalid && c.touched;
-  }
-}
-
-/** First message of a DRF `{ field: [msg] }` validation error. */
-export function firstFieldError(err: HttpErrorResponse): string | null {
-  const body: unknown = err.error;
-  if (!body || typeof body !== 'object') return null;
-  for (const v of Object.values(body as Record<string, unknown>)) {
-    if (Array.isArray(v) && v.length) return String(v[0]);
-    if (typeof v === 'string') return v;
-  }
-  return null;
 }

@@ -4,6 +4,8 @@ import { HttpTestingController, provideHttpClientTesting } from '@angular/common
 import { environment } from '../../../environments/environment';
 import { ActorMarketplaceService } from './actor-marketplace.service';
 import { ActorProfilePayload } from '../models/marketplace.interface';
+import { MarketplaceAccessError } from '../../core/access/marketplace-access.service';
+import { marketplaceUser, provideMarketplaceUser } from '../testing/marketplace-session';
 
 const BASE = `${environment.apiUrl}/marketplace`;
 
@@ -21,7 +23,7 @@ describe('ActorMarketplaceService', () => {
   };
 
   beforeEach(() => {
-    TestBed.configureTestingModule({ providers: [provideHttpClient(), provideHttpClientTesting()] });
+    TestBed.configureTestingModule({ providers: [provideHttpClient(), provideHttpClientTesting(), provideMarketplaceUser(marketplaceUser('Viewer'))] });
     service = TestBed.inject(ActorMarketplaceService);
     http = TestBed.inject(HttpTestingController);
   });
@@ -133,6 +135,36 @@ describe('ActorMarketplaceService', () => {
       const req = http.expectOne(`${BASE}/applications/mine/`);
       expect(req.request.method).toBe('GET');
       req.flush([]);
+    });
+  });
+
+  describe('access', () => {
+    it('sends no actor-only request for a producer', () => {
+      TestBed.resetTestingModule();
+      TestBed.configureTestingModule({ providers: [provideHttpClient(), provideHttpClientTesting(), provideMarketplaceUser(marketplaceUser('Producer'))] });
+      service = TestBed.inject(ActorMarketplaceService);
+      http = TestBed.inject(HttpTestingController);
+      spyOn(console, 'warn');
+
+      const errors: unknown[] = [];
+      const onErr = { error: (e: unknown) => errors.push(e) };
+      service.getProfile().subscribe(onErr);
+      service.getMyVideos().subscribe(onErr);
+      service.getMyApplications().subscribe(onErr);
+      service.apply(1, { video_ids: [] }).subscribe(onErr);
+
+      http.expectNone(() => true);
+      expect(errors.length).toBe(4);
+      expect(errors.every(e => e instanceof MarketplaceAccessError)).toBeTrue();
+    });
+
+    it('lets a producer browse published casting calls', () => {
+      TestBed.resetTestingModule();
+      TestBed.configureTestingModule({ providers: [provideHttpClient(), provideHttpClientTesting(), provideMarketplaceUser(marketplaceUser('Producer'))] });
+      service = TestBed.inject(ActorMarketplaceService);
+      http = TestBed.inject(HttpTestingController);
+      service.getCastingCall(4).subscribe();
+      http.expectOne(`${BASE}/casting-calls/4/`).flush({});
     });
   });
 });

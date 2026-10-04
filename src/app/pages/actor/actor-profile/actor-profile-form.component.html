@@ -1,0 +1,80 @@
+<form class="mk-card" [formGroup]="form" (ngSubmit)="save()" novalidate>
+  @if (isNew) {
+    <p class="mk-banner">{{ 'marketplace.profile.createHint' | translate }}</p>
+  }
+
+  <div class="mk-form">
+    <div class="mk-field">
+      <label for="ap-stage">{{ 'marketplace.profile.stageName' | translate }} *</label>
+      <input id="ap-stage" formControlName="stage_name" [attr.aria-invalid]="invalid('stage_name')" />
+      @if (invalid('stage_name')) { <p class="mk-error">{{ 'marketplace.errors.required' | translate }}</p> }
+      @if (fieldErrors()['stage_name']) { <p class="mk-error">{{ fieldErrors()['stage_name'] }}</p> }
+    </div>
+
+    <div class="mk-field">
+      <label for="ap-dob">{{ 'marketplace.profile.dob' | translate }} *</label>
+      <input id="ap-dob" type="date" formControlName="date_of_birth" [max]="today" [attr.aria-invalid]="invalid('date_of_birth')" aria-describedby="ap-dob-hint" />
+      <span id="ap-dob-hint" class="mk-hint">{{ 'marketplace.profile.dobHint' | translate }}</span>
+      @if (invalid('date_of_birth')) { <p class="mk-error">{{ 'marketplace.errors.required' | translate }}</p> }
+      @if (fieldErrors()['date_of_birth']) { <p class="mk-error">{{ fieldErrors()['date_of_birth'] }}</p> }
+    </div>
+
+    <div class="mk-field">
+      <label for="ap-gender">{{ 'marketplace.profile.gender' | translate }}</label>
+      <select id="ap-gender" formControlName="gender">
+        <option value="">{{ 'marketplace.profile.genderUnset' | translate }}</option>
+        @for (g of genders; track g) {
+          <option [value]="g">{{ 'marketplace.gender.' + g | translate }}</option>
+        }
+      </select>
+    </div>
+
+    <div class="mk-field">
+      <label for="ap-location">{{ 'marketplace.profile.location' | translate }}</label>
+      <input id="ap-location" formControlName="location" />
+    </div>
+
+    <div class="mk-field">
+      <label for="ap-languages">{{ 'marketplace.profile.languages' | translate }}</label>
+      <input id="ap-languages" formControlName="languages" aria-describedby="ap-list-hint" />
+    </div>
+
+    <div class="mk-field">
+      <label for="ap-skills">{{ 'marketplace.profile.skills' | translate }}</label>
+      <input id="ap-skills" formControlName="skills" aria-describedby="ap-list-hint" />
+      <span id="ap-list-hint" class="mk-hint">{{ 'marketplace.profile.listHint' | translate }}</span>
+      @if (fieldErrors()['skills']) { <p class="mk-error">{{ fieldErrors()['skills'] }}</p> }
+    </div>
+
+    <div class="mk-field">
+      <label for="ap-email">{{ 'marketplace.profile.contactEmail' | translate }}</label>
+      <input id="ap-email" type="email" formControlName="contact_email" [attr.aria-invalid]="invalid('contact_email')" />
+      @if (invalid('contact_email')) { <p class="mk-error">{{ 'marketplace.errors.email' | translate }}</p> }
+    </div>
+
+    <div class="mk-field">
+      <label for="ap-phone">{{ 'marketplace.profile.contactPhone' | translate }}</label>
+      <input id="ap-phone" type="tel" formControlName="contact_phone" />
+    </div>
+
+    <div class="mk-field mk-field--wide">
+      <label for="ap-bio">{{ 'marketplace.profile.bio' | translate }}</label>
+      <textarea id="ap-bio" formControlName="bio" rows="4"></textarea>
+    </div>
+
+    <label class="mk-check mk-field--wide">
+      <input type="checkbox" formControlName="is_listed" />
+      {{ 'marketplace.profile.listed' | translate }}
+    </label>
+  </div>
+
+  <div aria-live="polite">
+    @if (error()) { <p class="mk-error" role="alert">{{ error()! | translate }}</p> }
+  </div>
+
+  <div class="mk-row">
+    <button type="submit" class="mk-btn" [disabled]="saving()">
+      {{ (saving() ? 'marketplace.common.saving' : (submitKey ?? (isNew ? 'marketplace.profile.create' : 'marketplace.common.save'))) | translate }}
+    </button>
+  </div>
+</form>

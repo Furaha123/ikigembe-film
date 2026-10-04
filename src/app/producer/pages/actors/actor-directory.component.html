@@ -1,7 +1,7 @@
 <div class="mk-page">
   <div class="mk-header">
     <div>
-      <h1>{{ 'marketplace.directory.title' | translate }}</h1>
+      <h1>{{ (tab === 'shortlist' ? 'marketplace.nav.shortlist' : 'marketplace.directory.title') | translate }}</h1>
       <p>{{ 'marketplace.directory.subtitle' | translate }}</p>
     </div>
     <a routerLink="/producer/casting" class="mk-btn mk-btn--ghost">{{ 'marketplace.producerCasting.title' | translate }}</a>
@@ -22,29 +22,29 @@
         }
         <h2 id="dir-gate-title">{{ 'marketplace.directory.gateTitle' | translate }}</h2>
         <p class="mk-muted">{{ 'marketplace.directory.gateText' | translate }}</p>
-        <button type="button" class="mk-btn" (click)="buyAccess()">{{ 'marketplace.directory.buy' | translate }}</button>
+        <a routerLink="/producer/access" class="mk-btn">{{ 'marketplace.directory.buy' | translate }}</a>
         @if (error()) { <p class="mk-error" role="alert">{{ error()! | translate }}</p> }
       </section>
     } @else {
       <p class="mk-banner" role="status">
         <strong>{{ 'marketplace.directory.activeUntil' | translate }} {{ a.expires_at | date:'medium' }}</strong>
-        · <button type="button" class="mk-btn mk-btn--ghost" (click)="buyAccess()">{{ 'marketplace.directory.extend' | translate }}</button>
+        · <a routerLink="/producer/access" class="mk-btn mk-btn--ghost">{{ 'marketplace.directory.extend' | translate }}</a>
       </p>
 
-      <div class="mk-tabs" role="group" [attr.aria-label]="'marketplace.directory.title' | translate">
-        <button type="button" [class.active]="tab() === 'search'" [attr.aria-pressed]="tab() === 'search'" (click)="tab.set('search')">
+      <nav class="mk-tabs" [attr.aria-label]="'marketplace.directory.title' | translate">
+        <a routerLink="/producer/actors" routerLinkActive="active" ariaCurrentWhenActive="page">
           {{ 'marketplace.directory.tabSearch' | translate }}
-        </button>
-        <button type="button" [class.active]="tab() === 'shortlist'" [attr.aria-pressed]="tab() === 'shortlist'" (click)="tab.set('shortlist')">
+        </a>
+        <a routerLink="/producer/shortlist" routerLinkActive="active" ariaCurrentWhenActive="page">
           {{ 'marketplace.directory.tabShortlist' | translate }} ({{ shortlist().length }})
-        </button>
-      </div>
+        </a>
+      </nav>
 
       <div aria-live="polite">
         @if (error()) { <p class="mk-error" role="alert">{{ error()! | translate }}</p> }
       </div>
 
-      @if (tab() === 'search') {
+      @if (tab === 'search') {
         <form class="mk-card" [formGroup]="filters" (ngSubmit)="search(1)" role="search">
           <div class="mk-form">
             <div class="mk-field">
@@ -87,7 +87,8 @@
 
         <p class="mk-muted" aria-live="polite">
           @if (searching()) { {{ 'marketplace.common.loading' | translate }} }
-          @else { {{ totalCount() }} {{ 'marketplace.directory.results' | translate }} }
+          @else if (range()) { {{ 'marketplace.directory.range' | translate: { from: range()!.from, to: range()!.to, total: totalCount() } }} }
+          @else { {{ 'marketplace.directory.noResults' | translate }} }
         </p>
 
         <div class="mk-grid">
@@ -144,7 +145,3 @@
     }
   }
 </div>
-
-@if (purchase(); as p) {
-  <app-payment-modal [service]="p" (paid)="onPaid()" (closed)="purchase.set(null)" />
-}

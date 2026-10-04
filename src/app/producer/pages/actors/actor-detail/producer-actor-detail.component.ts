@@ -7,7 +7,7 @@ import { Observable } from 'rxjs';
 import { CastingService } from '../../../services/casting.service';
 import { VideoPlayerComponent } from '../../../../shared/components/video-player/video-player.component';
 import { DirectoryActorDetail, DirectoryVideo } from '../../../../shared/models/marketplace.interface';
-import { apiErrorMessage } from '../../../../shared/utils/api-error';
+import { marketplaceErrorMessage } from '../../../../shared/utils/marketplace-error';
 
 @Component({
   selector: 'app-producer-actor-detail',
@@ -37,7 +37,7 @@ export class ProducerActorDetailComponent implements OnInit {
       error: (err: HttpErrorResponse) => {
         this.loading.set(false);
         if (err.status === 403) this.noAccess.set(true);
-        else this.error.set(err.status === 404 ? 'marketplace.directory.actorNotFound' : (apiErrorMessage(err) ?? 'marketplace.errors.loadFailed'));
+        else this.error.set(err.status === 404 ? 'marketplace.directory.actorNotFound' : (marketplaceErrorMessage(err) ?? 'marketplace.errors.loadFailed'));
       },
     });
     this.casting.getShortlist().subscribe({
@@ -57,7 +57,7 @@ export class ProducerActorDetailComponent implements OnInit {
         this.busy.set(false);
         if (err.status === 409) { this.shortlisted.set(true); return; }
         if (err.status === 403) { this.noAccess.set(true); this.actor.set(null); return; }
-        this.error.set(apiErrorMessage(err) ?? 'marketplace.errors.actionFailed');
+        this.error.set(marketplaceErrorMessage(err) ?? 'marketplace.errors.actionFailed');
       },
     });
   }

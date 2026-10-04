@@ -7,7 +7,7 @@ import { VideoPlayerComponent } from '../../../shared/components/video-player/vi
 import {
   ActorVideo, ActorVideoStatus, CastingCall, CastingCallStatus,
 } from '../../../shared/models/marketplace.interface';
-import { apiErrorMessage } from '../../../shared/utils/api-error';
+import { marketplaceErrorMessage } from '../../../shared/utils/marketplace-error';
 
 type Tab = 'videos' | 'casting';
 
@@ -39,12 +39,14 @@ export class AdminMarketplaceComponent implements OnInit {
   videoStatus     = signal<ActorVideoStatus>('pending_review');
   videoPage       = signal(1);
   videoPages      = signal(0);
+  videoTotal      = signal<number | null>(null);
   videosLoading   = signal(false);
 
   calls           = signal<CastingCall[]>([]);
   callStatus      = signal<CastingCallStatus | ''>('');
   callPage        = signal(1);
   callPages       = signal(0);
+  callTotal       = signal<number | null>(null);
   callsLoading    = signal(false);
 
   error           = signal<string | null>(null);
@@ -72,6 +74,7 @@ export class AdminMarketplaceComponent implements OnInit {
         this.videos.set(res.results);
         this.videoPage.set(res.page);
         this.videoPages.set(res.total_pages);
+        this.videoTotal.set(res.total_results);
         this.videosLoading.set(false);
       },
       error: (err: HttpErrorResponse) => { this.videosLoading.set(false); this.fail(err); },
@@ -85,6 +88,7 @@ export class AdminMarketplaceComponent implements OnInit {
         this.calls.set(res.results);
         this.callPage.set(res.page);
         this.callPages.set(res.total_pages);
+        this.callTotal.set(res.total_results);
         this.callsLoading.set(false);
       },
       error: (err: HttpErrorResponse) => { this.callsLoading.set(false); this.fail(err); },
@@ -143,7 +147,7 @@ export class AdminMarketplaceComponent implements OnInit {
         this.actionId.set(null);
         // 400 may be { reason: "..." } or { error: "..." }
         const body = err.error as { reason?: string } | null;
-        this.reasonError.set(apiErrorMessage(err) ?? body?.reason ?? 'marketplace.errors.actionFailed');
+        this.reasonError.set(marketplaceErrorMessage(err) ?? body?.reason ?? 'marketplace.errors.actionFailed');
       },
     });
   }
@@ -162,6 +166,6 @@ export class AdminMarketplaceComponent implements OnInit {
   }
 
   private fail(err: HttpErrorResponse): void {
-    this.error.set(apiErrorMessage(err) ?? 'marketplace.errors.actionFailed');
+    this.error.set(marketplaceErrorMessage(err) ?? 'marketplace.errors.actionFailed');
   }
 }

@@ -8,15 +8,18 @@
     </div>
   </div>
 
-  <app-actor-nav />
+  <app-marketplace-nav />
 
   <div aria-live="polite">
     @if (loading()) {
       <p class="mk-muted">{{ 'marketplace.common.loading' | translate }}</p>
     } @else if (error()) {
       <p class="mk-error" role="alert">{{ error()! | translate }}</p>
+      <button type="button" class="mk-btn mk-btn--ghost" (click)="load(page())">{{ 'marketplace.common.retry' | translate }}</button>
     } @else if (calls().length === 0) {
       <p class="mk-empty">{{ 'marketplace.casting.empty' | translate }}</p>
+    } @else {
+      <p class="mk-muted">{{ 'marketplace.casting.count' | translate: { n: total() } }}</p>
     }
   </div>
 
@@ -30,6 +33,8 @@
           @for (r of c.roles; track $index) { <span>{{ r }}</span> }
         </div>
         <p class="mk-muted">{{ 'marketplace.casting.deadline' | translate }}: {{ c.deadline_at | date:'medium' }}</p>
+        <a [routerLink]="['/casting', c.id]" class="mk-btn mk-btn--ghost" style="margin-top: .5rem"
+           [attr.aria-label]="('marketplace.casting.viewDetails' | translate) + ': ' + c.title">{{ 'marketplace.casting.viewDetails' | translate }}</a>
       </article>
     }
   </div>

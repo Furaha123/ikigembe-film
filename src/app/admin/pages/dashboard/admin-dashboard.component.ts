@@ -11,6 +11,7 @@ import {
   LineController, LineElement, PointElement, Filler,
 } from 'chart.js';
 import { AdminService } from '../../services/admin.service';
+import { AdminMarketplaceService } from '../../services/admin-marketplace.service';
 import type { DashboardOverview, RevenueTrendItem, TransactionHistory } from '../../models/admin.interface';
 import { toLocalDateString } from '../../../shared/utils/local-date';
 
@@ -28,6 +29,7 @@ type ChartTab = 'revenue' | 'commission' | 'producer';
 export class AdminDashboardComponent implements OnInit, AfterViewChecked, OnDestroy {
   private readonly adminService = inject(AdminService);
   private readonly platformId   = inject(PLATFORM_ID);
+  private readonly marketplace  = inject(AdminMarketplaceService);
 
   @ViewChild('trendChart') chartCanvas!: ElementRef<HTMLCanvasElement>;
 
@@ -38,6 +40,9 @@ export class AdminDashboardComponent implements OnInit, AfterViewChecked, OnDest
   loadingOverview = signal(true);
   loadingTrend    = signal(true);
   loadingTx       = signal(true);
+  /** Talent videos waiting for moderation (total of the review queue); null if it couldn't load. */
+  pendingVideos   = signal<number | null>(null);
+  loadingVideos   = signal(true);
 
   activeTab = signal<ChartTab>('revenue');
 
@@ -59,6 +64,16 @@ export class AdminDashboardComponent implements OnInit, AfterViewChecked, OnDest
     this.loadOverview();
     this.loadTrend();
     this.loadTransactions();
+    this.loadPendingVideos();
+  }
+
+  private loadPendingVideos(): void {
+    this.subs.push(
+      this.marketplace.listActorVideos('pending_review', 1).subscribe({
+        next: (res) => { this.pendingVideos.set(res.total_results); this.loadingVideos.set(false); },
+        error: ()    => { this.loadingVideos.set(false); },
+      })
+    );
   }
 
   private loadOverview(): void {

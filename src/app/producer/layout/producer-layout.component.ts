@@ -6,6 +6,7 @@ import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { AuthService } from '../../core/services/auth.service';
 import { LanguageService, AppLang } from '../../core/services/language.service';
 import { ProducerService, ProducerNotification } from '../services/producer.service';
+import { MarketplaceAccessService } from '../../core/access/marketplace-access.service';
 
 @Component({
   selector: 'app-producer-layout',
@@ -20,6 +21,7 @@ export class ProducerLayoutComponent implements OnInit {
   private readonly platformId      = inject(PLATFORM_ID);
   readonly lang                    = inject(LanguageService);
   private readonly translate       = inject(TranslateService);
+  private readonly marketplace     = inject(MarketplaceAccessService);
 
   readonly initials        = this.authService.initials;
   readonly userName        = this.authService.userName;
@@ -41,17 +43,17 @@ export class ProducerLayoutComponent implements OnInit {
     isPlatformBrowser(this.platformId) ? window.innerWidth > 768 : true
   );
 
-  navItems = [
-    { labelKey: 'nav.dashboard',   path: '/producer/dashboard',   icon: 'dashboard' },
-    { labelKey: 'nav.upload',      path: '/producer/upload',      icon: 'upload' },
-    { labelKey: 'nav.movies',      path: '/producer/movies',      icon: 'movies' },
-    { labelKey: 'nav.wallet',      path: '/producer/wallet',      icon: 'wallet' },
-    { labelKey: 'nav.withdrawals', path: '/producer/withdrawals', icon: 'withdrawals' },
-    { labelKey: 'nav.contracts',   path: '/producer/contracts',   icon: 'contracts' },
-    { labelKey: 'nav.casting',     path: '/producer/casting',     icon: 'casting' },
-    { labelKey: 'nav.actors',      path: '/producer/actors',      icon: 'actors' },
-    { labelKey: 'nav.settings',    path: '/producer/settings',    icon: 'settings' },
-  ];
+  /** Marketplace items come from the access map (none while the account isn't active). */
+  readonly navItems = computed(() => [
+    { labelKey: 'nav.dashboard',   path: '/producer/dashboard',   icon: 'dashboard', exact: false },
+    { labelKey: 'nav.upload',      path: '/producer/upload',      icon: 'upload', exact: false },
+    { labelKey: 'nav.movies',      path: '/producer/movies',      icon: 'movies', exact: false },
+    { labelKey: 'nav.wallet',      path: '/producer/wallet',      icon: 'wallet', exact: false },
+    { labelKey: 'nav.withdrawals', path: '/producer/withdrawals', icon: 'withdrawals', exact: false },
+    { labelKey: 'nav.contracts',   path: '/producer/contracts',   icon: 'contracts', exact: false },
+    ...this.marketplace.tabs().map(t => ({ labelKey: t.labelKey, path: t.route!, icon: t.icon as string, exact: !!t.exact })),
+    { labelKey: 'nav.settings',    path: '/producer/settings',    icon: 'settings', exact: false },
+  ]);
 
   ngOnInit() {
     if (!this.authService.onboardingComplete()) {
@@ -59,13 +61,7 @@ export class ProducerLayoutComponent implements OnInit {
       return;
     }
     // Sync account_status from server so an approved producer sees the correct state on re-login
-    this.authService.getMe().subscribe({
-      next: (profile) => {
-        if (profile.account_status) {
-          this.authService.setAccountStatus(profile.account_status as 'pending_approval' | 'approved' | 'suspended');
-        }
-      },
-    });
+    this.authService.syncProfile().subscribe();
     this.producerService.getNotifications().subscribe({
       next: (data) => this.notifications.set(data),
     });

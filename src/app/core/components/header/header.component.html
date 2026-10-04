@@ -11,7 +11,7 @@
     </button>
     <img src="/assets/ikigembe.log.png" [alt]="'header.logoAlt' | translate">
     <ul class="nav-list">
-      @for (item of navList; track item.label) {
+      @for (item of navList(); track item.label) {
         @if (item.route) {
           <li><a [routerLink]="item.route" routerLinkActive="active">{{ item.labelKey ? (item.labelKey | translate) : item.label }}</a></li>
         } @else {
@@ -219,7 +219,7 @@
   @if (mobileMenuOpen()) {
     <nav id="mobile-navigation" class="mobile-drawer" [attr.aria-label]="'header.toggleNav' | translate" (click)="$event.stopPropagation()">
       <ul class="mobile-nav-list">
-        @for (item of navList; track item.label) {
+        @for (item of navList(); track item.label) {
           @if (item.route) {
             <li><a [routerLink]="item.route" routerLinkActive="active" (click)="closeMobileMenu()">{{ item.labelKey ? (item.labelKey | translate) : item.label }}</a></li>
           } @else {

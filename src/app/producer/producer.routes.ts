@@ -1,5 +1,7 @@
 import { Routes } from '@angular/router';
 import { producerGuard } from './guards/producer.guard';
+import { marketplaceGuard, marketplaceRoute } from '../core/access/marketplace.guard';
+import { unsavedChangesGuard } from '../core/guards/unsaved-changes.guard';
 import { ProducerLayoutComponent } from './layout/producer-layout.component';
 
 export const producerRoutes: Routes = [
@@ -44,18 +46,58 @@ export const producerRoutes: Routes = [
       },
       {
         path: 'casting',
+        canActivate: [marketplaceGuard],
+        data: marketplaceRoute('my-casting-calls'),
         loadComponent: () => import('./pages/casting/producer-casting.component').then(m => m.ProducerCastingComponent),
       },
       {
+        path: 'casting/new',
+        canActivate: [marketplaceGuard],
+        canDeactivate: [unsavedChangesGuard],
+        data: marketplaceRoute('post-casting'),
+        loadComponent: () => import('./pages/casting/casting-wizard/casting-wizard.component').then(m => m.CastingWizardComponent),
+      },
+      {
+        path: 'casting/:id/edit',
+        canActivate: [marketplaceGuard],
+        canDeactivate: [unsavedChangesGuard],
+        data: marketplaceRoute('post-casting'),
+        loadComponent: () => import('./pages/casting/casting-wizard/casting-wizard.component').then(m => m.CastingWizardComponent),
+      },
+      {
+        path: 'applications',
+        canActivate: [marketplaceGuard],
+        data: marketplaceRoute('casting-applications'),
+        loadComponent: () => import('./pages/casting/casting-applications/casting-applications.component').then(m => m.CastingApplicationsComponent),
+      },
+      {
+        path: 'access',
+        canActivate: [marketplaceGuard],
+        data: marketplaceRoute('my-access'),
+        loadComponent: () => import('./pages/access/producer-access.component').then(m => m.ProducerAccessComponent),
+      },
+      {
         path: 'casting/:id',
+        canActivate: [marketplaceGuard],
+        data: marketplaceRoute('my-casting-calls'),
         loadComponent: () => import('./pages/casting/casting-applications/casting-applications.component').then(m => m.CastingApplicationsComponent),
       },
       {
         path: 'actors',
+        canActivate: [marketplaceGuard],
+        data: marketplaceRoute('find-actors', { tab: 'search' }),
+        loadComponent: () => import('./pages/actors/actor-directory.component').then(m => m.ActorDirectoryComponent),
+      },
+      {
+        path: 'shortlist',
+        canActivate: [marketplaceGuard],
+        data: marketplaceRoute('shortlist', { tab: 'shortlist' }),
         loadComponent: () => import('./pages/actors/actor-directory.component').then(m => m.ActorDirectoryComponent),
       },
       {
         path: 'actors/:id',
+        canActivate: [marketplaceGuard],
+        data: marketplaceRoute('find-actors'),
         loadComponent: () => import('./pages/actors/actor-detail/producer-actor-detail.component').then(m => m.ProducerActorDetailComponent),
       },
       {

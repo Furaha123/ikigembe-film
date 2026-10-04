@@ -11,6 +11,7 @@ import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { Subject, Subscription } from 'rxjs';
 import { distinctUntilChanged, switchMap, catchError, of, filter, timer, map } from 'rxjs';
 import { AuthService } from '../../services/auth.service';
+import { MarketplaceAccessService } from '../../access/marketplace-access.service';
 import { MovieService } from '../../../shared/services/movie.service';
 import { InboxService, UserNotification } from '../../services/inbox.service';
 import { IVideoContent } from '../../../shared/models/video-content.interface';
@@ -31,6 +32,7 @@ export class HeaderComponent implements OnInit, OnDestroy {
   private readonly inboxService = inject(InboxService);
   private readonly translate    = inject(TranslateService);
   private readonly document     = inject(DOCUMENT);
+  private readonly marketplace  = inject(MarketplaceAccessService);
   readonly lang                 = inject(LanguageService);
 
   readonly isLoggedIn     = this.authService.isLoggedIn;
@@ -73,12 +75,15 @@ export class HeaderComponent implements OnInit, OnDestroy {
   private searchSubject = new Subject<string>();
   private searchSub!: Subscription;
 
-  navList: { label: string; labelKey?: string; route: string | null }[] = [
+  /** Actors Casting is listed for guests and for accounts the marketplace map allows (not admins). */
+  readonly navList = computed<{ label: string; labelKey?: string; route: string | null }[]>(() => [
     { label: 'Home',               labelKey: 'header.nav.home',             route: '/browse' },
     { label: 'My List',            labelKey: 'header.nav.myList',           route: '/my-list' },
     { label: 'Producers',          labelKey: 'header.nav.producers',        route: '/producers' },
-    { label: 'Casting',            labelKey: 'marketplace.nav.casting',     route: '/casting' },
-  ];
+    ...(!this.isLoggedIn() || this.marketplace.can('casting-calls')
+      ? [{ label: 'Actors Casting', labelKey: 'header.nav.actorsCasting', route: '/actors-casting' }]
+      : []),
+  ]);
 
   ngOnInit() {
     this.router.events.pipe(

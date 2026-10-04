@@ -1,27 +1,62 @@
 <div class="mk-page">
   <div class="mk-header">
     <div>
-      <a routerLink="/producer/casting" class="mk-muted">← {{ 'marketplace.producerCasting.title' | translate }}</a>
-      <h1>{{ call()?.title ?? ('marketplace.producerCasting.applicationsTitle' | translate) }}</h1>
+      @if (!pickerMode) {
+        <a routerLink="/producer/casting" class="mk-muted">← {{ 'marketplace.nav.myCastingCalls' | translate }}</a>
+      }
+      <h1>{{ pickerMode ? ('marketplace.nav.castingApplications' | translate) : (call()?.title ?? ('marketplace.producerCasting.applicationsTitle' | translate)) }}</h1>
       <p>{{ 'marketplace.producerCasting.applicationsSubtitle' | translate }}</p>
     </div>
   </div>
 
+  @if (pickerMode && pickable().length) {
+    <div class="mk-field" style="max-width: 420px; margin-bottom: 1rem">
+      <label for="app-call">{{ 'marketplace.producerCasting.pickCall' | translate }}</label>
+      <select id="app-call" [value]="callId()" (change)="onPick($event)">
+        @for (c of pickable(); track c.id) {
+          <option [value]="c.id" [selected]="c.id === callId()">{{ c.title }} ({{ 'marketplace.castingStatus.' + c.status | translate }})</option>
+        }
+      </select>
+    </div>
+  }
+
+  @if (callId()) {
+    <div class="mk-tabs" role="group" [attr.aria-label]="'marketplace.producerCasting.filterLabel' | translate">
+      @for (f of filters; track f) {
+        <button type="button" [class.active]="filter() === f" [attr.aria-pressed]="filter() === f" (click)="filter.set(f)">
+          {{ (f === 'all' ? 'marketplace.producerCasting.filter.all' : 'marketplace.applicationStatus.' + f) | translate }} ({{ count(f) }})
+        </button>
+      }
+    </div>
+  }
+
   <div aria-live="polite">
     @if (loading()) {
       <p class="mk-muted">{{ 'marketplace.common.loading' | translate }}</p>
-    } @else if (applications().length === 0 && !error()) {
+    } @else if (error()) {
+      <p class="mk-error" role="alert">{{ error()! | translate }}</p>
+      @if (callId()) {
+        <button type="button" class="mk-btn mk-btn--ghost" (click)="loadApplications()">{{ 'marketplace.common.retry' | translate }}</button>
+      }
+    } @else if (pickerMode && !callId()) {
+      <div class="mk-empty">
+        <p>{{ 'marketplace.producerCasting.noPublishedCalls' | translate }}</p>
+        <a routerLink="/producer/casting/new" class="mk-btn">{{ 'marketplace.nav.postCasting' | translate }}</a>
+      </div>
+    } @else if (applications().length === 0) {
       <p class="mk-empty">{{ 'marketplace.producerCasting.noApplications' | translate }}</p>
+    } @else if (visible().length === 0) {
+      <p class="mk-empty">{{ 'marketplace.producerCasting.emptyFilter' | translate }}</p>
     }
-    @if (error()) { <p class="mk-error" role="alert">{{ error()! | translate }}</p> }
   </div>
 
-  @for (a of applications(); track a.id) {
+  @for (a of visible(); track a.id) {
     <article class="mk-card">
       <div class="mk-row" style="justify-content: space-between">
         <h2>{{ a.stage_name ?? ('marketplace.producerCasting.unnamedActor' | translate) }}</h2>
         <span [class]="statusClass(a.status)">{{ 'marketplace.applicationStatus.' + a.status | translate }}</span>
       </div>
+      <p class="mk-muted">{{ 'marketplace.applications.sent' | translate }} {{ a.created_at | date:'medium' }}</p>
       @if (a.note) { <p style="white-space: pre-line">{{ a.note }}</p> }
 
       @if (a.videos.length) {
@@ -38,7 +73,7 @@
         <label [for]="'app-status-' + a.id">{{ 'marketplace.producerCasting.status' | translate }}</label>
         <select [id]="'app-status-' + a.id" [value]="a.status" (change)="onStatusChange(a, $event)" [disabled]="updatingId() === a.id">
           @for (s of statuses; track s) {
-            <option [value]="s">{{ 'marketplace.applicationStatus.' + s | translate }}</option>
+            <option [value]="s" [selected]="s === a.status">{{ 'marketplace.applicationStatus.' + s | translate }}</option>
           }
         </select>
       </div>

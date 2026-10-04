@@ -1,0 +1,224 @@
+<app-header [userImg]="''" />
+
+<main class="mk-page">
+  <div class="mk-header">
+    <div>
+      <h1>{{ 'marketplace.talent.title' | translate }}</h1>
+      <p>{{ 'marketplace.talent.subtitle' | translate }}</p>
+    </div>
+  </div>
+
+  <app-marketplace-nav />
+
+  <div class="mk-wizard">
+    <app-wizard-steps [steps]="stepLabels" [current]="stepIndex()" />
+
+    @switch (step()) {
+      @case ('welcome') {
+        <section class="mk-card" aria-labelledby="tw-welcome">
+          <h2 id="tw-welcome" #stepHeading tabindex="-1">{{ 'marketplace.talent.welcomeTitle' | translate }}</h2>
+          <p>{{ 'marketplace.talent.welcomeText' | translate }}</p>
+
+          <h3>{{ 'marketplace.talent.guideTitle' | translate }}</h3>
+          <ul class="mk-list">
+            <li>{{ 'marketplace.talent.guideFace' | translate }}</li>
+            <li>{{ 'marketplace.talent.guideSound' | translate }}</li>
+            <li>{{ 'marketplace.talent.guideLight' | translate }}</li>
+            <li>{{ 'marketplace.talent.guideSkills' | translate }}</li>
+            <li>{{ 'marketplace.talent.guideLength' | translate: { max: maxMinutes, types: allowedTypes } }}</li>
+          </ul>
+
+          <h3>{{ 'marketplace.talent.feeTitle' | translate }}</h3>
+          <p class="mk-muted">{{ 'marketplace.talent.feeText' | translate }}</p>
+          @if (quote(); as q) {
+            <p>{{ 'marketplace.talent.yourFee' | translate }} <strong>{{ q.amount | number }} {{ q.currency }}</strong></p>
+          }
+          <p class="mk-muted">{{ 'marketplace.talent.moderationText' | translate }}</p>
+          <p class="mk-muted">{{ 'marketplace.talent.visibilityText' | translate }}</p>
+
+          <div class="mk-actions">
+            <a routerLink="/actor/videos" class="mk-btn mk-btn--ghost">{{ 'marketplace.nav.videos' | translate }}</a>
+            <button type="button" class="mk-btn" (click)="start()">{{ 'marketplace.talent.start' | translate }}</button>
+          </div>
+        </section>
+      }
+
+      @case ('details') {
+        <section aria-labelledby="tw-details">
+          <h2 id="tw-details" #stepHeading tabindex="-1">{{ 'marketplace.talent.detailsTitle' | translate }}</h2>
+          <p class="mk-muted">{{ 'marketplace.talent.detailsText' | translate }}</p>
+          <div aria-live="polite">
+            @if (profileLoading()) {
+              <p class="mk-muted">{{ 'marketplace.common.loading' | translate }}</p>
+            } @else if (profileError()) {
+              <p class="mk-error" role="alert">{{ profileError()! | translate }}</p>
+              <button type="button" class="mk-btn mk-btn--ghost" (click)="loadProfile()">{{ 'marketplace.common.retry' | translate }}</button>
+            }
+          </div>
+          @if (!profileLoading() && !profileError()) {
+            <app-actor-profile-form [profile]="profile()" submitKey="marketplace.talent.saveAndContinue" (saved)="onProfileSaved($event)" />
+            <div class="mk-actions">
+              <button type="button" class="mk-btn mk-btn--ghost" (click)="back()">{{ 'marketplace.wizard.back' | translate }}</button>
+              @if (profile()) {
+                <button type="button" class="mk-btn" (click)="continueWithProfile()">{{ 'marketplace.wizard.next' | translate }}</button>
+              }
+            </div>
+          }
+        </section>
+      }
+
+      @case ('video') {
+        <section class="mk-card" aria-labelledby="tw-video">
+          <h2 id="tw-video" #stepHeading tabindex="-1">{{ 'marketplace.talent.videoTitle' | translate }}</h2>
+          <form [formGroup]="form" (ngSubmit)="toReview()" novalidate>
+            <div class="mk-form">
+              <div class="mk-field">
+                <label for="tw-title">{{ 'marketplace.videos.fieldTitle' | translate }} *</label>
+                <input id="tw-title" formControlName="title" maxlength="255" (input)="onTextChange()"
+                       [attr.aria-invalid]="form.controls.title.invalid && form.controls.title.touched"
+                       aria-describedby="tw-title-err" />
+                @if (form.controls.title.invalid && form.controls.title.touched) {
+                  <p id="tw-title-err" class="mk-error">{{ 'marketplace.errors.required' | translate }}</p>
+                }
+              </div>
+              <div class="mk-field mk-field--wide">
+                <label for="tw-desc">{{ 'marketplace.videos.fieldDescription' | translate }}</label>
+                <textarea id="tw-desc" formControlName="description" rows="3" (input)="onTextChange()"></textarea>
+              </div>
+            </div>
+
+            <div class="mk-section-head"><h3>{{ 'marketplace.talent.fileTitle' | translate }}</h3></div>
+            <p class="mk-hint mk-muted">{{ 'marketplace.talent.fileHint' | translate: { max: maxMinutes, types: allowedTypes } }}</p>
+            @if (fileLost() && !chosen()) {
+              <p class="mk-banner" role="status">{{ 'marketplace.talent.fileLost' | translate }}</p>
+            }
+
+            <input #picker type="file" [accept]="videoAccept" hidden (change)="onFileSelected($event)" />
+            @if (chosen(); as c) {
+              <div class="mk-file">
+                <video [src]="c.previewUrl" controls preload="metadata" [attr.aria-label]="c.file.name"></video>
+                <div>
+                  <p><strong>{{ c.file.name }}</strong></p>
+                  <p class="mk-muted">{{ formatSize(c.file.size) }}
+                    @if (c.duration !== null) { · {{ formatDuration(c.duration) }} }
+                  </p>
+                  <div class="mk-row">
+                    <button type="button" class="mk-btn mk-btn--ghost" (click)="picker.click()" [disabled]="checkingFile()">{{ 'marketplace.talent.replace' | translate }}</button>
+                    <button type="button" class="mk-btn mk-btn--danger" (click)="removeFile()">{{ 'marketplace.talent.remove' | translate }}</button>
+                  </div>
+                </div>
+              </div>
+            } @else {
+              <button type="button" class="mk-btn" (click)="picker.click()" [disabled]="checkingFile()" [attr.aria-invalid]="!!fileError()">
+                {{ (checkingFile() ? 'marketplace.talent.checking' : 'marketplace.talent.choose') | translate }}
+              </button>
+            }
+            <div aria-live="polite">
+              @if (fileError()) { <p class="mk-error" role="alert">{{ fileError()! | translate }}</p> }
+            </div>
+
+            <div class="mk-actions">
+              <button type="button" class="mk-btn mk-btn--ghost" (click)="back()">{{ 'marketplace.wizard.back' | translate }}</button>
+              <button type="submit" class="mk-btn" [disabled]="checkingFile()">{{ 'marketplace.wizard.next' | translate }}</button>
+            </div>
+          </form>
+        </section>
+      }
+
+      @case ('review') {
+        <section class="mk-card" aria-labelledby="tw-review">
+          <h2 id="tw-review" #stepHeading tabindex="-1">{{ 'marketplace.talent.reviewTitle' | translate }}</h2>
+          <dl class="mk-summary">
+            <dt>{{ 'marketplace.profile.stageName' | translate }}</dt><dd>{{ profile()?.stage_name }}</dd>
+            <dt>{{ 'marketplace.apply.age' | translate }}</dt><dd>{{ age() ?? '—' }}</dd>
+            <dt>{{ 'marketplace.videos.fieldTitle' | translate }}</dt><dd>{{ form.controls.title.value }}</dd>
+            @if (form.controls.description.value) {
+              <dt>{{ 'marketplace.videos.fieldDescription' | translate }}</dt><dd>{{ form.controls.description.value }}</dd>
+            }
+            <dt>{{ 'marketplace.talent.file' | translate }}</dt>
+            <dd>{{ chosen()?.file?.name }} · {{ formatSize(chosen()?.file?.size ?? 0) }}</dd>
+            @if (tier(); as t) {
+              <dt>{{ 'marketplace.talent.tier' | translate }}</dt><dd>{{ 'marketplace.talent.tier_' + t | translate }}</dd>
+            }
+          </dl>
+
+          <div class="mk-banner">
+            @if (quote(); as q) {
+              <p class="mk-muted" style="margin: 0">{{ 'marketplace.talent.total' | translate }}</p>
+              <p class="mk-price">{{ q.amount | number }} {{ q.currency }}</p>
+            } @else if (quoteError()) {
+              <p class="mk-error" role="alert">{{ quoteError()! | translate }}</p>
+              <button type="button" class="mk-btn mk-btn--ghost" (click)="loadQuote()">{{ 'marketplace.common.retry' | translate }}</button>
+            } @else {
+              <p class="mk-muted">{{ 'marketplace.common.loading' | translate }}</p>
+            }
+            <p class="mk-muted" style="margin: .25rem 0 0">{{ 'marketplace.talent.payHint' | translate }}</p>
+          </div>
+
+          <div class="mk-actions">
+            <button type="button" class="mk-btn mk-btn--ghost" (click)="back()">{{ 'marketplace.wizard.edit' | translate }}</button>
+            <button type="button" class="mk-btn" (click)="pay()" [disabled]="!quote() || !!purchase()">{{ 'marketplace.talent.pay' | translate }}</button>
+          </div>
+        </section>
+      }
+
+      @case ('upload') {
+        <section class="mk-card" aria-labelledby="tw-upload">
+          <h2 id="tw-upload" #stepHeading tabindex="-1">{{ 'marketplace.talent.uploadTitle' | translate }}</h2>
+          <p class="mk-success" role="status">{{ 'marketplace.talent.paid' | translate }}</p>
+          <div aria-live="polite">
+            @if (uploading()) {
+              <div class="mk-progress" role="progressbar" [attr.aria-valuenow]="uploadPct()" aria-valuemin="0" aria-valuemax="100"
+                   [attr.aria-label]="'marketplace.videos.uploading' | translate">
+                <div [style.width.%]="uploadPct()"></div>
+              </div>
+              <div class="mk-row">
+                <span class="mk-muted">{{ uploadPct() }}%</span>
+                <button type="button" class="mk-btn mk-btn--ghost" (click)="cancelUpload()">{{ 'marketplace.common.cancel' | translate }}</button>
+              </div>
+            }
+            @if (uploadError()) {
+              <p class="mk-error" role="alert">{{ uploadError()! | translate }}</p>
+              <div class="mk-row">
+                @if (chosen() && videoId()) {
+                  <button type="button" class="mk-btn" (click)="upload()">{{ 'marketplace.talent.retry' | translate }}</button>
+                } @else if (videoId()) {
+                  <input #retryPicker type="file" [accept]="videoAccept" hidden (change)="onRetryFileSelected($event)" />
+                  <button type="button" class="mk-btn" (click)="retryPicker.click()">{{ 'marketplace.talent.chooseAgain' | translate }}</button>
+                }
+                <a routerLink="/actor/videos" class="mk-btn mk-btn--ghost">{{ 'marketplace.nav.videos' | translate }}</a>
+              </div>
+              <p class="mk-muted">{{ 'marketplace.talent.uploadLater' | translate }}</p>
+            }
+          </div>
+        </section>
+      }
+
+      @case ('done') {
+        <section class="mk-card" aria-labelledby="tw-done">
+          <h2 id="tw-done" #stepHeading tabindex="-1">{{ 'marketplace.talent.doneTitle' | translate }}</h2>
+          @if (result(); as v) {
+            <p>{{ v.title }} <span [class]="statusClass(v.status)">{{ 'marketplace.videoStatus.' + v.status | translate }}</span></p>
+            @if (v.status === 'rejected' && v.reject_reason) {
+              <p class="mk-error">{{ 'marketplace.videos.rejectReason' | translate }}: {{ v.reject_reason }}</p>
+            }
+          }
+          <p class="mk-muted">{{ 'marketplace.talent.doneText' | translate }}</p>
+          <div class="mk-actions">
+            <a routerLink="/browse" class="mk-btn mk-btn--ghost">{{ 'marketplace.apply.home' | translate }}</a>
+            <div class="mk-actions__end">
+              <button type="button" class="mk-btn mk-btn--ghost" (click)="submitAnother()">{{ 'marketplace.talent.another' | translate }}</button>
+              <a routerLink="/actor/videos" class="mk-btn">{{ 'marketplace.nav.videos' | translate }}</a>
+            </div>
+          </div>
+        </section>
+      }
+    }
+  </div>
+</main>
+
+<app-footer />
+
+@if (purchase(); as p) {
+  <app-payment-modal [service]="p" (paid)="onPaid()" (closed)="closePurchase()" />
+}

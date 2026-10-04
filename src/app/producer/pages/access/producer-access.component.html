@@ -1,0 +1,155 @@
+<div class="mk-page">
+  <div class="mk-header">
+    <div>
+      <h1>{{ 'marketplace.access.title' | translate }}</h1>
+      <p>{{ 'marketplace.access.subtitle' | translate }}</p>
+    </div>
+  </div>
+
+  <div class="mk-wizard">
+    @if (step() === 'status') {
+      <section class="mk-card" aria-labelledby="acc-status" aria-live="polite">
+        <h2 id="acc-status" #stepHeading tabindex="-1">{{ 'marketplace.access.statusTitle' | translate }}</h2>
+        @if (accessLoading()) {
+          <p class="mk-muted">{{ 'marketplace.common.loading' | translate }}</p>
+        } @else if (accessError()) {
+          <p class="mk-error" role="alert">{{ accessError()! | translate }}</p>
+          <button type="button" class="mk-btn mk-btn--ghost" (click)="loadAccess()">{{ 'marketplace.common.retry' | translate }}</button>
+        } @else if (active()) {
+          <p><span class="mk-badge mk-badge--ok">{{ 'marketplace.access.active' | translate }}</span></p>
+          <dl class="mk-summary">
+            <dt>{{ 'marketplace.access.expires' | translate }}</dt>
+            <dd>{{ access()!.expires_at | date:'full' }} {{ access()!.expires_at | date:'shortTime' }}</dd>
+            @if (timeLeft(); as t) {
+              <dt>{{ 'marketplace.access.remaining' | translate }}</dt>
+              <dd>{{ 'marketplace.access.timeLeft' | translate: t }}</dd>
+            }
+          </dl>
+          <p class="mk-muted">{{ 'marketplace.access.countdownNote' | translate }}</p>
+          <div class="mk-actions">
+            <button type="button" class="mk-btn mk-btn--ghost" (click)="begin()">{{ 'marketplace.access.renew' | translate }}</button>
+            <a routerLink="/producer/actors" class="mk-btn">{{ 'marketplace.nav.findActors' | translate }}</a>
+          </div>
+        } @else {
+          <p><span class="mk-badge mk-badge--warn">{{ 'marketplace.access.inactive' | translate }}</span></p>
+          <p class="mk-muted">{{ 'marketplace.access.inactiveText' | translate }}</p>
+          <div class="mk-actions">
+            <span></span>
+            <button type="button" class="mk-btn" (click)="begin()">{{ 'marketplace.access.getAccess' | translate }}</button>
+          </div>
+        }
+      </section>
+      <p class="mk-muted">{{ 'marketplace.access.separateProducts' | translate }}</p>
+    } @else {
+      <app-wizard-steps [steps]="stepLabels" [current]="stepIndex()" />
+
+      @switch (step()) {
+        @case ('welcome') {
+          <section class="mk-card" aria-labelledby="acc-welcome">
+            <h2 id="acc-welcome" #stepHeading tabindex="-1">{{ 'marketplace.access.welcomeTitle' | translate }}</h2>
+            <p>{{ 'marketplace.access.welcomeText' | translate }}</p>
+            <ul class="mk-list">
+              <li>{{ 'marketplace.access.benefitBrowse' | translate }}</li>
+              <li>{{ 'marketplace.access.benefitVideos' | translate }}</li>
+              <li>{{ 'marketplace.access.benefitShortlist' | translate }}</li>
+              <li>{{ 'marketplace.access.benefitContact' | translate }}</li>
+            </ul>
+            <h3>{{ 'marketplace.access.guidelinesTitle' | translate }}</h3>
+            <ul class="mk-list">
+              <li>{{ 'marketplace.access.guidelineRespect' | translate }}</li>
+              <li>{{ 'marketplace.access.guidelinePurpose' | translate }}</li>
+            </ul>
+            <div class="mk-actions">
+              <button type="button" class="mk-btn mk-btn--ghost" (click)="cancelWizard()">{{ 'marketplace.common.cancel' | translate }}</button>
+              <button type="button" class="mk-btn" (click)="toInfo()">{{ 'marketplace.wizard.next' | translate }}</button>
+            </div>
+          </section>
+        }
+
+        @case ('info') {
+          <section class="mk-card" aria-labelledby="acc-info">
+            <h2 id="acc-info" #stepHeading tabindex="-1">{{ 'marketplace.access.infoTitle' | translate }}</h2>
+            <p class="mk-muted">{{ 'marketplace.access.infoText' | translate }}</p>
+            <div aria-live="polite">
+              @if (me(); as m) {
+                <dl class="mk-summary">
+                  <dt>{{ 'marketplace.access.fullName' | translate }}</dt><dd>{{ (m.first_name + ' ' + m.last_name).trim() || '—' }}</dd>
+                  @if (m.studio_name) {
+                    <dt>{{ 'marketplace.access.studio' | translate }}</dt><dd>{{ m.studio_name }}</dd>
+                  }
+                  <dt>{{ 'marketplace.access.phone' | translate }}</dt><dd>{{ m.phone_number || '—' }}</dd>
+                  <dt>{{ 'marketplace.access.email' | translate }}</dt><dd>{{ m.email }}</dd>
+                </dl>
+              } @else if (meError()) {
+                <p class="mk-error" role="alert">{{ 'marketplace.errors.loadFailed' | translate }}</p>
+              } @else {
+                <p class="mk-muted">{{ 'marketplace.common.loading' | translate }}</p>
+              }
+            </div>
+            <a routerLink="/producer/settings" class="mk-muted">{{ 'marketplace.access.editInfo' | translate }}</a>
+            <div class="mk-actions">
+              <button type="button" class="mk-btn mk-btn--ghost" (click)="back()">{{ 'marketplace.wizard.back' | translate }}</button>
+              <button type="button" class="mk-btn" (click)="toSummary()">{{ 'marketplace.wizard.next' | translate }}</button>
+            </div>
+          </section>
+        }
+
+        @case ('summary') {
+          <section class="mk-card" aria-labelledby="acc-summary">
+            <h2 id="acc-summary" #stepHeading tabindex="-1">{{ 'marketplace.access.summaryTitle' | translate }}</h2>
+            <div aria-live="polite">
+              @if (quote(); as q) {
+                <p class="mk-price">{{ q.amount | number }} {{ q.currency }}</p>
+                <dl class="mk-summary">
+                  <dt>{{ 'marketplace.access.duration' | translate }}</dt>
+                  <dd>{{ 'marketplace.access.days' | translate: { n: q.access_days } }}</dd>
+                  <dt>{{ 'marketplace.access.starts' | translate }}</dt>
+                  <dd>
+                    @if (startsAt(); as s) { {{ 'marketplace.access.startsAfter' | translate: { date: (s | date:'medium') } }} }
+                    @else { {{ 'marketplace.access.startsOnPayment' | translate }} }
+                  </dd>
+                </dl>
+                <p class="mk-muted">{{ 'marketplace.access.renewalTerms' | translate }}</p>
+              } @else if (quoteError()) {
+                <p class="mk-error" role="alert">{{ quoteError()! | translate }}</p>
+                <button type="button" class="mk-btn mk-btn--ghost" (click)="loadQuote()">{{ 'marketplace.common.retry' | translate }}</button>
+              } @else {
+                <p class="mk-muted">{{ 'marketplace.common.loading' | translate }}</p>
+              }
+            </div>
+            <div class="mk-actions">
+              <button type="button" class="mk-btn mk-btn--ghost" (click)="back()">{{ 'marketplace.wizard.back' | translate }}</button>
+              <button type="button" class="mk-btn" (click)="pay()" [disabled]="!quote() || !!purchase()">{{ 'marketplace.access.pay' | translate }}</button>
+            </div>
+          </section>
+        }
+
+        @case ('confirmed') {
+          <section class="mk-card" aria-labelledby="acc-done" aria-live="polite">
+            <h2 id="acc-done" #stepHeading tabindex="-1">{{ 'marketplace.access.doneTitle' | translate }}</h2>
+            @if (awaitingGrant()) {
+              <p>{{ 'marketplace.access.awaitingGrant' | translate }}</p>
+              <button type="button" class="mk-btn mk-btn--ghost" (click)="recheck()" [disabled]="accessLoading()">{{ 'marketplace.common.refresh' | translate }}</button>
+            } @else {
+              <p class="mk-success" role="status">{{ 'marketplace.access.granted' | translate }}</p>
+              <dl class="mk-summary">
+                <dt>{{ 'marketplace.access.expires' | translate }}</dt>
+                <dd>{{ access()?.expires_at | date:'medium' }}</dd>
+              </dl>
+            }
+            <div class="mk-actions">
+              <a routerLink="/producer/dashboard" class="mk-btn mk-btn--ghost">{{ 'marketplace.access.toDashboard' | translate }}</a>
+              @if (!awaitingGrant()) {
+                <a routerLink="/producer/actors" class="mk-btn">{{ 'marketplace.nav.findActors' | translate }}</a>
+              }
+            </div>
+          </section>
+        }
+      }
+    }
+  </div>
+</div>
+
+@if (purchase(); as p) {
+  <app-payment-modal [service]="p" (paid)="onPaid()" (closed)="closePurchase()" />
+}

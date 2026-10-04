@@ -8,7 +8,7 @@
     @if (noAccess()) {
       <div class="mk-card" role="alert">
         <p class="mk-error">{{ 'marketplace.directory.expired' | translate }}</p>
-        <a routerLink="/producer/actors" class="mk-btn">{{ 'marketplace.directory.buy' | translate }}</a>
+        <a routerLink="/producer/access" class="mk-btn">{{ 'marketplace.access.renew' | translate }}</a>
       </div>
     }
     @if (error()) { <p class="mk-error" role="alert">{{ error()! | translate }}</p> }

@@ -3,6 +3,8 @@ import { HttpErrorResponse, provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { environment } from '../../../environments/environment';
 import { CastingService } from './casting.service';
+import { MarketplaceAccessError } from '../../core/access/marketplace-access.service';
+import { marketplaceUser, provideMarketplaceUser } from '../../shared/testing/marketplace-session';
 
 const BASE = `${environment.apiUrl}/marketplace`;
 
@@ -18,7 +20,7 @@ describe('CastingService', () => {
   };
 
   beforeEach(() => {
-    TestBed.configureTestingModule({ providers: [provideHttpClient(), provideHttpClientTesting()] });
+    TestBed.configureTestingModule({ providers: [provideHttpClient(), provideHttpClientTesting(), provideMarketplaceUser(marketplaceUser('Producer'))] });
     service = TestBed.inject(CastingService);
     http = TestBed.inject(HttpTestingController);
   });
@@ -115,5 +117,27 @@ describe('CastingService', () => {
       expect(del.request.method).toBe('DELETE');
       del.flush(null, { status: 204, statusText: 'No Content' });
     });
+  });
+
+  describe('access', () => {
+    for (const status of ['suspended', 'pending_approval'] as const) {
+      it(`sends no producer request for a viewer or a ${status} producer`, () => {
+        for (const user of [marketplaceUser('Viewer'), marketplaceUser('Producer', status)]) {
+          TestBed.resetTestingModule();
+          TestBed.configureTestingModule({ providers: [provideHttpClient(), provideHttpClientTesting(), provideMarketplaceUser(user)] });
+          service = TestBed.inject(CastingService);
+          http = TestBed.inject(HttpTestingController);
+          const errors: unknown[] = [];
+          const onErr = { error: (e: unknown) => errors.push(e) };
+          service.getMyCalls().subscribe(onErr);
+          service.getSearchAccess().subscribe(onErr);
+          service.searchActors().subscribe(onErr);
+          service.getShortlist().subscribe(onErr);
+          http.expectNone(() => true);
+          expect(errors.every(e => e instanceof MarketplaceAccessError)).withContext(user.role).toBeTrue();
+          expect(errors.length).toBe(4);
+        }
+      });
+    }
   });
 });

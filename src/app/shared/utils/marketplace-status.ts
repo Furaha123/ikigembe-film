@@ -36,3 +36,49 @@ export function castingCallStatusClass(status: CastingCallStatus): string {
     default: return 'mk-badge mk-badge--warn';
   }
 }
+
+export interface TimeLeft {
+  days: number;
+  hours: number;
+  minutes: number;
+}
+
+/** Display-only countdown to an access expiry; null once it has passed (the server decides access). */
+export function accessTimeLeft(expiresAt: string | null, now = Date.now()): TimeLeft | null {
+  if (!expiresAt) return null;
+  const ms = new Date(expiresAt).getTime() - now;
+  if (!Number.isFinite(ms) || ms <= 0) return null;
+  const minutes = Math.floor(ms / 60000);
+  return { days: Math.floor(minutes / 1440), hours: Math.floor((minutes % 1440) / 60), minutes: minutes % 60 };
+}
+
+/**
+ * Where a producer's casting call stands, from the server's fields only:
+ * "published" only when the server says published; a completed fee on a
+ * draft is "processing" (publication follows the payment confirmation).
+ */
+export type CastingPublicationState =
+  | 'draft' | 'paymentPending' | 'paymentFailed' | 'processing' | 'published' | 'closed' | 'removed';
+
+export function castingPublicationState(call: CastingCall, now = Date.now()): CastingPublicationState {
+  const status = castingDisplayStatus(call, now);
+  if (status === 'published' || status === 'closed' || status === 'removed') return status;
+  switch (call.payment_status) {
+    case 'Pending': return 'paymentPending';
+    case 'Failed': return 'paymentFailed';
+    case 'Completed': return 'processing';
+    default: return 'draft';
+  }
+}
+
+export function castingPublicationClass(state: CastingPublicationState): string {
+  switch (state) {
+    case 'published': return 'mk-badge mk-badge--ok';
+    case 'removed':
+    case 'paymentFailed': return 'mk-badge mk-badge--danger';
+    case 'paymentPending':
+    case 'processing': return 'mk-badge mk-badge--info';
+    case 'closed': return 'mk-badge';
+    default: return 'mk-badge mk-badge--warn';
+  }
+}
