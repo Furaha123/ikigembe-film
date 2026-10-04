@@ -1,20 +1,11 @@
-import { Component, EventEmitter, Input, Output } from '@angular/core';
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed, fakeAsync, tick } from '@angular/core/testing';
 import { HttpErrorResponse } from '@angular/common/http';
-import { provideRouter } from '@angular/router';
+import { convertToParamMap, provideRouter } from '@angular/router';
 import { provideTranslateService } from '@ngx-translate/core';
 import { of, throwError } from 'rxjs';
-import { ActorDirectoryComponent } from './actor-directory.component';
+import { ActorDirectoryComponent, filtersFromParams, filtersToParams, visibleRange } from './actor-directory.component';
 import { CastingService } from '../../services/casting.service';
-import { PaymentModalComponent } from '../../../shared/components/payment-modal/payment-modal.component';
-import { DirectoryActor, ServicePurchase } from '../../../shared/models/marketplace.interface';
-
-@Component({ selector: 'app-payment-modal', template: '' })
-class PaymentModalStub {
-  @Input() service: ServicePurchase | null = null;
-  @Output() paid = new EventEmitter<void>();
-  @Output() closed = new EventEmitter<void>();
-}
+import { DirectoryActor } from '../../../shared/models/marketplace.interface';
 
 const ACTOR: DirectoryActor = {
   id: 5, stage_name: 'Aline', bio: '', gender: 'female', age: 24, location: 'Kigali',
@@ -28,7 +19,6 @@ describe('ActorDirectoryComponent (gated directory)', () => {
   let casting: jasmine.SpyObj<CastingService>;
 
   const el = () => fixture.nativeElement as HTMLElement;
-  const modal = () => fixture.debugElement.query(d => d.componentInstance instanceof PaymentModalStub)?.componentInstance as PaymentModalStub | undefined;
 
   beforeEach(() => {
     casting = jasmine.createSpyObj<CastingService>('CastingService', [
@@ -40,10 +30,6 @@ describe('ActorDirectoryComponent (gated directory)', () => {
     TestBed.configureTestingModule({
       imports: [ActorDirectoryComponent],
       providers: [provideRouter([]), provideTranslateService(), { provide: CastingService, useValue: casting }],
-    });
-    TestBed.overrideComponent(ActorDirectoryComponent, {
-      remove: { imports: [PaymentModalComponent] },
-      add: { imports: [PaymentModalStub] },
     });
   });
 
@@ -60,24 +46,30 @@ describe('ActorDirectoryComponent (gated directory)', () => {
     expect(el().textContent).not.toContain('aline@example.rw');
   });
 
-  it('buying opens the payment modal for the search pass, then re-checks access', () => {
+  it('without a pass points to My Access (no purchase here)', () => {
     casting.getSearchAccess.and.returnValue(of({ active: false, expires_at: null }));
     create();
-    el().querySelector<HTMLButtonElement>('.mk-card .mk-btn')!.click();
-    fixture.detectChanges();
-
-    casting.purchaseSearch.and.returnValue(of({ deposit_id: 'd', status: 'Pending', message: '', amount: 1, currency: 'RWF' }));
-    modal()!.service!.initiate('0788123456').subscribe();
-    expect(casting.purchaseSearch).toHaveBeenCalledOnceWith('0788123456');
-
-    casting.getSearchAccess.and.returnValue(of({ active: true, expires_at: '2030-01-01T00:00:00Z' }));
-    modal()!.paid.emit();
-    fixture.detectChanges();
-
-    expect(casting.getSearchAccess).toHaveBeenCalledTimes(2);
-    expect(casting.searchActors).toHaveBeenCalled();
-    expect(el().textContent).toContain('Aline');
+    expect(el().querySelector('a[href="/producer/access"]')).not.toBeNull();
+    expect(casting.purchaseSearch).not.toHaveBeenCalled();
   });
+
+  it('shows the visible range of the server page', () => {
+    casting.getSearchAccess.and.returnValue(of({ active: true, expires_at: '2030-01-01T00:00:00Z' }));
+    casting.searchActors.and.returnValue(of({ page: 2, results: [ACTOR], total_results: 21, total_pages: 2 }));
+    create();
+    expect(el().textContent).toContain('marketplace.directory.range');
+  });
+
+  it('drops actor data when the pass expires while browsing', fakeAsync(() => {
+    casting.getSearchAccess.and.returnValue(of({ active: true, expires_at: new Date(Date.now() + 5000).toISOString() }));
+    create();
+    expect(el().textContent).toContain('aline@example.rw');
+    tick(5001);
+    fixture.detectChanges();
+    expect(el().textContent).not.toContain('aline@example.rw');
+    expect(el().textContent).toContain('marketplace.directory.gateTitle');
+    fixture.destroy();
+  }));
 
   it('with a pass shows the expiry prominently and lists actors with contact details', () => {
     casting.getSearchAccess.and.returnValue(of({ active: true, expires_at: '2030-01-01T00:00:00Z' }));
@@ -118,3 +110,26 @@ describe('ActorDirectoryComponent (gated directory)', () => {
     expect(casting.getShortlist).toHaveBeenCalledTimes(2);
   });
 });
+
+describe('directory URL filters and range', () => {
+  it('reads valid filters from the URL and ignores malformed ones', () => {
+    const params = convertToParamMap({ q: ' ali ', gender: 'female', min_age: '20', max_age: 'abc', page: '3', skill: '', bogus: 'x' });
+    expect(filtersFromParams(params)).toEqual({ q: 'ali', gender: 'female', min_age: 20, page: 3 });
+    expect(filtersFromParams(convertToParamMap({ gender: 'robot', page: '0' }))).toEqual({});
+  });
+
+  it('writes only the filters in use', () => {
+    expect(filtersToParams({ q: 'ali', gender: '', min_age: null, page: 1 })).toEqual({ q: 'ali' });
+    expect(filtersToParams({ location: 'Kigali', page: 2 })).toEqual({ location: 'Kigali', page: 2 });
+  });
+
+  it('computes the visible range of a server page', () => {
+    const r = (page: number, n: number, total: number, pages: number) =>
+      visibleRange({ page, results: Array(n).fill(0), total_results: total, total_pages: pages });
+    expect(r(1, 20, 45, 3)).toEqual({ from: 1, to: 20 });
+    expect(r(2, 20, 45, 3)).toEqual({ from: 21, to: 40 });
+    expect(r(3, 5, 45, 3)).toEqual({ from: 41, to: 45 });
+    expect(r(1, 0, 0, 0)).toBeNull();
+  });
+});
+

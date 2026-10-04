@@ -13,7 +13,8 @@ export interface RegisterPayload {
   studio_name?: string;
 }
 
-export type AccountStatus = 'pending_approval' | 'approved' | 'suspended';
+/** The backend's `account_status`; only `active` accounts may use the actor and producer features. */
+export type { AccountStatus } from '../access/marketplace-access';
 
 export interface RegisterErrors {
   email?: string[];

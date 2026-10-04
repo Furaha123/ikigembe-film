@@ -4,16 +4,16 @@ import { RouterLink } from '@angular/router';
 import { TranslatePipe } from '@ngx-translate/core';
 import { HeaderComponent } from '../../../core/components/header/header.component';
 import { FooterComponent } from '../../../core/components/footer/footer.component';
-import { ActorNavComponent } from '../actor-nav/actor-nav.component';
+import { MarketplaceNavComponent } from '../../../shared/components/marketplace-nav/marketplace-nav.component';
 import { ActorMarketplaceService } from '../../../shared/services/actor-marketplace.service';
 import { CastingApplication } from '../../../shared/models/marketplace.interface';
-import { apiErrorMessage } from '../../../shared/utils/api-error';
+import { marketplaceErrorMessage } from '../../../shared/utils/marketplace-error';
 import { applicationStatusClass } from '../../../shared/utils/marketplace-status';
 
 @Component({
   selector: 'app-my-applications',
   standalone: true,
-  imports: [CommonModule, RouterLink, TranslatePipe, HeaderComponent, FooterComponent, ActorNavComponent],
+  imports: [CommonModule, RouterLink, TranslatePipe, HeaderComponent, FooterComponent, MarketplaceNavComponent],
   templateUrl: './my-applications.component.html',
   styleUrls: ['../../../shared/styles/marketplace-page.scss'],
 })
@@ -31,7 +31,7 @@ export class MyApplicationsComponent implements OnInit {
       next: (list) => { this.applications.set(list); this.loading.set(false); },
       error: (err: unknown) => {
         this.loading.set(false);
-        this.error.set(apiErrorMessage(err) ?? 'marketplace.errors.loadFailed');
+        this.error.set(marketplaceErrorMessage(err) ?? 'marketplace.errors.loadFailed');
       },
     });
   }

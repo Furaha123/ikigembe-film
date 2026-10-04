@@ -1,5 +1,7 @@
 import { Routes } from '@angular/router';
 import { authGuard, guestGuard, viewerGuard } from './core/guards/auth.guard';
+import { marketplaceGuard, marketplaceRoute } from './core/access/marketplace.guard';
+import { unsavedChangesGuard } from './core/guards/unsaved-changes.guard';
 
 export const routes: Routes = [
   { path: '', redirectTo: 'login', pathMatch: 'full' },
@@ -46,34 +48,52 @@ export const routes: Routes = [
     canActivate: [authGuard, viewerGuard],
     loadComponent: () => import('./pages/my-list/my-list.component').then(a => a.MyListComponent)
   },
-  // ── Actor marketplace (viewers with an actor profile) ──
+  // ── Actors Casting entry (public: no requests; the chosen page handles sign-in) ──
+  {
+    path: 'actors-casting',
+    loadComponent: () => import('./pages/actors-casting/actors-casting.component').then(a => a.ActorsCastingComponent)
+  },
+  // ── Actor marketplace (viewers with an actor profile). Access: core/access/marketplace-access.ts ──
   {
     path: 'actor',
-    canActivate: [authGuard, viewerGuard],
+    canActivate: [authGuard],
+    canActivateChild: [marketplaceGuard],
     children: [
       { path: '', redirectTo: 'profile', pathMatch: 'full' },
       {
         path: 'profile',
+        data: marketplaceRoute('actor-profile'),
+        canDeactivate: [unsavedChangesGuard],
         loadComponent: () => import('./pages/actor/actor-profile/actor-profile.component').then(a => a.ActorProfileComponent)
       },
       {
         path: 'videos',
+        data: marketplaceRoute('talent-videos'),
         loadComponent: () => import('./pages/actor/actor-videos/actor-videos.component').then(a => a.ActorVideosComponent)
       },
       {
+        path: 'talent/new',
+        data: marketplaceRoute('submit-talent'),
+        canDeactivate: [unsavedChangesGuard],
+        loadComponent: () => import('./pages/actor/talent-submit/talent-submit.component').then(a => a.TalentSubmitComponent)
+      },
+      {
         path: 'applications',
+        data: marketplaceRoute('my-applications'),
         loadComponent: () => import('./pages/actor/my-applications/my-applications.component').then(a => a.MyApplicationsComponent)
       },
     ]
   },
   {
     path: 'casting',
-    canActivate: [authGuard, viewerGuard],
+    canActivate: [authGuard, marketplaceGuard],
+    data: marketplaceRoute('casting-calls'),
     loadComponent: () => import('./pages/casting/casting-calls/casting-calls.component').then(a => a.CastingCallsComponent)
   },
   {
     path: 'casting/:id',
-    canActivate: [authGuard, viewerGuard],
+    canActivate: [authGuard, marketplaceGuard],
+    data: marketplaceRoute('casting-calls'),
     loadComponent: () => import('./pages/casting/casting-call-detail/casting-call-detail.component').then(a => a.CastingCallDetailComponent)
   },
   // ── CMS pages (content from /api/pages/<slug>/; built-in terms text as fallback) ──

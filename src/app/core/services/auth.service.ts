@@ -7,6 +7,8 @@ import { catchError, finalize, map, shareReplay, tap } from 'rxjs/operators';
 import { RegisterPayload, RegisterResponse, LoginResponse, GoogleAuthPayload, LoginUser, AccountStatus } from '../models/auth.interface';
 import { environment } from '../../../environments/environment';
 import { RETURN_URL_PARAM, safeReturnUrl } from '../../shared/utils/safe-redirect';
+import { toAccountStatus } from '../access/marketplace-access';
+import { clearAllDrafts } from '../../shared/services/draft-store.service';
 
 export interface UserProfile {
   id: number;
@@ -86,6 +88,8 @@ export class AuthService {
   /** In memory only: page scripts can't find it in storage, and it dies with the tab. */
   private accessToken: string | null = null;
   private refreshInFlight: Observable<string> | null = null;
+  /** `/auth/me/` once per session, so role and account status are current (see syncProfile). */
+  private profileSync: Observable<void> | null = null;
 
   readonly isLoggedIn = signal<boolean>(
     isPlatformBrowser(this.platformId)
@@ -111,8 +115,8 @@ export class AuthService {
 
   readonly accountStatus = signal<AccountStatus>(
     isPlatformBrowser(this.platformId)
-      ? ((localStorage.getItem(ACCT_STATUS_KEY) as AccountStatus) ?? 'approved')
-      : 'approved'
+      ? toAccountStatus(localStorage.getItem(ACCT_STATUS_KEY))
+      : 'active'
   );
 
   readonly suspensionReason = signal<string>(
@@ -233,7 +237,7 @@ export class AuthService {
     }
     this.isAdmin.set(isStaff);
 
-    const role = u?.role ?? 'Viewer';
+    const role = u?.role ?? roleClaim(token) ?? 'Viewer';
     if (isPlatformBrowser(this.platformId)) {
       localStorage.setItem(ROLE_KEY, role);
     }
@@ -241,8 +245,55 @@ export class AuthService {
 
     const status = ((res as any)?.user?.account_status ?? (res as any)?.account_status) as AccountStatus | undefined;
     if (status && isPlatformBrowser(this.platformId)) {
-      localStorage.setItem(ACCT_STATUS_KEY, status);
-      this.accountStatus.set(status);
+      const normalised = toAccountStatus(status);
+      localStorage.setItem(ACCT_STATUS_KEY, normalised);
+      this.accountStatus.set(normalised);
+    }
+    // The response carried the user, so role and status are already current.
+    if (u) this.profileSync = of(undefined);
+  }
+
+  /** The role in a fresh access token is authoritative: the stored hint may be stale. */
+  private applyRoleClaim(token: string) {
+    const role = roleClaim(token);
+    if (!role || role === this.userRole()) return;
+    localStorage.setItem(ROLE_KEY, role);
+    this.userRole.set(role);
+  }
+
+  /**
+   * Brings role, staff flag and account status up to date from `/auth/me/`, once
+   * per session (shared by concurrent callers). Never errors: on failure the
+   * stored values stay. Role-restricted marketplace requests and guards wait for it.
+   */
+  syncProfile(): Observable<void> {
+    if (!isPlatformBrowser(this.platformId) || !this.isLoggedIn()) return of(undefined);
+    if (!this.profileSync) {
+      this.profileSync = this.getMe().pipe(
+        tap(profile => this.applyProfile(profile)),
+        map(() => undefined),
+        catchError(() => {
+          this.profileSync = null; // try again next time
+          return of(undefined);
+        }),
+        shareReplay({ bufferSize: 1, refCount: false }),
+      );
+    }
+    return this.profileSync;
+  }
+
+  private applyProfile(profile: UserProfile) {
+    if (!this.isLoggedIn()) return;
+    if (profile.role) {
+      localStorage.setItem(ROLE_KEY, profile.role);
+      this.userRole.set(profile.role);
+    }
+    if (typeof profile.is_staff === 'boolean') {
+      localStorage.setItem(IS_STAFF_KEY, profile.is_staff ? '1' : '0');
+      this.isAdmin.set(profile.is_staff);
+    }
+    if (profile.account_status) {
+      this.setAccountStatus(toAccountStatus(profile.account_status), profile.suspension_reason || undefined);
     }
   }
 
@@ -289,6 +340,7 @@ export class AuthService {
     ).pipe(
       map((res) => {
         this.accessToken = res.access;
+        this.applyRoleClaim(res.access);
         localStorage.setItem(SESSION_KEY, '1');
         localStorage.removeItem(LEGACY_TOKEN_KEY);
         localStorage.removeItem(LEGACY_REFRESH_KEY);
@@ -409,6 +461,7 @@ export class AuthService {
 
   private clearSession() {
     this.accessToken = null;
+    this.profileSync = null;
     if (isPlatformBrowser(this.platformId)) {
       localStorage.removeItem(SESSION_KEY);
       localStorage.removeItem(LEGACY_TOKEN_KEY);
@@ -420,14 +473,28 @@ export class AuthService {
       localStorage.removeItem(ACCT_STATUS_KEY);
       localStorage.removeItem(SUSPENSION_KEY);
       localStorage.removeItem(ONBOARDING_KEY);
+      clearAllDrafts();
     }
     this.isLoggedIn.set(false);
     this.isAdmin.set(false);
     this.userRole.set('Viewer');
     this.userName.set('');
     this.userEmail.set('');
-    this.accountStatus.set('approved');
+    this.accountStatus.set('active');
     this.suspensionReason.set('');
     this.onboardingComplete.set(false);
+  }
+}
+
+/** The `role` claim of a JWT access token, or null if it can't be read. Never verifies the token. */
+function roleClaim(token: string | undefined | null): string | null {
+  const payload = token?.split('.')[1];
+  if (!payload || typeof atob !== 'function') return null;
+  try {
+    const json = atob(payload.replace(/-/g, '+').replace(/_/g, '/'));
+    const role = (JSON.parse(json) as { role?: unknown }).role;
+    return typeof role === 'string' && role ? role : null;
+  } catch {
+    return null;
   }
 }

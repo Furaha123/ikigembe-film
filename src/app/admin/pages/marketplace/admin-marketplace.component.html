@@ -27,6 +27,9 @@
           <option [value]="s">{{ 'marketplace.videoStatus.' + s | translate }}</option>
         }
       </select>
+      @if (videoTotal() !== null && !videosLoading()) {
+        <span class="muted" aria-live="polite">{{ 'admin.marketplace.resultCount' | translate: { n: videoTotal() } }}</span>
+      }
     </div>
 
     @if (videosLoading()) {
@@ -91,6 +94,9 @@
           <option [value]="s">{{ (s ? 'marketplace.castingStatus.' + s : 'admin.marketplace.allStatuses') | translate }}</option>
         }
       </select>
+      @if (callTotal() !== null && !callsLoading()) {
+        <span class="muted" aria-live="polite">{{ 'admin.marketplace.resultCount' | translate: { n: callTotal() } }}</span>
+      }
     </div>
 
     @if (callsLoading()) {

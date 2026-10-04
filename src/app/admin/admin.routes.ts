@@ -1,5 +1,6 @@
 import { Routes } from '@angular/router';
 import { adminGuard } from './guards/admin.guard';
+import { marketplaceGuard, marketplaceRoute } from '../core/access/marketplace.guard';
 import { AdminLayoutComponent } from './layout/admin-layout.component';
 
 export const adminRoutes: Routes = [
@@ -56,6 +57,8 @@ export const adminRoutes: Routes = [
       },
       {
         path: 'marketplace',
+        canActivate: [marketplaceGuard],
+        data: marketplaceRoute('moderation'),
         loadComponent: () => import('./pages/marketplace/admin-marketplace.component').then(m => m.AdminMarketplaceComponent),
       },
       {

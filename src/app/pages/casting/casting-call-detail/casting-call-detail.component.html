@@ -1,7 +1,7 @@
 <app-header [userImg]="''" />
 
 <main class="mk-page">
-  <app-actor-nav />
+  <app-marketplace-nav />
 
   <div aria-live="polite">
     @if (loading()) {
@@ -13,56 +13,161 @@
   </div>
 
   @if (call(); as c) {
-    <article class="mk-card">
-      <h1>{{ c.title }}</h1>
-      <span [class]="statusClass(unavailable() ? 'closed' : displayStatus(c, now()))">{{ 'marketplace.castingStatus.' + (unavailable() ? 'closed' : displayStatus(c, now())) | translate }}</span>
-      <p class="mk-muted">{{ c.studio_name || c.producer_name }} · {{ 'marketplace.casting.deadline' | translate }}: {{ c.deadline_at | date:'medium' }}</p>
-      <h2>{{ 'marketplace.casting.roles' | translate }}</h2>
-      <div class="mk-chips">
-        @for (r of c.roles; track $index) { <span>{{ r }}</span> }
-      </div>
-      <p style="white-space: pre-line">{{ c.description }}</p>
-    </article>
+    @switch (step()) {
+      @case ('details') {
+        <article class="mk-card">
+          <a routerLink="/casting" class="mk-muted">← {{ 'marketplace.casting.backToList' | translate }}</a>
+          <h1>{{ c.title }}</h1>
+          <span [class]="statusClass(unavailable() ? 'closed' : displayStatus(c, now()))">{{ 'marketplace.castingStatus.' + (unavailable() ? 'closed' : displayStatus(c, now())) | translate }}</span>
+          <dl class="mk-summary" style="margin-top: .75rem">
+            <dt>{{ 'marketplace.casting.producer' | translate }}</dt>
+            <dd>{{ c.studio_name || c.producer_name }}</dd>
+            <dt>{{ 'marketplace.casting.deadline' | translate }}</dt>
+            <dd>{{ c.deadline_at | date:'medium' }}</dd>
+            @if (c.published_at) {
+              <dt>{{ 'marketplace.casting.published' | translate }}</dt>
+              <dd>{{ c.published_at | date:'mediumDate' }}</dd>
+            }
+          </dl>
+          <h2>{{ 'marketplace.casting.roles' | translate }}</h2>
+          <ul class="mk-list">
+            @for (r of c.roles; track $index) { <li>{{ r }}</li> }
+          </ul>
+          <h2>{{ 'marketplace.casting.about' | translate }}</h2>
+          <p style="white-space: pre-line">{{ c.description }}</p>
+        </article>
 
-    <section class="mk-card" aria-labelledby="apply-title">
-      <h2 id="apply-title">{{ 'marketplace.casting.applyTitle' | translate }}</h2>
-
-      @if (applied()) {
-        <p class="mk-success" role="status">{{ 'marketplace.casting.applied' | translate }}</p>
-        <a routerLink="/actor/applications" class="mk-btn mk-btn--ghost">{{ 'marketplace.nav.applications' | translate }}</a>
-      } @else if (!isOpen()) {
-        <p class="mk-muted" role="status">{{ 'marketplace.casting.closed' | translate }}</p>
-        <a routerLink="/casting" class="mk-btn mk-btn--ghost">{{ 'marketplace.casting.backToList' | translate }}</a>
-      } @else {
-        <fieldset style="border: 0; padding: 0; margin: 0 0 1rem">
-          <legend class="mk-muted">{{ 'marketplace.casting.chooseVideos' | translate }}</legend>
-          @if (approvedVideos().length === 0) {
-            <p class="mk-muted">{{ 'marketplace.casting.noApprovedVideos' | translate }}
-              <a routerLink="/actor/videos">{{ 'marketplace.nav.videos' | translate }}</a>
-            </p>
-          }
-          @for (v of approvedVideos(); track v.id) {
-            <label class="mk-check">
-              <input type="checkbox" [checked]="selectedIds().has(v.id)" (change)="toggleVideo(v.id)" />
-              {{ v.title }}
-            </label>
-          }
-        </fieldset>
-
-        <div class="mk-field">
-          <label for="apply-note">{{ 'marketplace.casting.note' | translate }}</label>
-          <textarea id="apply-note" rows="3" [ngModel]="note()" (ngModelChange)="note.set($event)"></textarea>
-        </div>
-
-        <div aria-live="polite">
-          @if (applyError()) { <p class="mk-error" role="alert">{{ applyError()! | translate }}</p> }
-        </div>
-
-        <button type="button" class="mk-btn" style="margin-top: .75rem" (click)="apply()" [disabled]="applying()">
-          {{ (applying() ? 'marketplace.common.sending' : 'marketplace.casting.apply') | translate }}
-        </button>
+        @if (canApply()) {
+          <section class="mk-card" aria-labelledby="apply-title" aria-live="polite">
+            <h2 id="apply-title">{{ 'marketplace.casting.applyTitle' | translate }}</h2>
+            @if (actorDataLoading()) {
+              <p class="mk-muted">{{ 'marketplace.common.loading' | translate }}</p>
+            } @else if (existing()) {
+              <p>{{ 'marketplace.apply.alreadyApplied' | translate: { date: (existing()!.created_at | date:'mediumDate') } }}
+                <span [class]="applicationClass(existing()!.status)">{{ 'marketplace.applicationStatus.' + existing()!.status | translate }}</span>
+              </p>
+              <a routerLink="/actor/applications" class="mk-btn mk-btn--ghost">{{ 'marketplace.nav.applications' | translate }}</a>
+            } @else if (!isOpen()) {
+              <p class="mk-muted" role="status">{{ 'marketplace.casting.closed' | translate }}</p>
+              <a routerLink="/casting" class="mk-btn mk-btn--ghost">{{ 'marketplace.casting.backToList' | translate }}</a>
+            } @else if (profileMissing()) {
+              <p class="mk-muted">{{ 'marketplace.apply.profileNeeded' | translate }}</p>
+              <a routerLink="/actor/profile" [queryParams]="{ returnUrl: '/casting/' + c.id }" class="mk-btn">{{ 'marketplace.profile.create' | translate }}</a>
+            } @else {
+              <p class="mk-muted">{{ 'marketplace.apply.intro' | translate }}</p>
+              <button type="button" class="mk-btn" (click)="startApplication()">{{ 'marketplace.casting.apply' | translate }}</button>
+            }
+          </section>
+        }
       }
-    </section>
+
+      @default {
+        <div class="mk-wizard">
+          <app-wizard-steps [steps]="stepLabels" [current]="stepIndex()" />
+
+          @if (step() !== 'done' && !isOpen()) {
+            <section class="mk-card" role="status">
+              <h2 #stepHeading tabindex="-1">{{ c.title }}</h2>
+              <p class="mk-muted">{{ 'marketplace.casting.closed' | translate }}</p>
+              <a routerLink="/casting" class="mk-btn mk-btn--ghost">{{ 'marketplace.casting.backToList' | translate }}</a>
+            </section>
+          } @else {
+            @switch (step()) {
+              @case ('form') {
+                <section class="mk-card" aria-labelledby="apply-form-title">
+                  <h2 id="apply-form-title" #stepHeading tabindex="-1">{{ 'marketplace.apply.formTitle' | translate: { title: c.title } }}</h2>
+
+                  <div class="mk-section-head">
+                    <h3>{{ 'marketplace.apply.yourDetails' | translate }}</h3>
+                    <a routerLink="/actor/profile" [queryParams]="{ returnUrl: '/casting/' + c.id }" class="mk-btn mk-btn--ghost">{{ 'marketplace.apply.editProfile' | translate }}</a>
+                  </div>
+                  <p class="mk-hint mk-muted">{{ 'marketplace.apply.detailsHint' | translate }}</p>
+                  @if (profile(); as p) {
+                    <dl class="mk-summary">
+                      <dt>{{ 'marketplace.profile.stageName' | translate }}</dt><dd>{{ p.stage_name }}</dd>
+                      <dt>{{ 'marketplace.apply.age' | translate }}</dt><dd>{{ age() ?? '—' }}</dd>
+                      <dt>{{ 'marketplace.profile.gender' | translate }}</dt><dd>{{ p.gender ? ('marketplace.gender.' + p.gender | translate) : '—' }}</dd>
+                      <dt>{{ 'marketplace.profile.location' | translate }}</dt><dd>{{ p.location || '—' }}</dd>
+                      <dt>{{ 'marketplace.profile.contactPhone' | translate }}</dt><dd>{{ p.contact_phone || '—' }}</dd>
+                      <dt>{{ 'marketplace.profile.contactEmail' | translate }}</dt><dd>{{ p.contact_email || '—' }}</dd>
+                    </dl>
+                  }
+
+                  <fieldset style="border: 0; padding: 0; margin: 1rem 0">
+                    <legend class="mk-section-head"><h3>{{ 'marketplace.casting.chooseVideos' | translate }}</h3></legend>
+                    @if (approvedVideos().length === 0) {
+                      <p class="mk-muted">{{ 'marketplace.casting.noApprovedVideos' | translate }}
+                        <a routerLink="/actor/videos">{{ 'marketplace.nav.videos' | translate }}</a>
+                      </p>
+                    }
+                    @for (v of approvedVideos(); track v.id) {
+                      <label class="mk-check">
+                        <input type="checkbox" [checked]="selectedIds().has(v.id)" (change)="toggleVideo(v.id)" />
+                        {{ v.title }}
+                      </label>
+                    }
+                  </fieldset>
+
+                  <div class="mk-field">
+                    <label for="apply-note">{{ 'marketplace.casting.note' | translate }}</label>
+                    <textarea id="apply-note" rows="4" maxlength="2000" [value]="note()" (input)="onNoteChange($any($event.target).value)"></textarea>
+                    <span class="mk-hint">{{ 'marketplace.apply.noteHint' | translate }}</span>
+                  </div>
+
+                  <div class="mk-actions">
+                    <button type="button" class="mk-btn mk-btn--ghost" (click)="backToDetails()">{{ 'marketplace.wizard.back' | translate }}</button>
+                    <button type="button" class="mk-btn" (click)="toReview()">{{ 'marketplace.apply.review' | translate }}</button>
+                  </div>
+                </section>
+              }
+
+              @case ('review') {
+                <section class="mk-card" aria-labelledby="apply-review-title">
+                  <h2 id="apply-review-title" #stepHeading tabindex="-1">{{ 'marketplace.apply.reviewTitle' | translate }}</h2>
+                  <dl class="mk-summary">
+                    <dt>{{ 'marketplace.apply.castingCall' | translate }}</dt><dd>{{ c.title }}</dd>
+                    <dt>{{ 'marketplace.profile.stageName' | translate }}</dt><dd>{{ profile()?.stage_name ?? '—' }}</dd>
+                    <dt>{{ 'marketplace.apply.videos' | translate }}</dt>
+                    <dd>
+                      @for (v of selectedVideos(); track v.id; let last = $last) { {{ v.title }}@if (!last) {, } }
+                      @empty { {{ 'marketplace.apply.noVideos' | translate }} }
+                    </dd>
+                    <dt>{{ 'marketplace.casting.note' | translate }}</dt><dd>{{ note().trim() || '—' }}</dd>
+                  </dl>
+                  <p class="mk-muted">{{ 'marketplace.apply.reviewHint' | translate }}</p>
+
+                  <div aria-live="polite">
+                    @if (applyError()) { <p class="mk-error" role="alert">{{ applyError()! | translate }}</p> }
+                  </div>
+
+                  <div class="mk-actions">
+                    <button type="button" class="mk-btn mk-btn--ghost" (click)="edit()" [disabled]="applying()">{{ 'marketplace.wizard.edit' | translate }}</button>
+                    <button type="button" class="mk-btn" (click)="apply()" [disabled]="applying()" [attr.aria-busy]="applying()">
+                      {{ (applying() ? 'marketplace.common.sending' : 'marketplace.apply.confirm') | translate }}
+                    </button>
+                  </div>
+                </section>
+              }
+
+              @case ('done') {
+                <section class="mk-card" aria-labelledby="apply-done-title">
+                  <h2 id="apply-done-title" #stepHeading tabindex="-1">{{ 'marketplace.apply.doneTitle' | translate }}</h2>
+                  <p class="mk-success" role="status">{{ 'marketplace.casting.applied' | translate }}</p>
+                  <p class="mk-muted">{{ 'marketplace.apply.doneText' | translate }}</p>
+                  <div class="mk-actions">
+                    <a routerLink="/browse" class="mk-btn mk-btn--ghost">{{ 'marketplace.apply.home' | translate }}</a>
+                    <div class="mk-actions__end">
+                      <a routerLink="/actor/applications" class="mk-btn mk-btn--ghost">{{ 'marketplace.nav.applications' | translate }}</a>
+                      <a routerLink="/casting" class="mk-btn">{{ 'marketplace.apply.browseMore' | translate }}</a>
+                    </div>
+                  </div>
+                </section>
+              }
+            }
+          }
+        </div>
+      }
+    }
   }
 </main>
 

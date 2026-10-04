@@ -37,10 +37,10 @@ Three user roles (Viewer, Producer, Admin) each have separate lazy-loaded route 
 | Role | Paths | Layout | Guard |
 |------|-------|--------|-------|
 | Viewer | `/browse`, `/movie/:id`, `/profile`, `/my-list` | Core `header`/`footer` | `authGuard` + `viewerGuard` |
-| Viewer (actor marketplace) | `/actor/profile`, `/actor/videos`, `/actor/applications`, `/casting`, `/casting/:id` | Core `header`/`footer` + `ActorNavComponent` | `authGuard` + `viewerGuard` |
-| Producer | `/producer/*` incl. `/producer/casting`, `/producer/casting/:id`, `/producer/actors`, `/producer/actors/:id` | `ProducerLayoutComponent` | `producerGuard` (role = Producer) |
+| Viewer (actor marketplace) | `/actor/profile`, `/actor/videos`, `/actor/talent/new` (wizard), `/actor/applications`, `/casting`, `/casting/:id` (apply wizard; casting also for producers) | Core `header`/`footer` + `MarketplaceNavComponent` | `authGuard` + `marketplaceGuard` |
+| Producer | `/producer/*` incl. `/producer/casting`, `/producer/casting/:id`, `/producer/actors`, `/producer/actors/:id`, `/producer/shortlist`, `/producer/casting/new`, `/producer/casting/:id/edit` (wizard), `/producer/applications`, `/producer/access` | `ProducerLayoutComponent` | `producerGuard` (role = Producer); marketplace pages also `marketplaceGuard` |
 | Admin | `/admin/*` incl. `/admin/marketplace`, `/admin/cms/pages`, `/admin/cms/ads` | `AdminLayoutComponent` | `adminGuard` (is_staff = true) |
-| Public | `/terms`, `/about`, `/privacy`, `/contact`, `/pages/:slug` (CMS), `/preview/:id`, `/producers` | none | — |
+| Public | `/actors-casting` (hub, no requests), `/terms`, `/about`, `/privacy`, `/contact`, `/pages/:slug` (CMS), `/preview/:id`, `/producers` | none | — |
 
 Guest routes (`/login`, `/register`, `/forgot-password`) use `guestGuard` which redirects already-authenticated users to their role's home.
 
@@ -107,6 +107,16 @@ All uploads use the multipart flow through `MultipartUploadService`. Movie files
 ### Distribution agreement (contract signing)
 
 `/producer/contracts/start → language → review → warning → accept → verifying → success`, state in `ContractFlowService` (memory only). The agreement text comes from `ContractService.getAgreement(language)` — never hardcode it; the `terms_version` shown is what gets signed. The warning step shows the API's `sign_deadline` (78 h after approval, enforced server-side) and is skipped when it's null (renewals). Signing sends a PNG from `SignaturePadComponent` plus the typed full name (must match the account) — no photo uploads. Sign errors are `{ error, field }`; `field: 'terms_version'` sends the producer back to review.
+
+### Marketplace access (role-aware)
+
+`core/access/marketplace-access.ts` is the only place that decides who may use a marketplace feature (`can(user, key)`, `marketplaceTabsFor(user)`, `marketplaceHomeFor(user)`), mirroring the backend: actor features need an **active Viewer**, producer features an **active Producer**, browsing published casting calls any viewer/producer, moderation (`/api/marketplace/admin/...`) an admin (staff counts as admin). Admins get no actor/producer tabs. Don't compare roles in marketplace components.
+- **Requests:** `ActorMarketplaceService`, `CastingService` and `AdminMarketplaceService` send every call through `MarketplaceAccessService.request(feature, …)`, which waits for `AuthService.syncProfile()` (`/auth/me/` once per session) and fails with `MarketplaceAccessError` without sending when the map says no. A 403 that still arrives is logged in dev; show `marketplaceErrorMessage()` (`shared/utils/marketplace-error.ts`).
+- **Routes:** `canActivate: [marketplaceGuard]` + `data: marketplaceRoute('<feature>')`; forbidden URLs redirect to the user's marketplace home before anything loads.
+- **Navigation:** `MarketplaceNavComponent` (pages) and the producer sidebar render `access.tabs()`; non-active accounts see a notice instead of the missing tabs.
+- `account_status` is `active | pending_approval | suspended` (an old stored `approved` reads as `active`). The JWT `role` claim updates the stored role on every refresh.
+- Wizards share `WizardStepsComponent`, `DraftStoreService` (sessionStorage text only — never files, tokens or contact data) and `unsavedChangesGuard`. Payment/publication states come only from the server (`castingPublicationState()`); the talent fee tier label is display-only (`talentFeeTier()`), the amount is the server quote.
+- Specs: `provideMarketplaceUser(marketplaceUser('Producer', 'suspended'))` from `shared/testing/marketplace-session.ts`.
 
 ### Payment flow
 

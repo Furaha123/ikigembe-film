@@ -8,32 +8,15 @@
     </div>
   </div>
 
-  <app-actor-nav />
+  <app-marketplace-nav />
 
-  <!-- New talent video: pay the fee first -->
-  <form class="mk-card" [formGroup]="form" (ngSubmit)="startPurchase()" novalidate>
-    <h2>{{ 'marketplace.videos.newTitle' | translate }}</h2>
-    <p class="mk-muted">{{ 'marketplace.videos.newHint' | translate }}
-      <a routerLink="/actor/profile">{{ 'marketplace.videos.profileLink' | translate }}</a>
-    </p>
-    <div class="mk-form">
-      <div class="mk-field">
-        <label for="av-title">{{ 'marketplace.videos.fieldTitle' | translate }} *</label>
-        <input id="av-title" formControlName="title"
-               [attr.aria-invalid]="form.controls.title.invalid && form.controls.title.touched" />
-        @if (form.controls.title.invalid && form.controls.title.touched) {
-          <p class="mk-error">{{ 'marketplace.errors.required' | translate }}</p>
-        }
-      </div>
-      <div class="mk-field">
-        <label for="av-desc">{{ 'marketplace.videos.fieldDescription' | translate }}</label>
-        <input id="av-desc" formControlName="description" />
-      </div>
+  <section class="mk-card mk-row" style="justify-content: space-between">
+    <div>
+      <h2>{{ 'marketplace.videos.newTitle' | translate }}</h2>
+      <p class="mk-muted" style="margin: 0">{{ 'marketplace.videos.newHint' | translate }}</p>
     </div>
-    <div class="mk-row" style="margin-top: .9rem">
-      <button type="submit" class="mk-btn">{{ 'marketplace.videos.payAndCreate' | translate }}</button>
-    </div>
-  </form>
+    <a routerLink="/actor/talent/new" class="mk-btn">{{ 'marketplace.nav.submitTalent' | translate }}</a>
+  </section>
 
   <section aria-labelledby="av-list-title">
     <h2 id="av-list-title" class="mk-muted">{{ 'marketplace.videos.listTitle' | translate }}</h2>
@@ -43,6 +26,7 @@
         <p class="mk-muted">{{ 'marketplace.common.loading' | translate }}</p>
       } @else if (error()) {
         <p class="mk-error" role="alert">{{ error()! | translate }}</p>
+        <button type="button" class="mk-btn mk-btn--ghost" (click)="load()">{{ 'marketplace.common.retry' | translate }}</button>
       } @else if (videos().length === 0) {
         <p class="mk-empty">{{ 'marketplace.videos.empty' | translate }}</p>
       }
@@ -100,10 +84,6 @@
 </main>
 
 <app-footer />
-
-@if (purchase(); as p) {
-  <app-payment-modal [service]="p" (paid)="onPaid()" (closed)="closePurchase()" />
-}
 
 @if (previewSrc(); as src) {
   <div class="mk-overlay" (click)="closePreview()">

@@ -1,0 +1,208 @@
+<div class="mk-page">
+  <div class="mk-header">
+    <div>
+      <a routerLink="/producer/casting" class="mk-muted">← {{ 'marketplace.nav.myCastingCalls' | translate }}</a>
+      <h1>{{ (callId() ? 'marketplace.postCasting.editTitle' : 'marketplace.postCasting.title') | translate }}</h1>
+      <p>{{ 'marketplace.postCasting.subtitle' | translate }}</p>
+    </div>
+  </div>
+
+  <div class="mk-wizard">
+    <div aria-live="polite">
+      @if (loading()) {
+        <p class="mk-muted">{{ 'marketplace.common.loading' | translate }}</p>
+      } @else if (loadError()) {
+        <p class="mk-error" role="alert">{{ loadError()! | translate }}</p>
+        <a routerLink="/producer/casting" class="mk-btn mk-btn--ghost">{{ 'marketplace.nav.myCastingCalls' | translate }}</a>
+      }
+    </div>
+
+    @if (!loading() && !loadError()) {
+      <app-wizard-steps [steps]="stepLabels" [current]="stepIndex()" />
+
+      @switch (step()) {
+        @case ('type') {
+          <section class="mk-card" aria-labelledby="cw-type">
+            <h2 id="cw-type" #stepHeading tabindex="-1">{{ 'marketplace.postCasting.typeTitle' | translate }}</h2>
+            <div class="mk-choices" role="radiogroup" [attr.aria-labelledby]="'cw-type'">
+              <button type="button" class="mk-choice" role="radio" [attr.aria-checked]="type() === 'specific'"
+                      [class.selected]="type() === 'specific'" (click)="chooseType('specific')">
+                <h3>{{ 'marketplace.postCasting.typeSpecific' | translate }}</h3>
+                <p>{{ 'marketplace.postCasting.typeSpecificText' | translate }}</p>
+              </button>
+              <button type="button" class="mk-choice" role="radio" [attr.aria-checked]="type() === 'various'"
+                      [class.selected]="type() === 'various'" (click)="chooseType('various')">
+                <h3>{{ 'marketplace.postCasting.typeVarious' | translate }}</h3>
+                <p>{{ 'marketplace.postCasting.typeVariousText' | translate }}</p>
+              </button>
+            </div>
+            <div class="mk-actions">
+              <a routerLink="/producer/casting" class="mk-btn mk-btn--ghost">{{ 'marketplace.common.cancel' | translate }}</a>
+              <button type="button" class="mk-btn" (click)="next()">{{ 'marketplace.wizard.next' | translate }}</button>
+            </div>
+          </section>
+        }
+
+        @case ('details') {
+          <section class="mk-card" aria-labelledby="cw-details">
+            <h2 id="cw-details" #stepHeading tabindex="-1">{{ 'marketplace.postCasting.detailsTitle' | translate }}</h2>
+            <form [formGroup]="details" (ngSubmit)="next()" novalidate>
+              <div class="mk-form">
+                <div class="mk-field mk-field--wide">
+                  <label for="cw-title">{{ 'marketplace.producerCasting.fieldTitle' | translate }} *</label>
+                  <input id="cw-title" formControlName="title" maxlength="255" (input)="persist()"
+                         [attr.aria-invalid]="details.controls.title.invalid && details.controls.title.touched" aria-describedby="cw-title-err" />
+                  @if (details.controls.title.invalid && details.controls.title.touched) {
+                    <p id="cw-title-err" class="mk-error">{{ 'marketplace.errors.required' | translate }}</p>
+                  }
+                </div>
+                <div class="mk-field mk-field--wide">
+                  <label for="cw-desc">{{ 'marketplace.postCasting.description' | translate }} *</label>
+                  <textarea id="cw-desc" formControlName="description" rows="6" (input)="persist()"
+                            [attr.aria-invalid]="details.controls.description.invalid && details.controls.description.touched"
+                            aria-describedby="cw-desc-hint cw-desc-err"></textarea>
+                  <span id="cw-desc-hint" class="mk-hint">{{ 'marketplace.postCasting.descriptionHint' | translate }}</span>
+                  @if (details.controls.description.invalid && details.controls.description.touched) {
+                    <p id="cw-desc-err" class="mk-error">{{ 'marketplace.errors.required' | translate }}</p>
+                  }
+                </div>
+                <div class="mk-field">
+                  <label for="cw-deadline">{{ 'marketplace.postCasting.deadline' | translate }} *</label>
+                  <input id="cw-deadline" type="datetime-local" formControlName="deadline_at" [min]="minDeadline" (input)="persist()"
+                         [attr.aria-invalid]="details.controls.deadline_at.invalid && details.controls.deadline_at.touched"
+                         aria-describedby="cw-deadline-hint cw-deadline-err" />
+                  <span id="cw-deadline-hint" class="mk-hint">{{ 'marketplace.postCasting.deadlineHint' | translate }}</span>
+                  @if (details.controls.deadline_at.touched && details.controls.deadline_at.hasError('required')) {
+                    <p id="cw-deadline-err" class="mk-error">{{ 'marketplace.errors.required' | translate }}</p>
+                  } @else if (details.controls.deadline_at.touched && details.controls.deadline_at.hasError('past')) {
+                    <p id="cw-deadline-err" class="mk-error">{{ 'marketplace.producerCasting.deadlineFuture' | translate }}</p>
+                  }
+                </div>
+              </div>
+              <div class="mk-actions">
+                <button type="button" class="mk-btn mk-btn--ghost" (click)="back()">{{ 'marketplace.wizard.back' | translate }}</button>
+                <button type="submit" class="mk-btn">{{ 'marketplace.wizard.next' | translate }}</button>
+              </div>
+            </form>
+          </section>
+        }
+
+        @case ('roles') {
+          <section class="mk-card" aria-labelledby="cw-roles">
+            <h2 id="cw-roles" #stepHeading tabindex="-1">{{ (type() === 'various' ? 'marketplace.postCasting.rolesTitle' : 'marketplace.postCasting.roleTitle') | translate }}</h2>
+            <p class="mk-muted">{{ 'marketplace.postCasting.rolesHint' | translate }}</p>
+            @for (ctrl of roles.controls; track $index; let i = $index) {
+              <div class="mk-field" style="margin-bottom: .75rem">
+                <label [for]="'cw-role-' + i">{{ 'marketplace.postCasting.roleLabel' | translate: { n: i + 1 } }} *</label>
+                <textarea [id]="'cw-role-' + i" [formControl]="ctrl" rows="2" maxlength="500" (input)="persist()"
+                          [attr.aria-invalid]="ctrl.invalid && ctrl.touched"></textarea>
+                @if (ctrl.invalid && ctrl.touched) { <p class="mk-error">{{ 'marketplace.errors.required' | translate }}</p> }
+                @if (type() === 'various' && roles.length > 1) {
+                  <button type="button" class="mk-btn mk-btn--ghost" style="align-self: flex-start" (click)="removeRole(i)">
+                    {{ 'marketplace.postCasting.removeRole' | translate }}
+                  </button>
+                }
+              </div>
+            }
+            @if (type() === 'various') {
+              <button type="button" class="mk-btn mk-btn--ghost" (click)="addRole()">+ {{ 'marketplace.postCasting.addRole' | translate }}</button>
+            }
+            <div class="mk-actions">
+              <button type="button" class="mk-btn mk-btn--ghost" (click)="back()">{{ 'marketplace.wizard.back' | translate }}</button>
+              <button type="button" class="mk-btn" (click)="next()">{{ 'marketplace.postCasting.toReview' | translate }}</button>
+            </div>
+          </section>
+        }
+
+        @case ('review') {
+          <section class="mk-card" aria-labelledby="cw-review">
+            <h2 id="cw-review" #stepHeading tabindex="-1">{{ 'marketplace.postCasting.reviewTitle' | translate }}</h2>
+
+            <div class="mk-section-head">
+              <h3>{{ 'marketplace.postCasting.postedAs' | translate }}</h3>
+              <a routerLink="/producer/settings" class="mk-muted">{{ 'marketplace.access.editInfo' | translate }}</a>
+            </div>
+            <dl class="mk-summary">
+              <dt>{{ 'marketplace.access.fullName' | translate }}</dt><dd>{{ me() ? ((me()!.first_name + ' ' + me()!.last_name).trim() || '—') : '—' }}</dd>
+              @if (call()?.studio_name || me()?.studio_name; as studio) {
+                <dt>{{ 'marketplace.access.studio' | translate }}</dt><dd>{{ studio }}</dd>
+              }
+            </dl>
+
+            <div class="mk-section-head">
+              <h3>{{ 'marketplace.postCasting.stepDetails' | translate }}</h3>
+              <button type="button" class="mk-btn mk-btn--ghost" (click)="editSection('details')">{{ 'marketplace.wizard.edit' | translate }}</button>
+            </div>
+            <dl class="mk-summary">
+              <dt>{{ 'marketplace.producerCasting.fieldTitle' | translate }}</dt><dd>{{ details.controls.title.value }}</dd>
+              <dt>{{ 'marketplace.postCasting.description' | translate }}</dt><dd>{{ details.controls.description.value }}</dd>
+              <dt>{{ 'marketplace.postCasting.deadline' | translate }}</dt><dd>{{ details.controls.deadline_at.value | date:'medium' }}</dd>
+            </dl>
+
+            <div class="mk-section-head">
+              <h3>{{ 'marketplace.postCasting.stepRoles' | translate }}</h3>
+              <button type="button" class="mk-btn mk-btn--ghost" (click)="editSection('roles')">{{ 'marketplace.wizard.edit' | translate }}</button>
+            </div>
+            <ul class="mk-list">
+              @for (r of roles.value; track $index) { <li>{{ r }}</li> }
+            </ul>
+
+            <div class="mk-banner">
+              @if (quote(); as q) {
+                <p class="mk-muted" style="margin: 0">{{ 'marketplace.postCasting.fee' | translate }}</p>
+                <p class="mk-price">{{ q.amount | number }} {{ q.currency }}</p>
+              } @else if (quoteError()) {
+                <p class="mk-error" role="alert">{{ quoteError()! | translate }}</p>
+              }
+              <p class="mk-muted" style="margin: .25rem 0 0">{{ 'marketplace.postCasting.publishRules' | translate }}</p>
+            </div>
+
+            <div aria-live="polite">
+              @if (saveError()) { <p class="mk-error" role="alert">{{ saveError()! | translate }}</p> }
+              @if (savedNotice()) { <p class="mk-success" role="status">{{ 'marketplace.postCasting.draftSaved' | translate }}</p> }
+            </div>
+
+            <div class="mk-actions">
+              <button type="button" class="mk-btn mk-btn--ghost" (click)="back()">{{ 'marketplace.wizard.back' | translate }}</button>
+              <div class="mk-actions__end">
+                <button type="button" class="mk-btn mk-btn--ghost" (click)="saveDraft()" [disabled]="saving()">
+                  {{ (saving() ? 'marketplace.common.saving' : 'marketplace.postCasting.saveDraft') | translate }}
+                </button>
+                <button type="button" class="mk-btn" (click)="payAndPublish()" [disabled]="saving() || !!purchase()">
+                  {{ 'marketplace.postCasting.payPublish' | translate }}
+                </button>
+              </div>
+            </div>
+          </section>
+        }
+
+        @case ('result') {
+          <section class="mk-card" aria-labelledby="cw-result" aria-live="polite">
+            <h2 id="cw-result" #stepHeading tabindex="-1">{{ call()?.title ?? ('marketplace.postCasting.title' | translate) }}</h2>
+            @if (state(); as s) {
+              <p><span [class]="publicationClass(s)">{{ 'marketplace.publication.' + s | translate }}</span></p>
+              <p class="mk-muted">{{ 'marketplace.publication.' + s + 'Text' | translate }}</p>
+            } @else if (checking()) {
+              <p class="mk-muted">{{ 'marketplace.common.loading' | translate }}</p>
+            }
+            <div class="mk-actions">
+              @if (state() === 'processing' || state() === 'paymentPending') {
+                <button type="button" class="mk-btn mk-btn--ghost" (click)="refreshState()" [disabled]="checking()">{{ 'marketplace.common.refresh' | translate }}</button>
+              } @else { <span></span> }
+              <div class="mk-actions__end">
+                @if (state() === 'published' || state() === 'closed') {
+                  <a [routerLink]="['/producer/casting', callId()]" class="mk-btn mk-btn--ghost">{{ 'marketplace.producerCasting.viewApplications' | translate }}</a>
+                }
+                <button type="button" class="mk-btn" (click)="toMyCastings()">{{ 'marketplace.nav.myCastingCalls' | translate }}</button>
+              </div>
+            </div>
+          </section>
+        }
+      }
+    }
+  </div>
+</div>
+
+@if (purchase(); as p) {
+  <app-payment-modal [service]="p" (paid)="onPaid()" (closed)="closePurchase()" />
+}

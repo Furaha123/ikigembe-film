@@ -3,6 +3,7 @@ import { HttpErrorResponse, provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { environment } from '../../../environments/environment';
 import { AdminMarketplaceService } from './admin-marketplace.service';
+import { marketplaceUser, provideMarketplaceUser } from '../../shared/testing/marketplace-session';
 
 const BASE = `${environment.apiUrl}/marketplace/admin`;
 
@@ -11,7 +12,7 @@ describe('AdminMarketplaceService', () => {
   let http: HttpTestingController;
 
   beforeEach(() => {
-    TestBed.configureTestingModule({ providers: [provideHttpClient(), provideHttpClientTesting()] });
+    TestBed.configureTestingModule({ providers: [provideHttpClient(), provideHttpClientTesting(), provideMarketplaceUser(marketplaceUser('Admin'))] });
     service = TestBed.inject(AdminMarketplaceService);
     http = TestBed.inject(HttpTestingController);
   });

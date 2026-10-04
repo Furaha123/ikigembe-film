@@ -16,3 +16,15 @@ export interface UiError {
   text: string | null;
   key: string;
 }
+
+/** First message of a DRF `{ field: [msg] }` validation error, or null. */
+export function firstFieldError(err: unknown): string | null {
+  if (!(err instanceof HttpErrorResponse)) return null;
+  const body: unknown = err.error;
+  if (!body || typeof body !== 'object') return null;
+  for (const v of Object.values(body as Record<string, unknown>)) {
+    if (Array.isArray(v) && v.length) return String(v[0]);
+    if (typeof v === 'string') return v;
+  }
+  return null;
+}
