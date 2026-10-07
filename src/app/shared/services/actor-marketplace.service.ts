@@ -61,10 +61,10 @@ export class ActorMarketplaceService {
     };
   }
 
-  getCastingCalls(page = 1): Observable<Paginated<CastingCall>> {
-    return this.access.request('casting-calls', () => this.http.get<Paginated<CastingCall>>(`${BASE}/casting-calls/`, {
-      params: new HttpParams().set('page', page),
-    }));
+  getCastingCalls(page = 1, search?: string): Observable<Paginated<CastingCall>> {
+    let params = new HttpParams().set('page', page);
+    if (search?.trim()) params = params.set('search', search.trim());
+    return this.access.request('casting-calls', () => this.http.get<Paginated<CastingCall>>(`${BASE}/casting-calls/`, { params }));
   }
 
   getCastingCall(id: number): Observable<CastingCall> {

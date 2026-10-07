@@ -59,6 +59,10 @@ export interface ActorProfile {
   bio: string;
   gender: ActorGender | '';
   location: string;
+  /** Rwanda province name (optional — backend may not yet persist separately). */
+  province?: string;
+  /** Rwanda district name (optional — backend may not yet persist separately). */
+  district?: string;
   languages: string[];
   skills: string[];
   contact_email: string;
@@ -116,6 +120,17 @@ export interface CastingCall {
   payment_status: ServicePaymentStatus | null;
   created_at: string;
   updated_at: string;
+  // Extended fields — stored by the backend when provided; absent on older records.
+  poster_url?: string | null;
+  project_type?: string;
+  genre?: string;
+  shooting_location?: string;
+  project_start_date?: string | null;
+  project_end_date?: string | null;
+  min_age?: number | null;
+  max_age?: number | null;
+  gender_preference?: ActorGender | '';
+  num_actors?: number | null;
 }
 
 export interface CastingCallPayload {
@@ -124,6 +139,22 @@ export interface CastingCallPayload {
   roles: string[];
   /** Future ISO datetime. */
   deadline_at: string;
+  // Extended optional fields (backend support required for persistence).
+  project_type?: string;
+  genre?: string;
+  shooting_location?: string;
+  project_start_date?: string | null;
+  project_end_date?: string | null;
+  min_age?: number | null;
+  max_age?: number | null;
+  gender_preference?: ActorGender | '';
+  num_actors?: number | null;
+}
+
+/** Search/filter params for the public casting-calls list. */
+export interface CastingCallFilters {
+  search?: string;
+  page?: number;
 }
 
 export interface DirectoryVideo {

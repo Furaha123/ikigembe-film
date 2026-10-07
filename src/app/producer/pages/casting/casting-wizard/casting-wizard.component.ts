@@ -15,7 +15,7 @@ import { HasUnsavedChanges } from '../../../../core/guards/unsaved-changes.guard
 import { PaymentModalComponent } from '../../../../shared/components/payment-modal/payment-modal.component';
 import { WizardStepsComponent } from '../../../../shared/components/wizard-steps/wizard-steps.component';
 import { DraftStoreService } from '../../../../shared/services/draft-store.service';
-import { CastingCall, CastingCallPayload, ServicePurchase, ServiceQuote } from '../../../../shared/models/marketplace.interface';
+import { ActorGender, CastingCall, CastingCallPayload, ServicePurchase, ServiceQuote } from '../../../../shared/models/marketplace.interface';
 import { marketplaceErrorMessage } from '../../../../shared/utils/marketplace-error';
 import { firstFieldError } from '../../../../shared/utils/api-error';
 import { castingPublicationClass, castingPublicationState } from '../../../../shared/utils/marketplace-status';
@@ -24,6 +24,8 @@ export type CastingType = 'specific' | 'various';
 export type CastingWizardStep = 'type' | 'details' | 'roles' | 'review' | 'result';
 const STEPS: readonly CastingWizardStep[] = ['type', 'details', 'roles', 'review', 'result'];
 
+export const PROJECT_TYPES = ['Film', 'Short Film', 'TV Series', 'Commercial', 'Music Video', 'Documentary', 'Web Series', 'Other'] as const;
+
 export interface CastingWizardDraft {
   step: CastingWizardStep;
   type: CastingType;
@@ -31,6 +33,16 @@ export interface CastingWizardDraft {
   description: string;
   deadline_at: string;
   roles: string[];
+  // Extended fields (persisted to sessionStorage text-only)
+  project_type: string;
+  genre: string;
+  shooting_location: string;
+  project_start_date: string;
+  project_end_date: string;
+  min_age: number | null;
+  max_age: number | null;
+  gender_preference: ActorGender | '';
+  num_actors: number | null;
 }
 
 /** `datetime-local` value for an ISO timestamp, in local time. */
@@ -48,11 +60,14 @@ export function futureDate(control: AbstractControl<string>): ValidationErrors |
 }
 
 /**
- * Post a casting: type → project details → roles → review → payment → the
- * server's publication state. Only the fields the API stores are asked for
- * (title, description, roles, application deadline). Saving creates or updates
- * a draft; paying the announcement fee lets the server publish it. "Published"
- * is shown only when the server reports it.
+ * Post a casting: type → project details + requirements → roles → review →
+ * payment → the server's publication state. Saving creates or updates a draft;
+ * paying the announcement fee lets the server publish it. "Published" is shown
+ * only when the server reports it.
+ *
+ * Extended project fields (type, genre, location, dates, age/gender requirements)
+ * are included in the payload; the backend stores them when it supports these
+ * fields. Older backends that don't recognise them will simply ignore them.
  */
 @Component({
   selector: 'app-casting-wizard',
@@ -76,6 +91,8 @@ export class CastingWizardComponent implements OnInit, HasUnsavedChanges {
     'marketplace.postCasting.stepReview', 'marketplace.postCasting.stepResult',
   ];
   readonly publicationClass = castingPublicationClass;
+  readonly projectTypes = PROJECT_TYPES;
+  readonly genders: (ActorGender | '')[] = ['', 'female', 'male', 'other'];
 
   step = signal<CastingWizardStep>('type');
   type = signal<CastingType>('specific');
@@ -93,12 +110,27 @@ export class CastingWizardComponent implements OnInit, HasUnsavedChanges {
   purchase = signal<ServicePurchase | null>(null);
   checking = signal(false);
   readonly minDeadline = toLocalInput(new Date().toISOString());
+  readonly today = new Date().toISOString().substring(0, 10);
 
   details = this.fb.nonNullable.group({
-    title:       ['', [Validators.required, Validators.maxLength(255)]],
-    description: ['', [Validators.required, Validators.maxLength(5000)]],
-    deadline_at: ['', [Validators.required, futureDate]],
+    title:              ['', [Validators.required, Validators.maxLength(255)]],
+    description:        ['', [Validators.required, Validators.maxLength(5000)]],
+    deadline_at:        ['', [Validators.required, futureDate]],
+    // Extended project fields — all optional
+    project_type:       ['', Validators.maxLength(100)],
+    genre:              ['', Validators.maxLength(100)],
+    shooting_location:  ['', Validators.maxLength(200)],
+    project_start_date: [''],
+    project_end_date:   [''],
   });
+
+  requirements = this.fb.nonNullable.group({
+    min_age:          [null as number | null, [Validators.min(0), Validators.max(100)]],
+    max_age:          [null as number | null, [Validators.min(0), Validators.max(100)]],
+    gender_preference: ['' as ActorGender | ''],
+    num_actors:       [null as number | null, [Validators.min(1), Validators.max(999)]],
+  });
+
   roles = new FormArray<FormControl<string>>([this.roleControl()]);
 
   readonly stepIndex = computed(() => STEPS.indexOf(this.step()));
@@ -133,7 +165,22 @@ export class CastingWizardComponent implements OnInit, HasUnsavedChanges {
           this.step.set('result');
           return;
         }
-        this.details.setValue({ title: c.title, description: c.description, deadline_at: toLocalInput(c.deadline_at) });
+        this.details.patchValue({
+          title: c.title,
+          description: c.description,
+          deadline_at: toLocalInput(c.deadline_at),
+          project_type: c.project_type ?? '',
+          genre: c.genre ?? '',
+          shooting_location: c.shooting_location ?? '',
+          project_start_date: c.project_start_date ?? '',
+          project_end_date: c.project_end_date ?? '',
+        });
+        this.requirements.patchValue({
+          min_age: c.min_age ?? null,
+          max_age: c.max_age ?? null,
+          gender_preference: c.gender_preference ?? '',
+          num_actors: c.num_actors ?? null,
+        });
         this.setRoles(c.roles);
         this.type.set(c.roles.length > 1 ? 'various' : 'specific');
         this.restoreDraft(); // unsaved local edits win over the server copy
@@ -150,7 +197,6 @@ export class CastingWizardComponent implements OnInit, HasUnsavedChanges {
   chooseType(type: CastingType): void {
     this.type.set(type);
     if (type === 'specific' && this.roles.length > 1) {
-      // Keep the first role; the rest stay in the draft until the type changes back.
       while (this.roles.length > 1) this.roles.removeAt(this.roles.length - 1);
     }
     this.persist();
@@ -166,7 +212,8 @@ export class CastingWizardComponent implements OnInit, HasUnsavedChanges {
         break;
       case 'roles':
         this.roles.markAllAsTouched();
-        if (this.roles.invalid) { this.focusFirstInvalid(); return; }
+        this.requirements.markAllAsTouched();
+        if (this.roles.invalid || this.requirements.invalid) { this.focusFirstInvalid(); return; }
         this.goTo('review');
         this.loadQuote();
         break;
@@ -202,9 +249,10 @@ export class CastingWizardComponent implements OnInit, HasUnsavedChanges {
   /** Save as a draft on the server (create, or update the existing draft). */
   saveDraft(onSaved?: (call: CastingCall) => void): void {
     if (this.saving()) return;
-    if (this.details.invalid || this.roles.invalid) {
+    if (this.details.invalid || this.roles.invalid || this.requirements.invalid) {
       this.details.markAllAsTouched();
       this.roles.markAllAsTouched();
+      this.requirements.markAllAsTouched();
       this.saveError.set('marketplace.postCasting.fixErrors');
       return;
     }
@@ -222,6 +270,7 @@ export class CastingWizardComponent implements OnInit, HasUnsavedChanges {
         this.call.set(call);
         this.details.markAsPristine();
         this.roles.markAsPristine();
+        this.requirements.markAsPristine();
         this.drafts.clear('casting:new');
         if (onSaved) onSaved(call);
         else this.savedNotice.set(true);
@@ -297,15 +346,21 @@ export class CastingWizardComponent implements OnInit, HasUnsavedChanges {
   persist(): void {
     if (this.step() === 'result') return;
     const v = this.details.getRawValue();
+    const r = this.requirements.getRawValue();
     this.drafts.save<CastingWizardDraft>(this.draftKey, {
-      step: this.step(), type: this.type(), title: v.title, description: v.description,
-      deadline_at: v.deadline_at, roles: this.roles.getRawValue(),
+      step: this.step(), type: this.type(),
+      title: v.title, description: v.description, deadline_at: v.deadline_at,
+      project_type: v.project_type, genre: v.genre, shooting_location: v.shooting_location,
+      project_start_date: v.project_start_date, project_end_date: v.project_end_date,
+      roles: this.roles.getRawValue(),
+      min_age: r.min_age, max_age: r.max_age,
+      gender_preference: r.gender_preference, num_actors: r.num_actors,
     });
   }
 
   hasUnsavedChanges(): boolean {
     if (this.step() === 'result' || this.saving() || this.purchase()) return false;
-    return this.details.dirty || this.roles.dirty;
+    return this.details.dirty || this.roles.dirty || this.requirements.dirty;
   }
 
   @HostListener('window:beforeunload', ['$event'])
@@ -320,6 +375,17 @@ export class CastingWizardComponent implements OnInit, HasUnsavedChanges {
       title: typeof d.title === 'string' ? d.title : '',
       description: typeof d.description === 'string' ? d.description : '',
       deadline_at: typeof d.deadline_at === 'string' ? d.deadline_at : '',
+      project_type: typeof d.project_type === 'string' ? d.project_type : '',
+      genre: typeof d.genre === 'string' ? d.genre : '',
+      shooting_location: typeof d.shooting_location === 'string' ? d.shooting_location : '',
+      project_start_date: typeof d.project_start_date === 'string' ? d.project_start_date : '',
+      project_end_date: typeof d.project_end_date === 'string' ? d.project_end_date : '',
+    });
+    this.requirements.patchValue({
+      min_age: typeof d.min_age === 'number' ? d.min_age : null,
+      max_age: typeof d.max_age === 'number' ? d.max_age : null,
+      gender_preference: (d.gender_preference as ActorGender | '') ?? '',
+      num_actors: typeof d.num_actors === 'number' ? d.num_actors : null,
     });
     if (Array.isArray(d.roles) && d.roles.length) this.setRoles(d.roles.filter((r): r is string => typeof r === 'string'));
     if (d.type === 'various' || d.type === 'specific') this.type.set(d.type);
@@ -338,12 +404,24 @@ export class CastingWizardComponent implements OnInit, HasUnsavedChanges {
 
   private payload(): CastingCallPayload {
     const v = this.details.getRawValue();
-    return {
+    const r = this.requirements.getRawValue();
+    const base: CastingCallPayload = {
       title: v.title.trim(),
       description: v.description.trim(),
-      roles: this.roles.getRawValue().map(r => r.trim()).filter(Boolean),
+      roles: this.roles.getRawValue().map(role => role.trim()).filter(Boolean),
       deadline_at: new Date(v.deadline_at).toISOString(),
     };
+    // Extended optional fields — omit empty/null values.
+    if (v.project_type.trim())       base.project_type = v.project_type.trim();
+    if (v.genre.trim())              base.genre = v.genre.trim();
+    if (v.shooting_location.trim())  base.shooting_location = v.shooting_location.trim();
+    if (v.project_start_date)        base.project_start_date = v.project_start_date;
+    if (v.project_end_date)          base.project_end_date = v.project_end_date;
+    if (r.min_age !== null)          base.min_age = r.min_age;
+    if (r.max_age !== null)          base.max_age = r.max_age;
+    if (r.gender_preference)         base.gender_preference = r.gender_preference;
+    if (r.num_actors !== null)       base.num_actors = r.num_actors;
+    return base;
   }
 
   private goTo(step: CastingWizardStep): void {
@@ -357,7 +435,7 @@ export class CastingWizardComponent implements OnInit, HasUnsavedChanges {
 
   private focusFirstInvalid(): void {
     if (!isPlatformBrowser(this.platformId)) return;
-    setTimeout(() => document.querySelector<HTMLElement>('app-casting-wizard .ng-invalid.ng-touched:not(form):not([formArrayName])')?.focus());
+    setTimeout(() => document.querySelector<HTMLElement>('app-casting-wizard .ng-invalid.ng-touched:not(form):not([formArrayName]):not([formGroupName])')?.focus());
   }
 
   /** Leave for My Castings after a result. */

@@ -48,6 +48,8 @@
             <h2 id="cw-details" #stepHeading tabindex="-1">{{ 'marketplace.postCasting.detailsTitle' | translate }}</h2>
             <form [formGroup]="details" (ngSubmit)="next()" novalidate>
               <div class="mk-form">
+
+                <!-- Title -->
                 <div class="mk-field mk-field--wide">
                   <label for="cw-title">{{ 'marketplace.producerCasting.fieldTitle' | translate }} *</label>
                   <input id="cw-title" formControlName="title" maxlength="255" (input)="persist()"
@@ -56,16 +58,47 @@
                     <p id="cw-title-err" class="mk-error">{{ 'marketplace.errors.required' | translate }}</p>
                   }
                 </div>
-                <div class="mk-field mk-field--wide">
-                  <label for="cw-desc">{{ 'marketplace.postCasting.description' | translate }} *</label>
-                  <textarea id="cw-desc" formControlName="description" rows="6" (input)="persist()"
-                            [attr.aria-invalid]="details.controls.description.invalid && details.controls.description.touched"
-                            aria-describedby="cw-desc-hint cw-desc-err"></textarea>
-                  <span id="cw-desc-hint" class="mk-hint">{{ 'marketplace.postCasting.descriptionHint' | translate }}</span>
-                  @if (details.controls.description.invalid && details.controls.description.touched) {
-                    <p id="cw-desc-err" class="mk-error">{{ 'marketplace.errors.required' | translate }}</p>
-                  }
+
+                <!-- Project type -->
+                <div class="mk-field">
+                  <label for="cw-ptype">{{ 'marketplace.postCasting.projectType' | translate }}</label>
+                  <select id="cw-ptype" formControlName="project_type" (change)="persist()">
+                    <option value="">{{ 'marketplace.postCasting.projectTypeAny' | translate }}</option>
+                    @for (pt of projectTypes; track pt) {
+                      <option [value]="pt">{{ pt }}</option>
+                    }
+                  </select>
                 </div>
+
+                <!-- Genre -->
+                <div class="mk-field">
+                  <label for="cw-genre">{{ 'marketplace.postCasting.genre' | translate }}</label>
+                  <input id="cw-genre" formControlName="genre" maxlength="100" (input)="persist()"
+                         [placeholder]="'marketplace.postCasting.genrePlaceholder' | translate" />
+                </div>
+
+                <!-- Shooting location -->
+                <div class="mk-field">
+                  <label for="cw-location">{{ 'marketplace.postCasting.shootingLocation' | translate }}</label>
+                  <input id="cw-location" formControlName="shooting_location" maxlength="200" (input)="persist()"
+                         [placeholder]="'marketplace.postCasting.locationPlaceholder' | translate" />
+                </div>
+
+                <!-- Project start date -->
+                <div class="mk-field">
+                  <label for="cw-start">{{ 'marketplace.postCasting.projectStartDate' | translate }}</label>
+                  <input id="cw-start" type="date" formControlName="project_start_date" [min]="today" (input)="persist()"
+                         aria-describedby="cw-date-hint" />
+                </div>
+
+                <!-- Project end date -->
+                <div class="mk-field">
+                  <label for="cw-end">{{ 'marketplace.postCasting.projectEndDate' | translate }}</label>
+                  <input id="cw-end" type="date" formControlName="project_end_date" [min]="details.controls.project_start_date.value || today" (input)="persist()" />
+                  <span id="cw-date-hint" class="mk-hint">{{ 'marketplace.postCasting.projectDateHint' | translate }}</span>
+                </div>
+
+                <!-- Application deadline -->
                 <div class="mk-field">
                   <label for="cw-deadline">{{ 'marketplace.postCasting.deadline' | translate }} *</label>
                   <input id="cw-deadline" type="datetime-local" formControlName="deadline_at" [min]="minDeadline" (input)="persist()"
@@ -78,6 +111,19 @@
                     <p id="cw-deadline-err" class="mk-error">{{ 'marketplace.producerCasting.deadlineFuture' | translate }}</p>
                   }
                 </div>
+
+                <!-- Description -->
+                <div class="mk-field mk-field--wide">
+                  <label for="cw-desc">{{ 'marketplace.postCasting.description' | translate }} *</label>
+                  <textarea id="cw-desc" formControlName="description" rows="5" (input)="persist()"
+                            [attr.aria-invalid]="details.controls.description.invalid && details.controls.description.touched"
+                            aria-describedby="cw-desc-hint cw-desc-err"></textarea>
+                  <span id="cw-desc-hint" class="mk-hint">{{ 'marketplace.postCasting.descriptionHint' | translate }}</span>
+                  @if (details.controls.description.invalid && details.controls.description.touched) {
+                    <p id="cw-desc-err" class="mk-error">{{ 'marketplace.errors.required' | translate }}</p>
+                  }
+                </div>
+
               </div>
               <div class="mk-actions">
                 <button type="button" class="mk-btn mk-btn--ghost" (click)="back()">{{ 'marketplace.wizard.back' | translate }}</button>
@@ -98,7 +144,7 @@
                           [attr.aria-invalid]="ctrl.invalid && ctrl.touched"></textarea>
                 @if (ctrl.invalid && ctrl.touched) { <p class="mk-error">{{ 'marketplace.errors.required' | translate }}</p> }
                 @if (type() === 'various' && roles.length > 1) {
-                  <button type="button" class="mk-btn mk-btn--ghost" style="align-self: flex-start" (click)="removeRole(i)">
+                  <button type="button" class="mk-btn mk-btn--ghost" style="align-self: flex-start; margin-top: .25rem" (click)="removeRole(i)">
                     {{ 'marketplace.postCasting.removeRole' | translate }}
                   </button>
                 }
@@ -107,6 +153,49 @@
             @if (type() === 'various') {
               <button type="button" class="mk-btn mk-btn--ghost" (click)="addRole()">+ {{ 'marketplace.postCasting.addRole' | translate }}</button>
             }
+
+            <!-- Talent requirements (optional, global) -->
+            <div class="mk-section-head" style="margin-top: 1.25rem">
+              <h3>{{ 'marketplace.postCasting.talentReqs' | translate }}</h3>
+            </div>
+            <p class="mk-hint mk-muted">{{ 'marketplace.postCasting.talentReqsHint' | translate }}</p>
+            <form [formGroup]="requirements" novalidate>
+              <div class="mk-form" style="margin-top: .5rem">
+                <div class="mk-field">
+                  <label for="cw-minage">{{ 'marketplace.postCasting.minAge' | translate }}</label>
+                  <input id="cw-minage" type="number" formControlName="min_age" min="0" max="100" (input)="persist()"
+                         [attr.aria-invalid]="requirements.controls.min_age.invalid && requirements.controls.min_age.touched" />
+                  @if (requirements.controls.min_age.invalid && requirements.controls.min_age.touched) {
+                    <p class="mk-error">{{ 'marketplace.postCasting.ageRangeError' | translate }}</p>
+                  }
+                </div>
+                <div class="mk-field">
+                  <label for="cw-maxage">{{ 'marketplace.postCasting.maxAge' | translate }}</label>
+                  <input id="cw-maxage" type="number" formControlName="max_age" min="0" max="100" (input)="persist()"
+                         [attr.aria-invalid]="requirements.controls.max_age.invalid && requirements.controls.max_age.touched" />
+                  @if (requirements.controls.max_age.invalid && requirements.controls.max_age.touched) {
+                    <p class="mk-error">{{ 'marketplace.postCasting.ageRangeError' | translate }}</p>
+                  }
+                </div>
+                <div class="mk-field">
+                  <label for="cw-gender">{{ 'marketplace.postCasting.genderPref' | translate }}</label>
+                  <select id="cw-gender" formControlName="gender_preference" (change)="persist()">
+                    @for (g of genders; track g) {
+                      <option [value]="g">{{ (g ? 'marketplace.gender.' + g : 'marketplace.postCasting.anyGender') | translate }}</option>
+                    }
+                  </select>
+                </div>
+                <div class="mk-field">
+                  <label for="cw-numactors">{{ 'marketplace.postCasting.numActors' | translate }}</label>
+                  <input id="cw-numactors" type="number" formControlName="num_actors" min="1" max="999" (input)="persist()"
+                         [placeholder]="'marketplace.postCasting.numActorsHint' | translate" />
+                  @if (requirements.controls.num_actors.invalid && requirements.controls.num_actors.touched) {
+                    <p class="mk-error">{{ 'marketplace.postCasting.numActorsError' | translate }}</p>
+                  }
+                </div>
+              </div>
+            </form>
+
             <div class="mk-actions">
               <button type="button" class="mk-btn mk-btn--ghost" (click)="back()">{{ 'marketplace.wizard.back' | translate }}</button>
               <button type="button" class="mk-btn" (click)="next()">{{ 'marketplace.postCasting.toReview' | translate }}</button>
@@ -135,8 +224,23 @@
             </div>
             <dl class="mk-summary">
               <dt>{{ 'marketplace.producerCasting.fieldTitle' | translate }}</dt><dd>{{ details.controls.title.value }}</dd>
-              <dt>{{ 'marketplace.postCasting.description' | translate }}</dt><dd>{{ details.controls.description.value }}</dd>
+              @if (details.controls.project_type.value) {
+                <dt>{{ 'marketplace.postCasting.projectType' | translate }}</dt><dd>{{ details.controls.project_type.value }}</dd>
+              }
+              @if (details.controls.genre.value) {
+                <dt>{{ 'marketplace.postCasting.genre' | translate }}</dt><dd>{{ details.controls.genre.value }}</dd>
+              }
+              @if (details.controls.shooting_location.value) {
+                <dt>{{ 'marketplace.postCasting.shootingLocation' | translate }}</dt><dd>{{ details.controls.shooting_location.value }}</dd>
+              }
+              @if (details.controls.project_start_date.value) {
+                <dt>{{ 'marketplace.postCasting.projectStartDate' | translate }}</dt><dd>{{ details.controls.project_start_date.value | date:'mediumDate' }}</dd>
+              }
+              @if (details.controls.project_end_date.value) {
+                <dt>{{ 'marketplace.postCasting.projectEndDate' | translate }}</dt><dd>{{ details.controls.project_end_date.value | date:'mediumDate' }}</dd>
+              }
               <dt>{{ 'marketplace.postCasting.deadline' | translate }}</dt><dd>{{ details.controls.deadline_at.value | date:'medium' }}</dd>
+              <dt>{{ 'marketplace.postCasting.description' | translate }}</dt><dd style="white-space: pre-line">{{ details.controls.description.value }}</dd>
             </dl>
 
             <div class="mk-section-head">
@@ -146,6 +250,26 @@
             <ul class="mk-list">
               @for (r of roles.value; track $index) { <li>{{ r }}</li> }
             </ul>
+            @let req = requirements.getRawValue();
+            @if (req.min_age !== null || req.max_age !== null || req.gender_preference || req.num_actors !== null) {
+              <dl class="mk-summary" style="margin-top: .5rem">
+                @if (req.min_age !== null || req.max_age !== null) {
+                  <dt>{{ 'marketplace.postCasting.ageRange' | translate }}</dt>
+                  <dd>
+                    @if (req.min_age !== null) { {{ req.min_age }} }
+                    @if (req.min_age !== null && req.max_age !== null) { – }
+                    @if (req.max_age !== null) { {{ req.max_age }} }
+                  </dd>
+                }
+                @if (req.gender_preference) {
+                  <dt>{{ 'marketplace.postCasting.genderPref' | translate }}</dt>
+                  <dd>{{ 'marketplace.gender.' + req.gender_preference | translate }}</dd>
+                }
+                @if (req.num_actors !== null) {
+                  <dt>{{ 'marketplace.postCasting.numActors' | translate }}</dt><dd>{{ req.num_actors }}</dd>
+                }
+              </dl>
+            }
 
             <div class="mk-banner">
               @if (quote(); as q) {

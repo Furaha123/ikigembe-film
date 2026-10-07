@@ -345,3 +345,84 @@ app-header ~ .mk-page { padding-top: calc(68px + 1.5rem); }
   grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
   align-items: end;
 }
+
+// ── Search bar (casting calls list, directory) ──────────────────────────
+.mk-search-bar {
+  margin-bottom: 1rem;
+}
+
+.mk-search-field {
+  max-width: 560px;
+}
+
+.mk-search-input-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+
+  .mk-search-icon {
+    position: absolute;
+    left: 0.65rem;
+    width: 16px;
+    height: 16px;
+    color: $muted;
+    pointer-events: none;
+    flex-shrink: 0;
+  }
+
+  input[type='search'] {
+    width: 100%;
+    background: #111;
+    border: 1px solid $border;
+    border-radius: 8px;
+    color: #eee;
+    padding: 0.55rem 2.2rem 0.55rem 2.2rem;
+    font: inherit;
+    min-height: 44px;
+
+    &:focus-visible { outline: 2px solid $gold; outline-offset: 1px; }
+    &::-webkit-search-cancel-button { display: none; }
+  }
+
+  .mk-search-clear {
+    position: absolute;
+    right: 0.5rem;
+    background: none;
+    border: none;
+    color: $muted;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    padding: 0.25rem;
+    border-radius: 4px;
+
+    &:hover { color: #fff; }
+    &:focus-visible { outline: 2px solid $gold; }
+  }
+}
+
+// ── Casting call detail ─────────────────────────────────────────────────
+.mk-casting-detail {
+  display: flex;
+  gap: 1.5rem;
+  align-items: flex-start;
+  flex-wrap: wrap;
+}
+
+.mk-casting-poster {
+  width: min(220px, 100%);
+  border-radius: 8px;
+  object-fit: cover;
+  aspect-ratio: 2 / 3;
+  background: #2a2a2a;
+  flex-shrink: 0;
+}
+
+.mk-casting-detail__body {
+  flex: 1;
+  min-width: 240px;
+}
+
+@media (max-width: 600px) {
+  .mk-casting-poster { width: 100%; max-height: 280px; aspect-ratio: unset; }
+}
