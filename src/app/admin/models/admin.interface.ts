@@ -14,6 +14,9 @@ export interface DashboardOverview {
   total_movies: number;
   total_views: number;
   pending_submissions: number;
+  actors_with_approved_videos: number;
+  pending_talent_videos: number;
+  marketplace_payments_confirmed: number;
   financials: DashboardFinancials;
 }
 

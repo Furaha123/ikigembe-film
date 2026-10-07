@@ -46,6 +46,17 @@ export interface CastingWizardDraft {
   max_age: number | null;
   gender_preference: ActorGender | '';
   num_actors: number | null;
+  // Physical requirements
+  height_min: number | null;
+  height_max: number | null;
+  body_type: string;
+  complexion: string;
+  appearance_notes: string;
+  // Skills & languages
+  required_skills: string;
+  required_languages: string;
+  // Availability
+  availability_notes: string;
 }
 
 /** `datetime-local` value for an ISO timestamp, in local time. */
@@ -125,6 +136,7 @@ export class CastingWizardComponent implements OnInit, OnDestroy, HasUnsavedChan
     shooting_location:  ['', Validators.maxLength(200)],
     project_start_date: [''],
     project_end_date:   [''],
+    availability_notes: [''],
   });
 
   requirements = this.fb.nonNullable.group({
@@ -132,6 +144,15 @@ export class CastingWizardComponent implements OnInit, OnDestroy, HasUnsavedChan
     max_age:           [null as number | null, [Validators.min(0), Validators.max(100)]],
     gender_preference: ['' as ActorGender | ''],
     num_actors:        [null as number | null, [Validators.min(1), Validators.max(999)]],
+    // Physical requirements
+    height_min:        [null as number | null, [Validators.min(50), Validators.max(300)]],
+    height_max:        [null as number | null, [Validators.min(50), Validators.max(300)]],
+    body_type:         ['', Validators.maxLength(100)],
+    complexion:        ['', Validators.maxLength(100)],
+    appearance_notes:  [''],
+    // Skills & languages (comma-separated, split on save)
+    required_skills:   [''],
+    required_languages:[''],
   });
 
   roles = new FormArray<FormControl<string>>([this.roleControl()]);
@@ -180,12 +201,20 @@ export class CastingWizardComponent implements OnInit, OnDestroy, HasUnsavedChan
           shooting_location: c.shooting_location ?? '',
           project_start_date: c.project_start_date ?? '',
           project_end_date: c.project_end_date ?? '',
+          availability_notes: c.availability_notes ?? '',
         });
         this.requirements.patchValue({
           min_age: c.min_age ?? null,
           max_age: c.max_age ?? null,
           gender_preference: c.gender_preference ?? '',
           num_actors: c.num_actors ?? null,
+          height_min: c.height_min ?? null,
+          height_max: c.height_max ?? null,
+          body_type: c.body_type ?? '',
+          complexion: c.complexion ?? '',
+          appearance_notes: c.appearance_notes ?? '',
+          required_skills: (c.required_skills ?? []).join(', '),
+          required_languages: (c.required_languages ?? []).join(', '),
         });
         this.setRoles(c.roles);
         this.type.set(c.roles.length > 1 ? 'various' : 'specific');
@@ -431,9 +460,15 @@ export class CastingWizardComponent implements OnInit, OnDestroy, HasUnsavedChan
       title: v.title, description: v.description, deadline_at: v.deadline_at,
       project_type: v.project_type, genre: v.genre, shooting_location: v.shooting_location,
       project_start_date: v.project_start_date, project_end_date: v.project_end_date,
+      availability_notes: v.availability_notes,
       roles: this.roles.getRawValue(),
       min_age: r.min_age, max_age: r.max_age,
       gender_preference: r.gender_preference, num_actors: r.num_actors,
+      height_min: r.height_min, height_max: r.height_max,
+      body_type: r.body_type, complexion: r.complexion,
+      appearance_notes: r.appearance_notes,
+      required_skills: r.required_skills,
+      required_languages: r.required_languages,
     });
   }
 
@@ -459,12 +494,20 @@ export class CastingWizardComponent implements OnInit, OnDestroy, HasUnsavedChan
       shooting_location: typeof d.shooting_location === 'string' ? d.shooting_location : '',
       project_start_date: typeof d.project_start_date === 'string' ? d.project_start_date : '',
       project_end_date: typeof d.project_end_date === 'string' ? d.project_end_date : '',
+      availability_notes: typeof d.availability_notes === 'string' ? d.availability_notes : '',
     });
     this.requirements.patchValue({
       min_age: typeof d.min_age === 'number' ? d.min_age : null,
       max_age: typeof d.max_age === 'number' ? d.max_age : null,
       gender_preference: (d.gender_preference as ActorGender | '') ?? '',
       num_actors: typeof d.num_actors === 'number' ? d.num_actors : null,
+      height_min: typeof d.height_min === 'number' ? d.height_min : null,
+      height_max: typeof d.height_max === 'number' ? d.height_max : null,
+      body_type: typeof d.body_type === 'string' ? d.body_type : '',
+      complexion: typeof d.complexion === 'string' ? d.complexion : '',
+      appearance_notes: typeof d.appearance_notes === 'string' ? d.appearance_notes : '',
+      required_skills: typeof d.required_skills === 'string' ? d.required_skills : '',
+      required_languages: typeof d.required_languages === 'string' ? d.required_languages : '',
     });
     if (Array.isArray(d.roles) && d.roles.length) this.setRoles(d.roles.filter((r): r is string => typeof r === 'string'));
     if (d.type === 'various' || d.type === 'specific') this.type.set(d.type);
@@ -490,15 +533,25 @@ export class CastingWizardComponent implements OnInit, OnDestroy, HasUnsavedChan
       roles: this.roles.getRawValue().map(role => role.trim()).filter(Boolean),
       deadline_at: new Date(v.deadline_at).toISOString(),
     };
-    if (v.project_type.trim())       base.project_type = v.project_type.trim();
-    if (v.genre.trim())              base.genre = v.genre.trim();
-    if (v.shooting_location.trim())  base.shooting_location = v.shooting_location.trim();
-    if (v.project_start_date)        base.project_start_date = v.project_start_date;
-    if (v.project_end_date)          base.project_end_date = v.project_end_date;
-    if (r.min_age !== null)          base.min_age = r.min_age;
-    if (r.max_age !== null)          base.max_age = r.max_age;
-    if (r.gender_preference)         base.gender_preference = r.gender_preference;
-    if (r.num_actors !== null)       base.num_actors = r.num_actors;
+    if (v.project_type.trim())        base.project_type = v.project_type.trim();
+    if (v.genre.trim())               base.genre = v.genre.trim();
+    if (v.shooting_location.trim())   base.shooting_location = v.shooting_location.trim();
+    if (v.project_start_date)         base.project_start_date = v.project_start_date;
+    if (v.project_end_date)           base.project_end_date = v.project_end_date;
+    if (v.availability_notes.trim())  base.availability_notes = v.availability_notes.trim();
+    if (r.min_age !== null)           base.min_age = r.min_age;
+    if (r.max_age !== null)           base.max_age = r.max_age;
+    if (r.gender_preference)          base.gender_preference = r.gender_preference;
+    if (r.num_actors !== null)        base.num_actors = r.num_actors;
+    if (r.height_min !== null)        base.height_min = r.height_min;
+    if (r.height_max !== null)        base.height_max = r.height_max;
+    if (r.body_type.trim())           base.body_type = r.body_type.trim();
+    if (r.complexion.trim())          base.complexion = r.complexion.trim();
+    if (r.appearance_notes.trim())    base.appearance_notes = r.appearance_notes.trim();
+    const skills = splitList(r.required_skills);
+    if (skills.length)                base.required_skills = skills;
+    const langs = splitList(r.required_languages);
+    if (langs.length)                 base.required_languages = langs;
     return base;
   }
 
@@ -523,4 +576,8 @@ export class CastingWizardComponent implements OnInit, OnDestroy, HasUnsavedChan
 
 function notBlank(control: AbstractControl<string>): ValidationErrors | null {
   return (control.value ?? '').trim() ? null : { required: true };
+}
+
+function splitList(value: string): string[] {
+  return value.split(',').map(v => v.trim()).filter(Boolean);
 }

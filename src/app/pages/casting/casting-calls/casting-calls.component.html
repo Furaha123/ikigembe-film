@@ -36,6 +36,31 @@
     </div>
   </div>
 
+  <form class="mk-filters" [formGroup]="filters" (ngSubmit)="applyFilters()" role="search" aria-label="Filter casting calls" style="margin-bottom: 1rem">
+    <div class="mk-field">
+      <label for="cc-gender">{{ 'marketplace.postCasting.genderPref' | translate }}</label>
+      <select id="cc-gender" formControlName="gender">
+        <option value="">{{ 'marketplace.postCasting.anyGender' | translate }}</option>
+        @for (g of genders; track g) {
+          <option [value]="g">{{ 'marketplace.gender.' + g | translate }}</option>
+        }
+      </select>
+    </div>
+    <div class="mk-field">
+      <label for="cc-location">{{ 'marketplace.postCasting.shootingLocation' | translate }}</label>
+      <select id="cc-location" formControlName="location">
+        <option value="">{{ 'marketplace.directory.anyProvince' | translate }}</option>
+        @for (p of provinces; track p.name) {
+          <option [value]="p.name">{{ p.name }}</option>
+        }
+      </select>
+    </div>
+    <div class="mk-row" style="align-items: flex-end; gap: .5rem">
+      <button type="submit" class="mk-btn mk-btn--ghost">{{ 'marketplace.directory.search' | translate }}</button>
+      <button type="button" class="mk-btn mk-btn--ghost" (click)="resetFilters()">{{ 'marketplace.directory.reset' | translate }}</button>
+    </div>
+  </form>
+
   <div aria-live="polite">
     @if (loading()) {
       <p class="mk-muted">{{ 'marketplace.common.loading' | translate }}</p>

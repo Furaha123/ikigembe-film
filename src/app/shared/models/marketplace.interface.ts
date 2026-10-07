@@ -131,6 +131,17 @@ export interface CastingCall {
   max_age?: number | null;
   gender_preference?: ActorGender | '';
   num_actors?: number | null;
+  // Physical requirements
+  height_min?: number | null;
+  height_max?: number | null;
+  body_type?: string;
+  complexion?: string;
+  appearance_notes?: string;
+  // Skills & languages
+  required_skills?: string[];
+  required_languages?: string[];
+  // Availability
+  availability_notes?: string;
 }
 
 export interface CastingCallPayload {
@@ -139,7 +150,6 @@ export interface CastingCallPayload {
   roles: string[];
   /** Future ISO datetime. */
   deadline_at: string;
-  // Extended optional fields (backend support required for persistence).
   project_type?: string;
   genre?: string;
   shooting_location?: string;
@@ -149,11 +159,21 @@ export interface CastingCallPayload {
   max_age?: number | null;
   gender_preference?: ActorGender | '';
   num_actors?: number | null;
+  height_min?: number | null;
+  height_max?: number | null;
+  body_type?: string;
+  complexion?: string;
+  appearance_notes?: string;
+  required_skills?: string[];
+  required_languages?: string[];
+  availability_notes?: string;
 }
 
 /** Search/filter params for the public casting-calls list. */
 export interface CastingCallFilters {
   search?: string;
+  gender?: ActorGender;
+  location?: string;
   page?: number;
 }
 

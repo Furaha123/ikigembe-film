@@ -193,6 +193,62 @@
                     <p class="mk-error">{{ 'marketplace.postCasting.numActorsError' | translate }}</p>
                   }
                 </div>
+
+                <!-- Physical requirements -->
+                <div class="mk-field mk-field--wide">
+                  <label class="mk-section-head" style="margin: .5rem 0 0"><h3>{{ 'marketplace.postCasting.physicalReqs' | translate }}</h3></label>
+                </div>
+                <div class="mk-field">
+                  <label for="cw-hmin">{{ 'marketplace.postCasting.heightMin' | translate }}</label>
+                  <input id="cw-hmin" type="number" formControlName="height_min" min="50" max="300" (input)="persist()"
+                         [placeholder]="'marketplace.postCasting.heightPlaceholder' | translate" />
+                </div>
+                <div class="mk-field">
+                  <label for="cw-hmax">{{ 'marketplace.postCasting.heightMax' | translate }}</label>
+                  <input id="cw-hmax" type="number" formControlName="height_max" min="50" max="300" (input)="persist()"
+                         [placeholder]="'marketplace.postCasting.heightPlaceholder' | translate" />
+                </div>
+                <div class="mk-field">
+                  <label for="cw-bodytype">{{ 'marketplace.postCasting.bodyType' | translate }}</label>
+                  <input id="cw-bodytype" formControlName="body_type" maxlength="100" (input)="persist()" />
+                </div>
+                <div class="mk-field">
+                  <label for="cw-complexion">{{ 'marketplace.postCasting.complexion' | translate }}</label>
+                  <input id="cw-complexion" formControlName="complexion" maxlength="100" (input)="persist()" />
+                </div>
+                <div class="mk-field mk-field--wide">
+                  <label for="cw-appearance">{{ 'marketplace.postCasting.appearanceNotes' | translate }}</label>
+                  <textarea id="cw-appearance" formControlName="appearance_notes" rows="3" (input)="persist()"></textarea>
+                </div>
+
+                <!-- Skills & languages -->
+                <div class="mk-field mk-field--wide">
+                  <label class="mk-section-head" style="margin: .5rem 0 0"><h3>{{ 'marketplace.postCasting.skillsLangs' | translate }}</h3></label>
+                </div>
+                <div class="mk-field mk-field--wide">
+                  <label for="cw-skills">{{ 'marketplace.postCasting.requiredSkills' | translate }}</label>
+                  <input id="cw-skills" formControlName="required_skills" (input)="persist()"
+                         [placeholder]="'marketplace.postCasting.skillsPlaceholder' | translate" />
+                  <span class="mk-hint">{{ 'marketplace.profile.listHint' | translate }}</span>
+                </div>
+                <div class="mk-field mk-field--wide">
+                  <label for="cw-langs">{{ 'marketplace.postCasting.requiredLanguages' | translate }}</label>
+                  <input id="cw-langs" formControlName="required_languages" (input)="persist()"
+                         [placeholder]="'marketplace.postCasting.langsPlaceholder' | translate" />
+                  <span class="mk-hint">{{ 'marketplace.profile.listHint' | translate }}</span>
+                </div>
+              </div>
+            </form>
+
+            <!-- Availability & notes -->
+            <div class="mk-section-head" style="margin-top: 1.25rem">
+              <h3>{{ 'marketplace.postCasting.availabilityTitle' | translate }}</h3>
+            </div>
+            <form [formGroup]="details" novalidate>
+              <div class="mk-field">
+                <label for="cw-availability">{{ 'marketplace.postCasting.availabilityNotes' | translate }}</label>
+                <textarea id="cw-availability" formControlName="availability_notes" rows="4" (input)="persist()"
+                          [placeholder]="'marketplace.postCasting.availabilityPlaceholder' | translate"></textarea>
               </div>
             </form>
 

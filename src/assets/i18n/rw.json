@@ -1007,7 +1007,22 @@
       "posterUploading": "Uploading…",
       "posterBadType": "Only JPEG, PNG, or WebP images are accepted.",
       "posterTooLarge": "Image must be 5 MB or smaller.",
-      "posterUploadFailed": "Could not upload the poster. Please try again."
+      "posterUploadFailed": "Could not upload the poster. Please try again.",
+      "physicalReqs": "Physical requirements",
+      "heightMin": "Min height (cm)",
+      "heightMax": "Max height (cm)",
+      "heightPlaceholder": "e.g. 170",
+      "bodyType": "Body type",
+      "complexion": "Complexion",
+      "appearanceNotes": "Appearance notes",
+      "skillsLangs": "Skills & languages",
+      "requiredSkills": "Required skills",
+      "skillsPlaceholder": "e.g. Drama, Dancing, Singing…",
+      "requiredLanguages": "Required languages",
+      "langsPlaceholder": "e.g. Kinyarwanda, English, French…",
+      "availabilityTitle": "Availability & notes",
+      "availabilityNotes": "Availability & additional information",
+      "availabilityPlaceholder": "Required shoot dates, call times, travel requirements, or any other information for applicants…"
     },
     "publication": {
       "draft": "Draft",
@@ -1589,7 +1604,9 @@
         "movies": "Movies",
         "pendingWithdrawals": "Pending Withdrawals",
         "actionNeeded": "Action needed",
-        "pendingTalentVideos": "Talent videos to review"
+        "pendingTalentVideos": "Talent videos to review",
+        "actorsWithVideos": "Actors with approved videos",
+        "marketplacePayments": "Confirmed marketplace payments"
       },
       "chart": {
         "title": "Revenue Trend",
