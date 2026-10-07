@@ -10,6 +10,7 @@
 
   <app-marketplace-nav />
 
+  <!-- Search -->
   <div class="mk-search-bar" role="search">
     <div class="mk-field mk-search-field">
       <label for="cc-search" class="sr-only">{{ 'marketplace.casting.search' | translate }}</label>
@@ -26,7 +27,9 @@
           autocomplete="off"
         />
         @if (searchValue()) {
-          <button type="button" class="mk-search-clear" [attr.aria-label]="'marketplace.casting.clearSearch' | translate" (click)="clearSearch()">
+          <button type="button" class="mk-search-clear"
+                  [attr.aria-label]="'marketplace.casting.clearSearch' | translate"
+                  (click)="clearSearch()">
             <svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16" aria-hidden="true">
               <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
             </svg>
@@ -36,7 +39,9 @@
     </div>
   </div>
 
-  <form class="mk-filters" [formGroup]="filters" (ngSubmit)="applyFilters()" role="search" aria-label="Filter casting calls" style="margin-bottom: 1rem">
+  <!-- Filters -->
+  <form class="cc-filter-bar" [formGroup]="filters" (ngSubmit)="applyFilters()"
+        role="search" aria-label="Filter casting calls">
     <div class="mk-field">
       <label for="cc-gender">{{ 'marketplace.postCasting.genderPref' | translate }}</label>
       <select id="cc-gender" formControlName="gender">
@@ -55,18 +60,21 @@
         }
       </select>
     </div>
-    <div class="mk-row" style="align-items: flex-end; gap: .5rem">
+    <div class="mk-row" style="gap: .5rem">
       <button type="submit" class="mk-btn mk-btn--ghost">{{ 'marketplace.directory.search' | translate }}</button>
       <button type="button" class="mk-btn mk-btn--ghost" (click)="resetFilters()">{{ 'marketplace.directory.reset' | translate }}</button>
     </div>
   </form>
 
+  <!-- Status / count -->
   <div aria-live="polite">
     @if (loading()) {
       <p class="mk-muted">{{ 'marketplace.common.loading' | translate }}</p>
     } @else if (error()) {
       <p class="mk-error" role="alert">{{ error()! | translate }}</p>
-      <button type="button" class="mk-btn mk-btn--ghost" (click)="load(page())">{{ 'marketplace.common.retry' | translate }}</button>
+      <button type="button" class="mk-btn mk-btn--ghost" (click)="load(page())">
+        {{ 'marketplace.common.retry' | translate }}
+      </button>
     } @else if (calls().length === 0) {
       <p class="mk-empty">
         @if (searchValue()) {
@@ -76,7 +84,7 @@
         }
       </p>
     } @else {
-      <p class="mk-muted">
+      <p class="mk-muted" style="margin-bottom: .75rem">
         @if (searchValue()) {
           {{ 'marketplace.casting.searchCount' | translate: { n: total(), q: searchValue() } }}
         } @else {
@@ -86,43 +94,94 @@
     }
   </div>
 
-  <div class="mk-grid">
+  <!-- Grid -->
+  <div class="cc-grid">
     @for (c of calls(); track c.id) {
-      <article class="mk-card mk-casting-card">
+      <article class="cc-card">
+
         @if (c.poster_url) {
-          <img [src]="c.poster_url" [alt]="c.title" class="mk-casting-card__poster" loading="lazy" />
+          <img [src]="c.poster_url" [alt]="c.title" class="cc-card__poster" loading="lazy" />
         }
-        <div class="mk-casting-card__body">
-          <h2><a [routerLink]="['/casting', c.id]">{{ c.title }}</a></h2>
-          <span [class]="statusClass(displayStatus(c))">{{ 'marketplace.castingStatus.' + displayStatus(c) | translate }}</span>
-          <p class="mk-muted">{{ c.studio_name || c.producer_name }}</p>
-          @if (c.shooting_location) {
-            <p class="mk-muted">📍 {{ c.shooting_location }}</p>
-          }
-          @if (c.min_age != null || c.max_age != null) {
-            <p class="mk-muted">
-              {{ 'marketplace.casting.ageRange' | translate }}:
-              @if (c.min_age != null && c.max_age != null) { {{ c.min_age }}–{{ c.max_age }} }
-              @else if (c.min_age != null) { {{ c.min_age }}+ }
-              @else { {{ 'marketplace.casting.upTo' | translate }} {{ c.max_age }} }
-            </p>
-          }
-          <div class="mk-chips" [attr.aria-label]="'marketplace.casting.roles' | translate">
-            @for (r of c.roles; track $index) { <span>{{ r }}</span> }
+
+        <div class="cc-card__body">
+
+          <!-- Title + status -->
+          <div class="cc-card__head">
+            <h2 class="cc-card__title">
+              <a [routerLink]="['/casting', c.id]">{{ c.title }}</a>
+            </h2>
+            <span class="cc-status cc-status--{{ displayStatus(c) }}">
+              {{ 'marketplace.castingStatus.' + displayStatus(c) | translate }}
+            </span>
           </div>
-          <p class="mk-muted">{{ 'marketplace.casting.deadline' | translate }}: {{ c.deadline_at | date:'medium' }}</p>
-          <a [routerLink]="['/casting', c.id]" class="mk-btn mk-btn--ghost" style="margin-top: .5rem"
-             [attr.aria-label]="('marketplace.casting.viewDetails' | translate) + ': ' + c.title">{{ 'marketplace.casting.viewDetails' | translate }}</a>
+
+          <!-- Producer -->
+          <p class="cc-card__producer">{{ c.studio_name || c.producer_name }}</p>
+
+          <!-- Location + age chips -->
+          <div class="cc-card__meta">
+            @if (c.shooting_location) {
+              <span class="cc-meta-chip">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                  <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5S10.62 6.5 12 6.5s2.5 1.12 2.5 2.5S13.38 11.5 12 11.5z"/>
+                </svg>
+                {{ c.shooting_location }}
+              </span>
+            }
+            @if (c.min_age != null || c.max_age != null) {
+              <span class="cc-meta-chip">
+                @if (c.min_age != null && c.max_age != null) { {{ c.min_age }}–{{ c.max_age }} yrs }
+                @else if (c.min_age != null) { {{ c.min_age }}+ yrs }
+                @else { ≤ {{ c.max_age }} yrs }
+              </span>
+            }
+            @if (c.gender_preference) {
+              <span class="cc-meta-chip">{{ 'marketplace.gender.' + c.gender_preference | translate }}</span>
+            }
+          </div>
+
+          <!-- Roles (capped at 3) -->
+          @if (c.roles.length) {
+            <div class="cc-card__roles" [attr.aria-label]="'marketplace.casting.roles' | translate">
+              @for (r of c.roles.slice(0, 3); track $index) {
+                <span>{{ r }}</span>
+              }
+              @if (c.roles.length > 3) {
+                <span>+{{ c.roles.length - 3 }}</span>
+              }
+            </div>
+          }
+
+          <!-- Deadline -->
+          <p class="cc-card__deadline">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" style="flex-shrink:0">
+              <path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zm4.24 14.24L11 13V7h1.5v5.25l4.5 2.67-1.01 1.74-.76-.42z"/>
+            </svg>
+            {{ 'marketplace.casting.deadline' | translate }}: {{ c.deadline_at | date:'mediumDate' }}
+          </p>
+
+          <!-- Action -->
+          <a [routerLink]="['/casting', c.id]"
+             class="cc-card__action"
+             [attr.aria-label]="('marketplace.casting.viewDetails' | translate) + ': ' + c.title">
+            {{ 'marketplace.casting.viewDetails' | translate }}
+          </a>
+
         </div>
       </article>
     }
   </div>
 
+  <!-- Pagination -->
   @if (totalPages() > 1) {
     <nav class="mk-pager" [attr.aria-label]="'marketplace.common.pagination' | translate">
-      <button type="button" class="mk-btn mk-btn--ghost" [disabled]="page() <= 1" (click)="changePage(page() - 1)">{{ 'marketplace.common.prev' | translate }}</button>
+      <button type="button" class="mk-btn mk-btn--ghost"
+              [disabled]="page() <= 1"
+              (click)="changePage(page() - 1)">{{ 'marketplace.common.prev' | translate }}</button>
       <span class="mk-muted">{{ page() }} / {{ totalPages() }}</span>
-      <button type="button" class="mk-btn mk-btn--ghost" [disabled]="page() >= totalPages()" (click)="changePage(page() + 1)">{{ 'marketplace.common.next' | translate }}</button>
+      <button type="button" class="mk-btn mk-btn--ghost"
+              [disabled]="page() >= totalPages()"
+              (click)="changePage(page() + 1)">{{ 'marketplace.common.next' | translate }}</button>
     </nav>
   }
 </main>

@@ -23,7 +23,7 @@ const GENDERS: readonly ActorGender[] = ['female', 'male', 'other'];
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule, RouterLink, TranslatePipe, HeaderComponent, FooterComponent, MarketplaceNavComponent],
   templateUrl: './casting-calls.component.html',
-  styleUrls: ['../../../shared/styles/marketplace-page.scss'],
+  styleUrls: ['../../../shared/styles/marketplace-page.scss', './casting-calls.component.scss'],
 })
 export class CastingCallsComponent implements OnInit {
   readonly displayStatus = castingDisplayStatus;
