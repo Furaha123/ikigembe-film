@@ -48,6 +48,17 @@
         {{ 'marketplace.casting.deadline' | translate }}: {{ c.deadline_at | date:'medium' }}
         @if (c.published_at) { · {{ 'marketplace.casting.published' | translate }}: {{ c.published_at | date:'mediumDate' }} }
       </p>
+      @if (c.shooting_location) {
+        <p class="mk-muted">📍 {{ c.shooting_location }}</p>
+      }
+      @if (c.project_start_date || c.project_end_date) {
+        <p class="mk-muted">
+          🎬
+          @if (c.project_start_date) { {{ c.project_start_date | date:'mediumDate' }} }
+          @if (c.project_start_date && c.project_end_date) { – }
+          @if (c.project_end_date) { {{ c.project_end_date | date:'mediumDate' }} }
+        </p>
+      }
       <div class="mk-chips">
         @for (r of c.roles; track $index) { <span>{{ r }}</span> }
       </div>

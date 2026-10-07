@@ -63,19 +63,32 @@
 
   <div class="mk-grid">
     @for (c of calls(); track c.id) {
-      <article class="mk-card">
-        <h2><a [routerLink]="['/casting', c.id]">{{ c.title }}</a></h2>
-        <span [class]="statusClass(displayStatus(c))">{{ 'marketplace.castingStatus.' + displayStatus(c) | translate }}</span>
-        <p class="mk-muted">{{ c.studio_name || c.producer_name }}</p>
-        @if (c.shooting_location) {
-          <p class="mk-muted">📍 {{ c.shooting_location }}</p>
+      <article class="mk-card mk-casting-card">
+        @if (c.poster_url) {
+          <img [src]="c.poster_url" [alt]="c.title" class="mk-casting-card__poster" loading="lazy" />
         }
-        <div class="mk-chips" [attr.aria-label]="'marketplace.casting.roles' | translate">
-          @for (r of c.roles; track $index) { <span>{{ r }}</span> }
+        <div class="mk-casting-card__body">
+          <h2><a [routerLink]="['/casting', c.id]">{{ c.title }}</a></h2>
+          <span [class]="statusClass(displayStatus(c))">{{ 'marketplace.castingStatus.' + displayStatus(c) | translate }}</span>
+          <p class="mk-muted">{{ c.studio_name || c.producer_name }}</p>
+          @if (c.shooting_location) {
+            <p class="mk-muted">📍 {{ c.shooting_location }}</p>
+          }
+          @if (c.min_age != null || c.max_age != null) {
+            <p class="mk-muted">
+              {{ 'marketplace.casting.ageRange' | translate }}:
+              @if (c.min_age != null && c.max_age != null) { {{ c.min_age }}–{{ c.max_age }} }
+              @else if (c.min_age != null) { {{ c.min_age }}+ }
+              @else { {{ 'marketplace.casting.upTo' | translate }} {{ c.max_age }} }
+            </p>
+          }
+          <div class="mk-chips" [attr.aria-label]="'marketplace.casting.roles' | translate">
+            @for (r of c.roles; track $index) { <span>{{ r }}</span> }
+          </div>
+          <p class="mk-muted">{{ 'marketplace.casting.deadline' | translate }}: {{ c.deadline_at | date:'medium' }}</p>
+          <a [routerLink]="['/casting', c.id]" class="mk-btn mk-btn--ghost" style="margin-top: .5rem"
+             [attr.aria-label]="('marketplace.casting.viewDetails' | translate) + ': ' + c.title">{{ 'marketplace.casting.viewDetails' | translate }}</a>
         </div>
-        <p class="mk-muted">{{ 'marketplace.casting.deadline' | translate }}: {{ c.deadline_at | date:'medium' }}</p>
-        <a [routerLink]="['/casting', c.id]" class="mk-btn mk-btn--ghost" style="margin-top: .5rem"
-           [attr.aria-label]="('marketplace.casting.viewDetails' | translate) + ': ' + c.title">{{ 'marketplace.casting.viewDetails' | translate }}</a>
       </article>
     }
   </div>
