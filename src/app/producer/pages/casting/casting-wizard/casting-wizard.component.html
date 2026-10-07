@@ -361,7 +361,9 @@
               @for (r of roles.value; track $index) { <li>{{ r }}</li> }
             </ul>
             @let req = requirements.getRawValue();
-            @if (req.min_age !== null || req.max_age !== null || req.gender_preference || req.num_actors !== null) {
+            @if (req.min_age !== null || req.max_age !== null || req.gender_preference || req.num_actors !== null ||
+                 req.height_min !== null || req.height_max !== null || req.body_type || req.complexion ||
+                 req.appearance_notes || req.required_skills || req.required_languages) {
               <dl class="mk-summary" style="margin-top: .5rem">
                 @if (req.min_age !== null || req.max_age !== null) {
                   <dt>{{ 'marketplace.postCasting.ageRange' | translate }}</dt>
@@ -378,7 +380,39 @@
                 @if (req.num_actors !== null) {
                   <dt>{{ 'marketplace.postCasting.numActors' | translate }}</dt><dd>{{ req.num_actors }}</dd>
                 }
+                @if (req.height_min !== null || req.height_max !== null) {
+                  <dt>{{ 'marketplace.postCasting.physicalReqs' | translate }}</dt>
+                  <dd>
+                    @if (req.height_min !== null) { {{ req.height_min }} }
+                    @if (req.height_min !== null && req.height_max !== null) { – }
+                    @if (req.height_max !== null) { {{ req.height_max }} }
+                    cm
+                  </dd>
+                }
+                @if (req.body_type) {
+                  <dt>{{ 'marketplace.postCasting.bodyType' | translate }}</dt><dd>{{ req.body_type }}</dd>
+                }
+                @if (req.complexion) {
+                  <dt>{{ 'marketplace.postCasting.complexion' | translate }}</dt><dd>{{ req.complexion }}</dd>
+                }
+                @if (req.appearance_notes) {
+                  <dt>{{ 'marketplace.postCasting.appearanceNotes' | translate }}</dt><dd style="white-space: pre-line">{{ req.appearance_notes }}</dd>
+                }
+                @if (req.required_skills) {
+                  <dt>{{ 'marketplace.postCasting.requiredSkills' | translate }}</dt><dd>{{ req.required_skills }}</dd>
+                }
+                @if (req.required_languages) {
+                  <dt>{{ 'marketplace.postCasting.requiredLanguages' | translate }}</dt><dd>{{ req.required_languages }}</dd>
+                }
               </dl>
+            }
+
+            @if (details.controls.availability_notes.value) {
+              <div class="mk-section-head" style="margin-top: .75rem">
+                <h3>{{ 'marketplace.postCasting.availabilityTitle' | translate }}</h3>
+                <button type="button" class="mk-btn mk-btn--ghost" (click)="editSection('roles')">{{ 'marketplace.wizard.edit' | translate }}</button>
+              </div>
+              <p style="white-space: pre-line; margin: 0">{{ details.controls.availability_notes.value }}</p>
             }
 
             <div class="mk-banner">
