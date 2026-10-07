@@ -67,8 +67,13 @@
               <input id="df-max" type="number" min="0" formControlName="max_age" />
             </div>
             <div class="mk-field">
-              <label for="df-location">{{ 'marketplace.profile.location' | translate }}</label>
-              <input id="df-location" formControlName="location" />
+              <label for="df-location">{{ 'marketplace.profile.province' | translate }}</label>
+              <select id="df-location" formControlName="location">
+                <option value="">{{ 'marketplace.directory.anyProvince' | translate }}</option>
+                @for (p of provinces; track p.name) {
+                  <option [value]="p.name">{{ p.name }}</option>
+                }
+              </select>
             </div>
             <div class="mk-field">
               <label for="df-skill">{{ 'marketplace.directory.skill' | translate }}</label>
@@ -98,7 +103,7 @@
               <p class="mk-muted">
                 @if (actor.age !== null) { {{ actor.age }} · }
                 @if (actor.gender) { {{ 'marketplace.gender.' + actor.gender | translate }} · }
-                {{ actor.location }}
+                {{ (actor.district && actor.province) ? (actor.district + ', ' + actor.province) : actor.location }}
               </p>
               <div class="mk-chips">@for (s of actor.skills; track $index) { <span>{{ s }}</span> }</div>
               <p class="mk-muted">

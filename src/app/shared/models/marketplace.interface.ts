@@ -201,6 +201,8 @@ export interface DirectoryActor {
   gender: ActorGender | '';
   age: number | null;
   location: string;
+  province?: string;
+  district?: string;
   languages: string[];
   skills: string[];
   contact_email: string;

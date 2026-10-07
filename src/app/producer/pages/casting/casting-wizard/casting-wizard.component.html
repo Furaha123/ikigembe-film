@@ -198,7 +198,53 @@
 
             <div class="mk-actions">
               <button type="button" class="mk-btn mk-btn--ghost" (click)="back()">{{ 'marketplace.wizard.back' | translate }}</button>
-              <button type="button" class="mk-btn" (click)="next()">{{ 'marketplace.postCasting.toReview' | translate }}</button>
+              <button type="button" class="mk-btn" (click)="next()" [disabled]="saving()" [attr.aria-busy]="saving()">
+                {{ (saving() ? 'marketplace.common.saving' : 'marketplace.wizard.next') | translate }}
+              </button>
+            </div>
+          </section>
+        }
+
+        @case ('poster') {
+          <section class="mk-card" aria-labelledby="cw-poster">
+            <h2 id="cw-poster" #stepHeading tabindex="-1">{{ 'marketplace.postCasting.posterTitle' | translate }}</h2>
+            <p class="mk-muted">{{ 'marketplace.postCasting.posterHint' | translate }}</p>
+
+            <div class="mk-file" style="margin: 1rem 0">
+              @if (posterPreview()) {
+                <img [src]="posterPreview()!" alt="" class="mk-casting-poster" />
+              } @else {
+                <div class="mk-poster-placeholder" aria-hidden="true"></div>
+              }
+              <div style="display: flex; flex-direction: column; gap: .6rem; justify-content: flex-end">
+                <label class="mk-btn" [class.mk-btn--ghost]="!!posterPreview()" style="cursor: pointer">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16" aria-hidden="true">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/>
+                  </svg>
+                  {{ (posterPreview() ? 'marketplace.postCasting.posterReplace' : 'marketplace.postCasting.posterUpload') | translate }}
+                  <input type="file" accept="image/jpeg,image/png,image/webp" class="sr-only" (change)="onPosterFile($event)" [disabled]="posterUploading()" />
+                </label>
+                @if (posterPreview()) {
+                  <button type="button" class="mk-btn mk-btn--danger" (click)="onRemovePoster()" [disabled]="posterUploading()">
+                    {{ 'marketplace.postCasting.posterRemove' | translate }}
+                  </button>
+                }
+                <span class="mk-hint mk-muted">{{ 'marketplace.postCasting.posterFormats' | translate }}</span>
+              </div>
+            </div>
+
+            <div aria-live="polite">
+              @if (posterUploading()) {
+                <p class="mk-muted">{{ 'marketplace.postCasting.posterUploading' | translate }}</p>
+              }
+              @if (posterError()) {
+                <p class="mk-error" role="alert">{{ posterError()! | translate }}</p>
+              }
+            </div>
+
+            <div class="mk-actions">
+              <button type="button" class="mk-btn mk-btn--ghost" (click)="back()">{{ 'marketplace.wizard.back' | translate }}</button>
+              <button type="button" class="mk-btn" (click)="next()" [disabled]="posterUploading()">{{ 'marketplace.wizard.next' | translate }}</button>
             </div>
           </section>
         }
@@ -206,6 +252,14 @@
         @case ('review') {
           <section class="mk-card" aria-labelledby="cw-review">
             <h2 id="cw-review" #stepHeading tabindex="-1">{{ 'marketplace.postCasting.reviewTitle' | translate }}</h2>
+
+            @if (posterPreview()) {
+              <div class="mk-section-head">
+                <h3>{{ 'marketplace.postCasting.posterTitle' | translate }}</h3>
+                <button type="button" class="mk-btn mk-btn--ghost" (click)="editSection('poster')">{{ 'marketplace.wizard.edit' | translate }}</button>
+              </div>
+              <img [src]="posterPreview()!" alt="" class="mk-casting-poster" style="margin-bottom: .75rem" />
+            }
 
             <div class="mk-section-head">
               <h3>{{ 'marketplace.postCasting.postedAs' | translate }}</h3>

@@ -44,6 +44,18 @@ export class CastingService {
     return this.access.request('my-casting-calls', () => this.http.patch<CastingCall>(`${BASE}/casting-calls/${id}/`, payload));
   }
 
+  /** Upload or replace the poster for a draft call (JPEG/PNG/WebP, ≤ 5 MB). */
+  uploadPoster(id: number, file: File): Observable<CastingCall> {
+    const fd = new FormData();
+    fd.append('poster', file);
+    return this.access.request('my-casting-calls', () => this.http.post<CastingCall>(`${BASE}/casting-calls/${id}/poster/`, fd));
+  }
+
+  /** Remove the poster from a draft call. */
+  removePoster(id: number): Observable<CastingCall> {
+    return this.access.request('my-casting-calls', () => this.http.delete<CastingCall>(`${BASE}/casting-calls/${id}/poster/`));
+  }
+
   /** Publishes automatically once the fee payment completes. 400/409/503 as documented. */
   purchaseCall(id: number, phoneNumber: string | null): Observable<ServicePurchaseAccepted> {
     return this.access.request('my-casting-calls', () => this.http.post<ServicePurchaseAccepted>(`${BASE}/casting-calls/${id}/purchase/`, phoneNumber ? { phone_number: phoneNumber } : {}));

@@ -1,5 +1,6 @@
 import {
-  Component, ElementRef, HostListener, OnInit, PLATFORM_ID, computed, inject, signal, viewChild,
+  Component, ElementRef, HostListener, OnDestroy, OnInit, PLATFORM_ID,
+  computed, inject, signal, viewChild,
 } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { HttpErrorResponse } from '@angular/common/http';
@@ -21,10 +22,13 @@ import { firstFieldError } from '../../../../shared/utils/api-error';
 import { castingPublicationClass, castingPublicationState } from '../../../../shared/utils/marketplace-status';
 
 export type CastingType = 'specific' | 'various';
-export type CastingWizardStep = 'type' | 'details' | 'roles' | 'review' | 'result';
-const STEPS: readonly CastingWizardStep[] = ['type', 'details', 'roles', 'review', 'result'];
+export type CastingWizardStep = 'type' | 'details' | 'roles' | 'poster' | 'review' | 'result';
+const STEPS: readonly CastingWizardStep[] = ['type', 'details', 'roles', 'poster', 'review', 'result'];
 
 export const PROJECT_TYPES = ['Film', 'Short Film', 'TV Series', 'Commercial', 'Music Video', 'Documentary', 'Web Series', 'Other'] as const;
+
+const POSTER_ALLOWED_TYPES = new Set(['image/jpeg', 'image/png', 'image/webp']);
+const POSTER_MAX_BYTES = 5 * 1024 * 1024;
 
 export interface CastingWizardDraft {
   step: CastingWizardStep;
@@ -33,7 +37,6 @@ export interface CastingWizardDraft {
   description: string;
   deadline_at: string;
   roles: string[];
-  // Extended fields (persisted to sessionStorage text-only)
   project_type: string;
   genre: string;
   shooting_location: string;
@@ -59,16 +62,6 @@ export function futureDate(control: AbstractControl<string>): ValidationErrors |
   return Number.isFinite(t) && t > Date.now() ? null : { past: true };
 }
 
-/**
- * Post a casting: type → project details + requirements → roles → review →
- * payment → the server's publication state. Saving creates or updates a draft;
- * paying the announcement fee lets the server publish it. "Published" is shown
- * only when the server reports it.
- *
- * Extended project fields (type, genre, location, dates, age/gender requirements)
- * are included in the payload; the backend stores them when it supports these
- * fields. Older backends that don't recognise them will simply ignore them.
- */
 @Component({
   selector: 'app-casting-wizard',
   standalone: true,
@@ -76,7 +69,7 @@ export function futureDate(control: AbstractControl<string>): ValidationErrors |
   templateUrl: './casting-wizard.component.html',
   styleUrls: ['../../../../shared/styles/marketplace-page.scss'],
 })
-export class CastingWizardComponent implements OnInit, HasUnsavedChanges {
+export class CastingWizardComponent implements OnInit, OnDestroy, HasUnsavedChanges {
   private readonly fb = inject(FormBuilder);
   private readonly casting = inject(CastingService);
   private readonly auth = inject(AuthService);
@@ -87,8 +80,12 @@ export class CastingWizardComponent implements OnInit, HasUnsavedChanges {
   private readonly stepHeading = viewChild<ElementRef<HTMLElement>>('stepHeading');
 
   readonly stepLabels = [
-    'marketplace.postCasting.stepType', 'marketplace.postCasting.stepDetails', 'marketplace.postCasting.stepRoles',
-    'marketplace.postCasting.stepReview', 'marketplace.postCasting.stepResult',
+    'marketplace.postCasting.stepType',
+    'marketplace.postCasting.stepDetails',
+    'marketplace.postCasting.stepRoles',
+    'marketplace.postCasting.stepPoster',
+    'marketplace.postCasting.stepReview',
+    'marketplace.postCasting.stepResult',
   ];
   readonly publicationClass = castingPublicationClass;
   readonly projectTypes = PROJECT_TYPES;
@@ -96,7 +93,6 @@ export class CastingWizardComponent implements OnInit, HasUnsavedChanges {
 
   step = signal<CastingWizardStep>('type');
   type = signal<CastingType>('specific');
-  /** The saved draft (null until first saved). */
   callId = signal<number | null>(null);
   call = signal<CastingCall | null>(null);
   loading = signal(false);
@@ -112,11 +108,18 @@ export class CastingWizardComponent implements OnInit, HasUnsavedChanges {
   readonly minDeadline = toLocalInput(new Date().toISOString());
   readonly today = new Date().toISOString().substring(0, 10);
 
+  // ── Poster state ────────────────────────────────────────────────────────
+  /** URL shown in the preview img — either a server URL or a local object URL. */
+  posterPreview = signal<string | null>(null);
+  posterUploading = signal(false);
+  posterError = signal<string | null>(null);
+  /** Object URL created for local preview; must be revoked when done. */
+  private posterObjectUrl: string | null = null;
+
   details = this.fb.nonNullable.group({
     title:              ['', [Validators.required, Validators.maxLength(255)]],
     description:        ['', [Validators.required, Validators.maxLength(5000)]],
     deadline_at:        ['', [Validators.required, futureDate]],
-    // Extended project fields — all optional
     project_type:       ['', Validators.maxLength(100)],
     genre:              ['', Validators.maxLength(100)],
     shooting_location:  ['', Validators.maxLength(200)],
@@ -125,10 +128,10 @@ export class CastingWizardComponent implements OnInit, HasUnsavedChanges {
   });
 
   requirements = this.fb.nonNullable.group({
-    min_age:          [null as number | null, [Validators.min(0), Validators.max(100)]],
-    max_age:          [null as number | null, [Validators.min(0), Validators.max(100)]],
+    min_age:           [null as number | null, [Validators.min(0), Validators.max(100)]],
+    max_age:           [null as number | null, [Validators.min(0), Validators.max(100)]],
     gender_preference: ['' as ActorGender | ''],
-    num_actors:       [null as number | null, [Validators.min(1), Validators.max(999)]],
+    num_actors:        [null as number | null, [Validators.min(1), Validators.max(999)]],
   });
 
   roles = new FormArray<FormControl<string>>([this.roleControl()]);
@@ -151,10 +154,13 @@ export class CastingWizardComponent implements OnInit, HasUnsavedChanges {
     } else {
       this.restoreDraft();
     }
-    this.auth.getMe().subscribe({ next: me => this.me.set(me), error: () => { /* shown as unknown */ } });
+    this.auth.getMe().subscribe({ next: me => this.me.set(me), error: () => { } });
   }
 
-  /** Edit an existing draft: only drafts can be changed (the API answers 409 otherwise). */
+  ngOnDestroy(): void {
+    this.revokePosterObjectUrl();
+  }
+
   private loadCall(id: number): void {
     this.loading.set(true);
     this.casting.getCall(id).subscribe({
@@ -183,7 +189,8 @@ export class CastingWizardComponent implements OnInit, HasUnsavedChanges {
         });
         this.setRoles(c.roles);
         this.type.set(c.roles.length > 1 ? 'various' : 'specific');
-        this.restoreDraft(); // unsaved local edits win over the server copy
+        if (c.poster_url) this.posterPreview.set(c.poster_url);
+        this.restoreDraft();
       },
       error: (err: HttpErrorResponse) => {
         this.loading.set(false);
@@ -204,7 +211,9 @@ export class CastingWizardComponent implements OnInit, HasUnsavedChanges {
 
   next(): void {
     switch (this.step()) {
-      case 'type': this.goTo('details'); break;
+      case 'type':
+        this.goTo('details');
+        break;
       case 'details':
         this.details.markAllAsTouched();
         if (this.details.invalid) { this.focusFirstInvalid(); return; }
@@ -214,6 +223,14 @@ export class CastingWizardComponent implements OnInit, HasUnsavedChanges {
         this.roles.markAllAsTouched();
         this.requirements.markAllAsTouched();
         if (this.roles.invalid || this.requirements.invalid) { this.focusFirstInvalid(); return; }
+        // Auto-save draft to get an ID before the poster step.
+        if (this.callId()) {
+          this.goTo('poster');
+        } else {
+          this.saveDraft(() => this.goTo('poster'));
+        }
+        break;
+      case 'poster':
         this.goTo('review');
         this.loadQuote();
         break;
@@ -225,7 +242,6 @@ export class CastingWizardComponent implements OnInit, HasUnsavedChanges {
     if (i > 0 && this.step() !== 'result') this.goTo(STEPS[i - 1]);
   }
 
-  /** From the review: jump to one section; everything else is kept. */
   editSection(step: CastingWizardStep): void {
     this.goTo(step);
   }
@@ -244,9 +260,75 @@ export class CastingWizardComponent implements OnInit, HasUnsavedChanges {
     this.persist();
   }
 
+  // ── Poster ─────────────────────────────────────────────────────────────
+
+  onPosterFile(event: Event): void {
+    const file = (event.target as HTMLInputElement).files?.[0];
+    if (!file) return;
+    (event.target as HTMLInputElement).value = '';
+
+    if (!POSTER_ALLOWED_TYPES.has(file.type)) {
+      this.posterError.set('marketplace.postCasting.posterBadType');
+      return;
+    }
+    if (file.size > POSTER_MAX_BYTES) {
+      this.posterError.set('marketplace.postCasting.posterTooLarge');
+      return;
+    }
+    this.posterError.set(null);
+
+    // Show local preview immediately.
+    if (isPlatformBrowser(this.platformId)) {
+      this.revokePosterObjectUrl();
+      this.posterObjectUrl = URL.createObjectURL(file);
+      this.posterPreview.set(this.posterObjectUrl);
+    }
+
+    const id = this.callId()!;
+    this.posterUploading.set(true);
+    this.casting.uploadPoster(id, file).subscribe({
+      next: (c) => {
+        this.posterUploading.set(false);
+        this.call.set(c);
+        this.revokePosterObjectUrl();
+        this.posterPreview.set(c.poster_url ?? null);
+      },
+      error: (err: HttpErrorResponse) => {
+        this.posterUploading.set(false);
+        this.posterPreview.set(this.call()?.poster_url ?? null);
+        this.posterError.set(marketplaceErrorMessage(err) ?? 'marketplace.postCasting.posterUploadFailed');
+      },
+    });
+  }
+
+  onRemovePoster(): void {
+    const id = this.callId();
+    if (!id || this.posterUploading()) return;
+    this.posterUploading.set(true);
+    this.posterError.set(null);
+    this.casting.removePoster(id).subscribe({
+      next: (c) => {
+        this.posterUploading.set(false);
+        this.call.set(c);
+        this.revokePosterObjectUrl();
+        this.posterPreview.set(null);
+      },
+      error: (err: HttpErrorResponse) => {
+        this.posterUploading.set(false);
+        this.posterError.set(marketplaceErrorMessage(err) ?? 'marketplace.errors.saveFailed');
+      },
+    });
+  }
+
+  private revokePosterObjectUrl(): void {
+    if (this.posterObjectUrl && isPlatformBrowser(this.platformId)) {
+      URL.revokeObjectURL(this.posterObjectUrl);
+      this.posterObjectUrl = null;
+    }
+  }
+
   // ── Save / pay ─────────────────────────────────────────────────────────
 
-  /** Save as a draft on the server (create, or update the existing draft). */
   saveDraft(onSaved?: (call: CastingCall) => void): void {
     if (this.saving()) return;
     if (this.details.invalid || this.roles.invalid || this.requirements.invalid) {
@@ -286,7 +368,6 @@ export class CastingWizardComponent implements OnInit, HasUnsavedChanges {
     });
   }
 
-  /** Save, then pay the announcement fee; the server publishes once the payment is confirmed. */
   payAndPublish(): void {
     if (this.purchase() || this.saving()) return;
     const deadline = this.details.controls.deadline_at;
@@ -313,7 +394,6 @@ export class CastingWizardComponent implements OnInit, HasUnsavedChanges {
     this.refreshState();
   }
 
-  /** Closed without a confirmed payment: the draft stays a draft. */
   closePurchase(): void {
     this.purchase.set(null);
     this.refreshState();
@@ -342,7 +422,6 @@ export class CastingWizardComponent implements OnInit, HasUnsavedChanges {
 
   // ── Draft & leaving ────────────────────────────────────────────────────
 
-  /** Keep the text in the session draft on every change. */
   persist(): void {
     if (this.step() === 'result') return;
     const v = this.details.getRawValue();
@@ -411,7 +490,6 @@ export class CastingWizardComponent implements OnInit, HasUnsavedChanges {
       roles: this.roles.getRawValue().map(role => role.trim()).filter(Boolean),
       deadline_at: new Date(v.deadline_at).toISOString(),
     };
-    // Extended optional fields — omit empty/null values.
     if (v.project_type.trim())       base.project_type = v.project_type.trim();
     if (v.genre.trim())              base.genre = v.genre.trim();
     if (v.shooting_location.trim())  base.shooting_location = v.shooting_location.trim();
@@ -438,7 +516,6 @@ export class CastingWizardComponent implements OnInit, HasUnsavedChanges {
     setTimeout(() => document.querySelector<HTMLElement>('app-casting-wizard .ng-invalid.ng-touched:not(form):not([formArrayName]):not([formGroupName])')?.focus());
   }
 
-  /** Leave for My Castings after a result. */
   toMyCastings(): void {
     void this.router.navigate(['/producer/casting']);
   }

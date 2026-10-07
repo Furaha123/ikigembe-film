@@ -423,6 +423,36 @@ app-header ~ .mk-page { padding-top: calc(68px + 1.5rem); }
   min-width: 240px;
 }
 
+// ── Producer casting card with optional poster thumbnail ────────────────
+.mk-casting-card {
+  display: flex;
+  gap: 1rem;
+  align-items: flex-start;
+}
+
+.mk-casting-card__poster {
+  width: 72px;
+  height: 108px;
+  object-fit: cover;
+  border-radius: 6px;
+  background: #2a2a2a;
+  flex-shrink: 0;
+}
+
+.mk-casting-card__body {
+  flex: 1;
+  min-width: 0;
+}
+
+.mk-poster-placeholder {
+  width: min(220px, 100%);
+  aspect-ratio: 2 / 3;
+  background: #2a2a2a;
+  border-radius: 8px;
+  border: 2px dashed #4a4a4a;
+  flex-shrink: 0;
+}
+
 @media (max-width: 600px) {
   .mk-casting-poster { width: 100%; max-height: 280px; aspect-ratio: unset; }
 }

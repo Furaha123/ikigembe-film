@@ -35,7 +35,11 @@
 
   @for (c of visible(); track c.id) {
     @let state = publicationState(c);
-    <article class="mk-card">
+    <article class="mk-card mk-casting-card">
+      @if (c.poster_url) {
+        <img [src]="c.poster_url" alt="" class="mk-casting-card__poster" loading="lazy" />
+      }
+      <div class="mk-casting-card__body">
       <div class="mk-row" style="justify-content: space-between">
         <h2>{{ c.title }}</h2>
         <span [class]="publicationClass(state)">{{ 'marketplace.publication.' + state | translate }}</span>
@@ -71,6 +75,7 @@
             <button type="button" class="mk-btn mk-btn--danger" (click)="confirmCloseId.set(c.id)">{{ 'marketplace.producerCasting.close' | translate }}</button>
           }
         }
+      </div>
       </div>
     </article>
   }

@@ -704,8 +704,8 @@
       "search": "Search casting calls",
       "searchPlaceholder": "Title, role, or location…",
       "clearSearch": "Clear search",
-      "noResults": "No casting calls found for "{{q}}".",
-      "searchCount": "{{n}} casting calls matching "{{q}}"",
+      "noResults": "No casting calls found for \"{{q}}\".",
+      "searchCount": "{{n}} casting calls matching \"{{q}}\"",
       "shootingDates": "Shooting dates",
       "ageRange": "Age range",
       "from": "From",
@@ -787,7 +787,8 @@
       "noVideos": "No approved videos yet.",
       "actorNotFound": "This actor is no longer in the directory.",
       "range": "{{from}}–{{to}} of {{total}} actors",
-      "noResults": "No actors match these filters."
+      "noResults": "No actors match these filters.",
+      "anyProvince": "Any province"
     },
     "access": {
       "suspended": "Your account is suspended, so marketplace features are unavailable. You can still browse published casting calls. Contact support if you think this is a mistake.",
@@ -995,7 +996,18 @@
       "numActors": "Number of actors needed",
       "numActorsHint": "Leave blank if not fixed.",
       "numActorsError": "Enter a number between 1 and 999.",
-      "ageRange": "Age {{min}}–{{max}}"
+      "ageRange": "Age {{min}}–{{max}}",
+      "stepPoster": "Poster",
+      "posterTitle": "Project poster",
+      "posterHint": "Upload a poster or key image for your casting. Optional — you can skip this step.",
+      "posterUpload": "Upload image",
+      "posterReplace": "Replace",
+      "posterRemove": "Remove poster",
+      "posterFormats": "JPG, PNG or WebP · max 5 MB",
+      "posterUploading": "Uploading…",
+      "posterBadType": "Only JPEG, PNG, or WebP images are accepted.",
+      "posterTooLarge": "Image must be 5 MB or smaller.",
+      "posterUploadFailed": "Could not upload the poster. Please try again."
     },
     "publication": {
       "draft": "Draft",
