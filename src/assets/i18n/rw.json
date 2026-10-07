@@ -784,6 +784,7 @@
       "unshortlist": "Remove from shortlist",
       "shortlistEmpty": "Your shortlist is empty.",
       "contact": "Contact",
+      "noContact": "No contact details available.",
       "noVideos": "No approved videos yet.",
       "actorNotFound": "This actor is no longer in the directory.",
       "range": "{{from}}–{{to}} of {{total}} actors",

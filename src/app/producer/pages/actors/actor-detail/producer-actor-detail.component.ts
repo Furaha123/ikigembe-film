@@ -14,7 +14,7 @@ import { marketplaceErrorMessage } from '../../../../shared/utils/marketplace-er
   standalone: true,
   imports: [CommonModule, RouterLink, TranslatePipe, VideoPlayerComponent],
   templateUrl: './producer-actor-detail.component.html',
-  styleUrls: ['../../../../shared/styles/marketplace-page.scss'],
+  styleUrls: ['../../../../shared/styles/marketplace-page.scss', './producer-actor-detail.component.scss'],
 })
 export class ProducerActorDetailComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);

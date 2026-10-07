@@ -1,0 +1,355 @@
+$gold:    #c5a253;
+$border:  #2e2e2e;
+$muted:   #9a9a9a;
+$surface: #181818;
+$surface2: #1f1f1f;
+
+// ── Hero ─────────────────────────────────────────────────────────────────
+.ad-hero {
+  display: flex;
+  align-items: flex-start;
+  gap: 1.5rem;
+  padding: 1.5rem;
+  background: $surface2;
+  border: 1px solid $border;
+  border-radius: 14px;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.ad-avatar {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #2a2a2a, #333);
+  border: 2px solid $border;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: $gold;
+  flex-shrink: 0;
+  user-select: none;
+}
+
+.ad-hero__info {
+  flex: 1;
+  min-width: 180px;
+}
+
+.ad-hero__name {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin: 0 0 0.4rem;
+  color: #fff;
+  line-height: 1.2;
+}
+
+.ad-hero__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  margin-bottom: 0.75rem;
+}
+
+.ad-meta-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.2rem 0.6rem;
+  border-radius: 999px;
+  border: 1px solid $border;
+  font-size: 0.75rem;
+  color: #ccc;
+  background: rgba(255,255,255,0.04);
+  white-space: nowrap;
+}
+
+.ad-hero__actions {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  margin-top: auto;
+}
+
+// Shortlist button states
+.ad-btn-shortlist {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  font: inherit;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  border: 1px solid rgba($gold, 0.5);
+  background: rgba($gold, 0.12);
+  color: $gold;
+  transition: background 0.15s, border-color 0.15s;
+
+  &:hover:not(:disabled) {
+    background: rgba($gold, 0.2);
+    border-color: $gold;
+  }
+
+  &.is-shortlisted {
+    background: transparent;
+    border-color: $border;
+    color: $muted;
+
+    &:hover:not(:disabled) {
+      border-color: #f2706b;
+      color: #f2706b;
+      background: rgba(#f2706b, 0.08);
+    }
+  }
+
+  &:disabled { opacity: 0.5; cursor: not-allowed; }
+  &:focus-visible { outline: 2px solid $gold; outline-offset: 2px; }
+}
+
+// ── Body grid ─────────────────────────────────────────────────────────────
+.ad-body {
+  display: grid;
+  grid-template-columns: 1fr 280px;
+  gap: 1.25rem;
+  align-items: start;
+  margin-bottom: 2rem;
+}
+
+@media (max-width: 768px) {
+  .ad-body { grid-template-columns: 1fr; }
+}
+
+// ── Info card ─────────────────────────────────────────────────────────────
+.ad-card {
+  background: $surface2;
+  border: 1px solid $border;
+  border-radius: 12px;
+  padding: 1.1rem 1.25rem;
+}
+
+.ad-card__title {
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: $muted;
+  margin: 0 0 0.75rem;
+}
+
+.ad-bio {
+  color: #d0d0d0;
+  font-size: 0.9rem;
+  line-height: 1.65;
+  white-space: pre-line;
+  margin: 0;
+}
+
+.ad-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+
+  span {
+    padding: 0.2rem 0.6rem;
+    border-radius: 999px;
+    border: 1px solid $border;
+    font-size: 0.75rem;
+    color: #ccc;
+    background: rgba(255,255,255,0.04);
+  }
+}
+
+.ad-empty-chips {
+  font-size: 0.85rem;
+  color: $muted;
+}
+
+// ── Contact card ─────────────────────────────────────────────────────────
+.ad-contact-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.ad-contact-link {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.6rem 0.75rem;
+  border-radius: 8px;
+  border: 1px solid $border;
+  background: rgba(255,255,255,0.03);
+  color: #e0e0e0;
+  text-decoration: none;
+  font-size: 0.85rem;
+  transition: background 0.15s, border-color 0.15s;
+  overflow: hidden;
+
+  span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+  svg { flex-shrink: 0; color: $muted; }
+
+  &:hover {
+    background: rgba($gold, 0.08);
+    border-color: rgba($gold, 0.35);
+    color: #fff;
+    svg { color: $gold; }
+  }
+
+  &:focus-visible { outline: 2px solid $gold; outline-offset: 2px; }
+}
+
+.ad-no-contact {
+  font-size: 0.85rem;
+  color: $muted;
+}
+
+// ── Videos section ────────────────────────────────────────────────────────
+.ad-section-title {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #e5e5e5;
+  margin: 0 0 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+
+  &::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: $border;
+  }
+}
+
+.ad-video-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(260px, 100%), 1fr));
+  gap: 1rem;
+}
+
+.ad-video-card {
+  background: $surface2;
+  border: 1px solid $border;
+  border-radius: 12px;
+  overflow: hidden;
+  transition: border-color 0.15s, box-shadow 0.15s;
+
+  &:hover { border-color: rgba($gold, 0.4); box-shadow: 0 4px 16px rgba(0,0,0,0.3); }
+}
+
+.ad-video-thumb {
+  position: relative;
+  background: #111;
+  aspect-ratio: 16 / 9;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+
+  &:focus-visible { outline: 2px solid $gold; }
+}
+
+.ad-play-btn {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: rgba($gold, 0.9);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  cursor: pointer;
+  transition: transform 0.15s, background 0.15s;
+  color: #111;
+
+  &:hover { transform: scale(1.1); background: $gold; }
+  &:disabled {
+    background: rgba(255,255,255,0.1);
+    color: $muted;
+    cursor: not-allowed;
+  }
+  &:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
+}
+
+.ad-video-body {
+  padding: 0.75rem 1rem;
+
+  h3 {
+    margin: 0 0 0.25rem;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #e0e0e0;
+  }
+
+  p {
+    margin: 0;
+    font-size: 0.8rem;
+    color: $muted;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+}
+
+// ── Modal ─────────────────────────────────────────────────────────────────
+.ad-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  background: rgba(0, 0, 0, 0.88);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  backdrop-filter: blur(4px);
+}
+
+.ad-dialog {
+  width: min(900px, 100%);
+  background: #111;
+  border: 1px solid $border;
+  border-radius: 14px;
+  overflow: hidden;
+  box-shadow: 0 24px 60px rgba(0,0,0,0.6);
+
+  header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.9rem 1.1rem;
+    border-bottom: 1px solid $border;
+
+    span {
+      font-weight: 600;
+      font-size: 0.95rem;
+      color: #e5e5e5;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+  }
+}
+
+.ad-dialog-close {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  border: 1px solid $border;
+  background: transparent;
+  color: $muted;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+
+  &:hover { background: rgba(255,255,255,0.07); color: #fff; }
+  &:focus-visible { outline: 2px solid $gold; outline-offset: 2px; }
+}
