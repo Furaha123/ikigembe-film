@@ -1,4 +1,8 @@
 <div class="admin-page">
+  <app-admin-section-tabs [tabs]="[
+    { labelKey: 'admin.nav.users', path: '/admin/users', exact: true },
+    { labelKey: 'admin.nav.producers', path: '/admin/producers', exact: true }
+  ]" ariaLabel="'admin.nav.userMgmt'" />
   <div class="page-header">
     <div>
       <h1>{{ 'admin.users.title' | translate }}</h1>

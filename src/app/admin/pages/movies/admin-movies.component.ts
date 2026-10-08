@@ -9,12 +9,13 @@ import { AdminService } from '../../services/admin.service';
 import { AdminMovie, FilmSubmissionItem } from '../../models/admin.interface';
 import { VideoPlayerComponent } from '../../../shared/components/video-player/video-player.component';
 import { RevenueSharesDialogComponent } from '../../shared/components/revenue-shares/revenue-shares-dialog.component';
+import { AdminSectionTabsComponent } from '../../shared/components/admin-section-tabs.component';
 
 type ActiveTab = 'submissions' | 'catalog';
 
 @Component({
   selector: 'app-admin-movies',
-  imports: [CommonModule, ReactiveFormsModule, TranslatePipe, VideoPlayerComponent, RevenueSharesDialogComponent],
+  imports: [CommonModule, ReactiveFormsModule, TranslatePipe, VideoPlayerComponent, RevenueSharesDialogComponent, AdminSectionTabsComponent],
   templateUrl: './admin-movies.component.html',
   styleUrl: './admin-movies.component.scss'
 })

@@ -2,6 +2,7 @@ import { Component, inject, OnInit, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { TranslatePipe } from '@ngx-translate/core';
 import { AdminService } from '../../services/admin.service';
+import { AdminSectionTabsComponent } from '../../shared/components/admin-section-tabs.component';
 import { WithdrawalItem } from '../../models/admin.interface';
 import { apiErrorMessage } from '../../../shared/utils/api-error';
 
@@ -10,7 +11,7 @@ type StatusFilter = 'all' | 'Pending' | 'Approved' | 'Processing' | 'Completed' 
 
 @Component({
   selector: 'app-admin-withdrawals',
-  imports: [CommonModule, TranslatePipe],
+  imports: [CommonModule, TranslatePipe, AdminSectionTabsComponent],
   templateUrl: './admin-withdrawals.component.html',
   styleUrl: './admin-withdrawals.component.scss'
 })

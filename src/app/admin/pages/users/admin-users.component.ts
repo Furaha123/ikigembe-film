@@ -5,10 +5,11 @@ import { AdminService, ViewerPaymentItem } from '../../services/admin.service';
 import { ViewerItem, ViewerDetail } from '../../models/admin.interface';
 import { AdminTableComponent } from '../../shared/components/admin-table/admin-table.component';
 import { TableColumn } from '../../shared/components/admin-table/table-column.interface';
+import { AdminSectionTabsComponent } from '../../shared/components/admin-section-tabs.component';
 
 @Component({
   selector: 'app-admin-users',
-  imports: [CommonModule, AdminTableComponent, TranslatePipe],
+  imports: [CommonModule, AdminTableComponent, TranslatePipe, AdminSectionTabsComponent],
   templateUrl: './admin-users.component.html',
   styleUrl: './admin-users.component.scss'
 })

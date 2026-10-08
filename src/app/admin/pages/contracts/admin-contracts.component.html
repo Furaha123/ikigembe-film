@@ -1,4 +1,10 @@
 <div class="admin-page">
+
+  <app-admin-section-tabs [tabs]="[
+    { labelKey: 'admin.nav.withdrawals', path: '/admin/withdrawals', exact: true },
+    { labelKey: 'admin.nav.contracts',   path: '/admin/contracts',   exact: true }
+  ]" ariaLabel="admin.nav.financials" />
+
   <div class="page-header">
     <div>
       <h1>{{ 'admin.contractsPage.title' | translate }}</h1>

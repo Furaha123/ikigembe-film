@@ -1,4 +1,8 @@
 <div class="admin-page">
+  <app-admin-section-tabs [tabs]="[
+    { labelKey: 'admin.nav.movies', path: '/admin/movies', exact: true },
+    { labelKey: 'admin.nav.cms', path: '/admin/cms/pages' }
+  ]" ariaLabel="'admin.nav.content'" />
   <div class="page-header">
     <div>
       <h1>{{ 'admin.movies.title' | translate }}</h1>

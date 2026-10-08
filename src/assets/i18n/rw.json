@@ -1231,14 +1231,17 @@
     },
     "nav": {
       "dashboard": "Dashboard",
+      "userMgmt": "User Management",
       "users": "Users",
       "producers": "Producers",
+      "content": "Content",
       "movies": "Movies",
+      "financials": "Financials",
       "withdrawals": "Withdrawals",
       "contracts": "Contracts",
-      "marketplace": "Marketplace",
+      "marketplace": "Marketplace & Talent",
       "cms": "Pages & Ads",
-      "reports": "Reports",
+      "reports": "Analytics & Reports",
       "settings": "Settings"
     },
     "layout": {
@@ -1246,6 +1249,8 @@
       "signingOut": "Signing out...",
       "signOut": "Sign Out",
       "toggleSidebar": "Toggle sidebar",
+      "sidebarNav": "Admin navigation",
+      "sectionTabs": "Section tabs",
       "adminFallback": "Admin",
       "roleFallback": "Administrator"
     },

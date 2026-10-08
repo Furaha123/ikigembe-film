@@ -8,6 +8,7 @@ import { CmsPageBodyComponent } from '../../../shared/components/cms-page-body/c
 import { AdminCmsPage, AdminCmsPagePayload } from '../../../shared/models/cms.interface';
 import { apiErrorMessage } from '../../../shared/utils/api-error';
 import { CmsTabsComponent } from './cms-tabs.component';
+import { AdminSectionTabsComponent } from '../../shared/components/admin-section-tabs.component';
 
 /** Lowercase letters, numbers and single hyphens (e.g. `terms`, `privacy-rw`). */
 export const SLUG_PATTERN = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
@@ -27,7 +28,7 @@ export function fieldErrors(err: HttpErrorResponse): Record<string, string> {
 @Component({
   selector: 'app-admin-cms-pages',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, TranslatePipe, CmsPageBodyComponent, CmsTabsComponent],
+  imports: [CommonModule, ReactiveFormsModule, TranslatePipe, CmsPageBodyComponent, CmsTabsComponent, AdminSectionTabsComponent],
   templateUrl: './admin-cms-pages.component.html',
   styleUrls: ['../movies/admin-movies.component.scss', './admin-cms.scss'],
 })

@@ -11,9 +11,11 @@ import {
   ProducerDocuments,
 } from '../../models/admin.interface';
 
+import { AdminSectionTabsComponent } from '../../shared/components/admin-section-tabs.component';
+
 @Component({
   selector: 'app-admin-producers',
-  imports: [CommonModule, TranslatePipe],
+  imports: [CommonModule, TranslatePipe, AdminSectionTabsComponent],
   templateUrl: './admin-producers.component.html',
   styleUrl: './admin-producers.component.scss'
 })
