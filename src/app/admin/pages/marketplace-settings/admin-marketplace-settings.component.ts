@@ -67,6 +67,7 @@ export class AdminMarketplaceSettingsComponent implements OnInit, OnDestroy {
       next: (s: MarketplaceSettings) => {
         this.updatedAt = s.updated_at;
         this.saving.set(false);
+        this.form.markAsPristine();
         this.showToast('success', 'admin.marketplaceSettings.saved');
       },
       error: () => {

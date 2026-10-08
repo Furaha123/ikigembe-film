@@ -160,7 +160,7 @@
 
       <!-- Actions -->
       <div class="ms-actions">
-        <button type="submit" class="ms-btn ms-btn--primary" [disabled]="saving() || form.invalid">
+        <button type="submit" class="ms-btn ms-btn--primary" [disabled]="saving() || form.invalid || form.pristine">
           @if (saving()) {
             <span class="ms-spinner ms-spinner--sm" aria-hidden="true"></span>
           }
