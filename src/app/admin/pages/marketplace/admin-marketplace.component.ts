@@ -1,6 +1,7 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { HttpErrorResponse } from '@angular/common/http';
+import { RouterLink } from '@angular/router';
 import { TranslatePipe } from '@ngx-translate/core';
 import { AdminMarketplaceService } from '../../services/admin-marketplace.service';
 import { VideoPlayerComponent } from '../../../shared/components/video-player/video-player.component';
@@ -22,7 +23,7 @@ interface ReasonDialog {
 @Component({
   selector: 'app-admin-marketplace',
   standalone: true,
-  imports: [CommonModule, TranslatePipe, VideoPlayerComponent],
+  imports: [CommonModule, RouterLink, TranslatePipe, VideoPlayerComponent],
   templateUrl: './admin-marketplace.component.html',
   // Same look as the Films moderation screen (tabs, table, dialogs, action buttons).
   styleUrls: ['../movies/admin-movies.component.scss'],

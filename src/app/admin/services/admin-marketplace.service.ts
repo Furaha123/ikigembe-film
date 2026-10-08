@@ -9,6 +9,18 @@ import { MarketplaceAccessService } from '../../core/access/marketplace-access.s
 
 const BASE = `${environment.apiUrl}/marketplace/admin`;
 
+export interface MarketplaceSettings {
+  actor_video_fee_under_30: number;
+  actor_video_fee_30_plus:  number;
+  casting_announcement_fee: number;
+  actor_search_fee:         number;
+  actor_search_access_days: number;
+  updated_at:   string | null;
+  updated_by:   number | null;
+}
+
+export type MarketplaceSettingsPayload = Omit<MarketplaceSettings, 'updated_at' | 'updated_by'>;
+
 /** Admin moderation of actor talent videos and casting calls (gated by the access map like the rest of the marketplace). */
 @Injectable({ providedIn: 'root' })
 export class AdminMarketplaceService {
@@ -43,5 +55,15 @@ export class AdminMarketplaceService {
   /** Reason required. */
   removeCastingCall(id: number, reason: string): Observable<AdminActionResponse> {
     return this.access.request('moderation', () => this.http.post<AdminActionResponse>(`${BASE}/casting-calls/${id}/remove/`, { reason }));
+  }
+
+  // ── Marketplace fee / access settings (admin-only, no marketplace guard) ──
+
+  getSettings(): Observable<MarketplaceSettings> {
+    return this.http.get<MarketplaceSettings>(`${BASE}/settings/`);
+  }
+
+  updateSettings(data: MarketplaceSettingsPayload): Observable<MarketplaceSettings> {
+    return this.http.put<MarketplaceSettings>(`${BASE}/settings/`, data);
   }
 }

@@ -80,7 +80,7 @@ export class AdminLayoutComponent implements OnInit, OnDestroy {
       labelKey: 'admin.nav.marketplace',
       path: '/admin/marketplace',
       icon: 'marketplace',
-      activePaths: ['/admin/marketplace'],
+      activePaths: ['/admin/marketplace', '/admin/marketplace-settings'],
     },
     {
       labelKey: 'admin.nav.reports',

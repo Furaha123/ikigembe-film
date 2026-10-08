@@ -1,0 +1,175 @@
+<div class="ms-page">
+
+  <!-- Breadcrumb back link -->
+  <a class="ms-back" routerLink="/admin/marketplace">
+    <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
+    {{ 'admin.marketplace.title' | translate }}
+  </a>
+
+  <!-- Header -->
+  <div class="ms-header">
+    <div class="ms-header__left">
+      <h1 class="ms-title">{{ 'admin.marketplaceSettings.title' | translate }}</h1>
+      <p class="ms-subtitle">{{ 'admin.marketplaceSettings.subtitle' | translate }}</p>
+    </div>
+    @if (updatedAt) {
+      <p class="ms-updated">
+        {{ 'admin.marketplaceSettings.lastUpdated' | translate }}
+        {{ updatedAt | date:'medium' }}
+      </p>
+    }
+  </div>
+
+  <!-- Toast -->
+  @if (toast()) {
+    <div class="ms-toast" [class.ms-toast--success]="toast()!.kind === 'success'" [class.ms-toast--error]="toast()!.kind === 'error'" role="alert">
+      @if (toast()!.kind === 'success') {
+        <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+      } @else {
+        <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg>
+      }
+      {{ toast()!.msgKey | translate }}
+    </div>
+  }
+
+  @if (loading()) {
+    <div class="ms-loading">
+      <div class="ms-spinner"></div>
+      <span>{{ 'admin.marketplaceSettings.loading' | translate }}</span>
+    </div>
+  } @else {
+    <form [formGroup]="form" (ngSubmit)="save()" novalidate>
+
+      <!-- Actor video upload fees -->
+      <section class="ms-section">
+        <h2 class="ms-section__title">
+          <span class="ms-section__icon" aria-hidden="true">🎬</span>
+          {{ 'admin.marketplaceSettings.sectionActorVideos' | translate }}
+        </h2>
+        <p class="ms-section__desc">{{ 'admin.marketplaceSettings.sectionActorVideosDesc' | translate }}</p>
+
+        <div class="ms-fields">
+          <div class="ms-field" [class.ms-field--error]="fieldError('actor_video_fee_under_30')">
+            <label class="ms-label" for="fee-under30">
+              {{ 'admin.marketplaceSettings.feeUnder30' | translate }}
+              <span class="ms-label__unit">RWF</span>
+            </label>
+            <input
+              id="fee-under30"
+              class="ms-input"
+              type="number"
+              min="1"
+              formControlName="actor_video_fee_under_30"
+            />
+            @if (fieldError('actor_video_fee_under_30')) {
+              <span class="ms-error">{{ 'admin.marketplaceSettings.feeMin' | translate }}</span>
+            }
+          </div>
+
+          <div class="ms-field" [class.ms-field--error]="fieldError('actor_video_fee_30_plus')">
+            <label class="ms-label" for="fee-30plus">
+              {{ 'admin.marketplaceSettings.fee30Plus' | translate }}
+              <span class="ms-label__unit">RWF</span>
+            </label>
+            <input
+              id="fee-30plus"
+              class="ms-input"
+              type="number"
+              min="1"
+              formControlName="actor_video_fee_30_plus"
+            />
+            @if (fieldError('actor_video_fee_30_plus')) {
+              <span class="ms-error">{{ 'admin.marketplaceSettings.feeMin' | translate }}</span>
+            }
+          </div>
+        </div>
+      </section>
+
+      <!-- Casting announcement fee -->
+      <section class="ms-section">
+        <h2 class="ms-section__title">
+          <span class="ms-section__icon" aria-hidden="true">📢</span>
+          {{ 'admin.marketplaceSettings.sectionCasting' | translate }}
+        </h2>
+        <p class="ms-section__desc">{{ 'admin.marketplaceSettings.sectionCastingDesc' | translate }}</p>
+
+        <div class="ms-fields">
+          <div class="ms-field" [class.ms-field--error]="fieldError('casting_announcement_fee')">
+            <label class="ms-label" for="fee-casting">
+              {{ 'admin.marketplaceSettings.feeCasting' | translate }}
+              <span class="ms-label__unit">RWF</span>
+            </label>
+            <input
+              id="fee-casting"
+              class="ms-input"
+              type="number"
+              min="1"
+              formControlName="casting_announcement_fee"
+            />
+            @if (fieldError('casting_announcement_fee')) {
+              <span class="ms-error">{{ 'admin.marketplaceSettings.feeMin' | translate }}</span>
+            }
+          </div>
+        </div>
+      </section>
+
+      <!-- Actor directory search -->
+      <section class="ms-section">
+        <h2 class="ms-section__title">
+          <span class="ms-section__icon" aria-hidden="true">🔍</span>
+          {{ 'admin.marketplaceSettings.sectionSearch' | translate }}
+        </h2>
+        <p class="ms-section__desc">{{ 'admin.marketplaceSettings.sectionSearchDesc' | translate }}</p>
+
+        <div class="ms-fields">
+          <div class="ms-field" [class.ms-field--error]="fieldError('actor_search_fee')">
+            <label class="ms-label" for="fee-search">
+              {{ 'admin.marketplaceSettings.feeSearch' | translate }}
+              <span class="ms-label__unit">RWF</span>
+            </label>
+            <input
+              id="fee-search"
+              class="ms-input"
+              type="number"
+              min="1"
+              formControlName="actor_search_fee"
+            />
+            @if (fieldError('actor_search_fee')) {
+              <span class="ms-error">{{ 'admin.marketplaceSettings.feeMin' | translate }}</span>
+            }
+          </div>
+
+          <div class="ms-field" [class.ms-field--error]="fieldError('actor_search_access_days')">
+            <label class="ms-label" for="access-days">
+              {{ 'admin.marketplaceSettings.accessDays' | translate }}
+              <span class="ms-label__unit">{{ 'admin.marketplaceSettings.days' | translate }}</span>
+            </label>
+            <input
+              id="access-days"
+              class="ms-input"
+              type="number"
+              min="1"
+              formControlName="actor_search_access_days"
+            />
+            @if (fieldError('actor_search_access_days')) {
+              <span class="ms-error">{{ 'admin.marketplaceSettings.daysMin' | translate }}</span>
+            }
+          </div>
+        </div>
+      </section>
+
+      <!-- Actions -->
+      <div class="ms-actions">
+        <button type="submit" class="ms-btn ms-btn--primary" [disabled]="saving() || form.invalid">
+          @if (saving()) {
+            <span class="ms-spinner ms-spinner--sm" aria-hidden="true"></span>
+          }
+          {{ (saving() ? 'admin.marketplaceSettings.saving' : 'admin.marketplaceSettings.save') | translate }}
+        </button>
+        <p class="ms-note">{{ 'admin.marketplaceSettings.cacheNote' | translate }}</p>
+      </div>
+
+    </form>
+  }
+
+</div>

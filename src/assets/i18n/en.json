@@ -1078,7 +1078,34 @@
         "remove-video": "Remove talent video",
         "remove-call": "Remove casting call"
       },
-      "resultCount": "{{n}} results"
+      "resultCount": "{{n}} results",
+      "pricingSettings": "Pricing Settings"
+    },
+    "marketplaceSettings": {
+      "title": "Marketplace Pricing & Access",
+      "subtitle": "Adjust fees and access duration for actors, casting calls and directory search. Changes take effect within 5 minutes.",
+      "loading": "Loading settings…",
+      "lastUpdated": "Last saved:",
+      "sectionActorVideos": "Talent Video Upload",
+      "sectionActorVideosDesc": "One-time fee paid by actors before uploading a talent video for review. Two tiers based on the actor's age at purchase time.",
+      "sectionCasting": "Casting Announcement",
+      "sectionCastingDesc": "Fee paid by producers to publish a casting call and make it visible to actors.",
+      "sectionSearch": "Actor Directory Search",
+      "sectionSearchDesc": "Fee paid by producers to unlock contact details and full profiles in the actor directory for a set number of days.",
+      "feeUnder30": "Under 30",
+      "fee30Plus": "30 and over",
+      "feeCasting": "Publication fee",
+      "feeSearch": "Search access fee",
+      "accessDays": "Access window",
+      "days": "days",
+      "feeMin": "Must be greater than 0.",
+      "daysMin": "Must be at least 1 day.",
+      "save": "Save changes",
+      "saving": "Saving…",
+      "saved": "Settings saved. New prices apply within 5 minutes.",
+      "cacheNote": "Prices are cached server-side for up to 5 minutes before propagating to payment endpoints.",
+      "loadFailed": "Could not load settings. Please try again.",
+      "saveFailed": "Could not save settings. Please try again."
     },
     "revenue": {
       "open": "Revenue split",

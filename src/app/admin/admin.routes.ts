@@ -62,6 +62,10 @@ export const adminRoutes: Routes = [
         loadComponent: () => import('./pages/marketplace/admin-marketplace.component').then(m => m.AdminMarketplaceComponent),
       },
       {
+        path: 'marketplace-settings',
+        loadComponent: () => import('./pages/marketplace-settings/admin-marketplace-settings.component').then(m => m.AdminMarketplaceSettingsComponent),
+      },
+      {
         path: 'reports',
         loadComponent: () => import('./pages/reports/admin-reports.component').then(m => m.AdminReportsComponent),
       },
