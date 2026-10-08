@@ -55,6 +55,35 @@ export class ProducerLayoutComponent implements OnInit {
     { labelKey: 'nav.settings',    path: '/producer/settings',    icon: 'settings', exact: false },
   ]);
 
+  /** Flat nav items structured into labelled groups for the sidebar. */
+  readonly navGroups = computed(() => {
+    const items = this.navItems();
+    const pick = (...icons: string[]) =>
+      icons.map(ic => items.find(i => i.icon === ic)).filter((i): i is NonNullable<typeof i> => !!i);
+
+    const groups: Array<{ groupKey?: string; items: ReturnType<typeof pick> }> = [];
+
+    const dashboard = pick('dashboard');
+    if (dashboard.length) groups.push({ items: dashboard });
+
+    const casting = pick('post', 'my-casting', 'inbox');
+    if (casting.length) groups.push({ groupKey: 'nav.group.castingManagement', items: casting });
+
+    const talent = pick('actors', 'shortlist');
+    if (talent.length) groups.push({ groupKey: 'nav.group.talentDiscovery', items: talent });
+
+    const media = pick('movies', 'upload');
+    if (media.length) groups.push({ groupKey: 'nav.group.mediaDistribution', items: media });
+
+    const finance = pick('wallet', 'withdrawals', 'contracts', 'access');
+    if (finance.length) groups.push({ groupKey: 'nav.group.financialsAccess', items: finance });
+
+    const settings = pick('settings');
+    if (settings.length) groups.push({ items: settings });
+
+    return groups;
+  });
+
   ngOnInit() {
     if (!this.authService.onboardingComplete()) {
       this.router.navigate(['/producer/onboarding']);

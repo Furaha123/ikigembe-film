@@ -22,7 +22,13 @@
     "settings": "Igenamiterere",
     "terms": "Amabwiriza n'Ibisabwa",
     "signOut": "Sohoka",
-    "signingOut": "Gusohoka…"
+    "signingOut": "Gusohoka…",
+    "group": {
+      "castingManagement": "Casting",
+      "talentDiscovery": "Talent",
+      "mediaDistribution": "Media",
+      "financialsAccess": "Financials"
+    }
   },
   "topbar": {
     "uploadFilm": "Ohereza Filime"

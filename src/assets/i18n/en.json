@@ -22,7 +22,13 @@
     "settings": "Settings",
     "terms": "Terms & Conditions",
     "signOut": "Sign Out",
-    "signingOut": "Signing out…"
+    "signingOut": "Signing out…",
+    "group": {
+      "castingManagement": "Casting",
+      "talentDiscovery": "Talent",
+      "mediaDistribution": "Media",
+      "financialsAccess": "Financials"
+    }
   },
   "topbar": {
     "uploadFilm": "Upload Film"
