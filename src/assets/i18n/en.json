@@ -1605,17 +1605,32 @@
       "kpi": {
         "totalRevenue": "Total Revenue",
         "platformCommission": "Platform Commission",
-        "producerPayouts": "Producer Payouts"
+        "producerPayouts": "Producer Payouts",
+        "revenueToday": "Revenue Today",
+        "thisMonth": "this month",
+        "today": "Today",
+        "allTime": "All time",
+        "vsLastMonth": "vs last month"
       },
       "stats": {
         "totalUsers": "Total Users",
+        "registeredViewers": "Registered viewers",
         "producers": "Producers",
+        "activeProducers": "Active producers",
         "movies": "Movies",
+        "totalMovies": "Total in library",
         "pendingWithdrawals": "Pending Withdrawals",
+        "noPendingWithdrawals": "No pending requests",
         "actionNeeded": "Action needed",
+        "pendingReview": "pending review",
+        "reviewQueue": "Review queue",
         "pendingTalentVideos": "Talent videos to review",
         "actorsWithVideos": "Actors with approved videos",
-        "marketplacePayments": "Confirmed marketplace payments"
+        "inDirectory": "In actor directory",
+        "marketplacePayments": "Confirmed marketplace payments",
+        "confirmedPayments": "All confirmed",
+        "totalViews": "Total Views",
+        "filmViews": "Film views"
       },
       "chart": {
         "title": "Revenue Trend",
