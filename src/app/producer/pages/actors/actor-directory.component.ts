@@ -65,7 +65,7 @@ export function visibleRange(res: Paginated<unknown>): { from: number; to: numbe
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule, RouterLink, RouterLinkActive, TranslatePipe],
   templateUrl: './actor-directory.component.html',
-  styleUrls: ['../../../shared/styles/marketplace-page.scss'],
+  styleUrls: ['../../../shared/styles/marketplace-page.scss', './actor-directory.component.scss'],
 })
 export class ActorDirectoryComponent implements OnInit, OnDestroy {
   private readonly fb = inject(FormBuilder);

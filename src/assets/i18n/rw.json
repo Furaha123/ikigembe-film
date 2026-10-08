@@ -772,6 +772,7 @@
       "tabSearch": "Search",
       "tabShortlist": "Shortlist",
       "q": "Name or keyword",
+      "qPlaceholder": "Search by name, skill…",
       "any": "Any",
       "minAge": "Min age",
       "maxAge": "Max age",
@@ -886,7 +887,8 @@
       "doneTitle": "Application submitted",
       "doneText": "The producer will review applications and may contact the applicants they select. You can follow the status in My applications.",
       "browseMore": "Browse more casting calls",
-      "home": "Home"
+      "home": "Home",
+      "viewProfile": "View profile"
     },
     "talent": {
       "title": "Show your talent",

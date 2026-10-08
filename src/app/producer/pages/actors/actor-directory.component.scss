@@ -1,0 +1,362 @@
+$gold:    #c5a253;
+$border:  #2e2e2e;
+$muted:   #9a9a9a;
+$surface: #181818;
+$surface2: #1f1f1f;
+$danger:  #f2706b;
+
+// ── Access banner ─────────────────────────────────────────────────────────
+.dir-banner {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  justify-content: space-between;
+  padding: 0.75rem 1.1rem;
+  background: rgba($gold, 0.07);
+  border: 1px solid rgba($gold, 0.25);
+  border-radius: 10px;
+  margin-bottom: 1.25rem;
+  font-size: 0.875rem;
+  color: #d0d0d0;
+
+  strong { color: $gold; }
+}
+
+// ── Filter bar ─────────────────────────────────────────────────────────────
+.dir-filter {
+  background: $surface2;
+  border: 1px solid $border;
+  border-radius: 12px;
+  padding: 1.1rem 1.25rem;
+  margin-bottom: 1.25rem;
+}
+
+.dir-filter__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+  gap: 0.75rem;
+  margin-bottom: 0.9rem;
+}
+
+.dir-filter__actions {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+// ── Count / range line ────────────────────────────────────────────────────
+.dir-count {
+  font-size: 0.82rem;
+  color: $muted;
+  margin-bottom: 1rem;
+  min-height: 1.2rem;
+}
+
+// ── Actor card grid ───────────────────────────────────────────────────────
+.dir-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(280px, 100%), 1fr));
+  gap: 1.1rem;
+  align-items: start;
+}
+
+// ── Actor card ────────────────────────────────────────────────────────────
+.dir-card {
+  display: flex;
+  flex-direction: column;
+  background: $surface2;
+  border: 1px solid $border;
+  border-radius: 12px;
+  overflow: hidden;
+  transition: border-color 0.15s, box-shadow 0.15s;
+
+  &:hover {
+    border-color: rgba($gold, 0.35);
+    box-shadow: 0 4px 18px rgba(0,0,0,0.32);
+  }
+}
+
+.dir-card__top {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.85rem;
+  padding: 1rem 1.1rem 0.75rem;
+}
+
+.dir-avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #252525, #2e2e2e);
+  border: 1.5px solid $border;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: $gold;
+  flex-shrink: 0;
+  user-select: none;
+}
+
+.dir-card__info {
+  flex: 1;
+  min-width: 0;
+}
+
+.dir-card__name {
+  margin: 0 0 0.2rem;
+  font-size: 0.95rem;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+
+  a {
+    color: #e5e5e5;
+    text-decoration: none;
+    &:hover { color: #fff; text-decoration: underline; }
+    &:focus-visible { outline: 2px solid $gold; border-radius: 2px; }
+  }
+}
+
+.dir-card__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+}
+
+.dir-meta-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.2rem;
+  font-size: 0.7rem;
+  color: $muted;
+  white-space: nowrap;
+
+  &::before {
+    content: '';
+    display: inline-block;
+    width: 3px;
+    height: 3px;
+    border-radius: 50%;
+    background: currentColor;
+    opacity: 0.5;
+    margin-right: 0.1rem;
+  }
+
+  &:first-child::before { display: none; }
+}
+
+// ── Skills chips ──────────────────────────────────────────────────────────
+.dir-card__skills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+  padding: 0 1.1rem 0.75rem;
+
+  span {
+    padding: 0.15rem 0.5rem;
+    border-radius: 999px;
+    border: 1px solid $border;
+    font-size: 0.7rem;
+    color: #bbb;
+    background: rgba(255,255,255,0.03);
+    white-space: nowrap;
+    max-width: 130px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+}
+
+// ── Contact row ───────────────────────────────────────────────────────────
+.dir-card__contact {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  padding: 0 1.1rem 0.85rem;
+}
+
+.dir-contact-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.77rem;
+  color: #aaa;
+  text-decoration: none;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+
+  svg { flex-shrink: 0; color: $muted; }
+
+  &:hover { color: #fff; svg { color: $gold; } }
+  &:focus-visible { outline: 2px solid $gold; border-radius: 2px; }
+}
+
+// ── Card footer ───────────────────────────────────────────────────────────
+.dir-card__footer {
+  display: flex;
+  gap: 0.5rem;
+  padding: 0.7rem 1.1rem;
+  border-top: 1px solid $border;
+  margin-top: auto;
+}
+
+.dir-btn-view {
+  flex: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.45rem 0.75rem;
+  border-radius: 7px;
+  border: 1px solid $border;
+  background: transparent;
+  color: #d0d0d0;
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+
+  &:hover {
+    background: rgba(255,255,255,0.06);
+    border-color: rgba(255,255,255,0.2);
+    color: #fff;
+  }
+
+  &:focus-visible { outline: 2px solid $gold; outline-offset: 2px; }
+}
+
+.dir-btn-star {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 7px;
+  border: 1px solid rgba($gold, 0.4);
+  background: rgba($gold, 0.1);
+  color: $gold;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s, transform 0.1s;
+  flex-shrink: 0;
+
+  &:hover:not(:disabled) {
+    background: rgba($gold, 0.2);
+    border-color: $gold;
+    transform: scale(1.08);
+  }
+
+  &.is-shortlisted {
+    background: rgba($gold, 0.18);
+    border-color: $gold;
+    color: $gold;
+  }
+
+  &:disabled { opacity: 0.45; cursor: not-allowed; }
+  &:focus-visible { outline: 2px solid $gold; outline-offset: 2px; }
+}
+
+// ── Shortlist tab ─────────────────────────────────────────────────────────
+.sl-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.sl-card {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  background: $surface2;
+  border: 1px solid $border;
+  border-radius: 12px;
+  padding: 0.9rem 1.1rem;
+  transition: border-color 0.15s;
+
+  &:hover { border-color: rgba($gold, 0.3); }
+}
+
+.sl-card__body {
+  flex: 1;
+  min-width: 0;
+}
+
+.sl-card__name {
+  margin: 0 0 0.2rem;
+  font-size: 0.95rem;
+  font-weight: 600;
+
+  a {
+    color: #e5e5e5;
+    text-decoration: none;
+    &:hover { color: #fff; text-decoration: underline; }
+    &:focus-visible { outline: 2px solid $gold; border-radius: 2px; }
+  }
+}
+
+.sl-card__contact {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 0.25rem;
+}
+
+.sl-contact-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.78rem;
+  color: #a0a0a0;
+  text-decoration: none;
+  svg { color: $muted; }
+  &:hover { color: #fff; svg { color: $gold; } }
+  &:focus-visible { outline: 2px solid $gold; border-radius: 2px; }
+}
+
+.sl-card__note {
+  font-size: 0.8rem;
+  color: $muted;
+  font-style: italic;
+  margin: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sl-card__actions {
+  display: flex;
+  gap: 0.5rem;
+  flex-shrink: 0;
+}
+
+.sl-btn-remove {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.4rem 0.75rem;
+  border-radius: 7px;
+  border: 1px solid rgba($danger, 0.35);
+  background: transparent;
+  color: $danger;
+  font: inherit;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+
+  &:hover:not(:disabled) {
+    background: rgba($danger, 0.1);
+    border-color: $danger;
+  }
+
+  &:disabled { opacity: 0.45; cursor: not-allowed; }
+  &:focus-visible { outline: 2px solid $danger; outline-offset: 2px; }
+}
+
+@media (max-width: 540px) {
+  .sl-card { flex-wrap: wrap; }
+  .sl-card__actions { width: 100%; }
+  .sl-btn-remove { flex: 1; justify-content: center; }
+}
