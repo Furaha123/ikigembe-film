@@ -4,32 +4,93 @@
     <div class="swiper-wrapper">
       @for (movie of videoContents(); track movie.id) {
         <div
+          class="swiper-slide"
           (mouseenter)="setHoverMovie(movie)"
           (mouseleave)="clearHoverMovie()"
-          class="swiper-slide"
         >
-          <div class="movie-card">
-            <img [src]="movie.thumbnail_url" [alt]="movie.title" loading="lazy" />
-            <div class="quality-badge">HD</div>
-            <button class="play-overlay" (click)="goToMovie(movie)" [attr.aria-label]="'carousel.playMovie' | translate: { title: movie.title }">
-              <span class="play-btn">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+          <!-- ── Poster card ───────────────────────────────── -->
+          <div class="mc-card">
+
+            <!-- Poster area (2:3 aspect) -->
+            <div class="mc-poster">
+
+              <!-- Fallback shown when image fails or before it loads -->
+              <div class="mc-fallback" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M18 4l2 4h-3l-2-4h-2l2 4h-3l-2-4H8l2 4H7L5 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V4h-4z"/>
+                </svg>
+              </div>
+
+              <!-- Poster image -->
+              <img
+                class="mc-img"
+                [src]="movie.thumbnail_url"
+                [alt]="movie.title"
+                loading="lazy"
+                (error)="$any($event.target).classList.add('mc-img--error')"
+              />
+
+              <!-- Bottom-to-top gradient always present; darkens on hover -->
+              <div class="mc-gradient"></div>
+
+              <!-- Top-left: Free / Purchased badge -->
+              @if (movie.price === 0 || movie.has_free_preview) {
+                <div class="mc-badge-tl">
+                  <span class="mc-badge mc-badge--free">Free</span>
+                </div>
+              } @else if (movie.has_purchased) {
+                <div class="mc-badge-tl">
+                  <span class="mc-badge mc-badge--owned">Owned</span>
+                </div>
+              }
+
+              <!-- Top-right: HD quality badge -->
+              <div class="mc-badge-tr">
+                <span class="mc-badge">HD</span>
+              </div>
+
+              <!-- Center play button — reveals on hover -->
+              <button
+                class="mc-play"
+                (click)="goToMovie(movie)"
+                [attr.aria-label]="'carousel.playMovie' | translate: { title: movie.title }"
+              >
+                <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
                   <path d="M8 5v14l11-7z"/>
                 </svg>
-              </span>
-            </button>
-            <div class="movie-title-overlay">{{ movie.title }}</div>
-          </div>
-          <div class="movie-info">
-            <h3 class="movie-name">{{ movie.title }}</h3>
-            <div class="movie-meta">
-              @if (movie.release_date) {
-                <span class="year">{{ movie.release_date.substring(0, 4) }}</span>
-                <span class="separator">•</span>
-              }
-              <span class="type">{{ 'carousel.movie' | translate }}</span>
+              </button>
+
+              <!-- Bottom metadata overlay -->
+              <div class="mc-info">
+                <h3 class="mc-title">{{ movie.title }}</h3>
+                <div class="mc-meta">
+                  @if (movie.release_date) {
+                    <span class="mc-year">{{ movie.release_date.substring(0, 4) }}</span>
+                  }
+                  @if (movie.release_date && movie.rating > 0) {
+                    <span class="mc-dot" aria-hidden="true">·</span>
+                  }
+                  @if (movie.rating > 0) {
+                    <span class="mc-rating">
+                      <svg viewBox="0 0 24 24" fill="currentColor" width="10" height="10" aria-hidden="true">
+                        <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/>
+                      </svg>
+                      {{ movie.rating.toFixed(1) }}
+                    </span>
+                  }
+                  @if (movie.price > 0 && !movie.has_purchased) {
+                    <span class="mc-dot" aria-hidden="true">·</span>
+                    <span class="mc-price">RWF {{ movie.price | number }}</span>
+                  }
+                </div>
+              </div>
+
             </div>
+            <!-- end .mc-poster -->
+
           </div>
+          <!-- end .mc-card -->
+
         </div>
       }
     </div>
