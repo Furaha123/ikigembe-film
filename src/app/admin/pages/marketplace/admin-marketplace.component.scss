@@ -1,0 +1,322 @@
+// ── Design tokens (mirrors admin-movies.component.scss vars) ─────────────
+$gold:    #C5A253;
+$border:  rgba(255,255,255,0.07);
+$surface: #141414;
+$text:    #e5e5e5;
+$muted:   #888;
+
+// ── KPI bar ───────────────────────────────────────────────────────────────
+.kpi-bar {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+
+  &--loading .kpi-value { opacity: 0.4; }
+
+  @media (max-width: 860px) { grid-template-columns: repeat(2, 1fr); }
+  @media (max-width: 480px) { grid-template-columns: 1fr 1fr; }
+}
+
+.kpi-card {
+  background: $surface;
+  border: 1px solid $border;
+  border-radius: 10px;
+  padding: 1rem 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  transition: border-color 0.2s;
+
+  &--amber {
+    border-color: rgba(251, 191, 36, 0.4);
+    background: rgba(251, 191, 36, 0.06);
+    .kpi-value { color: #fbbf24; }
+  }
+  &--green {
+    .kpi-value { color: #4ade80; }
+  }
+  &--red {
+    .kpi-value { color: #f87171; }
+  }
+}
+
+.kpi-label {
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: $muted;
+}
+
+.kpi-value {
+  font-size: 1.6rem;
+  font-weight: 800;
+  color: $text;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  line-height: 1.1;
+}
+
+.kpi-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+
+  &--amber {
+    background: #fbbf24;
+    box-shadow: 0 0 6px rgba(251, 191, 36, 0.6);
+  }
+}
+
+// ── All-clear empty state ─────────────────────────────────────────────────
+.all-clear {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 3.5rem 2rem;
+  background: $surface;
+  border: 1px solid $border;
+  border-radius: 12px;
+  gap: 0.6rem;
+  margin-bottom: 1rem;
+
+  h3 {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: $text;
+    margin: 0;
+  }
+
+  p {
+    color: $muted;
+    font-size: 0.88rem;
+    margin: 0 0 0.75rem;
+    max-width: 360px;
+  }
+}
+
+.all-clear__icon {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: rgba(74, 222, 128, 0.12);
+  border: 1px solid rgba(74, 222, 128, 0.25);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 0.5rem;
+
+  svg {
+    width: 26px;
+    height: 26px;
+    color: #4ade80;
+    fill: #4ade80;
+  }
+}
+
+// ── Filter row (pills + search) ───────────────────────────────────────────
+.filter-row {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-bottom: 1rem;
+}
+
+// ── Pill group ────────────────────────────────────────────────────────────
+.pill-group {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.35rem 0.8rem;
+  border-radius: 999px;
+  font-size: 0.79rem;
+  font-weight: 600;
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+  background: rgba(255,255,255,0.05);
+  color: $muted;
+  white-space: nowrap;
+
+  &:hover { background: rgba(255,255,255,0.09); color: $text; }
+
+  // Active state — overrides color classes below
+  &--active {
+    color: #fff !important;
+
+    &.pill--amber  { background: rgba(251,191,36,0.2);  border-color: rgba(251,191,36,0.55); }
+    &.pill--green  { background: rgba(74,222,128,0.2);  border-color: rgba(74,222,128,0.55); }
+    &.pill--red    { background: rgba(248,113,113,0.2); border-color: rgba(248,113,113,0.55); }
+    &.pill--slate  { background: rgba(148,163,184,0.15);border-color: rgba(148,163,184,0.4); }
+    &.pill--blue   { background: rgba(96,165,250,0.18); border-color: rgba(96,165,250,0.5); }
+    &.pill--gray   { background: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.3); }
+  }
+}
+
+.pill-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  border-radius: 999px;
+  font-size: 0.69rem;
+  font-weight: 700;
+  background: rgba(255,255,255,0.12);
+  color: inherit;
+  line-height: 1;
+}
+
+// ── Main section tab badge ────────────────────────────────────────────────
+.tab-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  border-radius: 999px;
+  font-size: 0.68rem;
+  font-weight: 700;
+  margin-left: 4px;
+  line-height: 1;
+
+  &--amber {
+    background: rgba(251, 191, 36, 0.25);
+    color: #fbbf24;
+  }
+}
+
+// ── Search input ──────────────────────────────────────────────────────────
+.search-wrap {
+  position: relative;
+  flex: 1;
+  min-width: 180px;
+  max-width: 280px;
+}
+
+.search-icon {
+  position: absolute;
+  left: 0.7rem;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 15px;
+  height: 15px;
+  color: $muted;
+  pointer-events: none;
+}
+
+.search-input {
+  width: 100%;
+  background: $surface;
+  border: 1px solid $border;
+  border-radius: 8px;
+  color: $text;
+  font-size: 0.85rem;
+  padding: 0.45rem 0.75rem 0.45rem 2.1rem;
+  transition: border-color 0.15s, box-shadow 0.15s;
+
+  &::placeholder { color: $muted; }
+  &:focus {
+    outline: none;
+    border-color: rgba(197,162,83,0.5);
+    box-shadow: 0 0 0 3px rgba(197,162,83,0.12);
+  }
+  &::-webkit-search-cancel-button { cursor: pointer; }
+}
+
+// ── Table row highlight for pending_review ────────────────────────────────
+.row--review td { background: rgba(251,191,36,0.03); }
+
+// ── Cell sub-elements ─────────────────────────────────────────────────────
+.cell-title {
+  display: block;
+  font-weight: 600;
+  color: $text;
+}
+
+.cell-reason {
+  display: block;
+  font-size: 0.78rem;
+  color: $muted;
+  margin-top: 2px;
+  font-style: italic;
+}
+
+.cell-actor {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  color: $muted;
+  font-size: 0.85rem;
+}
+
+.actor-avatar {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: rgba(197,162,83,0.18);
+  color: $gold;
+  font-size: 0.72rem;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+// ── Badge variants (extend base .badge from admin-movies.scss) ────────────
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.badge-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+  flex-shrink: 0;
+}
+
+// Status-specific badge colours
+.badge-approved   { background: rgba(74,222,128,0.15);   color: #4ade80; }
+.badge-rejected   { background: rgba(248,113,113,0.15);  color: #f87171; }
+.badge-removed    { background: rgba(148,163,184,0.12);  color: #94a3b8; }
+.badge-review     { background: rgba(251,191,36,0.15);   color: #fbbf24; }
+.badge-processing { background: rgba(96,165,250,0.15);   color: #60a5fa; }
+.badge-upload     { background: rgba(167,139,250,0.15);  color: #a78bfa; }
+
+// ── Empty row ─────────────────────────────────────────────────────────────
+.empty-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 2.5rem 1rem;
+  color: $muted;
+  font-size: 0.88rem;
+
+  svg { width: 18px; height: 18px; opacity: 0.6; }
+}
+
+// ── Result count footer ───────────────────────────────────────────────────
+.result-count {
+  font-size: 0.78rem;
+  color: $muted;
+  margin: 0.5rem 0 0;
+}

@@ -1079,7 +1079,19 @@
         "remove-call": "Remove casting call"
       },
       "resultCount": "{{n}} results",
-      "pricingSettings": "Pricing Settings"
+      "shown": "shown",
+      "pricingSettings": "Pricing Settings",
+      "kpiTotal": "Total submitted",
+      "kpiPending": "Pending review",
+      "kpiApproved": "Approved",
+      "kpiRejected": "Rejected",
+      "allClearTitle": "All caught up!",
+      "allClearDesc": "No talent videos are waiting for review right now.",
+      "viewApproved": "View approved videos",
+      "statusFilter": "Filter by status",
+      "searchVideos": "Search by title or actor…",
+      "searchCalls": "Search by title or producer…",
+      "noSearchResults": "No results match your search."
     },
     "marketplaceSettings": {
       "title": "Marketplace Pricing & Access",
