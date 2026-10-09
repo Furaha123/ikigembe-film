@@ -28,6 +28,12 @@ export class ProducerLayoutComponent implements OnInit {
   readonly userRole        = this.authService.userRole;
   readonly accountStatus   = this.authService.accountStatus;
   readonly suspensionReason = this.authService.suspensionReason;
+  readonly contractSigned  = this.authService.contractSigned;
+  /**
+   * Films and producer services wait for the one-time setup: profile completed (onboarding, enforced
+   * below) and agreement signed. Server-enforced; this only hides the entry points.
+   */
+  readonly isReady = computed(() => this.accountStatus() === 'active' && this.authService.producerReady());
 
   isLoggingOut      = signal(false);
   showUserDropdown  = signal(false);
@@ -46,10 +52,11 @@ export class ProducerLayoutComponent implements OnInit {
   /** Marketplace items come from the access map (none while the account isn't active). */
   readonly navItems = computed(() => [
     { labelKey: 'nav.dashboard',   path: '/producer/dashboard',   icon: 'dashboard', exact: false },
-    { labelKey: 'nav.upload',      path: '/producer/upload',      icon: 'upload', exact: false },
+    ...(this.isReady() ? [{ labelKey: 'nav.upload', path: '/producer/upload', icon: 'upload', exact: false }] : []),
     { labelKey: 'nav.movies',      path: '/producer/movies',      icon: 'movies', exact: false },
     { labelKey: 'nav.wallet',      path: '/producer/wallet',      icon: 'wallet', exact: false },
     { labelKey: 'nav.withdrawals', path: '/producer/withdrawals', icon: 'withdrawals', exact: false },
+    { labelKey: 'nav.statements',  path: '/producer/statements',  icon: 'withdrawals', exact: false },
     { labelKey: 'nav.contracts',   path: '/producer/contracts',   icon: 'contracts', exact: false },
     ...this.marketplace.tabs().map(t => ({ labelKey: t.labelKey, path: t.route!, icon: t.icon as string, exact: !!t.exact })),
     { labelKey: 'nav.settings',    path: '/producer/settings',    icon: 'settings', exact: false },
@@ -59,9 +66,9 @@ export class ProducerLayoutComponent implements OnInit {
   readonly navGroups = computed(() => {
     const items = this.navItems();
     const pick = (...icons: string[]) =>
-      icons.map(ic => items.find(i => i.icon === ic)).filter((i): i is NonNullable<typeof i> => !!i);
+      icons.flatMap(ic => items.filter(i => i.icon === ic));
 
-    const groups: Array<{ groupKey?: string; items: ReturnType<typeof pick> }> = [];
+    const groups: { groupKey?: string; items: ReturnType<typeof pick> }[] = [];
 
     const dashboard = pick('dashboard');
     if (dashboard.length) groups.push({ items: dashboard });
@@ -85,12 +92,12 @@ export class ProducerLayoutComponent implements OnInit {
   });
 
   ngOnInit() {
+    // Setup and account status are stored hints until /auth/me/ answers.
+    this.authService.syncProfile().subscribe();
     if (!this.authService.onboardingComplete()) {
       this.router.navigate(['/producer/onboarding']);
       return;
     }
-    // Sync account_status from server so an approved producer sees the correct state on re-login
-    this.authService.syncProfile().subscribe();
     this.producerService.getNotifications().subscribe({
       next: (data) => this.notifications.set(data),
     });

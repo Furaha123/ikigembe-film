@@ -6,7 +6,7 @@
       <p>{{ 'admin.reports.revenueTrend.subtitle' | translate }}</p>
     </div>
     <div class="section-actions">
-      <procurement-date-picker (dateChange)="onDateRangeChange($event)" />
+      <app-date-picker (dateChange)="onDateRangeChange($event)" />
       <div class="tab-group">
         <button [class.active]="activeTab === 'revenue'"    (click)="switchTab('revenue')">{{ 'admin.reports.revenueTrend.tabRevenue' | translate }}</button>
         <button [class.active]="activeTab === 'commission'" (click)="switchTab('commission')">{{ 'admin.reports.revenueTrend.tabCommission' | translate }}</button>

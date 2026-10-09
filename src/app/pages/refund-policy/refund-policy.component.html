@@ -1,0 +1,17 @@
+<main class="terms-page">
+  <div class="terms-container">
+    <div class="terms-header">
+      <h1>{{ 'refundPolicy.title' | translate }}</h1>
+      <p class="terms-updated">{{ 'refundPolicy.intro' | translate }}</p>
+    </div>
+
+    @for (s of sections; track s; let i = $index) {
+      <section class="terms-section">
+        <h2>{{ i + 1 }}. {{ 'refundPolicy.sections.' + s + '.title' | translate }}</h2>
+        <p>{{ 'refundPolicy.sections.' + s + '.body' | translate }}</p>
+      </section>
+    }
+
+    <p><a routerLink="/contact">{{ 'refundPolicy.contact' | translate }}</a></p>
+  </div>
+</main>

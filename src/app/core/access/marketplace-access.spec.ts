@@ -81,6 +81,15 @@ describe('marketplace access map', () => {
     expect(marketplaceTabsFor(user('Viewer')).some(t => t.key === 'moderation')).toBeFalse();
   });
 
+  it('keeps every producer feature closed until the producer finishes setup (profile + agreement)', () => {
+    const settingUp = user('Producer', 'active', false);
+    expect(MARKETPLACE_FEATURES.filter(f => can(settingUp, f.key)).map(f => f.key)).toEqual(['casting-calls']);
+    expect(inactiveNoticeFor(settingUp)).toBe('producerSetup');
+    expect(inactiveNoticeFor({ role: 'Producer', accountStatus: 'active' })).toBe('producerSetup');   // not known yet
+    expect(inactiveNoticeFor(user('Producer', 'active', true))).toBeNull();
+    expect(can(user('Producer', 'active', true), 'post-casting')).toBeTrue();
+  });
+
   it('allows nothing when signed out', () => {
     expect(ALL.filter(key => can(null, key))).toEqual([]);
     expect(marketplaceTabsFor(null)).toEqual([]);

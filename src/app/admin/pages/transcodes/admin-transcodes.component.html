@@ -1,0 +1,95 @@
+<div class="admin-page">
+  <app-admin-section-tabs [tabs]="[
+    { labelKey: 'admin.nav.movies', path: '/admin/movies', exact: true },
+    { labelKey: 'admin.nav.filmRequests', path: '/admin/film-requests', exact: true },
+    { labelKey: 'admin.nav.transcodes', path: '/admin/transcodes', exact: true },
+    { labelKey: 'admin.nav.cms', path: '/admin/cms/pages' }
+  ]" ariaLabel="admin.nav.content" />
+
+  <div class="page-header">
+    <div>
+      <h1>{{ 'admin.transcodes.title' | translate }}</h1>
+      <p>{{ 'admin.transcodes.subtitle' | translate }}</p>
+    </div>
+  </div>
+
+  @if (data(); as d) {
+    <div class="totals" role="status">
+      <span>{{ 'admin.transcodes.state.failed' | translate }}: <strong>{{ d.counts.failed }}</strong></span>
+      <span>{{ 'admin.transcodes.needsAdmin' | translate }}: <strong>{{ d.counts.terminal }}</strong></span>
+      <span>{{ 'admin.transcodes.state.processing' | translate }}: <strong>{{ d.counts.processing }}</strong></span>
+      <span>{{ 'admin.transcodes.state.queued' | translate }}: <strong>{{ d.counts.queued }}</strong></span>
+      <span>{{ 'admin.transcodes.state.succeeded' | translate }}: <strong>{{ d.counts.succeeded }}</strong></span>
+    </div>
+  }
+
+  <div class="filters" role="group" [attr.aria-label]="'admin.transcodes.filter' | translate">
+    @for (s of states; track s) {
+      <button type="button" class="btn small" [class.ghost]="state() !== s" [attr.aria-pressed]="state() === s" (click)="setState(s)">
+        {{ (s ? 'admin.transcodes.state.' + s : 'admin.payments.any') | translate }}
+      </button>
+    }
+  </div>
+
+  <div aria-live="polite">
+    @if (notice()) { <p class="success" role="status">{{ notice() }}</p> }
+    @if (error()) { <p class="error" role="alert">{{ error() }}</p> }
+  </div>
+
+  @if (loading() && !data()) {
+    <div class="table-skeleton" aria-hidden="true">@for (i of [1,2,3]; track i) { <div class="row-skeleton"></div> }</div>
+  } @else if (data()) {
+    @let d = data()!;
+    @if (d.results.length === 0) {
+      <div class="empty-state">{{ 'admin.transcodes.empty' | translate }}</div>
+    } @else {
+      <div class="table-wrap">
+        <table class="ledger">
+          <thead>
+            <tr>
+              <th scope="col">{{ 'admin.transcodes.film' | translate }}</th>
+              <th scope="col">{{ 'admin.transcodes.stateLabel' | translate }}</th>
+              <th scope="col" class="num">{{ 'admin.transcodes.attempts' | translate }}</th>
+              <th scope="col">{{ 'admin.transcodes.started' | translate }}</th>
+              <th scope="col">{{ 'admin.transcodes.error' | translate }}</th>
+              <th scope="col"><span class="sr-only">{{ 'admin.transcodes.retry' | translate }}</span></th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (j of d.results; track j.movie_id) {
+              <tr [class.unresolved]="j.terminal">
+                <td><span class="cell-title">{{ j.title }}</span><span class="muted block">#{{ j.movie_id }}</span></td>
+                <td>
+                  <span class="status-badge" [class.status-failed]="j.state === 'failed'" [class.status-completed]="j.state === 'succeeded'"
+                        [class.status-pending]="j.state === 'processing' || j.state === 'queued'">
+                    {{ 'admin.transcodes.state.' + j.state | translate }}
+                  </span>
+                  @if (j.terminal) { <span class="status-badge status-failed">{{ 'admin.transcodes.needsAdmin' | translate }}</span> }
+                </td>
+                <td class="num">{{ j.attempts }} / {{ j.max_attempts }}</td>
+                <td class="muted">
+                  {{ j.started_at ? (j.started_at | date:'d MMM, HH:mm') : '—' }}
+                  @if (j.completed_at) { <span class="block">→ {{ j.completed_at | date:'d MMM, HH:mm' }}</span> }
+                </td>
+                <td class="muted">{{ j.error ?? '—' }}</td>
+                <td>
+                  @if (j.retryable) {
+                    <button type="button" class="btn small" (click)="retry(j)" [disabled]="retrying() !== null"
+                            [attr.aria-busy]="retrying() === j.movie_id">{{ 'admin.transcodes.retry' | translate }}</button>
+                  }
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+      @if (d.total_pages > 1) {
+        <nav class="pager" [attr.aria-label]="'admin.payments.pagination' | translate">
+          <button type="button" class="btn ghost" [disabled]="d.page <= 1" (click)="go(d.page - 1)">{{ 'admin.payments.prev' | translate }}</button>
+          <span>{{ d.page }} / {{ d.total_pages }}</span>
+          <button type="button" class="btn ghost" [disabled]="d.page >= d.total_pages" (click)="go(d.page + 1)">{{ 'admin.payments.next' | translate }}</button>
+        </nav>
+      }
+    }
+  }
+</div>

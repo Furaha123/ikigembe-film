@@ -1,5 +1,6 @@
 import { Component, inject } from '@angular/core';
-import { RouterOutlet } from '@angular/router';
+import { Router, RouterOutlet } from '@angular/router';
+import { AnalyticsService } from './core/services/analytics.service';
 import { LanguageService } from './core/services/language.service';
 import { SeoService } from './core/services/seo.service';
 import { DOCUMENT } from '@angular/common';
@@ -31,5 +32,6 @@ export class AppComponent {
     // and every navigation resets page metadata.
     inject(LanguageService);
     inject(SeoService);
+    inject(AnalyticsService).start(inject(Router));
   }
 }

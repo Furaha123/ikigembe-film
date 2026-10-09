@@ -29,6 +29,13 @@
     }
   </video>
 
+  @if (source?.watermark) {
+    <!-- Session code (PLAYBACK_WATERMARK): moves around so it can't be cropped out of a recording. -->
+    <div class="vp-watermark" aria-hidden="true" [style.top.%]="watermarkPos().top" [style.left.%]="watermarkPos().left">
+      {{ source!.watermark }}
+    </div>
+  }
+
   <!-- Controls overlay -->
   <div class="vp-controls" [class.vp-controls--hidden]="!showControls()">
 
@@ -102,7 +109,7 @@
 
         <!-- Quality picker (HLS only) -->
         @if (qualityLevels().length > 0) {
-          <div class="vp-quality-wrap" (click)="$event.stopPropagation()">
+          <div class="vp-quality-wrap" tabindex="-1" (click)="$event.stopPropagation()" (keydown)="$event.stopPropagation()">
             <button class="vp-btn vp-quality-btn"
                     (click)="toggleQualityMenu()"
                     [title]="'playerUi.quality' | translate: { label: (currentQualityLabel() | translate) }">

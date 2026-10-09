@@ -11,7 +11,16 @@ const AUTH_PAGES = /^\/(login|register|forgot-password|reset-password|verify-ema
 export function safeReturnUrl(raw: string | null | undefined): string | null {
   if (!raw || raw.length > 2000) return null;
   if (!raw.startsWith('/') || raw.startsWith('//') || raw.startsWith('/\\')) return null;
-  if (/[\u0000-\u001f\u007f\\]/.test(raw)) return null;
+  if (hasControlCharOrBackslash(raw)) return null;
   if (AUTH_PAGES.test(raw)) return null;
   return raw;
+}
+
+/** True for C0 control characters (U+0000–U+001F), DEL (U+007F) or a backslash. */
+function hasControlCharOrBackslash(s: string): boolean {
+  for (let i = 0; i < s.length; i++) {
+    const c = s.charCodeAt(i);
+    if (c <= 0x1f || c === 0x7f || c === 0x5c) return true;
+  }
+  return false;
 }

@@ -175,7 +175,7 @@ export class CastingWizardComponent implements OnInit, OnDestroy, HasUnsavedChan
     } else {
       this.restoreDraft();
     }
-    this.auth.getMe().subscribe({ next: me => this.me.set(me), error: () => { } });
+    this.auth.getMe().subscribe({ next: me => this.me.set(me), error: () => { /* contact defaults stay empty */ } });
   }
 
   ngOnDestroy(): void {
@@ -188,7 +188,8 @@ export class CastingWizardComponent implements OnInit, OnDestroy, HasUnsavedChan
       next: (c) => {
         this.loading.set(false);
         this.call.set(c);
-        if (c.status !== 'draft') {
+        // Drafts and rejected calls are edited; everything else shows its status.
+        if (c.status !== 'draft' && c.status !== 'rejected') {
           this.step.set('result');
           return;
         }
@@ -397,12 +398,19 @@ export class CastingWizardComponent implements OnInit, OnDestroy, HasUnsavedChan
     });
   }
 
+  /** The fee is already paid (a rejected call being corrected): resubmitting needs no new payment. */
+  readonly alreadyPaid = computed(() => this.call()?.payment_status === 'Completed');
+
   payAndPublish(): void {
     if (this.purchase() || this.saving()) return;
     const deadline = this.details.controls.deadline_at;
     deadline.updateValueAndValidity();
     if (deadline.invalid) {
       this.saveError.set('marketplace.producerCasting.deadlineFuture');
+      return;
+    }
+    if (this.alreadyPaid()) {
+      this.saveDraft((call) => this.sendForReview(call.id));
       return;
     }
     this.saveDraft((call) => {
@@ -421,6 +429,22 @@ export class CastingWizardComponent implements OnInit, OnDestroy, HasUnsavedChan
     this.purchase.set(null);
     this.goTo('result');
     this.refreshState();
+  }
+
+  private sendForReview(id: number): void {
+    this.saving.set(true);
+    this.saveError.set(null);
+    this.casting.submitCall(id).subscribe({
+      next: (c) => {
+        this.saving.set(false);
+        this.call.set(c);
+        this.goTo('result');
+      },
+      error: (err: unknown) => {
+        this.saving.set(false);
+        this.saveError.set(marketplaceErrorMessage(err) ?? 'marketplace.errors.saveFailed');
+      },
+    });
   }
 
   closePurchase(): void {

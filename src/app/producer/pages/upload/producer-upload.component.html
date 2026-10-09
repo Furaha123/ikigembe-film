@@ -125,8 +125,8 @@
 
             <!-- Title -->
             <div class="field" [class.has-error]="title?.invalid && title?.touched">
-              <label>{{ 'upload.details.movieTitle' | translate }} <span class="required">*</span></label>
-              <input type="text" formControlName="title" [placeholder]="'producerUi.upload.titlePlaceholder' | translate" />
+              <label for="pu-title">{{ 'upload.details.movieTitle' | translate }} <span class="required">*</span></label>
+              <input id="pu-title" type="text" formControlName="title" [placeholder]="'producerUi.upload.titlePlaceholder' | translate" />
               @if (title?.touched && title?.hasError('required')) {
                 <span class="field-error">{{ 'upload.details.titleRequired' | translate }}</span>
               }
@@ -134,8 +134,8 @@
 
             <!-- logline -->
             <div class="field" [class.has-error]="logline?.invalid && logline?.touched">
-              <label>{{ 'upload.details.logline' | translate }} <span class="required">*</span></label>
-              <input type="text" formControlName="logline" maxlength="200" [placeholder]="'upload.details.loglineHint' | translate" />
+              <label for="pu-logline">{{ 'upload.details.logline' | translate }} <span class="required">*</span></label>
+              <input id="pu-logline" type="text" formControlName="logline" maxlength="200" [placeholder]="'upload.details.loglineHint' | translate" />
               <span class="char-count" [class.near-limit]="(logline?.value?.length || 0) > 160">{{ logline?.value?.length || 0 }}/200</span>
               @if (logline?.touched && logline?.hasError('required')) {
                 <span class="field-error">{{ 'upload.details.loglineRequired' | translate }}</span>
@@ -148,8 +148,8 @@
 
             <!-- Synopsis -->
             <div class="field" [class.has-error]="synopsis?.invalid && synopsis?.touched">
-              <label>{{ 'upload.details.synopsis' | translate }} <span class="required">*</span></label>
-              <textarea formControlName="synopsis" rows="4" maxlength="600" [placeholder]="'upload.details.synopsisHint' | translate"></textarea>
+              <label for="pu-synopsis">{{ 'upload.details.synopsis' | translate }} <span class="required">*</span></label>
+              <textarea id="pu-synopsis" formControlName="synopsis" rows="4" maxlength="600" [placeholder]="'upload.details.synopsisHint' | translate"></textarea>
               <span class="char-count" [class.near-limit]="(synopsis?.value?.length || 0) > 480">{{ synopsis?.value?.length || 0 }}/600</span>
               @if (synopsis?.touched && synopsis?.hasError('required')) {
                 <span class="field-error">{{ 'upload.details.synopsisRequired' | translate }}</span>
@@ -162,8 +162,8 @@
 
             <!-- Release Date -->
             <div class="field" [class.has-error]="releaseDate?.invalid && releaseDate?.touched">
-              <label>{{ 'upload.details.releaseDate' | translate }} <span class="required">*</span></label>
-              <procurement-date-picker
+              <span class="field-label">{{ 'upload.details.releaseDate' | translate }} <span class="required">*</span></span>
+              <app-date-picker
                 [singleMode]="true"
                 (singleDateChange)="onReleaseDateChange($event)"
                 class="release-date-picker"
@@ -176,26 +176,26 @@
             <!-- Director + Writer -->
             <div class="field-row">
               <div class="field">
-                <label>{{ 'upload.details.director' | translate }} <span class="optional">{{ 'producerUi.common.optional' | translate }}</span></label>
-                <input type="text" formControlName="director" [placeholder]="'upload.details.directorHint' | translate" />
+                <label for="pu-director">{{ 'upload.details.director' | translate }} <span class="optional">{{ 'producerUi.common.optional' | translate }}</span></label>
+                <input id="pu-director" type="text" formControlName="director" [placeholder]="'upload.details.directorHint' | translate" />
               </div>
               <div class="field">
-                <label>{{ 'upload.details.writer' | translate }} <span class="optional">{{ 'producerUi.common.optional' | translate }}</span></label>
-                <input type="text" formControlName="writer" [placeholder]="'upload.details.writerHint' | translate" />
+                <label for="pu-writer">{{ 'upload.details.writer' | translate }} <span class="optional">{{ 'producerUi.common.optional' | translate }}</span></label>
+                <input id="pu-writer" type="text" formControlName="writer" [placeholder]="'upload.details.writerHint' | translate" />
               </div>
             </div>
 
             <!-- Cast -->
             <div class="field">
-              <label>{{ 'upload.details.cast' | translate }} <span class="optional">{{ 'producerUi.upload.castOptional' | translate }}</span></label>
-              <input type="text" formControlName="cast" [placeholder]="'upload.details.castHint' | translate" />
+              <label for="pu-cast">{{ 'upload.details.cast' | translate }} <span class="optional">{{ 'producerUi.upload.castOptional' | translate }}</span></label>
+              <input id="pu-cast" type="text" formControlName="cast" [placeholder]="'upload.details.castHint' | translate" />
             </div>
 
           </form>
 
           <!-- Genres -->
           <div class="field-section">
-            <label class="section-label">{{ 'upload.details.genres' | translate }} <span class="required">*</span></label>
+            <span class="section-label">{{ 'upload.details.genres' | translate }} <span class="required">*</span></span>
             <div class="genre-chips">
               @for (genre of ALL_GENRES; track genre) {
                 <button type="button"
@@ -213,7 +213,7 @@
 
           <!-- Thumbnail -->
           <div class="field-section">
-            <label class="section-label">{{ 'upload.details.thumbnail' | translate }} <span class="required">*</span></label>
+            <span class="section-label">{{ 'upload.details.thumbnail' | translate }} <span class="required">*</span></span>
 
             @if (!thumbnailFile()) {
               <div class="thumbnail-drop"
@@ -250,10 +250,10 @@
 
           <!-- Backdrop / Hero Image -->
           <div class="field-section">
-            <label class="section-label">
+            <span class="section-label">
               {{ 'producerUi.upload.backdropLabel' | translate }}
               <span class="optional">{{ 'producerUi.upload.backdropOptional' | translate }}</span>
-            </label>
+            </span>
             <p class="field-hint">{{ 'producerUi.upload.backdropHint' | translate }}</p>
 
             @if (!backdropFile()) {

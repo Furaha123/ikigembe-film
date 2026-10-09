@@ -67,20 +67,26 @@ export class AdminLayoutComponent implements OnInit, OnDestroy {
       labelKey: 'admin.nav.content',
       path: '/admin/movies',
       icon: 'movies',
-      activePaths: ['/admin/movies', '/admin/cms'],
+      activePaths: ['/admin/movies', '/admin/film-requests', '/admin/transcodes', '/admin/cms'],
       showBadge: true,
     },
     {
       labelKey: 'admin.nav.financials',
-      path: '/admin/withdrawals',
+      path: '/admin/payments',
       icon: 'withdrawals',
-      activePaths: ['/admin/withdrawals', '/admin/contracts'],
+      activePaths: ['/admin/payments', '/admin/finance', '/admin/withdrawals', '/admin/contracts'],
     },
     {
       labelKey: 'admin.nav.marketplace',
       path: '/admin/marketplace',
       icon: 'marketplace',
-      activePaths: ['/admin/marketplace', '/admin/marketplace-settings'],
+      activePaths: ['/admin/marketplace'],
+    },
+    {
+      labelKey: 'admin.nav.abuseReports',
+      path: '/admin/abuse-reports',
+      icon: 'marketplace',
+      activePaths: ['/admin/abuse-reports'],
     },
     {
       labelKey: 'admin.nav.reports',
@@ -89,17 +95,23 @@ export class AdminLayoutComponent implements OnInit, OnDestroy {
       activePaths: ['/admin/reports'],
     },
     {
+      labelKey: 'admin.nav.auditLog',
+      path: '/admin/audit-log',
+      icon: 'reports',
+      activePaths: ['/admin/audit-log'],
+    },
+    {
       labelKey: 'admin.nav.settings',
-      path: '/admin/settings',
+      path: '/admin/platform-settings',
       icon: 'settings',
-      activePaths: ['/admin/settings'],
+      activePaths: ['/admin/platform-settings', '/admin/marketplace-settings', '/admin/settings'],
     },
   ];
 
   ngOnInit(): void {
     this.overviewSub = this.adminService.getOverview().subscribe({
       next: (d) => this.pendingSubmissions.set(d.pending_submissions ?? 0),
-      error: () => {},
+      error: () => { /* the badge is optional: keep the last count */ },
     });
   }
 

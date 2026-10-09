@@ -39,7 +39,7 @@ export class ProducerWithdrawalsComponent implements OnInit {
   ngOnInit() {
     this.producerService.getWithdrawals().subscribe({
       next: (data) => {
-        const list = Array.isArray(data) ? data : (data as any).results ?? [];
+        const list: ProducerWithdrawal[] = Array.isArray(data) ? data : data.results ?? [];
         this.withdrawals.set(list);
         this.isLoading.set(false);
       },

@@ -22,7 +22,7 @@ const MIN_SPAN_RATIO = 0.15;
     <div class="pad" [class.has-ink]="hasInk()">
       <canvas #canvas
               (pointerdown)="start($event)" (pointermove)="move($event)"
-              (pointerup)="end($event)" (pointercancel)="end($event)" (pointerleave)="end($event)"
+              (pointerup)="end()" (pointercancel)="end()" (pointerleave)="end()"
               role="img" [attr.aria-label]="'contracts.acceptance.padLabel' | translate"></canvas>
       @if (empty()) {
         <span class="pad-hint">{{ 'contracts.acceptance.padHint' | translate }}</span>
@@ -117,7 +117,7 @@ export class SignaturePadComponent implements AfterViewInit, OnDestroy {
     this.last = p;
   }
 
-  end(_e: PointerEvent) {
+  end() {
     this.drawing = false;
     this.last = null;
   }

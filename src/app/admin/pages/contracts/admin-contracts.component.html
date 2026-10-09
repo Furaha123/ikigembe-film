@@ -1,6 +1,8 @@
 <div class="admin-page">
 
   <app-admin-section-tabs [tabs]="[
+    { labelKey: 'admin.nav.payments',    path: '/admin/payments',    exact: true },
+    { labelKey: 'admin.nav.finance',     path: '/admin/finance',     exact: true },
     { labelKey: 'admin.nav.withdrawals', path: '/admin/withdrawals', exact: true },
     { labelKey: 'admin.nav.contracts',   path: '/admin/contracts',   exact: true }
   ]" ariaLabel="admin.nav.financials" />

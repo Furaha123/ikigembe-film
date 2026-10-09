@@ -122,7 +122,7 @@ describe('AdminMovieFormComponent (film upload)', () => {
   });
 
   it('blocks saving while an upload is still running', () => {
-    uploader.upload.and.returnValue(new Promise<string>(() => {}));
+    uploader.upload.and.returnValue(new Promise<string>(() => undefined));
     create();
     fillRequired();
     pick('#f-thumbnail', thumb);
@@ -149,7 +149,7 @@ describe('AdminMovieFormComponent (film upload)', () => {
 
   it('removing a file mid-upload cancels it', () => {
     let signal: AbortSignal | undefined;
-    uploader.upload.and.callFake((_f, _a, opts) => { signal = opts?.signal; return new Promise<string>(() => {}); });
+    uploader.upload.and.callFake((_f, _a, opts) => { signal = opts?.signal; return new Promise<string>(() => undefined); });
     create();
     pick('#f-video', videoFile);
     c.removeVideo('video');

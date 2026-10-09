@@ -4,7 +4,7 @@ import {
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { HttpErrorResponse } from '@angular/common/http';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { RouterLink } from '@angular/router';
+import { RouterLink, ActivatedRoute } from '@angular/router';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { tap } from 'rxjs';
 import { HeaderComponent } from '../../../core/components/header/header.component';
@@ -16,13 +16,13 @@ import { WizardStepsComponent } from '../../../shared/components/wizard-steps/wi
 import { ActorMarketplaceService } from '../../../shared/services/actor-marketplace.service';
 import { DraftStoreService } from '../../../shared/services/draft-store.service';
 import { MultipartUploadService, UploadAbortedError } from '../../../shared/services/multipart-upload.service';
-import { ALLOWED_VIDEO_EXTENSIONS, VIDEO_ACCEPT, extensionList } from '../../../shared/models/upload.constants';
+import { extensionList } from '../../../shared/models/upload.constants';
 import { ActorProfile, ActorVideo, ServicePurchase, ServiceQuote } from '../../../shared/models/marketplace.interface';
 import { marketplaceErrorMessage } from '../../../shared/utils/marketplace-error';
 import { actorVideoStatusClass } from '../../../shared/utils/marketplace-status';
 import { uploadErrorMessage } from '../../../shared/utils/upload-error';
 import {
-  TALENT_VIDEO_MAX_SECONDS, ageOn, formatDuration, formatFileSize, readVideoDuration, talentFeeTier, talentVideoProblem,
+  TALENT_VIDEO_ACCEPT, TALENT_VIDEO_EXTENSIONS, TALENT_VIDEO_MAX_SECONDS, ageOn, formatDuration, formatFileSize, readVideoDuration, talentFeeTier, talentVideoProblem,
 } from '../../../shared/utils/talent-video';
 import { ActorProfileFormComponent } from '../actor-profile/actor-profile-form.component';
 
@@ -68,6 +68,9 @@ export class TalentSubmitComponent implements OnInit, OnDestroy, HasUnsavedChang
   private readonly drafts = inject(DraftStoreService);
   private readonly translate = inject(TranslateService);
   private readonly platformId = inject(PLATFORM_ID);
+  private readonly route = inject(ActivatedRoute);
+  /** Approved video this submission replaces (from My talent videos → Replace); it stays live until approval. */
+  readonly replaces = signal<number | null>(null);
   private readonly stepHeading = viewChild<ElementRef<HTMLElement>>('stepHeading');
   private readonly profileForm = viewChild(ActorProfileFormComponent);
 
@@ -75,8 +78,8 @@ export class TalentSubmitComponent implements OnInit, OnDestroy, HasUnsavedChang
     'marketplace.talent.stepWelcome', 'marketplace.talent.stepDetails', 'marketplace.talent.stepVideo',
     'marketplace.talent.stepPay', 'marketplace.talent.stepDone',
   ];
-  readonly videoAccept = VIDEO_ACCEPT;
-  readonly allowedTypes = extensionList(ALLOWED_VIDEO_EXTENSIONS);
+  readonly videoAccept = TALENT_VIDEO_ACCEPT;
+  readonly allowedTypes = extensionList(TALENT_VIDEO_EXTENSIONS);
   readonly maxMinutes = TALENT_VIDEO_MAX_SECONDS / 60;
   readonly statusClass = actorVideoStatusClass;
   readonly formatSize = formatFileSize;
@@ -119,6 +122,8 @@ export class TalentSubmitComponent implements OnInit, OnDestroy, HasUnsavedChang
   readonly tier = computed(() => talentFeeTier(this.profile()?.date_of_birth));
 
   ngOnInit(): void {
+    const replaces = Number(this.route.snapshot.queryParamMap.get('replaces'));
+    if (Number.isInteger(replaces) && replaces > 0) this.replaces.set(replaces);
     this.restoreDraft();
     this.loadProfile();
   }
@@ -200,8 +205,13 @@ export class TalentSubmitComponent implements OnInit, OnDestroy, HasUnsavedChang
     input.value = '';
     if (!file) return;
     this.fileError.set(null);
-    if (talentVideoProblem(file.name, null) === 'type') {
+    const problem = talentVideoProblem(file.name, null, file.size);
+    if (problem === 'type') {
       this.fileError.set(this.translate.instant('uploadErrors.videoType', { types: this.allowedTypes }));
+      return;
+    }
+    if (problem === 'tooLarge') {
+      this.fileError.set(this.translate.instant('marketplace.talent.tooLarge'));
       return;
     }
     this.checkingFile.set(true);
@@ -239,6 +249,7 @@ export class TalentSubmitComponent implements OnInit, OnDestroy, HasUnsavedChang
         title: title.trim(),
         description: description.trim() || undefined,
         phone_number: phone ?? undefined,
+        ...(this.replaces() ? { replaces: this.replaces()! } : {}),
       }).pipe(tap(res => { if (res.actor_video_id) this.videoId.set(res.actor_video_id); })),
     });
   }

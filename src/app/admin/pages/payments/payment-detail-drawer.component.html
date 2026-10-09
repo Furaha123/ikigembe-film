@@ -1,0 +1,122 @@
+<div class="drawer-overlay" (click)="closed.emit()" (keydown.escape)="closed.emit()" tabindex="-1">
+  <aside class="drawer" role="dialog" aria-modal="true" aria-labelledby="pd-title" (click)="$event.stopPropagation()" (keydown)="$event.stopPropagation()">
+    <header class="drawer-header">
+      <h2 id="pd-title">{{ 'admin.payments.detailTitle' | translate }}</h2>
+      <button type="button" class="btn ghost small" (click)="closed.emit()">{{ 'admin.payments.close' | translate }}</button>
+    </header>
+
+    @if (loading()) {
+      <p class="muted" role="status">{{ 'admin.payments.loading' | translate }}</p>
+    } @else if (error()) {
+      <p class="error" role="alert">{{ error() }}</p>
+      <button type="button" class="btn ghost" (click)="load()">{{ 'admin.payments.retry' | translate }}</button>
+    } @else if (detail()) {
+    @let d = detail()!;
+      <dl class="facts">
+        <dt>{{ 'admin.payments.reference' | translate }}</dt><dd class="mono">{{ d.reference }}</dd>
+        <dt>{{ 'admin.payments.user' | translate }}</dt><dd>{{ d.user.name || '—' }} · {{ d.user.email || d.user.phone_number }}</dd>
+        <dt>{{ 'admin.payments.item' | translate }}</dt><dd>{{ d.item }}</dd>
+        <dt>{{ 'admin.payments.amount' | translate }}</dt><dd>RWF {{ d.amount | number }}</dd>
+        <dt>{{ 'admin.payments.status' | translate }}</dt>
+        <dd>{{ 'admin.payments.statusLabel.' + d.status | translate }} @if (d.failure_reason) { ({{ d.failure_reason }}) }</dd>
+        <dt>{{ 'admin.payments.gateway' | translate }}</dt>
+        <dd>{{ d.gateway }} @if (d.gateway_status) { · {{ d.gateway_status }} } @if (d.gateway_ref) { · {{ d.gateway_ref }} }</dd>
+        <dt>{{ 'admin.payments.date' | translate }}</dt><dd>{{ d.created_at | date:'medium' }}</dd>
+        @if (d.completed_at) { <dt>{{ 'admin.payments.completedAt' | translate }}</dt><dd>{{ d.completed_at | date:'medium' }}</dd> }
+        @if (d.benefit) {
+          <dt>{{ 'admin.payments.benefit' | translate }}</dt>
+          <dd>{{ 'admin.payments.benefitKind.' + d.benefit.kind | translate }}: {{ d.benefit.label }} — {{ d.benefit.state }}</dd>
+        }
+        <dt>{{ 'admin.payments.refunded' | translate }}</dt><dd>RWF {{ d.refunded_amount | number }}</dd>
+      </dl>
+
+      <div aria-live="polite">
+        @if (notice()) { <p class="success" role="status">{{ notice() }}</p> }
+        @if (actionError()) { <p class="error" role="alert">{{ actionError() }}</p> }
+      </div>
+
+      <div class="drawer-actions">
+        @if (d.status === 'Pending') {
+          <button type="button" class="btn" (click)="recheck()" [disabled]="busy()">{{ 'admin.payments.recheck' | translate }}</button>
+        }
+        @if (d.status === 'Completed' && d.refundable_amount > 0 && d.refund_state !== 'in_progress' && !refundOpen()) {
+          <button type="button" class="btn danger" (click)="refundOpen.set(true)">{{ 'admin.payments.refundAction' | translate }}</button>
+        }
+      </div>
+
+      @if (refundOpen()) {
+        <form class="refund-form" (ngSubmit)="submitRefund()">
+          <h3>{{ 'admin.payments.refundAction' | translate }}</h3>
+          <p class="muted">{{ 'admin.payments.refundHelp' | translate }}</p>
+          <label class="field">
+            <span>{{ 'admin.payments.amount' | translate }} (RWF, ≤ {{ d.refundable_amount | number }})</span>
+            <input type="number" name="amount" min="1" [max]="d.refundable_amount" step="1" [(ngModel)]="refundAmount" required />
+          </label>
+          <fieldset class="field">
+            <legend>{{ 'admin.payments.methodLabel' | translate }}</legend>
+            <label class="check">
+              <input type="radio" name="method" value="provider" [(ngModel)]="refundMethod" [disabled]="!d.provider_refunds_supported" />
+              {{ 'admin.payments.methodProvider' | translate }}
+            </label>
+            @if (!d.provider_refunds_supported) { <span class="muted block">{{ 'admin.payments.providerUnsupported' | translate }}</span> }
+            <label class="check">
+              <input type="radio" name="method" value="manual" [(ngModel)]="refundMethod" />
+              {{ 'admin.payments.methodManual' | translate }}
+            </label>
+          </fieldset>
+          <label class="field">
+            <span>{{ 'admin.payments.reason' | translate }}</span>
+            <textarea name="reason" rows="3" [(ngModel)]="refundReason" required></textarea>
+          </label>
+          @if (refundAmount >= d.amount - d.refunded_amount) {
+            <p class="warn">{{ 'admin.payments.fullRefundWarning' | translate }}</p>
+          }
+          <div class="drawer-actions">
+            <button type="button" class="btn ghost" (click)="refundOpen.set(false)">{{ 'admin.payments.cancel' | translate }}</button>
+            <button type="submit" class="btn danger" [disabled]="busy()" [attr.aria-busy]="busy()">{{ 'admin.payments.submitRefund' | translate }}</button>
+          </div>
+        </form>
+      }
+
+      <h3>{{ 'admin.payments.refunds' | translate }}</h3>
+      @if (d.refunds.length === 0) {
+        <p class="muted">{{ 'admin.payments.noRefunds' | translate }}</p>
+      } @else {
+        <ul class="refund-list">
+          @for (r of d.refunds; track r.id) {
+            <li>
+              <div class="row-between">
+                <strong>RWF {{ r.amount | number }}</strong>
+                <span class="status-badge status-refund">{{ 'admin.payments.refundStatus.' + r.status | translate }}</span>
+              </div>
+              <p class="muted">
+                {{ 'admin.payments.methods.' + r.method | translate }} · {{ r.created_at | date:'medium' }}
+                @if (r.requested_by) { · {{ r.requested_by }} }
+              </p>
+              <p>{{ r.reason }}</p>
+              @if (r.reference) { <p class="muted">{{ 'admin.payments.transferRef' | translate }}: {{ r.reference }}</p> }
+              @if (r.failure_reason) { <p class="error">{{ r.failure_reason }}</p> }
+              @if (r.method === 'manual' && (r.status === 'requested' || r.status === 'processing')) {
+                @if (resolving()?.refund?.id === r.id) {
+                  <label class="field">
+                    <span>{{ (resolving()!.action === 'complete' ? 'admin.payments.transferRef' : 'admin.payments.reason') | translate }}</span>
+                    <input type="text" [(ngModel)]="resolveText" name="resolve-{{ r.id }}" />
+                  </label>
+                  <div class="drawer-actions">
+                    <button type="button" class="btn ghost" (click)="resolving.set(null)">{{ 'admin.payments.cancel' | translate }}</button>
+                    <button type="button" class="btn" (click)="confirmResolve()" [disabled]="busy()">{{ 'admin.payments.confirm' | translate }}</button>
+                  </div>
+                } @else {
+                  <div class="drawer-actions">
+                    <button type="button" class="btn" (click)="startResolve(r, 'complete')">{{ 'admin.payments.markPaidOut' | translate }}</button>
+                    <button type="button" class="btn ghost" (click)="startResolve(r, 'fail')">{{ 'admin.payments.markFailed' | translate }}</button>
+                  </div>
+                }
+              }
+            </li>
+          }
+        </ul>
+      }
+    }
+  </aside>
+</div>

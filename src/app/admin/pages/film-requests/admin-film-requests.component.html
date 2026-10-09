@@ -1,0 +1,74 @@
+<div class="admin-page">
+  <app-admin-section-tabs [tabs]="[
+    { labelKey: 'admin.nav.movies', path: '/admin/movies', exact: true },
+    { labelKey: 'admin.nav.filmRequests', path: '/admin/film-requests', exact: true },
+    { labelKey: 'admin.nav.transcodes', path: '/admin/transcodes', exact: true },
+    { labelKey: 'admin.nav.cms', path: '/admin/cms/pages' }
+  ]" ariaLabel="admin.nav.content" />
+
+  <div class="page-header">
+    <div>
+      <h1>{{ 'admin.filmRequests.title' | translate }}</h1>
+      <p>{{ 'admin.filmRequests.subtitle' | translate }}</p>
+    </div>
+  </div>
+
+  <div class="filters" role="group" [attr.aria-label]="'admin.transcodes.filter' | translate">
+    @for (s of states; track s) {
+      <button type="button" class="btn small" [class.ghost]="state() !== s" [attr.aria-pressed]="state() === s" (click)="setState(s)">
+        {{ 'admin.filmRequests.status.' + s | translate }}
+      </button>
+    }
+  </div>
+
+  <div aria-live="polite">
+    @if (error()) { <p class="error" role="alert">{{ error() }}</p> }
+  </div>
+
+  @if (loading()) {
+    <div class="table-skeleton" aria-hidden="true">@for (i of [1,2,3]; track i) { <div class="row-skeleton"></div> }</div>
+  } @else if (rows().length === 0) {
+    <div class="empty-state">{{ 'admin.filmRequests.empty' | translate }}</div>
+  } @else {
+    <ul class="refund-list">
+      @for (r of rows(); track r.id) {
+        <li>
+          <div class="row-between">
+            <strong>{{ r.movie_title }}</strong>
+            <span class="status-badge" [class.status-failed]="r.kind === 'unpublish'">{{ 'admin.filmRequests.kind.' + r.kind | translate }}</span>
+          </div>
+          <p class="muted">{{ r.producer }} · {{ r.created_at | date:'medium' }}</p>
+          @if (r.reason) { <p>{{ r.reason }}</p> }
+          @if (r.kind === 'edit') {
+            <dl class="facts">
+              @for (f of changedFields(r); track f) {
+                <dt>{{ f }}</dt>
+                <dd><span class="muted">{{ r.current[f] }}</span> → <strong>{{ proposed(r, f) }}</strong></dd>
+              }
+            </dl>
+          }
+          @if (r.review_note) { <p class="muted">{{ 'admin.payments.reason' | translate }}: {{ r.review_note }}</p> }
+          @if (r.status === 'pending') {
+            @if (rejecting() === r.id) {
+              <label class="field">
+                <span>{{ 'admin.payments.reason' | translate }}</span>
+                <textarea rows="2" [(ngModel)]="reason" name="reason-{{ r.id }}"></textarea>
+              </label>
+              <div class="drawer-actions">
+                <button type="button" class="btn ghost" (click)="rejecting.set(null)">{{ 'admin.payments.cancel' | translate }}</button>
+                <button type="button" class="btn danger" (click)="reject(r)" [disabled]="busy() === r.id">{{ 'admin.marketplace.reject' | translate }}</button>
+              </div>
+            } @else {
+              <div class="drawer-actions">
+                <button type="button" class="btn" (click)="approve(r)" [disabled]="busy() === r.id" [attr.aria-busy]="busy() === r.id">
+                  {{ (r.kind === 'unpublish' ? 'admin.filmRequests.approveUnpublish' : 'admin.filmRequests.approveEdit') | translate }}
+                </button>
+                <button type="button" class="btn danger" (click)="reason = ''; rejecting.set(r.id)">{{ 'admin.marketplace.reject' | translate }}</button>
+              </div>
+            }
+          }
+        </li>
+      }
+    </ul>
+  }
+</div>

@@ -7,7 +7,7 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { catchError, forkJoin, map, of } from 'rxjs';
 import { MovieService, toPlaybackSource } from '../../shared/services/movie.service';
 import { WatchProgressService } from '../../shared/services/watch-progress.service';
-import { PlaybackProgress, PlaybackSource } from '../../shared/models/movie-api.interface';
+import { MovieDetailResponse, PlaybackProgress, PlaybackSource } from '../../shared/models/movie-api.interface';
 import { classifyStreamError, StreamDenial } from '../../shared/utils/stream-error';
 import { FooterComponent } from '../../core/components/footer/footer.component';
 import { HeaderComponent } from '../../core/components/header/header.component';
@@ -18,11 +18,16 @@ import { PaymentService } from '../../core/services/payment.service';
 import { DataSaverService } from '../../core/services/data-saver.service';
 import { AdSlotComponent } from '../../shared/components/ad-slot/ad-slot.component';
 import { ViewingAccessComponent } from '../../shared/components/viewing-access/viewing-access.component';
+import { AuthService } from '../../core/services/auth.service';
+import { ShareButtonComponent } from '../../shared/components/share-button/share-button.component';
+import { RETURN_URL_PARAM } from '../../shared/utils/safe-redirect';
+import { AnalyticsService } from '../../core/services/analytics.service';
+import { ReportButtonComponent } from '../../shared/components/report-button/report-button.component';
 
 @Component({
   selector: 'app-movie-detail',
   standalone: true,
-  imports: [CommonModule, RouterLink, TranslatePipe, HeaderComponent, FooterComponent, VideoPlayerComponent, PaymentModalComponent, AdSlotComponent, ViewingAccessComponent],
+  imports: [CommonModule, RouterLink, TranslatePipe, HeaderComponent, FooterComponent, VideoPlayerComponent, PaymentModalComponent, AdSlotComponent, ViewingAccessComponent, ShareButtonComponent, ReportButtonComponent],
   templateUrl: './movie-detail.component.html',
   styleUrls: ['./movie-detail.component.scss']
 })
@@ -32,12 +37,13 @@ export class MovieDetailComponent implements OnInit, OnDestroy {
   private readonly movieService   = inject(MovieService);
   private readonly paymentService = inject(PaymentService);
   private readonly seo            = inject(SeoService);
+  private readonly analytics      = inject(AnalyticsService);
   private readonly watchProgress  = inject(WatchProgressService);
   private readonly translate      = inject(TranslateService);
   readonly dataSaver              = inject(DataSaverService);
+  private readonly auth           = inject(AuthService);
 
-  movie            = signal<any>(null);
-  cast             = signal<any[]>([]);
+  movie            = signal<MovieDetailResponse | null>(null);
   similarMovies    = signal<IVideoContent[]>([]);
   moreFromProducer = signal<IVideoContent[]>([]);
   videoSrc         = signal<string>('');   // trailer only
@@ -63,7 +69,7 @@ export class MovieDetailComponent implements OnInit, OnDestroy {
 
   /** Handed to the player so it can re-request /stream/ once when the token expires. */
   readonly refreshStream = () =>
-    this.movieService.getStream(this.movie()?.id).pipe(map(toPlaybackSource));
+    this.movieService.getStream(this.movie()?.id as number).pipe(map(toPlaybackSource));
 
   ngOnInit() {
     this.route.params.subscribe(params => {
@@ -82,17 +88,15 @@ export class MovieDetailComponent implements OnInit, OnDestroy {
     forkJoin({
       details: this.movieService.getMovieDetails(id),
       // Secondary data must not take the page down with it.
-      credits: this.movieService.getMovieCredits(id).pipe(catchError(() => of({ cast: [] as any[] }))),
-      similar: this.movieService.getSimilarMovies(id).pipe(catchError(() => of({ results: [] as IVideoContent[] }))),
+      similar: this.movieService.getRelatedMovies(id).pipe(catchError(() => of({ results: [] as IVideoContent[] }))),
     }).subscribe({
       error: (err: unknown) => {
         if (this.currentId !== id) return;
         this.loadState.set(err instanceof HttpErrorResponse && err.status === 404 ? 'not_found' : 'error');
       },
-      next: ({ details, credits, similar }) => {
+      next: ({ details, similar }) => {
       this.loadState.set('ready');
       this.movie.set(details);
-      this.cast.set(credits.cast?.slice(0, 10) || []);
       this.similarMovies.set(similar.results?.slice(0, 6) || []);
       this.moreFromProducer.set([]);
       this.videoSrc.set(details.trailer_url || '');
@@ -108,7 +112,8 @@ export class MovieDetailComponent implements OnInit, OnDestroy {
         description: details.overview || this.translate.instant('movieDetailPage.seoDescription', { title: details.title }),
         image: details.thumbnail_url ?? undefined,
         type: 'video.movie',
-        noIndex: true,
+        // Film pages are public; private data (entitlement, links) is never part of the page metadata.
+        noIndex: details.release_state === 'unavailable',
       });
       this.seo.setMovieJsonLd(details);
 
@@ -118,7 +123,7 @@ export class MovieDetailComponent implements OnInit, OnDestroy {
           next: (res) => this.moreFromProducer.set(
             res.results.filter((m: IVideoContent) => m.id !== id).slice(0, 8)
           ),
-          error: () => {},
+          error: () => { /* the "more from this producer" row stays hidden */ },
         });
       }
     }});
@@ -135,9 +140,15 @@ export class MovieDetailComponent implements OnInit, OnDestroy {
     this.playback.set(null);
     this.videoSrc.set(trailerUrl);
     this.isPlaying.set(true);
+    this.analytics.track('trailer_play', { movie_id: this.movie()?.id, props: { source: 'detail' } });
   }
 
   watchFullMovie() {
+    if (!this.auth.isLoggedIn()) {
+      // Visitors can read the page and watch the trailer; buying or watching needs an account.
+      this.router.navigate(['/login'], { queryParams: { [RETURN_URL_PARAM]: this.router.url } });
+      return;
+    }
     if (this.purchased()) {
       this.startStream();
     } else {
@@ -163,7 +174,7 @@ export class MovieDetailComponent implements OnInit, OnDestroy {
   onPaymentSuccess() {
     this.pendingPayment.set(false);
     this.purchased.set(true);
-    this.movie.update(movie => ({ ...movie, has_purchased: true }));
+    this.movie.update(movie => movie && { ...movie, has_purchased: true });
     this.showPaymentModal.set(false);
     this.startStream();
   }
@@ -187,7 +198,7 @@ export class MovieDetailComponent implements OnInit, OnDestroy {
         if (denial.canBuy) {
           // Not (or no longer) entitled — offer the purchase again.
           this.purchased.set(false);
-          this.movie.update(movie => ({ ...movie, has_purchased: false }));
+          this.movie.update(movie => movie && { ...movie, has_purchased: false });
           this.paymentService.forgetPurchase(id);
         }
         this.refreshEntitlement(id);
@@ -235,12 +246,16 @@ export class MovieDetailComponent implements OnInit, OnDestroy {
   }
 
   /** release_date is a plain YYYY-MM-DD date; compare as dates in the viewer's day. */
-  isUpcoming(releaseDate: string | null | undefined): boolean {
-    if (!releaseDate) return false;
-    const today = new Date();
-    const local = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
-    return releaseDate > local;
+  /** Server-decided: a coming-soon film shows its trailer but can't be bought or streamed yet. */
+  isComingSoon(movie: IVideoContent): boolean {
+    return movie.release_state === 'coming_soon';
   }
+
+  /** When the full film becomes available (exact time when the API sends it). */
+  releaseMoment(movie: IVideoContent): string {
+    return movie.release_at ?? movie.release_date;
+  }
+
 
   getRatingPercent(vote: number): number {
     return Math.round(vote * 10);

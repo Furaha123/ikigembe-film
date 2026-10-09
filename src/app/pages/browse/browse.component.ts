@@ -60,7 +60,7 @@ export class BrowseComponent implements OnInit {
 
   ngOnInit(): void {
     this.seo.setTranslated({ titleKey: 'browse.seoTitle', descriptionKey: 'browse.seoDescription', noIndex: true });
-    forkJoin(this.sources).subscribe((res: any[]) => {
+    forkJoin(this.sources).subscribe(res => {
       const [movies, popular, nowPlaying, upcoming, topRated] = res;
       this.movies = movies.results as IVideoContent[];
       this.popularMovies = popular.results as IVideoContent[];

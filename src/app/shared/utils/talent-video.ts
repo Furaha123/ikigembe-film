@@ -1,10 +1,14 @@
-import { ALLOWED_VIDEO_EXTENSIONS, hasAllowedExtension } from '../models/upload.constants';
+import { hasAllowedExtension } from '../models/upload.constants';
 
 /**
- * Product rule for talent videos: at most 3 minutes. The backend doesn't check
- * the length yet, so this is an early check only.
+ * Talent-video rules, mirroring the backend defaults (MarketplaceSettings talent_video_max_*,
+ * apps/marketplace/media.py). Early checks only: the server measures the stored file again after
+ * upload and is the final judge (a failed check can be retried on the same paid slot).
  */
-export const TALENT_VIDEO_MAX_SECONDS = 180;
+export const TALENT_VIDEO_EXTENSIONS: readonly string[] = ['.mp4', '.mov'];
+export const TALENT_VIDEO_ACCEPT = '.mp4,.mov,video/mp4,video/quicktime';
+export const TALENT_VIDEO_MAX_SECONDS = 300;
+export const TALENT_VIDEO_MAX_BYTES = 500 * 1024 * 1024;
 
 /** The backend's age threshold for the talent-video fee (apps/marketplace/services.py). */
 export const TALENT_FEE_AGE_THRESHOLD = 30;
@@ -31,11 +35,12 @@ export function talentFeeTier(dateOfBirth: string | null | undefined, today: Dat
   return age < TALENT_FEE_AGE_THRESHOLD ? 'under30' : 'from30';
 }
 
-export type TalentVideoProblem = 'type' | 'tooLong';
+export type TalentVideoProblem = 'type' | 'tooLong' | 'tooLarge';
 
 /** Early checks before paying. The backend stays the final validator. */
-export function talentVideoProblem(fileName: string, durationSeconds: number | null): TalentVideoProblem | null {
-  if (!hasAllowedExtension(fileName, ALLOWED_VIDEO_EXTENSIONS)) return 'type';
+export function talentVideoProblem(fileName: string, durationSeconds: number | null, sizeBytes = 0): TalentVideoProblem | null {
+  if (!hasAllowedExtension(fileName, TALENT_VIDEO_EXTENSIONS)) return 'type';
+  if (sizeBytes > TALENT_VIDEO_MAX_BYTES) return 'tooLarge';
   if (durationSeconds !== null && durationSeconds > TALENT_VIDEO_MAX_SECONDS + 0.5) return 'tooLong';
   return null;
 }

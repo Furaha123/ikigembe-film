@@ -1,0 +1,142 @@
+<div class="admin-page">
+  <app-admin-section-tabs [tabs]="[
+    { labelKey: 'admin.nav.payments',    path: '/admin/payments',    exact: true },
+    { labelKey: 'admin.nav.finance',     path: '/admin/finance',     exact: true },
+    { labelKey: 'admin.nav.withdrawals', path: '/admin/withdrawals', exact: true },
+    { labelKey: 'admin.nav.contracts',   path: '/admin/contracts',   exact: true }
+  ]" ariaLabel="admin.nav.financials" />
+
+  <div class="page-header">
+    <div>
+      <h1>{{ 'admin.finance.title' | translate }}</h1>
+      <p>{{ 'admin.finance.subtitle' | translate }}</p>
+    </div>
+    <form class="header-actions" (ngSubmit)="openMonth()">
+      <label class="field">
+        <span>{{ 'admin.finance.month' | translate }}</span>
+        <input type="month" name="month" [(ngModel)]="month" required />
+      </label>
+      <button type="submit" class="btn">{{ 'admin.finance.openMonth' | translate }}</button>
+    </form>
+  </div>
+
+  <div aria-live="polite">
+    @if (notice()) { <p class="success" role="status">{{ notice() }}</p> }
+    @if (error()) { <p class="error" role="alert">{{ error() }}</p> }
+  </div>
+
+  @if (loading()) {
+    <p class="muted" role="status">{{ 'admin.payments.loading' | translate }}</p>
+  } @else if (periods().length === 0) {
+    <div class="empty-state">{{ 'admin.finance.noPeriods' | translate }}</div>
+  } @else {
+    <div class="filters" role="group" [attr.aria-label]="'admin.finance.periods' | translate">
+      @for (p of periods(); track p.id) {
+        <button type="button" class="btn small" [class.ghost]="selected()?.id !== p.id" [attr.aria-pressed]="selected()?.id === p.id" (click)="select(p.id)">
+          {{ p.label }} · {{ 'admin.finance.status.' + p.status | translate }}
+        </button>
+      }
+    </div>
+
+    @if (detailLoading()) {
+      <p class="muted" role="status">{{ 'admin.payments.loading' | translate }}</p>
+    } @else if (selected()) {
+      @let p = selected()!;
+      <section class="refund-form" aria-labelledby="fin-title">
+        <div class="row-between">
+          <h2 id="fin-title">{{ p.label }} — {{ 'admin.finance.status.' + p.status | translate }}</h2>
+          <div class="drawer-actions">
+            @if (p.status === 'closed') {
+              <button type="button" class="btn ghost" (click)="downloadCsv()">{{ 'admin.finance.exportCsv' | translate }}</button>
+            } @else if (!(p.issues?.length)) {
+              @if (confirmClose()) {
+                <span class="warn">{{ 'admin.finance.confirmClose' | translate }}</span>
+                <button type="button" class="btn ghost" (click)="confirmClose.set(false)">{{ 'admin.payments.cancel' | translate }}</button>
+                <button type="button" class="btn danger" (click)="close()" [disabled]="busy()" [attr.aria-busy]="busy()">{{ 'admin.finance.close' | translate }}</button>
+              } @else {
+                <button type="button" class="btn" (click)="confirmClose.set(true)">{{ 'admin.finance.close' | translate }}</button>
+              }
+            }
+          </div>
+        </div>
+
+        @if (p.status === 'closed') {
+          <p class="muted">{{ 'admin.finance.closedInfo' | translate: { date: (p.closed_at | date:'medium'), by: p.closed_by ?? '—', tax: p.tax_rate_percent, ops: p.operations_percent } }}</p>
+        } @else {
+          <p class="muted">{{ 'admin.finance.previewInfo' | translate }}</p>
+        }
+
+        @if (p.issues?.length) {
+          <div class="error" role="alert">
+            <strong>{{ 'admin.finance.blocked' | translate }}</strong>
+            <ul>@for (i of p.issues; track i) { <li>{{ i }}</li> }</ul>
+          </div>
+        } @else {
+          <dl class="facts">
+            <dt>{{ 'admin.finance.gross' | translate }}</dt>
+            <dd>RWF {{ (p.totals.gross ?? p.ledger_total ?? 0) | number }}</dd>
+            @for (party of parties; track party) {
+              @if (partyTotals()[party] !== undefined) {
+                <dt>{{ 'admin.finance.party.' + party | translate }}</dt><dd>RWF {{ partyTotals()[party] | number }}</dd>
+              }
+            }
+          </dl>
+          @if (p.allocations?.length) {
+            <div class="table-wrap">
+              <table class="ledger">
+                <thead><tr>
+                  <th scope="col">{{ 'admin.finance.category' | translate }}</th>
+                  <th scope="col">{{ 'admin.payments.item' | translate }}</th>
+                  <th scope="col">{{ 'admin.finance.partyLabel' | translate }}</th>
+                  <th scope="col" class="num">{{ 'admin.finance.basis' | translate }}</th>
+                  <th scope="col" class="num">{{ 'admin.payments.amount' | translate }}</th>
+                  <th scope="col">{{ 'admin.finance.rule' | translate }}</th>
+                </tr></thead>
+                <tbody>
+                  @for (a of p.allocations; track $index) {
+                    <tr>
+                      <td>{{ 'admin.finance.categoryLabel.' + a.category | translate }}</td>
+                      <td>{{ a.movie_title ?? '—' }}</td>
+                      <td>{{ 'admin.finance.party.' + a.party | translate }} @if (a.party_name) { ({{ a.party_name }}) }</td>
+                      <td class="num">{{ a.basis | number }}</td>
+                      <td class="num">{{ a.amount | number }}</td>
+                      <td class="muted">{{ a.rule }}</td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          }
+        }
+      </section>
+
+      @if (statements().length) {
+        <h2>{{ 'admin.finance.statements' | translate }}</h2>
+        <ul class="refund-list">
+          @for (s of statements(); track s.id) {
+            <li>
+              <div class="row-between">
+                <strong>{{ s.producer }}</strong>
+                <span>RWF {{ s.amount | number }}</span>
+              </div>
+              @if (s.payout_status === 'paid') {
+                <p class="success">{{ 'admin.finance.paidOut' | translate: { ref: s.payout_reference, date: (s.paid_at | date:'mediumDate') } }}</p>
+              } @else if (payoutFor() === s.id) {
+                <label class="field">
+                  <span>{{ 'admin.payments.transferRef' | translate }}</span>
+                  <input type="text" [(ngModel)]="payoutRef" name="ref-{{ s.id }}" />
+                </label>
+                <div class="drawer-actions">
+                  <button type="button" class="btn ghost" (click)="payoutFor.set(null)">{{ 'admin.payments.cancel' | translate }}</button>
+                  <button type="button" class="btn" (click)="recordPayout(s)">{{ 'admin.payments.confirm' | translate }}</button>
+                </div>
+              } @else {
+                <button type="button" class="btn small" (click)="payoutRef = ''; payoutFor.set(s.id)">{{ 'admin.finance.recordPayout' | translate }}</button>
+              }
+            </li>
+          }
+        </ul>
+      }
+    }
+  }
+</div>

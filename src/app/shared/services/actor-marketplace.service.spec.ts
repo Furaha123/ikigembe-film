@@ -86,7 +86,7 @@ describe('ActorMarketplaceService', () => {
       api.abort('u', 'k').subscribe();
 
       const init = http.expectOne(`${BASE}/actor-videos/9/upload/initiate/`);
-      expect(init.request.body).toEqual({ file_name: 'reel.mp4', file_type: 'video/mp4' });
+      expect(init.request.body).toEqual({ file_name: 'reel.mp4', file_type: 'video/mp4', file_size: jasmine.any(Number) });
       init.flush({ upload_id: 'u', file_key: 'k' });
       expect(http.expectOne(`${BASE}/actor-videos/9/upload/sign-part/`).request.body).toEqual({ upload_id: 'u', file_key: 'k', part_number: 1 });
       expect(http.expectOne(`${BASE}/actor-videos/9/upload/complete/`).request.body).toEqual({ upload_id: 'u', file_key: 'k', parts: [{ PartNumber: 1, ETag: 'e' }] });

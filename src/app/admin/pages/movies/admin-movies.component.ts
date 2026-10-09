@@ -248,7 +248,7 @@ export class AdminMoviesComponent implements OnInit, OnDestroy {
   approveSubmission(id: number) {
     this.actionId.set(id);
     this.adminService.approveFilm(id).subscribe({
-      next: (res: any) => {
+      next: (res) => {
         const newStatus = res?.approval_status ?? 'approved';
         this.submissions.update(list => list.map(s =>
           s.id === id ? { ...s, status: newStatus } : s

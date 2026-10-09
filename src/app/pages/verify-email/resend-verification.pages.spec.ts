@@ -17,7 +17,7 @@ interface ResendPage {
   resendCooldown(): number;
 }
 
-type Setup = { name: string; type: Type<unknown>; trigger: (c: unknown) => void };
+interface Setup { name: string; type: Type<unknown>; trigger: (c: unknown) => void }
 
 const PAGES: Setup[] = [
   {

@@ -65,7 +65,16 @@
       @if (state !== 'published' && state !== 'draft') {
         <p class="mk-muted">{{ 'marketplace.publication.' + state + 'Text' | translate }}</p>
       }
+      @if (c.status === 'rejected' && c.review_note) {
+        <p class="mk-error">{{ 'marketplace.producerCasting.reviewNote' | translate }}: {{ c.review_note }}</p>
+      }
+      @if (c.status === 'removed' && c.removal_reason) {
+        <p class="mk-error">{{ 'marketplace.producerCasting.reviewNote' | translate }}: {{ c.removal_reason }}</p>
+      }
       <div class="mk-row" style="margin-top: .75rem">
+        @if (c.status === 'rejected') {
+          <a class="mk-btn" [routerLink]="['/producer/casting', c.id, 'edit']">{{ 'marketplace.producerCasting.editResend' | translate }}</a>
+        }
         @if (c.status === 'draft') {
           <a class="mk-btn mk-btn--ghost" [routerLink]="['/producer/casting', c.id, 'edit']">{{ 'marketplace.common.edit' | translate }}</a>
           @if (state === 'draft' || state === 'paymentFailed') {

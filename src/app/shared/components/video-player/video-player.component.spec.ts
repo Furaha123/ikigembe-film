@@ -63,6 +63,15 @@ describe('VideoPlayerComponent', () => {
     expect(video().getAttribute('src')).toBe('https://r2.test/film.mp4?sig');
   });
 
+  it('draws the session watermark only when the stream response carries one', () => {
+    load(hlsSource);
+    expect(fixture.nativeElement.querySelector('.vp-watermark')).toBeNull();
+    load({ ...hlsSource, watermark: 'IKG-7F3A2C91' });
+    const mark = fixture.nativeElement.querySelector('.vp-watermark') as HTMLElement;
+    expect(mark.textContent?.trim()).toBe('IKG-7F3A2C91');
+    expect(mark.getAttribute('aria-hidden')).toBe('true');
+  });
+
   it('still supports a plain src (trailers, previews)', () => {
     fixture.componentRef.setInput('src', 'https://cdn.test/trailer.mp4');
     fixture.detectChanges();

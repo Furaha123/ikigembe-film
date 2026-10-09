@@ -46,7 +46,7 @@ export class AdminUsersComponent implements OnInit {
 
   private downloadCSV(filename: string, headers: string[], rows: unknown[][]) {
     const esc = (v: unknown) => `"${String(v ?? '').replace(/"/g, '""')}"`;
-    const csv = [headers.map(esc).join(','), ...rows.map((r: any) => r.map(esc).join(','))].join('\n');
+    const csv = [headers.map(esc).join(','), ...rows.map(r => r.map(esc).join(','))].join('\n');
     const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');

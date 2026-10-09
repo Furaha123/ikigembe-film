@@ -4,7 +4,7 @@ import { HttpClient, HttpContext, HttpContextToken, HttpErrorResponse } from '@a
 import { Router } from '@angular/router';
 import { Observable, defer, firstValueFrom, of, throwError } from 'rxjs';
 import { catchError, finalize, map, shareReplay, tap } from 'rxjs/operators';
-import { RegisterPayload, RegisterResponse, LoginResponse, GoogleAuthPayload, LoginUser, AccountStatus } from '../models/auth.interface';
+import { RegisterPayload, RegisterResponse, LoginResponse, GoogleAuthPayload, LoginUser, AccountStatus, ProducerSetup } from '../models/auth.interface';
 import { environment } from '../../../environments/environment';
 import { RETURN_URL_PARAM, safeReturnUrl } from '../../shared/utils/safe-redirect';
 import { toAccountStatus } from '../access/marketplace-access';
@@ -21,6 +21,7 @@ export interface UserProfile {
   is_staff: boolean;
   date_joined: string;
   account_status?: string;
+  producer_setup?: ProducerSetup | null;
   studio_name?: string;
   suspension_reason?: string;
   onboarding_completed?: boolean;
@@ -52,6 +53,9 @@ const IS_STAFF_KEY    = 'ikigembe_is_staff';
 const ROLE_KEY        = 'ikigembe_role';
 const ACCT_STATUS_KEY = 'ikigembe_account_status';
 const SUSPENSION_KEY  = 'ikigembe_suspension_reason';
+const CONTRACT_KEY    = 'ikigembe_contract_signed';
+/** Stored by older builds (admin approval); removed on sign-out. */
+const LEGACY_PRODUCER_STATUS_KEY = 'ikigembe_producer_status';
 const ONBOARDING_KEY  = 'ikigembe_onboarded';
 
 /** Cooldown after a verification email was requested successfully. */
@@ -119,6 +123,11 @@ export class AuthService {
       : 'active'
   );
 
+  /** Producer setup: an active signed distribution agreement (a stored hint until /auth/me/ answers). */
+  readonly contractSigned = signal<boolean>(
+    isPlatformBrowser(this.platformId) ? localStorage.getItem(CONTRACT_KEY) === '1' : false
+  );
+
   readonly suspensionReason = signal<string>(
     isPlatformBrowser(this.platformId) ? (localStorage.getItem(SUSPENSION_KEY) ?? '') : ''
   );
@@ -126,6 +135,9 @@ export class AuthService {
   readonly onboardingComplete = signal<boolean>(
     isPlatformBrowser(this.platformId) ? localStorage.getItem(ONBOARDING_KEY) === '1' : false
   );
+
+  /** Producers submit films and use producer services once the profile is complete and the agreement signed. */
+  readonly producerReady = computed(() => this.onboardingComplete() && this.contractSigned());
 
   constructor() {
     if (isPlatformBrowser(this.platformId)) {
@@ -243,12 +255,13 @@ export class AuthService {
     }
     this.userRole.set(role);
 
-    const status = ((res as any)?.user?.account_status ?? (res as any)?.account_status) as AccountStatus | undefined;
+    const status = (res?.user?.account_status ?? res?.account_status) as AccountStatus | undefined;
     if (status && isPlatformBrowser(this.platformId)) {
       const normalised = toAccountStatus(status);
       localStorage.setItem(ACCT_STATUS_KEY, normalised);
       this.accountStatus.set(normalised);
     }
+    if (u) this.setProducerSetup(u.producer_setup);
     // The response carried the user, so role and status are already current.
     if (u) this.profileSync = of(undefined);
   }
@@ -295,6 +308,23 @@ export class AuthService {
     if (profile.account_status) {
       this.setAccountStatus(toAccountStatus(profile.account_status), profile.suspension_reason || undefined);
     }
+    this.setProducerSetup(profile.producer_setup);
+  }
+
+  private setProducerSetup(setup: ProducerSetup | null | undefined) {
+    if (!setup) return;
+    this.onboardingComplete.set(setup.profile_complete);
+    this.contractSigned.set(setup.contract_signed);
+    if (isPlatformBrowser(this.platformId)) {
+      localStorage.setItem(ONBOARDING_KEY, setup.profile_complete ? '1' : '0');
+      localStorage.setItem(CONTRACT_KEY, setup.contract_signed ? '1' : '0');
+    }
+  }
+
+  /** Re-reads `/auth/me/` (e.g. after signing the agreement), whatever was synced before. */
+  refreshProfile(): Observable<void> {
+    this.profileSync = null;
+    return this.syncProfile();
   }
 
   /** Current access token (browser only). For requests HttpClient can't make, e.g. keepalive fetch on unload. */
@@ -401,8 +431,14 @@ export class AuthService {
     );
   }
 
-  changePassword(current_password: string, new_password: string): Observable<unknown> {
-    return this.http.post(`${this.baseUrl}/auth/change-password/`, { current_password, new_password });
+  /**
+   * Changes the password. The API ends every other session and answers with a fresh one
+   * (new access token + refresh cookie), which replaces the current session here.
+   */
+  changePassword(current_password: string, new_password: string, confirm_password: string): Observable<LoginResponse> {
+    return this.http.post<LoginResponse>(`${this.baseUrl}/auth/change-password/`, { current_password, new_password, confirm_password }).pipe(
+      tap((res) => this.storeSession(res))
+    );
   }
 
   forgotPassword(identifier: string): Observable<unknown> {
@@ -472,6 +508,8 @@ export class AuthService {
       localStorage.removeItem(ROLE_KEY);
       localStorage.removeItem(ACCT_STATUS_KEY);
       localStorage.removeItem(SUSPENSION_KEY);
+      localStorage.removeItem(LEGACY_PRODUCER_STATUS_KEY);
+      localStorage.removeItem(CONTRACT_KEY);
       localStorage.removeItem(ONBOARDING_KEY);
       clearAllDrafts();
     }
@@ -483,6 +521,7 @@ export class AuthService {
     this.accountStatus.set('active');
     this.suspensionReason.set('');
     this.onboardingComplete.set(false);
+    this.contractSigned.set(false);
   }
 }
 

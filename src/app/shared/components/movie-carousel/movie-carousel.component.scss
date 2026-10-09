@@ -310,3 +310,14 @@ app-movie-carousel {
   .mc-title   { font-size: 0.75rem; }
   .mc-play    { width: 44px; height: 44px; svg { width: 18px; height: 18px; } }
 }
+
+.mc-soon {
+  padding: 0.05rem 0.4rem;
+  border-radius: 4px;
+  background: rgba(201, 168, 76, 0.9);
+  color: #000;
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}

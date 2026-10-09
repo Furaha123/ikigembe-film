@@ -14,7 +14,7 @@ import {
 } from '../../../../shared/models/upload.constants';
 import { VideoPlayerComponent } from '../../../../shared/components/video-player/video-player.component';
 import {
-  Chart, LineController, LineElement, PointElement,
+  Chart, ChartDataset, LineController, LineElement, PointElement,
   LinearScale, CategoryScale, Filler, Tooltip, Legend,
   BarController, BarElement,
 } from 'chart.js';
@@ -385,8 +385,7 @@ export class ProducerMovieDetailComponent implements OnInit, OnDestroy {
     const metrics = this.advMetrics();
     const isBar   = this.advChartType() === 'bar';
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const datasets: any[] = [];
+    const datasets: ChartDataset<AdvChartType>[] = [];
 
     if (metrics.views) {
       datasets.push(isBar
@@ -407,9 +406,8 @@ export class ProducerMovieDetailComponent implements OnInit, OnDestroy {
       );
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    this.advChart = new Chart(canvas, {
-      type: this.advChartType() as any,
+    this.advChart = new Chart<AdvChartType>(canvas, {
+      type: this.advChartType(),
       data: { labels: d.map(r => r.label), datasets },
       options: {
         responsive: true,
@@ -481,7 +479,7 @@ export class ProducerMovieDetailComponent implements OnInit, OnDestroy {
       this.copiedFlash.set(true);
       if (this.copiedTimer) clearTimeout(this.copiedTimer);
       this.copiedTimer = setTimeout(() => this.copiedFlash.set(false), 2500);
-    }).catch(() => {});
+    }).catch(() => { /* clipboard refused: the link stays visible to copy by hand */ });
   }
 
   shareOnWhatsApp(): void {

@@ -29,6 +29,7 @@
 
       <div class="ad-hero__info">
         <h1 class="ad-hero__name">{{ a.stage_name }}</h1>
+        <app-report-button targetType="actor" [targetId]="a.id" [label]="a.stage_name" />
 
         <div class="ad-hero__meta">
           @if (a.age !== null) {
@@ -180,7 +181,7 @@
        role="dialog"
        aria-modal="true"
        [attr.aria-label]="v.title">
-    <div class="ad-dialog" (click)="$event.stopPropagation()">
+    <div class="ad-dialog" tabindex="-1" (click)="$event.stopPropagation()" (keydown)="$event.stopPropagation()">
       <header>
         <span>{{ v.title }}</span>
         <button type="button" class="ad-dialog-close"

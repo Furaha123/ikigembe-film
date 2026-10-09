@@ -1,4 +1,5 @@
-<div class="pm-backdrop" (click)="close()">
+<!-- Escape is handled by the component's document:keydown.escape listener. -->
+<div class="pm-backdrop" role="presentation" (click)="close()">
   <dialog #card class="pm-card" open aria-modal="true" aria-labelledby="pm-title" tabindex="-1"
           (click)="$event.stopPropagation()" (keydown)="onKeydown($event)">
 

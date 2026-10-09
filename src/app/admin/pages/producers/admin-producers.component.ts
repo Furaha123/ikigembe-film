@@ -1,6 +1,5 @@
 import { Component, HostListener, inject, OnInit, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { HttpErrorResponse } from '@angular/common/http';
 import { apiErrorMessage } from '../../../shared/utils/api-error';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { AdminService } from '../../services/admin.service';
@@ -9,6 +8,7 @@ import {
   ProducerReport,
   MoviePurchaseItem,
   ProducerDocuments,
+  ProducerListStatus,
 } from '../../models/admin.interface';
 
 import { AdminSectionTabsComponent } from '../../shared/components/admin-section-tabs.component';
@@ -24,7 +24,7 @@ export class AdminProducersComponent implements OnInit {
   private readonly translate = inject(TranslateService);
 
   producers     = signal<ProducerItem[]>([]);
-  statusFilter  = signal<'all' | 'pending' | 'approved' | 'suspended'>('all');
+  statusFilter  = signal<'all' | ProducerListStatus>('all');
   isLoading     = signal(true);
   actionId      = signal<number | null>(null);
 
@@ -34,7 +34,7 @@ export class AdminProducersComponent implements OnInit {
     return this.producers().filter(p => this.producerStatus(p) === filter);
   });
 
-  filterCount = (f: 'pending' | 'approved' | 'suspended') =>
+  filterCount = (f: ProducerListStatus) =>
     this.producers().filter(p => this.producerStatus(p) === f).length;
 
   ngOnInit() {
@@ -62,7 +62,7 @@ export class AdminProducersComponent implements OnInit {
 
   private downloadCSV(filename: string, headers: string[], rows: unknown[][]) {
     const esc = (v: unknown) => `"${String(v ?? '').replace(/"/g, '""')}"`;
-    const csv = [headers.map(esc).join(','), ...rows.map((r: any) => r.map(esc).join(','))].join('\n');
+    const csv = [headers.map(esc).join(','), ...rows.map(r => r.map(esc).join(','))].join('\n');
     const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -70,11 +70,14 @@ export class AdminProducersComponent implements OnInit {
     URL.revokeObjectURL(url);
   }
 
-  approve(id: number) {
+  /** Lifts a suspension (there is no producer approval: setup is the producer's own two steps). */
+  reactivate(id: number) {
+    this.closeMenu();
     this.actionId.set(id);
-    this.adminService.approveProducer(id).subscribe({
+    this.adminService.reactivateProducer(id).subscribe({
       next: () => {
-        this.producers.update(list => list.map(p => p.id === id ? { ...p, is_active: true, status: 'approved' } : p));
+        this.producers.update(list => list.map(p => p.id === id
+          ? { ...p, is_active: true, status: p.profile_complete && p.contract_signed ? 'ready' : 'incomplete' } : p));
         if (this.detailReport()?.producer.id === id) this.openDetail(id);
         this.actionId.set(null);
       },
@@ -85,37 +88,8 @@ export class AdminProducersComponent implements OnInit {
     });
   }
 
-  /** Last failed list action (approve), shown above the table. */
+  /** Last failed list action (reactivate), shown above the table. */
   actionError = signal<string | null>(null);
-
-  // ── Reject with reason ─────────────────────────────────
-  rejectModal    = signal<number | null>(null);
-  rejectReason   = signal('');
-  isRejecting    = signal(false);
-  rejectError    = signal<string | null>(null);
-
-  openRejectModal(id: number) { this.closeMenu(); this.rejectModal.set(id); this.rejectReason.set(''); this.rejectError.set(null); }
-  closeRejectModal() { this.rejectModal.set(null); this.rejectReason.set(''); }
-
-  confirmReject() {
-    const id = this.rejectModal();
-    if (id === null || !this.rejectReason().trim()) return;
-    this.isRejecting.set(true);
-    this.rejectError.set(null);
-    this.adminService.rejectProducer(id, this.rejectReason().trim()).subscribe({
-      next: () => {
-        this.producers.update(list => list.map(p => p.id === id ? { ...p, is_active: false, status: 'pending' } : p));
-        this.isRejecting.set(false);
-        this.closeRejectModal();
-      },
-      // Never close silently on failure. (Backend: POST …/producers/<id>/reject/ is not implemented yet → 404.)
-      error: (err: unknown) => {
-        this.isRejecting.set(false);
-        this.rejectError.set(apiErrorMessage(err) ?? this.translate.instant(
-          err instanceof HttpErrorResponse && err.status === 404 ? 'admin.producers.rejectUnsupported' : 'admin.producers.actionFailed'));
-      },
-    });
-  }
 
   // ── Suspend with reason ────────────────────────────────
   suspendModal   = signal<number | null>(null);
@@ -143,23 +117,36 @@ export class AdminProducersComponent implements OnInit {
   docsModal      = signal<{ producerId: number; producerName: string } | null>(null);
   producerDocs   = signal<ProducerDocuments | null>(null);
   docsLoading    = signal(false);
+  docsError      = signal<string | null>(null);
 
   openDocsModal(id: number, name: string) {
     this.closeMenu();
     this.docsModal.set({ producerId: id, producerName: name });
     this.producerDocs.set(null);
+    this.docsError.set(null);
     this.docsLoading.set(true);
     this.adminService.getProducerDocuments(id).subscribe({
       next: (docs) => { this.producerDocs.set(docs); this.docsLoading.set(false); },
-      error: () => { this.producerDocs.set({ copyright_url: null, id_url: null }); this.docsLoading.set(false); },
+      error: (err: unknown) => {
+        this.docsError.set(apiErrorMessage(err) ?? this.translate.instant('admin.producers.documentsFailed'));
+        this.docsLoading.set(false);
+      },
     });
   }
 
   closeDocsModal() { this.docsModal.set(null); this.producerDocs.set(null); }
 
-  producerStatus(p: ProducerItem): 'pending' | 'approved' | 'suspended' {
+  producerStatus(p: ProducerItem): ProducerListStatus {
     if (p.status) return p.status;
-    return p.is_active ? 'approved' : 'pending';
+    if (!p.is_active) return 'suspended';
+    return p.profile_complete && p.contract_signed ? 'ready' : 'incomplete';
+  }
+
+  /** Status of the producer whose action menu is open (decides which actions make sense). */
+  menuStatus(): ProducerListStatus | null {
+    const id = this.menuProducer()?.id;
+    const p = id === undefined ? undefined : this.producers().find(x => x.id === id);
+    return p ? this.producerStatus(p) : null;
   }
 
   menuProducerName(): string {

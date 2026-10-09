@@ -2,7 +2,7 @@ import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { HttpErrorResponse } from '@angular/common/http';
 import { RouterLink } from '@angular/router';
-import { forkJoin, of } from 'rxjs';
+import { forkJoin, of, Observable } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { TranslatePipe } from '@ngx-translate/core';
 import { AdminMarketplaceService } from '../../services/admin-marketplace.service';
@@ -15,17 +15,18 @@ import { marketplaceErrorMessage } from '../../../shared/utils/marketplace-error
 type Tab = 'videos' | 'casting';
 
 interface ReasonDialog {
-  kind: 'reject-video' | 'remove-video' | 'remove-call';
+  kind: 'reject-video' | 'remove-video' | 'remove-call' | 'reject-call';
   id: number;
   title: string;
   required: boolean;
 }
 
 const VIDEO_STATUSES: ActorVideoStatus[] = [
-  'pending_review', 'approved', 'rejected', 'removed', 'processing', 'pending_upload',
+  'pending_review', 'approved', 'rejected', 'removed', 'processing', 'upload_failed', 'pending_upload', 'replaced',
 ];
 
-const CALL_STATUSES: (CastingCallStatus | '')[] = ['', 'published', 'draft', 'closed', 'removed'];
+/** Casting calls waiting for a decision come first. */
+const CALL_STATUSES: (CastingCallStatus | '')[] = ['pending_review', '', 'published', 'rejected', 'draft', 'closed', 'removed'];
 
 @Component({
   selector: 'app-admin-marketplace',
@@ -81,7 +82,7 @@ export class AdminMarketplaceComponent implements OnInit {
 
   // ── Casting calls ─────────────────────────────────────
   calls        = signal<CastingCall[]>([]);
-  callStatus   = signal<CastingCallStatus | ''>('');
+  callStatus   = signal<CastingCallStatus | ''>('pending_review');
   callPage     = signal(1);
   callPages    = signal(0);
   callTotal    = signal<number | null>(null);
@@ -208,9 +209,10 @@ export class AdminMarketplaceComponent implements OnInit {
     if (!d) return;
     const reason = this.reason().trim();
     if (d.required && !reason) { this.reasonError.set('admin.marketplace.reasonRequired'); return; }
-    const req =
+    const req: Observable<unknown> =
       d.kind === 'reject-video' ? this.marketplace.rejectVideo(d.id, reason) :
       d.kind === 'remove-video' ? this.marketplace.removeVideo(d.id, reason || undefined) :
+      d.kind === 'reject-call' ? this.marketplace.rejectCastingCall(d.id, reason) :
       this.marketplace.removeCastingCall(d.id, reason);
 
     this.actionId.set(d.id);
@@ -218,7 +220,7 @@ export class AdminMarketplaceComponent implements OnInit {
       next: () => {
         this.actionId.set(null);
         this.reasonDialog.set(null);
-        if (d.kind === 'remove-call') {
+        if (d.kind === 'remove-call' || d.kind === 'reject-call') {
           this.loadCalls();
         } else {
           this.loadVideos();
@@ -230,6 +232,16 @@ export class AdminMarketplaceComponent implements OnInit {
         const body = err.error as { reason?: string } | null;
         this.reasonError.set(marketplaceErrorMessage(err) ?? body?.reason ?? 'marketplace.errors.actionFailed');
       },
+    });
+  }
+
+  /** Publish a paid casting call awaiting review (the server re-checks payment and deadline). */
+  approveCall(c: CastingCall): void {
+    this.actionId.set(c.id);
+    this.error.set(null);
+    this.marketplace.approveCastingCall(c.id).subscribe({
+      next: () => { this.actionId.set(null); this.loadCalls(); },
+      error: (err: HttpErrorResponse) => { this.actionId.set(null); this.fail(err); },
     });
   }
 
@@ -246,16 +258,20 @@ export class AdminMarketplaceComponent implements OnInit {
       pending_review: 'badge-review',
       processing:     'badge-processing',
       pending_upload: 'badge-upload',
+      upload_failed:  'badge-rejected',
+      replaced:       'badge-removed',
     };
     return map[status] ?? 'badge-review';
   }
 
   callBadge(status: CastingCallStatus): string {
     const map: Partial<Record<CastingCallStatus, string>> = {
-      published: 'badge-approved',
-      removed:   'badge-rejected',
-      closed:    'badge-removed',
-      draft:     'badge-review',
+      published:      'badge-approved',
+      removed:        'badge-rejected',
+      rejected:       'badge-rejected',
+      closed:         'badge-removed',
+      draft:          'badge-upload',
+      pending_review: 'badge-review',
     };
     return map[status] ?? 'badge-review';
   }
@@ -275,7 +291,7 @@ export class AdminMarketplaceComponent implements OnInit {
     const base = s === active ? 'pill pill--active' : 'pill';
     const color = s === '' ? 'pill--slate'
       : s === 'published' ? 'pill--green'
-      : s === 'removed'   ? 'pill--red'
+      : s === 'removed' || s === 'rejected' ? 'pill--red'
       : s === 'closed'    ? 'pill--slate'
       : 'pill--amber';
     return `${base} ${color}`;

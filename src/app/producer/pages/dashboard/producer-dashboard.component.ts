@@ -166,12 +166,12 @@ export class ProducerDashboardComponent implements OnInit, AfterViewInit, OnDest
 
     this.producerService.getMovies().subscribe({
       next: (m) => this.movies.set(m),
-      error: () => {},
+      error: () => { /* the film list stays empty */ },
     });
 
     this.contractService.getStatus().subscribe({
       next: (s) => this.contractStatus.set(s),
-      error: () => {},
+      error: () => { /* no contract banner without a status */ },
     });
   }
 
@@ -428,7 +428,7 @@ export class ProducerDashboardComponent implements OnInit, AfterViewInit, OnDest
     const fill   = metric === 'watchTime' ? 'rgba(45,212,191,0.12)' : 'rgba(200,168,75,0.12)';
     const trend  = this.trendData();
 
-    let rawValues = trend.map(r =>
+    const rawValues = trend.map(r =>
       metric === 'earnings'  ? r.earnings  :
       metric === 'watchTime' ? r.watchTime :
       r.views

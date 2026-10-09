@@ -1,0 +1,95 @@
+<div class="admin-page">
+  <div class="page-header">
+    <div>
+      <h1>{{ 'admin.audit.title' | translate }}</h1>
+      <p>{{ 'admin.audit.subtitle' | translate }}</p>
+    </div>
+  </div>
+
+  <form class="filters" role="search" (ngSubmit)="search()">
+    <label class="field">
+      <span>{{ 'admin.audit.action' | translate }}</span>
+      <select name="action" [(ngModel)]="filters.action">
+        <option value="">{{ 'admin.payments.any' | translate }}</option>
+        @for (a of data()?.actions ?? []; track a.value) { <option [value]="a.value">{{ a.label }}</option> }
+      </select>
+    </label>
+    <label class="field">
+      <span>{{ 'admin.audit.actor' | translate }}</span>
+      <input type="search" name="actor" [(ngModel)]="filters.actor" [placeholder]="'admin.audit.emailOrId' | translate" />
+    </label>
+    <label class="field">
+      <span>{{ 'admin.audit.target' | translate }}</span>
+      <input type="search" name="target" [(ngModel)]="filters.target" [placeholder]="'admin.audit.emailOrId' | translate" />
+    </label>
+    <label class="field grow">
+      <span>{{ 'admin.audit.resource' | translate }}</span>
+      <input type="search" name="resource" [(ngModel)]="filters.resource" [placeholder]="'admin.audit.resourcePlaceholder' | translate" />
+    </label>
+    <label class="field">
+      <span>{{ 'admin.payments.from' | translate }}</span>
+      <input type="date" name="date_from" [(ngModel)]="filters.date_from" />
+    </label>
+    <label class="field">
+      <span>{{ 'admin.payments.to' | translate }}</span>
+      <input type="date" name="date_to" [(ngModel)]="filters.date_to" />
+    </label>
+    <div class="filter-actions">
+      <button type="submit" class="btn">{{ 'admin.payments.apply' | translate }}</button>
+      <button type="button" class="btn ghost" (click)="reset()">{{ 'admin.payments.reset' | translate }}</button>
+    </div>
+  </form>
+
+  <div aria-live="polite">
+    @if (error()) {
+      <p class="error" role="alert">{{ error() }} <button type="button" class="link" (click)="load()">{{ 'admin.payments.retry' | translate }}</button></p>
+    }
+  </div>
+
+  @if (loading() && !data()) {
+    <div class="table-skeleton" aria-hidden="true">@for (i of [1,2,3,4,5]; track i) { <div class="row-skeleton"></div> }</div>
+  } @else if (data()) {
+    @let d = data()!;
+    <p class="totals">{{ 'admin.payments.totalResults' | translate: { n: d.total_results } }}</p>
+    @if (d.results.length === 0) {
+      <div class="empty-state">{{ 'admin.audit.empty' | translate }}</div>
+    } @else {
+      <div class="table-wrap" [class.is-loading]="loading()">
+        <table class="ledger">
+          <thead>
+            <tr>
+              <th scope="col">{{ 'admin.payments.date' | translate }}</th>
+              <th scope="col">{{ 'admin.audit.actor' | translate }}</th>
+              <th scope="col">{{ 'admin.audit.action' | translate }}</th>
+              <th scope="col">{{ 'admin.audit.target' | translate }}</th>
+              <th scope="col">{{ 'admin.audit.details' | translate }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (e of d.results; track e.id) {
+              <tr>
+                <td class="muted">{{ e.timestamp | date:'d MMM y, HH:mm:ss' }}</td>
+                <td>{{ e.admin ?? '—' }} @if (e.ip_address) { <span class="muted block">{{ e.ip_address }}</span> }</td>
+                <td><span class="cell-title">{{ e.action_label }}</span></td>
+                <td>{{ e.target_user ?? '—' }}</td>
+                <td>
+                  <button type="button" class="link" (click)="toggle(e.id)" [attr.aria-expanded]="expanded() === e.id">
+                    {{ (expanded() === e.id ? 'admin.audit.hide' : 'admin.audit.show') | translate }}
+                  </button>
+                  @if (expanded() === e.id) { <pre class="detail-json">{{ json(e.detail) }}</pre> }
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+      @if (d.total_pages > 1) {
+        <nav class="pager" [attr.aria-label]="'admin.payments.pagination' | translate">
+          <button type="button" class="btn ghost" [disabled]="d.page <= 1" (click)="search(d.page - 1)">{{ 'admin.payments.prev' | translate }}</button>
+          <span>{{ d.page }} / {{ d.total_pages }}</span>
+          <button type="button" class="btn ghost" [disabled]="d.page >= d.total_pages" (click)="search(d.page + 1)">{{ 'admin.payments.next' | translate }}</button>
+        </nav>
+      }
+    }
+  }
+</div>

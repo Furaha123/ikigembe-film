@@ -6,7 +6,7 @@
       <p>{{ 'admin.reports.userGrowth.subtitle' | translate }}</p>
     </div>
     <div class="section-actions">
-      <procurement-date-picker (dateChange)="onDateRangeChange($event)" />
+      <app-date-picker (dateChange)="onDateRangeChange($event)" />
       <div class="legend-inline">
         <span class="legend-dot" style="background:#60a5fa"></span> {{ 'admin.reports.userGrowth.viewers' | translate }}
         <span class="legend-dot" style="background:#C5A253; margin-left:0.75rem"></span> {{ 'admin.reports.userGrowth.producers' | translate }}

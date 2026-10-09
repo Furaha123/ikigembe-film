@@ -509,3 +509,29 @@ $sidebar-collapsed-w: 64px;
 }
 
 .notif-type-icon--warning { color: #f59e0b; }
+
+.banner-link {
+  margin-left: 0.5rem;
+  color: inherit;
+  text-decoration: underline;
+}
+
+.banner-action {
+  margin-left: 0.5rem;
+  padding: 0.25rem 0.75rem;
+  border: 1px solid currentColor;
+  border-radius: 6px;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+
+  &:disabled { opacity: 0.6; cursor: progress; }
+  &:focus-visible { outline: 2px solid currentColor; outline-offset: 2px; }
+}
+
+.banner-error {
+  display: block;
+  margin-top: 0.25rem;
+}

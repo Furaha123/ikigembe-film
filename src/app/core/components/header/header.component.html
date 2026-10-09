@@ -50,6 +50,7 @@
           [placeholder]="'header.searchPlaceholder' | translate"
           [value]="searchQuery"
           (input)="onSearchInput($event)"
+          (keydown.enter)="openFullSearch()"
           (click)="$event.stopPropagation()"
           autocomplete="off"
           spellcheck="false"
@@ -74,7 +75,7 @@
 
       <!-- Results dropdown -->
       @if (searchOpen() && (searchResults().length > 0 || (searchQuery.trim() && !searchLoading()))) {
-        <div class="search-results" (click)="$event.stopPropagation()">
+        <div class="search-results" tabindex="-1" (click)="$event.stopPropagation()" (keydown.enter)="$event.stopPropagation()">
           @if (searchResults().length === 0) {
             <div class="search-empty">{{ 'header.noResults' | translate: { query: searchQuery } }}</div>
           } @else {
@@ -217,7 +218,7 @@
   </div>
 
   @if (mobileMenuOpen()) {
-    <nav id="mobile-navigation" class="mobile-drawer" [attr.aria-label]="'header.toggleNav' | translate" (click)="$event.stopPropagation()">
+    <nav id="mobile-navigation" class="mobile-drawer" [attr.aria-label]="'header.toggleNav' | translate" tabindex="-1" (click)="$event.stopPropagation()" (keydown.enter)="$event.stopPropagation()">
       <ul class="mobile-nav-list">
         @for (item of navList(); track item.label) {
           @if (item.route) {

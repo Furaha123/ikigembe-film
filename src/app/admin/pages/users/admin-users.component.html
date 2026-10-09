@@ -36,6 +36,7 @@
   @if (menuUser()) {
     <div
       class="kebab-dropdown"
+      tabindex="-1"
       [style.top.px]="menuPos().top"
       [style.right.px]="menuPos().right"
       (click)="$event.stopPropagation()"
@@ -73,8 +74,8 @@
 
   <!-- ── View Detail slide-in panel ── -->
   @if (detailUser() || detailLoading()) {
-    <div class="overlay" (click)="closeDetail()" (keydown.escape)="closeDetail()">
-      <div class="detail-panel" (click)="$event.stopPropagation()" (keydown)="$event.stopPropagation()">
+    <div class="overlay" (click)="closeDetail()" tabindex="-1" (keydown.escape)="closeDetail()">
+      <div class="detail-panel" tabindex="-1" (click)="$event.stopPropagation()" (keydown)="$event.stopPropagation()">
 
         <div class="panel-header">
           <h3>{{ 'admin.users.userDetails' | translate }}</h3>
@@ -150,8 +151,8 @@
 
   <!-- ── Suspend confirmation modal ── -->
   @if (confirmSuspendId() !== null) {
-    <div class="overlay" (click)="cancelSuspend()" (keydown.escape)="cancelSuspend()">
-      <dialog open class="modal" (click)="$event.stopPropagation()" (keydown)="$event.stopPropagation()">
+    <div class="overlay" (click)="cancelSuspend()" tabindex="-1" (keydown.escape)="cancelSuspend()">
+      <dialog open class="modal" tabindex="-1" (click)="$event.stopPropagation()" (keydown)="$event.stopPropagation()">
         <div class="modal-icon warn">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>
         </div>
@@ -169,8 +170,8 @@
 
   <!-- ── Delete confirmation modal ── -->
   @if (confirmDeleteId() !== null) {
-    <div class="overlay" (click)="cancelDelete()" (keydown.escape)="cancelDelete()">
-      <dialog open class="modal" (click)="$event.stopPropagation()" (keydown)="$event.stopPropagation()">
+    <div class="overlay" (click)="cancelDelete()" tabindex="-1" (keydown.escape)="cancelDelete()">
+      <dialog open class="modal" tabindex="-1" (click)="$event.stopPropagation()" (keydown)="$event.stopPropagation()">
         <div class="modal-icon danger">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg>
         </div>
@@ -188,8 +189,8 @@
 
   <!-- ── Payments slide-in panel ── -->
   @if (paymentsUserId() !== null) {
-    <div class="overlay" (click)="closePayments()" (keydown.escape)="closePayments()">
-      <div class="payments-panel" (click)="$event.stopPropagation()" (keydown)="$event.stopPropagation()">
+    <div class="overlay" (click)="closePayments()" tabindex="-1" (keydown.escape)="closePayments()">
+      <div class="payments-panel" tabindex="-1" (click)="$event.stopPropagation()" (keydown)="$event.stopPropagation()">
         <div class="payments-panel__header">
           <div>
             <h3>{{ 'admin.users.paymentHistory' | translate }}</h3>

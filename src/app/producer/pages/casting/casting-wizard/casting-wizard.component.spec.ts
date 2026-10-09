@@ -10,7 +10,7 @@ import { PaymentModalComponent } from '../../../../shared/components/payment-mod
 import { CastingCall, ServicePurchase } from '../../../../shared/models/marketplace.interface';
 
 @Component({ selector: 'app-payment-modal', template: '' })
-class PaymentModalStub {
+class PaymentModalStubComponent {
   @Input() service: ServicePurchase | null = null;
   @Output() paid = new EventEmitter<void>();
   @Output() closed = new EventEmitter<void>();
@@ -30,7 +30,7 @@ describe('CastingWizardComponent (post casting)', () => {
 
   const el = () => fixture.nativeElement as HTMLElement;
   const cmp = () => fixture.componentInstance;
-  const modal = () => fixture.debugElement.query(d => d.componentInstance instanceof PaymentModalStub)?.componentInstance as PaymentModalStub | undefined;
+  const modal = () => fixture.debugElement.query(d => d.componentInstance instanceof PaymentModalStubComponent)?.componentInstance as PaymentModalStubComponent | undefined;
   const type = (selector: string, value: string) => {
     const input = el().querySelector<HTMLInputElement | HTMLTextAreaElement>(selector)!;
     input.value = value;
@@ -48,7 +48,8 @@ describe('CastingWizardComponent (post casting)', () => {
     type('#cw-deadline', DEADLINE);
     click('marketplace.wizard.next'); // details
     type('#cw-role-0', 'Lead, 20-30');
-    click('marketplace.postCasting.toReview');
+    click('marketplace.wizard.next'); // roles → saves the draft, then the poster step
+    click('marketplace.wizard.next'); // poster (optional) → review
   };
 
   beforeEach(() => {
@@ -71,7 +72,7 @@ describe('CastingWizardComponent (post casting)', () => {
     });
     TestBed.overrideComponent(CastingWizardComponent, {
       remove: { imports: [PaymentModalComponent] },
-      add: { imports: [PaymentModalStub] },
+      add: { imports: [PaymentModalStubComponent] },
     });
   });
   afterEach(() => sessionStorage.clear());
@@ -120,8 +121,7 @@ describe('CastingWizardComponent (post casting)', () => {
     type('#cw-role-0', 'Mother, 40s');
     click('marketplace.postCasting.addRole');
     type('#cw-role-1', 'Son, 10');
-    click('marketplace.postCasting.toReview');
-    click('marketplace.postCasting.saveDraft');
+    click('marketplace.wizard.next'); // leaving the roles step saves the draft
     expect(casting.createCall.calls.mostRecent().args[0].roles).toEqual(['Mother, 40s', 'Son, 10']);
   });
 
@@ -138,13 +138,21 @@ describe('CastingWizardComponent (post casting)', () => {
   });
 
   it('restores an unsaved draft after a reload', () => {
+    // Before the roles step the draft only exists in this tab (leaving roles saves it on the server).
     create();
-    fillToReview();
+    click('marketplace.wizard.next');
+    type('#cw-title', 'Inzira');
+    type('#cw-desc', 'Drama in Musanze');
+    type('#cw-deadline', DEADLINE);
+    click('marketplace.wizard.next');
+    type('#cw-role-0', 'Lead, 20-30');
     fixture.destroy();
     create();
-    expect(cmp().step()).toBe('review');
-    expect(el().textContent).toContain('Inzira');
-    expect(el().textContent).toContain('Lead, 20-30');
+    expect(cmp().step()).toBe('roles');
+    expect(el().querySelector<HTMLTextAreaElement>('#cw-role-0')!.value).toBe('Lead, 20-30');
+    click('marketplace.wizard.back');
+    expect(el().querySelector<HTMLInputElement>('#cw-title')!.value).toBe('Inzira');
+    expect(casting.createCall).not.toHaveBeenCalled();
   });
 
   it('saves the draft first, then opens the fee payment for that call', () => {

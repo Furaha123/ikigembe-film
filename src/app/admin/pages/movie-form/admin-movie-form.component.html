@@ -41,6 +41,11 @@
           }
         </div>
         <div class="field">
+          <label for="f-release-time">{{ 'admin.movieForm.releaseTime' | translate }}</label>
+          <input id="f-release-time" type="time" formControlName="release_time" aria-describedby="f-release-time-hint" />
+          <span id="f-release-time-hint" class="hint">{{ 'admin.movieForm.releaseTimeHint' | translate }}</span>
+        </div>
+        <div class="field">
           <label for="f-producer">{{ 'admin.movieForm.producer' | translate }}</label>
           <select id="f-producer" formControlName="producer" aria-describedby="f-producer-hint">
             <option value="">{{ 'admin.movieForm.selectProducer' | translate }}</option>
@@ -167,7 +172,29 @@
       <div class="form-row">
         <div class="field">
           <label for="f-price">{{ 'admin.movieForm.price' | translate }}</label>
-          <input id="f-price" type="number" formControlName="price" min="0" placeholder="0" />
+          <input id="f-price" type="number" formControlName="price" min="1" step="1" aria-describedby="f-price-hint" />
+          <span id="f-price-hint" class="hint">{{ 'admin.movieForm.priceHint' | translate }}</span>
+          @if (form.get('price')?.invalid && form.get('price')?.touched) {
+            <span class="field-error" role="alert">{{ 'admin.movieForm.errors.priceMin' | translate }}</span>
+          }
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="field">
+          <label for="f-director">{{ 'movieDetailPage.director' | translate }}</label>
+          <input id="f-director" type="text" formControlName="director" maxlength="255" />
+        </div>
+        <div class="field">
+          <label for="f-writer">{{ 'movieDetailPage.writer' | translate }}</label>
+          <input id="f-writer" type="text" formControlName="writer" maxlength="255" />
+        </div>
+        <div class="field">
+          <label for="f-language">{{ 'movieDetailPage.language' | translate }}</label>
+          <select id="f-language" formControlName="original_language">
+            <option value="">—</option>
+            @for (l of languages; track l) { <option [value]="l">{{ 'languages.' + l | translate }}</option> }
+          </select>
         </div>
       </div>
 

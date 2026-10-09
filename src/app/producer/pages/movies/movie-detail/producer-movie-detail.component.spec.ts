@@ -124,7 +124,7 @@ describe('ProducerMovieDetailComponent (resubmit)', () => {
 
   it('cancels an in-flight upload when the dialog is closed', () => {
     let signal: AbortSignal | undefined;
-    uploader.upload.and.callFake((_f, _a, opts) => { signal = opts?.signal; return new Promise<string>(() => {}); });
+    uploader.upload.and.callFake((_f, _a, opts) => { signal = opts?.signal; return new Promise<string>(() => undefined); });
 
     component.resubmitOpen.set(true);
     component.onResubmitVideoSelected(fileEvent(new File(['x'], 'film.mp4', { type: 'video/mp4' })));

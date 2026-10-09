@@ -656,3 +656,24 @@ dialog.add-modal { text-align: left; padding: 0; max-width: 480px; }
 @media (max-width: 380px) {
   .page-header h1 { font-size: 1.2rem; }
 }
+
+.docs-subtitle {
+  margin: 1rem 0 0.5rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+ul.docs-list, dl.docs-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  dd { margin: 0; }
+}
+
+.setup-steps {
+  display: block;
+  margin-top: 4px;
+  font-size: 0.75rem;
+  color: var(--text-muted, #8a8a8a);
+}

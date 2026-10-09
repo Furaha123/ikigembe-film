@@ -1,5 +1,5 @@
 import { Routes } from '@angular/router';
-import { producerGuard } from './guards/producer.guard';
+import { producerGuard, readyProducerGuard } from './guards/producer.guard';
 import { marketplaceGuard, marketplaceRoute } from '../core/access/marketplace.guard';
 import { unsavedChangesGuard } from '../core/guards/unsaved-changes.guard';
 import { ProducerLayoutComponent } from './layout/producer-layout.component';
@@ -22,6 +22,7 @@ export const producerRoutes: Routes = [
       },
       {
         path: 'upload',
+        canActivate: [readyProducerGuard],
         loadComponent: () => import('./pages/upload/producer-upload.component').then(m => m.ProducerUploadComponent),
       },
       {
@@ -35,6 +36,10 @@ export const producerRoutes: Routes = [
       {
         path: 'wallet',
         loadComponent: () => import('./pages/wallet/producer-wallet.component').then(m => m.ProducerWalletComponent),
+      },
+      {
+        path: 'statements',
+        loadComponent: () => import('./pages/statements/producer-statements.component').then(m => m.ProducerStatementsComponent),
       },
       {
         path: 'withdrawals',

@@ -5,6 +5,15 @@ const httpError = (status: number, error?: string) =>
   new HttpErrorResponse({ status, error: error ? { error } : null });
 
 describe('classifyStreamError', () => {
+  it('uses the server code when present (wording can change)', () => {
+    const coded = (code: string) => new HttpErrorResponse({ status: 403, error: { error: 'Reworded message', code } });
+    expect(classifyStreamError(coded('view_used')).kind).toBe('view_used');
+    expect(classifyStreamError(coded('other_device')).kind).toBe('other_device');
+    const soon = classifyStreamError(coded('not_released'));
+    expect(soon.kind).toBe('not_released');
+    expect(soon.canBuy).toBeFalse();
+  });
+
   it('403 view used → view_used, can buy again', () => {
     const d = classifyStreamError(httpError(403, 'Your view of this movie has been used. Purchase it again to watch.'));
     expect(d.kind).toBe('view_used');

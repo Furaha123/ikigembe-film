@@ -56,9 +56,14 @@ export class CastingService {
     return this.access.request('my-casting-calls', () => this.http.delete<CastingCall>(`${BASE}/casting-calls/${id}/poster/`));
   }
 
-  /** Publishes automatically once the fee payment completes. 400/409/503 as documented. */
+  /** Pays the announcement fee; once paid the call waits for admin review (never published by payment alone). */
   purchaseCall(id: number, phoneNumber: string | null): Observable<ServicePurchaseAccepted> {
     return this.access.request('my-casting-calls', () => this.http.post<ServicePurchaseAccepted>(`${BASE}/casting-calls/${id}/purchase/`, phoneNumber ? { phone_number: phoneNumber } : {}));
+  }
+
+  /** Sends a paid draft or a rejected call (after edits) back to admin review — no second payment. */
+  submitCall(id: number): Observable<CastingCall> {
+    return this.access.request('my-casting-calls', () => this.http.post<CastingCall>(`${BASE}/casting-calls/${id}/submit/`, {}));
   }
 
   closeCall(id: number): Observable<CastingCall> {

@@ -2,13 +2,16 @@ User-agent: *
 Allow: /
 Allow: /preview/
 Allow: /terms
+Allow: /films
+Allow: /movie/
+Allow: /refund-policy
 
 Disallow: /browse
-Disallow: /movie/
 Disallow: /profile
 Disallow: /my-list
 Disallow: /actor/
 Disallow: /casting
+Disallow: /payment/
 Disallow: /producer/
 Disallow: /admin/
 Disallow: /login

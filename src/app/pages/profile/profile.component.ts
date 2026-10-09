@@ -1,10 +1,11 @@
-import { Component, inject, OnInit, signal } from '@angular/core';
+import { Component, inject, OnInit, PLATFORM_ID, signal } from '@angular/core';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
-import { CommonModule } from '@angular/common';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { AuthService, UserProfile, NotificationPreferences } from '../../core/services/auth.service';
-import { PaymentService, PaymentHistoryItem } from '../../core/services/payment.service';
+import { PaymentService, PaymentHistoryItem, PaymentReceipt } from '../../core/services/payment.service';
+import { apiErrorMessage } from '../../shared/utils/api-error';
 import { HeaderComponent } from '../../core/components/header/header.component';
 
 
@@ -20,6 +21,7 @@ export class ProfileComponent implements OnInit {
   private readonly fb             = inject(FormBuilder);
   private readonly router         = inject(Router);
   private readonly translate      = inject(TranslateService);
+  private readonly platformId     = inject(PLATFORM_ID);
 
   readonly userRole = this.authService.userRole;
   /** True under /producer/settings and /admin/settings, where the dashboard layout provides navigation. */
@@ -82,7 +84,7 @@ export class ProfileComponent implements OnInit {
     this.authService.getNotifications().subscribe({
       next: (data) => {
         this.notifications.set(data);
-        this.notifForm.patchValue(data as any);
+        this.notifForm.patchValue(data);
         this.isLoadingNotifs.set(false);
       },
       error: () => this.isLoadingNotifs.set(false),
@@ -151,7 +153,7 @@ export class ProfileComponent implements OnInit {
 
     const { current_password, new_password, confirm_password } = this.passwordForm.value;
     if (new_password !== confirm_password) {
-      this.passwordErrors.set({ confirm: this.translate.instant('profile.password.mismatch') } as any);
+      this.passwordErrors.set({ confirm: this.translate.instant('profile.password.mismatch') });
       return;
     }
 
@@ -159,7 +161,7 @@ export class ProfileComponent implements OnInit {
     this.passwordSuccess.set(false);
     this.passwordErrors.set({});
 
-    this.authService.changePassword(current_password!, new_password!).subscribe({
+    this.authService.changePassword(current_password!, new_password!, confirm_password!).subscribe({
       next: () => {
         this.isSavingPassword.set(false);
         this.passwordSuccess.set(true);
@@ -195,10 +197,32 @@ export class ProfileComponent implements OnInit {
     });
   }
 
+  // ── Receipt ─────────────────────────────────────────────
+  receipt        = signal<PaymentReceipt | null>(null);
+  receiptLoading = signal<string | null>(null);
+  receiptError   = signal<string | null>(null);
+
+  openReceipt(depositId: string): void {
+    this.receiptLoading.set(depositId);
+    this.receiptError.set(null);
+    this.paymentService.getReceipt(depositId).subscribe({
+      next: (r) => { this.receiptLoading.set(null); this.receipt.set(r); },
+      error: (err: unknown) => {
+        this.receiptLoading.set(null);
+        this.receiptError.set(apiErrorMessage(err) ?? this.translate.instant('payments.receipt.loadFailed'));
+      },
+    });
+  }
+
+  printReceipt(): void {
+    if (isPlatformBrowser(this.platformId)) window.print();
+  }
+
   paymentStatusClass(status: string): string {
     const s = status.toLowerCase();
     if (s === 'completed') return 'status-ok';
     if (s === 'failed')    return 'status-fail';
+    if (s === 'refunded')  return 'status-refunded';
     return 'status-pending';
   }
 

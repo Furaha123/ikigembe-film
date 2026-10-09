@@ -58,7 +58,6 @@ export class ProducerMoviesComponent implements OnInit, OnDestroy {
   editForm = this.fb.group({
     title:            ['', [Validators.required, Validators.minLength(2)]],
     overview:         [''],
-    price:            [0, [Validators.required, Validators.min(0)]],
   });
 
   // ── Resubmit drawer ───────────────────────────────────
@@ -72,7 +71,6 @@ export class ProducerMoviesComponent implements OnInit, OnDestroy {
     title:        ['', [Validators.required, Validators.minLength(2)]],
     overview:     [''],
     release_date: [''],
-    price:        [0, [Validators.min(0)]],
   });
 
   // Trailer upload
@@ -168,7 +166,6 @@ export class ProducerMoviesComponent implements OnInit, OnDestroy {
     this.editForm.reset({
       title:            movie.title,
       overview:         movie.overview ?? '',
-      price:            movie.price,
     });
   }
 
@@ -195,10 +192,29 @@ export class ProducerMoviesComponent implements OnInit, OnDestroy {
     this.saveErrorText.set(null);
 
     const v = this.editForm.value;
+    if (this.isRequestMode(movie)) {
+      // Approved film: the change waits for an admin (nothing changes until then).
+      this.producerService.requestFilmChange(movie.id, {
+        kind: 'edit',
+        changes: { title: v.title!, overview: v.overview ?? '', genres: Array.from(this.editGenres()) },
+      }).subscribe({
+        next: () => {
+          this.isSaving.set(false);
+          this.markPending(movie.id, 'edit');
+          this.closeEdit();
+          this.requestNotice.set(this.translate.instant('producerUi.movies.changeRequestSent'));
+        },
+        error: (err: unknown) => {
+          this.isSaving.set(false);
+          this.saveErrorText.set(apiErrorMessage(err));
+          this.saveError.set('producerUi.movies.saveFailed');
+        },
+      });
+      return;
+    }
     this.producerService.updateFilm(movie.id, {
       title:            v.title!,
       overview:         v.overview ?? null,
-      price:            v.price!,
       genres:           Array.from(this.editGenres()),
     }).subscribe({
       next: (updated) => {
@@ -255,7 +271,6 @@ export class ProducerMoviesComponent implements OnInit, OnDestroy {
       title:        movie.title,
       overview:     movie.overview ?? '',
       release_date: movie.release_date ?? '',
-      price:        movie.price,
     });
   }
 
@@ -452,7 +467,6 @@ export class ProducerMoviesComponent implements OnInit, OnDestroy {
     if (v.title && v.title.trim() !== movie.title) { fd.append('title', v.title.trim()); changed = true; }
     if ((v.overview ?? '') !== (movie.overview ?? '')) { fd.append('overview', v.overview ?? ''); changed = true; }
     if (v.release_date && v.release_date !== movie.release_date) { fd.append('release_date', v.release_date); changed = true; }
-    if (v.price !== null && v.price !== undefined && Number(v.price) !== movie.price) { fd.append('price', String(v.price)); changed = true; }
 
     const newGenres = [...this.resubmitGenres()].sort().join(',');
     const oldGenres = [...(movie.genres ?? [])].sort().join(',');
@@ -512,8 +526,48 @@ export class ProducerMoviesComponent implements OnInit, OnDestroy {
 
   isLive(m: ProducerMovie): boolean { return m.approval_status === 'approved'; }
 
+  /** Server rule (apps/movies/editing.py): direct edits only before approval; approved films go through a request. */
   isEditable(m: ProducerMovie): boolean {
-    return m.approval_status === 'pending_review' || m.approval_status === 'rejected';
+    const mode = m.edit_mode ?? (m.approval_status === 'rejected' ? 'direct' : 'locked');
+    return mode === 'direct' || (mode === 'request' && !m.pending_change_requests?.includes('edit'));
+  }
+
+  isRequestMode(m: ProducerMovie | null): boolean {
+    return m?.edit_mode === 'request';
+  }
+
+  canRequestUnpublish(m: ProducerMovie): boolean {
+    return m.edit_mode === 'request' && m.is_active && !m.pending_change_requests?.includes('unpublish');
+  }
+
+  // ── Unpublish request ─────────────────────────────────
+  unpublishMovie = signal<ProducerMovie | null>(null);
+  unpublishReason = signal('');
+  unpublishError = signal<string | null>(null);
+  requestNotice = signal<string | null>(null);
+
+  sendUnpublish(): void {
+    const m = this.unpublishMovie();
+    if (!m || this.isSaving()) return;
+    if (!this.unpublishReason().trim()) { this.unpublishError.set(this.translate.instant('producerUi.movies.reasonRequired')); return; }
+    this.isSaving.set(true);
+    this.producerService.requestFilmChange(m.id, { kind: 'unpublish', reason: this.unpublishReason().trim() }).subscribe({
+      next: () => {
+        this.isSaving.set(false);
+        this.markPending(m.id, 'unpublish');
+        this.unpublishMovie.set(null);
+        this.requestNotice.set(this.translate.instant('producerUi.movies.unpublishSent'));
+      },
+      error: (err: unknown) => {
+        this.isSaving.set(false);
+        this.unpublishError.set(apiErrorMessage(err) ?? this.translate.instant('producerUi.movies.saveFailed'));
+      },
+    });
+  }
+
+  private markPending(id: number, kind: 'edit' | 'unpublish'): void {
+    this.movies.update(list => list.map(x => x.id === id
+      ? { ...x, pending_change_requests: [...(x.pending_change_requests ?? []), kind] } : x));
   }
 
   isChangesRequested(m: ProducerMovie): boolean {
@@ -544,7 +598,7 @@ export class ProducerMoviesComponent implements OnInit, OnDestroy {
       this.copiedMovieId.set(movie.id);
       if (this.copiedTimer) clearTimeout(this.copiedTimer);
       this.copiedTimer = setTimeout(() => this.copiedMovieId.set(null), 2500);
-    }).catch(() => {});
+    }).catch(() => { /* clipboard refused: the link stays visible to copy by hand */ });
   }
 
   goToUpload() { this.router.navigate(['/producer/upload']); }

@@ -20,6 +20,12 @@
     @if (!loading() && !loadError()) {
       <app-wizard-steps [steps]="stepLabels" [current]="stepIndex()" />
 
+      @if (call()?.status === 'rejected' && step() !== 'result') {
+        <div class="mk-banner" role="alert">
+          <strong>{{ 'marketplace.publication.rejected' | translate }}:</strong> {{ call()!.review_note }}
+          <p class="mk-muted" style="margin: .25rem 0 0">{{ 'marketplace.postCasting.rejectedHelp' | translate }}</p>
+        </div>
+      }
       @switch (step()) {
         @case ('type') {
           <section class="mk-card" aria-labelledby="cw-type">
@@ -196,7 +202,7 @@
 
                 <!-- Physical requirements -->
                 <div class="mk-field mk-field--wide">
-                  <label class="mk-section-head" style="margin: .5rem 0 0"><h3>{{ 'marketplace.postCasting.physicalReqs' | translate }}</h3></label>
+                  <div class="mk-section-head" style="margin: .5rem 0 0; color: #bbb"><h3>{{ 'marketplace.postCasting.physicalReqs' | translate }}</h3></div>
                 </div>
                 <div class="mk-field">
                   <label for="cw-hmin">{{ 'marketplace.postCasting.heightMin' | translate }}</label>
@@ -223,7 +229,7 @@
 
                 <!-- Skills & languages -->
                 <div class="mk-field mk-field--wide">
-                  <label class="mk-section-head" style="margin: .5rem 0 0"><h3>{{ 'marketplace.postCasting.skillsLangs' | translate }}</h3></label>
+                  <div class="mk-section-head" style="margin: .5rem 0 0; color: #bbb"><h3>{{ 'marketplace.postCasting.skillsLangs' | translate }}</h3></div>
                 </div>
                 <div class="mk-field mk-field--wide">
                   <label for="cw-skills">{{ 'marketplace.postCasting.requiredSkills' | translate }}</label>
@@ -437,7 +443,7 @@
                   {{ (saving() ? 'marketplace.common.saving' : 'marketplace.postCasting.saveDraft') | translate }}
                 </button>
                 <button type="button" class="mk-btn" (click)="payAndPublish()" [disabled]="saving() || !!purchase()">
-                  {{ 'marketplace.postCasting.payPublish' | translate }}
+                  {{ (alreadyPaid() ? 'marketplace.postCasting.sendForReview' : 'marketplace.postCasting.payPublish') | translate }}
                 </button>
               </div>
             </div>
@@ -454,7 +460,7 @@
               <p class="mk-muted">{{ 'marketplace.common.loading' | translate }}</p>
             }
             <div class="mk-actions">
-              @if (state() === 'processing' || state() === 'paymentPending') {
+              @if (state() === 'processing' || state() === 'paymentPending' || state() === 'inReview') {
                 <button type="button" class="mk-btn mk-btn--ghost" (click)="refreshState()" [disabled]="checking()">{{ 'marketplace.common.refresh' | translate }}</button>
               } @else { <span></span> }
               <div class="mk-actions__end">

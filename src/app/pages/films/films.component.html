@@ -1,0 +1,108 @@
+<app-header [userImg]="''" />
+<main class="films-page">
+  <header class="films-head">
+    <h1>{{ 'films.title' | translate }}</h1>
+    <p>{{ 'films.subtitle' | translate }}</p>
+  </header>
+
+  <form class="films-filters" role="search" (ngSubmit)="apply()">
+    <label class="ff grow">
+      <span>{{ 'films.search' | translate }}</span>
+      <input type="search" name="q" maxlength="100" [(ngModel)]="filters.q" [placeholder]="'films.searchPlaceholder' | translate" />
+    </label>
+    <label class="ff">
+      <span>{{ 'films.genre' | translate }}</span>
+      <select name="genre" [(ngModel)]="filters.genre">
+        <option value="">{{ 'films.allGenres' | translate }}</option>
+        @for (g of facets()?.results ?? []; track g.name) { <option [value]="g.name">{{ g.name }} ({{ g.count }})</option> }
+      </select>
+    </label>
+    <label class="ff">
+      <span>{{ 'films.language' | translate }}</span>
+      <select name="language" [(ngModel)]="filters.language">
+        <option value="">{{ 'films.allLanguages' | translate }}</option>
+        @for (l of facets()?.languages ?? []; track l.code) { <option [value]="l.code">{{ 'languages.' + l.code | translate }}</option> }
+      </select>
+    </label>
+    <label class="ff">
+      <span>{{ 'films.year' | translate }}</span>
+      <select name="year" [(ngModel)]="filters.year">
+        <option [ngValue]="null">{{ 'films.anyYear' | translate }}</option>
+        @for (y of years; track y) { <option [ngValue]="y">{{ y }}</option> }
+      </select>
+    </label>
+    <label class="ff">
+      <span>{{ 'films.show' | translate }}</span>
+      <select name="availability" [(ngModel)]="filters.availability">
+        @for (a of availabilities; track a) { <option [value]="a">{{ 'films.availability.' + a | translate }}</option> }
+      </select>
+    </label>
+    <label class="ff">
+      <span>{{ 'films.sort' | translate }}</span>
+      <select name="sort" [(ngModel)]="filters.sort">
+        @for (s of sorts; track s) { <option [value]="s">{{ 'films.sortBy.' + s | translate }}</option> }
+      </select>
+    </label>
+    <div class="ff-actions">
+      <button type="submit" class="films-btn">{{ 'films.apply' | translate }}</button>
+      @if (hasFilters) { <button type="button" class="films-btn films-btn--ghost" (click)="clear()">{{ 'films.clear' | translate }}</button> }
+    </div>
+  </form>
+
+  <div aria-live="polite">
+    @if (data(); as d) {
+      @if (!loading()) { <p class="films-count">{{ 'films.count' | translate: { n: d.total_results } }}</p> }
+    }
+  </div>
+
+  @if (loading() && !data()) {
+    <div class="films-grid" aria-hidden="true">@for (i of [1,2,3,4,5,6,7,8]; track i) { <div class="film-card film-card--skeleton"></div> }</div>
+    <p class="sr-only" role="status">{{ 'browse.loading' | translate }}</p>
+  } @else if (failed()) {
+    <div class="films-state" role="alert">
+      <p>{{ 'films.error' | translate }}</p>
+      <button type="button" class="films-btn" (click)="load()">{{ 'home.retry' | translate }}</button>
+    </div>
+  } @else if (data()) {
+    @let d = data()!;
+    @if (d.results.length === 0) {
+      <div class="films-state">
+        <p>{{ (hasFilters ? 'films.noMatch' : 'films.empty') | translate }}</p>
+        @if (hasFilters) { <button type="button" class="films-btn films-btn--ghost" (click)="clear()">{{ 'films.clear' | translate }}</button> }
+      </div>
+    } @else {
+      <ul class="films-grid" [class.is-loading]="loading()">
+        @for (m of d.results; track m.id) {
+          <li>
+            <a class="film-card" [routerLink]="['/movie', m.id]">
+              @if (m.thumbnail_url) {
+                <img [src]="m.thumbnail_url" [alt]="m.title" loading="lazy" width="200" height="300" />
+              } @else {
+                <span class="film-card__ph" aria-hidden="true">{{ m.title }}</span>
+              }
+              <span class="film-card__info">
+                <span class="film-card__title">{{ m.title }}</span>
+                <span class="film-card__meta">
+                  @if (m.release_state === 'coming_soon') {
+                    <span class="film-card__soon">{{ 'viewer.detail.comingSoon' | translate }}</span>
+                  } @else if (m.release_date) {
+                    {{ m.release_date | slice:0:4 }}
+                  }
+                  · RWF {{ m.price | number }}
+                </span>
+              </span>
+            </a>
+          </li>
+        }
+      </ul>
+      @if (d.total_pages > 1) {
+        <nav class="films-pager" [attr.aria-label]="'admin.payments.pagination' | translate">
+          <button type="button" class="films-btn films-btn--ghost" [disabled]="d.page <= 1" (click)="apply(d.page - 1)">{{ 'admin.payments.prev' | translate }}</button>
+          <span>{{ d.page }} / {{ d.total_pages }}</span>
+          <button type="button" class="films-btn films-btn--ghost" [disabled]="d.page >= d.total_pages" (click)="apply(d.page + 1)">{{ 'admin.payments.next' | translate }}</button>
+        </nav>
+      }
+    }
+  }
+</main>
+<app-footer />

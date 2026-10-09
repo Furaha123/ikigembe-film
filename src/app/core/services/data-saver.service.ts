@@ -1,7 +1,7 @@
 import { Injectable, signal, inject, PLATFORM_ID } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 
-type NetworkInfo = { saveData: boolean; effectiveType: string; addEventListener(e: string, cb: () => void): void };
+interface NetworkInfo { saveData: boolean; effectiveType: string; addEventListener(e: string, cb: () => void): void }
 
 @Injectable({ providedIn: 'root' })
 export class DataSaverService {

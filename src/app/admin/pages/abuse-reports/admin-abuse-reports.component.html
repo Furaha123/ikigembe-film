@@ -1,0 +1,77 @@
+<div class="admin-page">
+  <div class="page-header">
+    <div>
+      <h1>{{ 'admin.abuse.title' | translate }}</h1>
+      <p>{{ 'admin.abuse.subtitle' | translate }}</p>
+    </div>
+    <label class="field">
+      <span>{{ 'admin.abuse.itemType' | translate }}</span>
+      <select [(ngModel)]="targetType" (ngModelChange)="load()" name="targetType">
+        <option value="">{{ 'admin.abuse.allItems' | translate }}</option>
+        @for (t of targets; track t) { <option [value]="t">{{ 'admin.abuse.target.' + t | translate }}</option> }
+      </select>
+    </label>
+  </div>
+
+  <div class="filters" role="group" [attr.aria-label]="'admin.abuse.statusFilter' | translate">
+    @for (s of statuses; track s) {
+      <button type="button" class="btn small" [class.ghost]="status !== s" [attr.aria-pressed]="status === s" (click)="setStatus(s)">
+        {{ 'admin.abuse.status.' + s | translate }} ({{ counts()[s] ?? 0 }})
+      </button>
+    }
+  </div>
+
+  <div aria-live="polite">
+    @if (notice()) { <p class="success" role="status">{{ notice() }}</p> }
+    @if (error()) { <p class="error" role="alert">{{ error() }}</p> }
+  </div>
+
+  @if (loading()) {
+    <p class="muted" role="status">{{ 'admin.payments.loading' | translate }}</p>
+  } @else if (reports().length === 0) {
+    <div class="empty-state">{{ 'admin.abuse.empty' | translate }}</div>
+  } @else {
+    <ul class="refund-list">
+      @for (r of reports(); track r.id) {
+        <li>
+          <div class="row-between">
+            <strong>{{ 'admin.abuse.target.' + r.target_type | translate }} · {{ r.target_label }}</strong>
+            <span class="muted">{{ r.created_at | date:'medium' }}</span>
+          </div>
+          <p>
+            <span class="warn">{{ 'abuse.category.' + r.category | translate }}</span>
+            @if (r.open_reports_for_item > 1) {
+              · {{ 'admin.abuse.openForItem' | translate: { count: r.open_reports_for_item } }}
+            }
+          </p>
+          @if (r.details) { <p>“{{ r.details }}”</p> }
+          <p class="muted">{{ 'admin.abuse.reportedBy' | translate: { who: r.reporter } }}</p>
+          @if (r.status !== 'open') {
+            <p class="muted">
+              {{ 'admin.abuse.resolvedBy' | translate: { who: r.reviewed_by ?? '—', date: (r.reviewed_at | date:'medium') } }}
+              @if (r.resolution_note) { — {{ r.resolution_note }} }
+            </p>
+          }
+          <div class="drawer-actions">
+            <a class="btn small ghost" [routerLink]="r.admin_link">{{ 'admin.abuse.openItem' | translate }}</a>
+            @if (r.status === 'open') {
+              @if (resolving()?.id === r.id) {
+                <label class="field">
+                  <span>{{ (resolving()!.status === 'actioned' ? 'admin.abuse.actionNote' : 'admin.abuse.dismissNote') | translate }}</span>
+                  <input type="text" name="note-{{ r.id }}" [(ngModel)]="note" maxlength="1000" />
+                </label>
+                <button type="button" class="btn small ghost" (click)="resolving.set(null)">{{ 'admin.payments.cancel' | translate }}</button>
+                <button type="button" class="btn small" (click)="confirmResolve()" [disabled]="busyId() === r.id" [attr.aria-busy]="busyId() === r.id">
+                  {{ 'admin.payments.confirm' | translate }}
+                </button>
+              } @else {
+                <button type="button" class="btn small" (click)="startResolve(r.id, 'actioned')">{{ 'admin.abuse.markActioned' | translate }}</button>
+                <button type="button" class="btn small ghost" (click)="startResolve(r.id, 'dismissed')">{{ 'admin.abuse.dismiss' | translate }}</button>
+              }
+            }
+          </div>
+        </li>
+      }
+    </ul>
+  }
+</div>

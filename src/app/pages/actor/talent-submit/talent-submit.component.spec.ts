@@ -14,11 +14,11 @@ import { MultipartUploadApi } from '../../../shared/models/upload.interface';
 import { marketplaceUser, provideMarketplaceUser } from '../../../shared/testing/marketplace-session';
 
 @Component({ selector: 'app-header', template: '' })
-class HeaderStub { @Input() userImg = ''; }
+class HeaderStubComponent { @Input() userImg = ''; }
 @Component({ selector: 'app-footer', template: '' })
-class FooterStub {}
+class FooterStubComponent {}
 @Component({ selector: 'app-payment-modal', template: '' })
-class PaymentModalStub {
+class PaymentModalStubComponent {
   @Input() service: ServicePurchase | null = null;
   @Output() paid = new EventEmitter<void>();
   @Output() closed = new EventEmitter<void>();
@@ -42,7 +42,7 @@ describe('TalentSubmitComponent (show your talent)', () => {
 
   const el = () => fixture.nativeElement as HTMLElement;
   const cmp = () => fixture.componentInstance;
-  const modal = () => fixture.debugElement.query(d => d.componentInstance instanceof PaymentModalStub)?.componentInstance as PaymentModalStub | undefined;
+  const modal = () => fixture.debugElement.query(d => d.componentInstance instanceof PaymentModalStubComponent)?.componentInstance as PaymentModalStubComponent | undefined;
   const settle = () => new Promise(r => setTimeout(r));
 
   /** Jump to the review step with a title and a chosen (unreadable-length) file. */
@@ -77,7 +77,7 @@ describe('TalentSubmitComponent (show your talent)', () => {
     });
     TestBed.overrideComponent(TalentSubmitComponent, {
       remove: { imports: [HeaderComponent, FooterComponent, PaymentModalComponent] },
-      add: { imports: [HeaderStub, FooterStub, PaymentModalStub] },
+      add: { imports: [HeaderStubComponent, FooterStubComponent, PaymentModalStubComponent] },
     });
   });
   afterEach(() => sessionStorage.clear());

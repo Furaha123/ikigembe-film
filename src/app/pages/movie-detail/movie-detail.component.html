@@ -49,8 +49,8 @@
         <h1 class="movie-title">{{ movie.title }}</h1>
 
         <div class="meta-badges">
-          @if (isUpcoming(movie.release_date)) {
-            <span class="badge upcoming">{{ 'movieDetailPage.comingOn' | translate: { date: (movie.release_date | date: 'd MMM yyyy') } }}</span>
+          @if (isComingSoon(movie)) {
+            <span class="badge upcoming">{{ 'movieDetailPage.comingOn' | translate: { date: (releaseMoment(movie) | date: 'd MMM yyyy, HH:mm') } }}</span>
           }
           <span class="badge hd">HD</span>
           @if (movie.duration_minutes) {
@@ -69,7 +69,15 @@
               {{ 'movieDetailPage.watchTrailer' | translate }}
             </button>
           }
-          @if (purchased()) {
+          @if (isComingSoon(movie)) {
+            <!-- Coming soon: the trailer is public, the film can't be bought or played yet (server-enforced). -->
+            <span class="btn-watch btn-watch--soon" role="status">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16" aria-hidden="true">
+                <circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>
+              </svg>
+              {{ 'viewer.detail.availableOn' | translate: { date: (releaseMoment(movie) | date: 'd MMM yyyy, HH:mm') } }}
+            </span>
+          } @else if (purchased()) {
             <button class="btn-watch btn-watch--owned" (click)="watchFullMovie()"
                     [disabled]="streamLoading()" [attr.aria-busy]="streamLoading()">
               <svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg>
@@ -83,6 +91,11 @@
               {{ (streamError()?.kind === 'view_used' ? 'viewer.stream.buyAgain' : 'viewer.detail.buyToWatch') | translate: { price: (movie.price | number) } }}
             </button>
           }
+        </div>
+
+        <div class="detail-secondary-actions">
+          <app-share-button [title]="movie.title" [text]="movie.overview" />
+          <app-report-button targetType="film" [targetId]="movie.id" [label]="movie.title" />
         </div>
 
         <div class="stream-status" aria-live="polite">
@@ -106,8 +119,32 @@
           </div>
           <div class="detail-row">
             <span class="label">{{ 'movieDetailPage.views' | translate }}</span>
-            <span class="value">{{ movie.views ?? 0 }}</span>
+            <span class="value">{{ movie.views || 0 }}</span>
           </div>
+          @if (movie.director) {
+            <div class="detail-row">
+              <span class="label">{{ 'movieDetailPage.director' | translate }}</span>
+              <span class="value">{{ movie.director }}</span>
+            </div>
+          }
+          @if (movie.writer) {
+            <div class="detail-row">
+              <span class="label">{{ 'movieDetailPage.writer' | translate }}</span>
+              <span class="value">{{ movie.writer }}</span>
+            </div>
+          }
+          @if (movie.original_language) {
+            <div class="detail-row">
+              <span class="label">{{ 'movieDetailPage.language' | translate }}</span>
+              <span class="value">{{ 'languages.' + movie.original_language | translate }}</span>
+            </div>
+          }
+          @if (movie.genres?.length) {
+            <div class="detail-row">
+              <span class="label">{{ 'movieDetailPage.genres' | translate }}</span>
+              <span class="value">{{ movie.genres?.join(', ') }}</span>
+            </div>
+          }
           @if (movie.cast?.length) {
             <div class="cast-section">
               <span class="label">{{ 'movieDetailPage.cast' | translate }}</span>
@@ -123,7 +160,7 @@
               <span class="label">{{ 'movieDetailPage.producer' | translate }}</span>
               @if (movie.producer_profile?.id) {
                 <a class="value producer-value producer-link"
-                   [routerLink]="['/producers', movie.producer_profile.id]">{{ movie.producer }}</a>
+                   [routerLink]="['/producers', movie.producer_profile?.id]">{{ movie.producer }}</a>
               } @else {
                 <span class="value producer-value">{{ movie.producer }}</span>
               }
@@ -166,7 +203,7 @@
         <h2 class="more-from-title">
           {{ 'movieDetailPage.moreFrom' | translate }} <span class="more-from-title__gold">{{ movie.producer }}</span>
         </h2>
-        <a class="more-from-seeall" [routerLink]="['/producers', movie.producer_profile.id]">
+        <a class="more-from-seeall" [routerLink]="['/producers', movie.producer_profile?.id]">
           {{ 'movieDetailPage.seeAll' | translate }}
           <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor">
             <path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6z"/>
@@ -199,8 +236,8 @@
 
   <!-- Video Player Overlay -->
   @if (isPlaying() && (playback() || videoSrc())) {
-    <div class="player-backdrop" (click)="closePlayer()">
-      <div class="player-container" (click)="$event.stopPropagation()">
+    <div class="player-backdrop" (click)="closePlayer()" (keydown.escape)="closePlayer()" tabindex="-1">
+      <div class="player-container" tabindex="-1" (click)="$event.stopPropagation()" (keydown)="$event.stopPropagation()">
         <button class="player-close" (click)="closePlayer()" [attr.aria-label]="'movieDetailPage.closePlayer' | translate">
           <svg viewBox="0 0 24 24" width="28" height="28" fill="currentColor">
             <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>

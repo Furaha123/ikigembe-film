@@ -63,7 +63,8 @@ export class ProducerUploadComponent {
   toggleGenre(genre: string) {
     this.selectedGenres.update(set => {
       const next = new Set(set);
-      next.has(genre) ? next.delete(genre) : next.add(genre);
+      if (next.has(genre)) next.delete(genre);
+      else next.add(genre);
       return next;
     });
   }
@@ -369,7 +370,6 @@ export class ProducerUploadComponent {
     fd.append('title',            v.title!);
     fd.append('overview',         v.synopsis!);
     fd.append('release_date',     v.release_date!);
-    fd.append('price',            '500');
     fd.append('is_active', 'false');
     fd.append('video_key',        this.movieKey()!);
 

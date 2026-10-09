@@ -128,10 +128,10 @@
                 {{ c.shooting_location }}
               </span>
             }
-            @if (c.min_age != null || c.max_age != null) {
+            @if ((c.min_age ?? null) !== null || (c.max_age ?? null) !== null) {
               <span class="cc-meta-chip">
-                @if (c.min_age != null && c.max_age != null) { {{ c.min_age }}–{{ c.max_age }} yrs }
-                @else if (c.min_age != null) { {{ c.min_age }}+ yrs }
+                @if ((c.min_age ?? null) !== null && (c.max_age ?? null) !== null) { {{ c.min_age }}–{{ c.max_age }} yrs }
+                @else if ((c.min_age ?? null) !== null) { {{ c.min_age }}+ yrs }
                 @else { ≤ {{ c.max_age }} yrs }
               </span>
             }

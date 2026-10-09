@@ -1,0 +1,58 @@
+<app-header [userImg]="''" />
+<main>
+  @if (loading()) {
+    <div class="home-state" role="status">
+      <div class="loader-ring" aria-hidden="true"></div>
+      <p>{{ 'browse.loading' | translate }}</p>
+    </div>
+  } @else if (failed()) {
+    <div class="home-state" role="alert">
+      <h1>{{ 'home.errorTitle' | translate }}</h1>
+      <p>{{ 'home.errorText' | translate }}</p>
+      <button type="button" class="home-btn" (click)="load()">{{ 'home.retry' | translate }}</button>
+    </div>
+  } @else {
+    @if (featured(); as f) {
+      <app-banner
+        [bannerTitle]="f.title"
+        [bannerOverview]="f.overview"
+        [trailerUrl]="f.trailer_url ?? ''"
+        [bannerBackdropUrl]="f.backdrop_url || f.thumbnail_url"
+        [movieId]="f.id"
+        [releaseDate]="f.release_date"
+        [durationMinutes]="f.duration_minutes"
+        [movieRating]="f.rating"
+      />
+    } @else {
+      <section class="home-intro">
+        <h1>{{ 'home.introTitle' | translate }}</h1>
+        <p>{{ 'home.introText' | translate }}</p>
+      </section>
+    }
+
+    <nav class="home-actions" [attr.aria-label]="'home.actionsLabel' | translate">
+      <a routerLink="/films" class="home-btn">{{ 'home.browseAll' | translate }}</a>
+      @if (!auth.isLoggedIn()) {
+        <a routerLink="/register" class="home-btn home-btn--ghost">{{ 'home.createAccount' | translate }}</a>
+      }
+      <a routerLink="/actors-casting" class="home-btn home-btn--ghost">{{ 'home.actorsCasting' | translate }}</a>
+    </nav>
+
+    @if (isEmpty) {
+      <p class="home-empty">{{ 'home.empty' | translate }}</p>
+    }
+
+    <app-ad-slot placement="home_hero" />
+    @if (latest().length) {
+      <app-movie-carousel [title]="'home.latest' | translate" [videoContents]="latest()" />
+    }
+    @if (comingSoon().length) {
+      <app-movie-carousel [title]="'home.comingSoon' | translate" [videoContents]="comingSoon()" />
+    }
+    <app-ad-slot placement="home_banner" />
+    @if (popular().length) {
+      <app-movie-carousel [title]="'home.popular' | translate" [videoContents]="popular()" />
+    }
+  }
+</main>
+<app-footer />

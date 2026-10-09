@@ -1,4 +1,9 @@
 <div class="ms-page">
+  <app-admin-section-tabs [tabs]="[
+    { labelKey: 'admin.nav.platformSettings', path: '/admin/platform-settings', exact: true },
+    { labelKey: 'admin.nav.marketplaceSettings', path: '/admin/marketplace-settings', exact: true },
+    { labelKey: 'admin.nav.myAccount', path: '/admin/settings', exact: true }
+  ]" ariaLabel="admin.nav.settings" />
 
   <!-- Breadcrumb back link -->
   <a class="ms-back" routerLink="/admin/marketplace">
@@ -36,6 +41,11 @@
     <div class="ms-loading">
       <div class="ms-spinner"></div>
       <span>{{ 'admin.marketplaceSettings.loading' | translate }}</span>
+    </div>
+  } @else if (loadFailed()) {
+    <div class="ms-toast ms-toast--error" role="alert">
+      {{ 'admin.marketplaceSettings.loadFailed' | translate }}
+      <button type="button" class="ms-btn" (click)="load()">{{ 'admin.payments.retry' | translate }}</button>
     </div>
   } @else {
     <form [formGroup]="form" (ngSubmit)="save()" novalidate>
@@ -157,6 +167,29 @@
           </div>
         </div>
       </section>
+
+      <!-- Talent video limits -->
+      <section class="ms-section">
+        <h2 class="ms-section__title">
+          <span class="ms-section__icon" aria-hidden="true">📏</span>
+          {{ 'admin.marketplaceSettings.sectionLimits' | translate }}
+        </h2>
+        <p class="ms-section__desc">{{ 'admin.marketplaceSettings.sectionLimitsDesc' | translate }}</p>
+        <div class="ms-fields">
+          <div class="ms-field" [class.ms-field--error]="fieldError('talent_video_max_mb')">
+            <label class="ms-label" for="max-mb">{{ 'admin.marketplaceSettings.maxSize' | translate }} <span class="ms-label__unit">MB</span></label>
+            <input id="max-mb" class="ms-input" type="number" min="1" max="4096" formControlName="talent_video_max_mb" />
+            @if (fieldError('talent_video_max_mb')) { <span class="ms-error">{{ 'admin.marketplaceSettings.maxSizeRange' | translate }}</span> }
+          </div>
+          <div class="ms-field" [class.ms-field--error]="fieldError('talent_video_max_seconds')">
+            <label class="ms-label" for="max-seconds">{{ 'admin.marketplaceSettings.maxLength' | translate }} <span class="ms-label__unit">{{ 'admin.marketplaceSettings.seconds' | translate }}</span></label>
+            <input id="max-seconds" class="ms-input" type="number" min="10" max="3600" formControlName="talent_video_max_seconds" />
+            @if (fieldError('talent_video_max_seconds')) { <span class="ms-error">{{ 'admin.marketplaceSettings.maxLengthRange' | translate }}</span> }
+          </div>
+        </div>
+      </section>
+
+      @if (serverError()) { <p class="ms-error" role="alert">{{ serverError() }}</p> }
 
       <!-- Actions -->
       <div class="ms-actions">

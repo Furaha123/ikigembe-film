@@ -1,6 +1,8 @@
 <div class="admin-page">
 
   <app-admin-section-tabs [tabs]="[
+    { labelKey: 'admin.nav.payments',    path: '/admin/payments',    exact: true },
+    { labelKey: 'admin.nav.finance',     path: '/admin/finance',     exact: true },
     { labelKey: 'admin.nav.withdrawals', path: '/admin/withdrawals', exact: true },
     { labelKey: 'admin.nav.contracts',   path: '/admin/contracts',   exact: true }
   ]" ariaLabel="admin.nav.financials" />
@@ -94,8 +96,8 @@
 
 <!-- Detail drawer -->
 @if (detailItem()) {
-  <div class="overlay" (click)="closeDetail()" (keydown.escape)="closeDetail()">
-    <dialog open class="detail-modal" (click)="$event.stopPropagation()" (keydown)="$event.stopPropagation()">
+  <div class="overlay" (click)="closeDetail()" tabindex="-1" (keydown.escape)="closeDetail()">
+    <dialog open class="detail-modal" tabindex="-1" (click)="$event.stopPropagation()" (keydown)="$event.stopPropagation()">
 
       <div class="modal-header">
         <h3>{{ 'admin.withdrawalsPage.detailTitle' | translate: { id: detailItem()!.id } }}</h3>
@@ -186,8 +188,8 @@
 
 <!-- Confirm action modal -->
 @if (confirmAction()) {
-  <div class="overlay" (click)="cancelConfirm()" (keydown.escape)="cancelConfirm()">
-    <dialog open class="confirm-modal" (click)="$event.stopPropagation()" (keydown)="$event.stopPropagation()">
+  <div class="overlay" (click)="cancelConfirm()" tabindex="-1" (keydown.escape)="cancelConfirm()">
+    <dialog open class="confirm-modal" tabindex="-1" (click)="$event.stopPropagation()" (keydown)="$event.stopPropagation()">
       <div class="modal-icon" [class.success]="confirmAction()!.type === 'approve'" [class.gold]="confirmAction()!.type === 'complete'" [class.danger]="confirmAction()!.type === 'reject'">
         @if (confirmAction()!.type === 'approve') {
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>

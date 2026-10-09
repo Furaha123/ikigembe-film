@@ -18,6 +18,8 @@ import {
   applicationStatusClass, castingCallStatusClass, castingDisplayStatus, castingIsOpen,
 } from '../../../shared/utils/marketplace-status';
 import { ageOn } from '../../../shared/utils/talent-video';
+import { AnalyticsService } from '../../../core/services/analytics.service';
+import { ReportButtonComponent } from '../../../shared/components/report-button/report-button.component';
 
 /** details → form → review → done. */
 export type ApplyStep = 'details' | 'form' | 'review' | 'done';
@@ -42,6 +44,7 @@ interface ApplyDraft {
   imports: [
     CommonModule, RouterLink, TranslatePipe,
     HeaderComponent, FooterComponent, MarketplaceNavComponent, WizardStepsComponent,
+    ReportButtonComponent,
   ],
   templateUrl: './casting-call-detail.component.html',
   styleUrls: ['../../../shared/styles/marketplace-page.scss'],
@@ -52,6 +55,7 @@ export class CastingCallDetailComponent implements OnInit, OnDestroy {
   private readonly drafts = inject(DraftStoreService);
   private readonly platformId = inject(PLATFORM_ID);
   private readonly access = inject(MarketplaceAccessService);
+  private readonly analytics = inject(AnalyticsService);
   private readonly stepHeading = viewChild<ElementRef<HTMLElement>>('stepHeading');
 
   /** Only active viewer (actor) accounts can apply; producers just read the call. */
@@ -94,7 +98,10 @@ export class CastingCallDetailComponent implements OnInit, OnDestroy {
     this.callId = Number(this.route.snapshot.paramMap.get('id'));
     this.restoreDraft();
     this.marketplace.getCastingCall(this.callId).subscribe({
-      next: (c) => { this.call.set(c); this.loading.set(false); this.scheduleDeadline(c); },
+      next: (c) => {
+        this.call.set(c); this.loading.set(false); this.scheduleDeadline(c);
+        this.analytics.track('casting_view', { object_type: 'casting_call', object_id: c.id });
+      },
       error: (err: HttpErrorResponse) => {
         this.loading.set(false);
         this.loadError.set(err.status === 404 ? 'marketplace.casting.notFound' : (marketplaceErrorMessage(err) ?? 'marketplace.errors.loadFailed'));

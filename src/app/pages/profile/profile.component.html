@@ -237,8 +237,8 @@
     </section>
   }
 
-  @if (userRole() !== 'Producer') {
-    <!-- Payment History -->
+  <!-- Payment History (films and marketplace fees; producers pay for casting calls and actor search) -->
+  @if (userRole() !== 'Admin') {
     <section class="card">
       <h2 class="card-title">{{ 'profile.payments.title' | translate }}</h2>
       <p class="card-desc">{{ 'payments.history.subtitle' | translate }}</p>
@@ -256,14 +256,15 @@
                 <th>{{ 'profile.payments.amount' | translate }}</th>
                 <th>{{ 'profile.payments.status' | translate }}</th>
                 <th>{{ 'profile.payments.date' | translate }}</th>
+                <th><span class="sr-only">{{ 'payments.receipt.title' | translate }}</span></th>
               </tr>
             </thead>
             <tbody>
               @for (p of payments(); track p.deposit_id) {
                 <tr>
                   <td>
-                    {{ p.movie_title ?? ('payments.purpose.' + (p.purpose || 'movie') | translate) }}
-                    @if (p.movie_title) { <span class="ph-muted"> · {{ 'payments.purpose.' + (p.purpose || 'movie') | translate }}</span> }
+                    {{ p.item ?? p.movie_title ?? ('payments.purpose.' + (p.purpose || 'movie') | translate) }}
+                    @if (!p.item && p.movie_title) { <span class="ph-muted"> · {{ 'payments.purpose.' + (p.purpose || 'movie') | translate }}</span> }
                   </td>
                   <td>RWF {{ p.amount | number }}</td>
                   <td>
@@ -272,13 +273,44 @@
                     </span>
                   </td>
                   <td class="ph-muted">{{ p.created_at | date:'mediumDate' }}</td>
+                  <td>
+                    @if (p.status !== 'Pending') {
+                      <button type="button" class="link-btn" (click)="openReceipt(p.deposit_id)"
+                              [disabled]="receiptLoading() === p.deposit_id" [attr.aria-busy]="receiptLoading() === p.deposit_id">
+                        {{ 'payments.receipt.view' | translate }}
+                      </button>
+                    }
+                  </td>
                 </tr>
               }
             </tbody>
           </table>
         </div>
+        @if (receiptError()) { <p class="error-msg" role="alert">{{ receiptError() }}</p> }
       }
     </section>
   }
 
 </div>
+
+@if (receipt(); as r) {
+  <div class="receipt-overlay" (click)="receipt.set(null)" (keydown.escape)="receipt.set(null)" tabindex="-1">
+    <div class="receipt-dialog" role="dialog" aria-modal="true" aria-labelledby="receipt-title" (click)="$event.stopPropagation()" (keydown)="$event.stopPropagation()">
+      <h2 id="receipt-title">{{ 'payments.receipt.title' | translate }}</h2>
+      <dl class="receipt-rows">
+        <dt>{{ 'payments.receipt.reference' | translate }}</dt><dd class="receipt-ref">{{ r.reference }}</dd>
+        <dt>{{ 'payments.history.item' | translate }}</dt><dd>{{ r.item }}</dd>
+        <dt>{{ 'profile.payments.amount' | translate }}</dt><dd>{{ r.currency }} {{ r.amount | number }}</dd>
+        <dt>{{ 'profile.payments.status' | translate }}</dt><dd>{{ r.status_label }}</dd>
+        <dt>{{ 'profile.payments.date' | translate }}</dt><dd>{{ r.date | date:'medium' }}</dd>
+        <dt>{{ 'payments.receipt.method' | translate }}</dt><dd>{{ r.method }}</dd>
+        @if (r.payer_phone) { <dt>{{ 'payments.receipt.paidFrom' | translate }}</dt><dd>{{ r.payer_phone }}</dd> }
+        @if (r.refunded_amount) { <dt>{{ 'payments.receipt.refunded' | translate }}</dt><dd>{{ r.currency }} {{ r.refunded_amount | number }}</dd> }
+      </dl>
+      <div class="edit-actions">
+        <button type="button" class="btn" (click)="receipt.set(null)">{{ 'profile.common.cancel' | translate }}</button>
+        <button type="button" class="btn gold" (click)="printReceipt()">{{ 'payments.receipt.print' | translate }}</button>
+      </div>
+    </div>
+  </div>
+}

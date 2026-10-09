@@ -33,6 +33,13 @@
           }
         </button>
       }
+      <a class="report-item" routerLink="/admin/reports/monthly" style="--dot-color: #9ca3af; text-decoration: none">
+        <span class="ri-dot"></span>
+        <div class="ri-text">
+          <span class="ri-label">{{ 'admin.monthlyReports.tab' | translate }}</span>
+          <span class="ri-sub">PDF · CSV</span>
+        </div>
+      </a>
     </div>
 
     <!-- Metrics (admin-only) -->
@@ -79,14 +86,15 @@
         </div>
 
         <!-- Custom date range picker -->
-        <procurement-date-picker (dateChange)="onDateChange($event)" />
+        <app-date-picker (dateChange)="onDateChange($event)" />
 
         <div class="topbar-sep"></div>
 
         <!-- Show chart toggle -->
-        <label class="chart-toggle">
+        <label class="chart-toggle" for="ar-chart-toggle">
           <span class="ct-label">{{ 'admin.reports.chart' | translate }}</span>
           <button
+            id="ar-chart-toggle"
             class="ct-switch"
             [class.on]="showChart()"
             (click)="toggleChart()"

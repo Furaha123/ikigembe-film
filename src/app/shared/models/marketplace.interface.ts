@@ -76,8 +76,13 @@ export interface ActorProfile {
 
 export type ActorProfilePayload = Omit<ActorProfile, 'created_at' | 'updated_at'>;
 
+/**
+ * Server lifecycle (apps/marketplace/media.py): pending_upload → processing → pending_review → approved/rejected;
+ * a failed server check is upload_failed (re-upload on the same paid slot, free); replaced = superseded by an
+ * approved replacement; removed = deleted by the actor or taken down by an admin.
+ */
 export type ActorVideoStatus =
-  | 'pending_upload' | 'processing' | 'pending_review' | 'approved' | 'rejected' | 'removed';
+  | 'pending_upload' | 'processing' | 'upload_failed' | 'pending_review' | 'approved' | 'rejected' | 'replaced' | 'removed';
 
 export type ServicePaymentStatus = 'Pending' | 'Completed' | 'Failed';
 
@@ -88,10 +93,23 @@ export interface ActorVideo {
   description: string;
   status: ActorVideoStatus;
   reject_reason: string | null;
+  /** Why the server's upload check failed (upload_failed); the actor can upload again for free. */
+  failure_reason?: string;
   payment_status: ServicePaymentStatus | null;
   amount: number | null;
+  /** Age band the fee was computed from at purchase. */
+  fee_band?: 'under_30' | '30_plus' | '';
   /** Signed, expiring URL — never persist it. */
   video_url: string | null;
+  /** Signed, expiring poster frame — never persist it. */
+  thumbnail_url?: string | null;
+  /** Measured by the server after upload. */
+  size_bytes?: number | null;
+  duration_seconds?: number | null;
+  /** The approved video this paid slot replaces once approved. */
+  replaces_id?: number | null;
+  /** The paid slot accepts an upload now (first upload, or a free retry). */
+  can_upload?: boolean;
   reviewed_at: string | null;
   created_at: string;
   updated_at: string;
@@ -100,11 +118,14 @@ export interface ActorVideo {
 export interface ActorVideoPurchasePayload extends PhonePayload {
   title: string;
   description?: string;
+  /** Approved video to replace (it stays live until the new one is approved). */
+  replaces?: number;
 }
 
 // ── Casting ─────────────────────────────────────────────────────────────
 
-export type CastingCallStatus = 'draft' | 'published' | 'closed' | 'removed';
+/** draft → (paid) pending_review → (admin) published | rejected; closed at the deadline; removed by moderation. */
+export type CastingCallStatus = 'draft' | 'pending_review' | 'published' | 'rejected' | 'closed' | 'removed';
 
 export interface CastingCall {
   id: number;
@@ -118,6 +139,11 @@ export interface CastingCall {
   status: CastingCallStatus;
   published_at: string | null;
   payment_status: ServicePaymentStatus | null;
+  /** Reason given with the last rejection (rejected calls). */
+  review_note?: string;
+  removal_reason?: string | null;
+  reviewed_at?: string | null;
+  closed_at?: string | null;
   created_at: string;
   updated_at: string;
   // Extended fields — stored by the backend when provided; absent on older records.

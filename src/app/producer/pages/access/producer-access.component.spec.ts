@@ -10,7 +10,7 @@ import { PaymentModalComponent } from '../../../shared/components/payment-modal/
 import { ServicePurchase } from '../../../shared/models/marketplace.interface';
 
 @Component({ selector: 'app-payment-modal', template: '' })
-class PaymentModalStub {
+class PaymentModalStubComponent {
   @Input() service: ServicePurchase | null = null;
   @Output() paid = new EventEmitter<void>();
   @Output() closed = new EventEmitter<void>();
@@ -23,7 +23,7 @@ describe('ProducerAccessComponent (My Access)', () => {
   let casting: jasmine.SpyObj<CastingService>;
 
   const el = () => fixture.nativeElement as HTMLElement;
-  const modal = () => fixture.debugElement.query(d => d.componentInstance instanceof PaymentModalStub)?.componentInstance as PaymentModalStub | undefined;
+  const modal = () => fixture.debugElement.query(d => d.componentInstance instanceof PaymentModalStubComponent)?.componentInstance as PaymentModalStubComponent | undefined;
   const click = (text: string) => {
     [...el().querySelectorAll<HTMLButtonElement>('button')].find(b => b.textContent?.includes(text))!.click();
     fixture.detectChanges();
@@ -51,7 +51,7 @@ describe('ProducerAccessComponent (My Access)', () => {
     });
     TestBed.overrideComponent(ProducerAccessComponent, {
       remove: { imports: [PaymentModalComponent] },
-      add: { imports: [PaymentModalStub] },
+      add: { imports: [PaymentModalStubComponent] },
     });
   });
 

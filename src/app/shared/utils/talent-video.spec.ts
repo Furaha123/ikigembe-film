@@ -1,4 +1,4 @@
-import { TALENT_VIDEO_MAX_SECONDS, ageOn, formatDuration, talentFeeTier, talentVideoProblem } from './talent-video';
+import { TALENT_VIDEO_MAX_BYTES, TALENT_VIDEO_MAX_SECONDS, ageOn, formatDuration, talentFeeTier, talentVideoProblem } from './talent-video';
 
 describe('talent video rules', () => {
   const today = new Date(2026, 9, 4); // 4 Oct 2026, local time
@@ -28,22 +28,27 @@ describe('talent video rules', () => {
   });
 
   describe('file checks', () => {
-    it('accepts the backend formats, any case', () => {
-      for (const name of ['a.mp4', 'b.MOV', 'c.avi', 'd.mkv']) expect(talentVideoProblem(name, 60)).withContext(name).toBeNull();
+    it('accepts MP4 and MOV, any case (the backend talent formats)', () => {
+      for (const name of ['a.mp4', 'b.MOV']) expect(talentVideoProblem(name, 60)).withContext(name).toBeNull();
     });
 
     it('rejects other types before reading the length', () => {
-      expect(talentVideoProblem('clip.webm', null)).toBe('type');
-      expect(talentVideoProblem('photo.jpg', 10)).toBe('type');
+      for (const name of ['clip.webm', 'photo.jpg', 'c.avi', 'd.mkv']) expect(talentVideoProblem(name, null)).withContext(name).toBe('type');
     });
 
-    it('rejects videos over 3 minutes and allows exactly 3', () => {
+    it('rejects files over 500 MB', () => {
+      expect(talentVideoProblem('a.mp4', 60, TALENT_VIDEO_MAX_BYTES)).toBeNull();
+      expect(talentVideoProblem('a.mp4', 60, TALENT_VIDEO_MAX_BYTES + 1)).toBe('tooLarge');
+    });
+
+    it('rejects videos over 5 minutes and allows exactly 5', () => {
+      expect(TALENT_VIDEO_MAX_SECONDS).toBe(300);
       expect(talentVideoProblem('a.mp4', TALENT_VIDEO_MAX_SECONDS)).toBeNull();
       expect(talentVideoProblem('a.mp4', TALENT_VIDEO_MAX_SECONDS + 5)).toBe('tooLong');
     });
 
     it('leaves an unreadable length to moderation', () => {
-      expect(talentVideoProblem('a.avi', null)).toBeNull();
+      expect(talentVideoProblem('a.mov', null)).toBeNull();
     });
   });
 

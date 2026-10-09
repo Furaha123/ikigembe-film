@@ -64,6 +64,9 @@
               <div class="mc-info">
                 <h3 class="mc-title">{{ movie.title }}</h3>
                 <div class="mc-meta">
+                  @if (movie.release_state === 'coming_soon') {
+                    <span class="mc-soon">{{ 'viewer.detail.comingSoon' | translate }}</span>
+                  }
                   @if (movie.release_date) {
                     <span class="mc-year">{{ movie.release_date.substring(0, 4) }}</span>
                   }

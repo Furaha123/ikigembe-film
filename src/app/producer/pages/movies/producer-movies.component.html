@@ -1,4 +1,5 @@
 <div class="movies-page">
+  @if (requestNotice()) { <p class="edit-note" role="status" aria-live="polite">{{ requestNotice() }}</p> }
 
   <!-- ── Header ── -->
   <div class="page-header">
@@ -151,7 +152,7 @@
                   }
                 }
                 @if (isChangesRequested(movie)) {
-                  <div class="changes-banner" (click)="$event.stopPropagation()">
+                  <div class="changes-banner" tabindex="-1" (click)="$event.stopPropagation()" (keydown)="$event.stopPropagation()">
                     <p class="changes-banner-note">
                       {{ movie.changes_requested_note || ('producerUi.movies.changesDefaultNote' | translate) }}
                     </p>
@@ -179,7 +180,17 @@
               <td class="td-actions" (click)="$event.stopPropagation()">
                 <div class="action-btns">
                   @if (isEditable(movie)) {
-                    <button class="btn-action btn-action--edit" (click)="openEdit(movie, $event)">{{ 'movies.actions.edit' | translate }}</button>
+                    <button class="btn-action btn-action--edit" (click)="openEdit(movie, $event)">
+                      {{ (movie.edit_mode === 'request' ? 'producerUi.movies.requestChanges' : 'movies.actions.edit') | translate }}
+                    </button>
+                  }
+                  @if (canRequestUnpublish(movie)) {
+                    <button class="btn-action btn-action--view" (click)="unpublishReason.set(''); unpublishError.set(null); unpublishMovie.set(movie)">
+                      {{ 'producerUi.movies.requestUnpublish' | translate }}
+                    </button>
+                  }
+                  @if (movie.pending_change_requests?.length) {
+                    <span class="status-chip">{{ 'producerUi.movies.requestPending' | translate }}</span>
                   }
                   @if (movie.approval_status === 'approved_pending_contract') {
                     <button class="btn-action btn-action--contract" (click)="goToContract()">{{ 'movies.actions.signContract' | translate }}</button>
@@ -221,8 +232,8 @@
 
 <!-- ── Edit Film Modal ── -->
 @if (editMovie()) {
-  <div class="modal-overlay" (click)="closeEdit()">
-    <div class="modal-box edit-modal" (click)="$event.stopPropagation()">
+  <div class="modal-overlay" (click)="closeEdit()" (keydown.escape)="closeEdit()" tabindex="-1">
+    <div class="modal-box edit-modal" tabindex="-1" (click)="$event.stopPropagation()" (keydown)="$event.stopPropagation()">
 
       <div class="modal-header">
         <h3>{{ 'movies.edit.title' | translate }}</h3>
@@ -236,13 +247,13 @@
       <div class="modal-body" [formGroup]="editForm">
 
         <div class="edit-note">
-          {{ 'movies.edit.note' | translate }}
+          {{ (isRequestMode(editMovie()) ? 'producerUi.movies.requestNote' : 'movies.edit.note') | translate }}
         </div>
 
         <!-- Title -->
         <div class="edit-field">
-          <label class="edit-label">{{ 'movies.edit.movieTitle' | translate }}</label>
-          <input class="edit-input" type="text" formControlName="title" [placeholder]="'producerUi.movies.titlePlaceholder' | translate" />
+          <label class="edit-label" for="pm-edit-title">{{ 'movies.edit.movieTitle' | translate }}</label>
+          <input id="pm-edit-title" class="edit-input" type="text" formControlName="title" [placeholder]="'producerUi.movies.titlePlaceholder' | translate" />
           @if (editForm.get('title')?.invalid && editForm.get('title')?.touched) {
             <span class="edit-error">{{ 'movies.edit.titleRequired' | translate }}</span>
           }
@@ -250,20 +261,21 @@
 
         <!-- Overview -->
         <div class="edit-field">
-          <label class="edit-label">{{ 'movies.edit.overview' | translate }}</label>
-          <textarea class="edit-textarea" formControlName="overview" rows="3"
+          <label class="edit-label" for="pm-edit-overview">{{ 'movies.edit.overview' | translate }}</label>
+          <textarea id="pm-edit-overview" class="edit-textarea" formControlName="overview" rows="3"
                     [placeholder]="'producerUi.movies.overviewPlaceholder' | translate"></textarea>
         </div>
 
         <!-- Price -->
         <div class="edit-field">
-          <label class="edit-label" for="edit-price">{{ 'movies.edit.price' | translate }}</label>
-          <input id="edit-price" class="edit-input" type="number" formControlName="price" min="0" placeholder="0" />
+          <span class="edit-label">{{ 'movies.edit.price' | translate }}</span>
+          <p class="edit-input edit-input--readonly">RWF {{ editMovie()?.price | number }}</p>
+          <span class="edit-hint">{{ 'producerUi.movies.priceAdminOnly' | translate }}</span>
         </div>
 
         <!-- Genres -->
         <div class="edit-field">
-          <label class="edit-label">{{ 'movies.edit.genres' | translate }}</label>
+          <span class="edit-label">{{ 'movies.edit.genres' | translate }}</span>
           <div class="genre-grid">
             @for (g of ALL_GENRES; track g) {
               <button type="button" class="genre-chip"
@@ -281,7 +293,7 @@
       <div class="modal-footer">
         <button class="btn-close-modal" (click)="closeEdit()" [disabled]="isSaving()">{{ 'movies.edit.cancel' | translate }}</button>
         <button class="btn-save-modal" (click)="saveEdit()" [disabled]="editForm.invalid || isSaving()">
-          @if (isSaving()) { {{ 'movies.edit.saving' | translate }} } @else { {{ 'movies.edit.save' | translate }} }
+          @if (isSaving()) { {{ 'movies.edit.saving' | translate }} } @else { {{ (isRequestMode(editMovie()) ? 'producerUi.movies.sendRequest' : 'movies.edit.save') | translate }} }
         </button>
       </div>
 
@@ -289,10 +301,28 @@
   </div>
 }
 
+@if (unpublishMovie(); as m) {
+  <div class="modal-overlay" (click)="unpublishMovie.set(null)" (keydown.escape)="unpublishMovie.set(null)" tabindex="-1">
+    <div class="modal-box edit-modal" role="dialog" aria-modal="true" aria-labelledby="unpub-title" (click)="$event.stopPropagation()" (keydown)="$event.stopPropagation()">
+      <div class="modal-header"><h3 id="unpub-title">{{ 'producerUi.movies.requestUnpublish' | translate }} — {{ m.title }}</h3></div>
+      <div class="modal-body">
+        <p class="edit-note">{{ 'producerUi.movies.unpublishNote' | translate }}</p>
+        <label class="edit-label" for="unpub-reason">{{ 'producerUi.movies.reason' | translate }}</label>
+        <textarea id="unpub-reason" class="edit-input" rows="3" [value]="unpublishReason()" (input)="unpublishReason.set($any($event.target).value)"></textarea>
+        @if (unpublishError()) { <p class="edit-error-msg" role="alert">{{ unpublishError() }}</p> }
+      </div>
+      <div class="modal-footer">
+        <button class="btn-close-modal" (click)="unpublishMovie.set(null)" [disabled]="isSaving()">{{ 'movies.edit.cancel' | translate }}</button>
+        <button class="btn-save-modal" (click)="sendUnpublish()" [disabled]="isSaving()">{{ 'producerUi.movies.sendRequest' | translate }}</button>
+      </div>
+    </div>
+  </div>
+}
+
 <!-- ── Resubmit Drawer ── -->
 @if (resubmitMovie()) {
-  <div class="resubmit-overlay" (click)="closeResubmit()">
-    <div class="resubmit-drawer" (click)="$event.stopPropagation()" (keydown.escape)="closeResubmit()">
+  <div class="resubmit-overlay" (click)="closeResubmit()" (keydown.escape)="closeResubmit()" tabindex="-1">
+    <div class="resubmit-drawer" tabindex="-1" (click)="$event.stopPropagation()" (keydown.escape)="closeResubmit()">
 
       <!-- Header -->
       <div class="resubmit-header">
@@ -331,27 +361,27 @@
           <div class="rs-section">
             <ng-container [formGroup]="resubmitForm">
               <div class="rs-field">
-                <label class="rs-label">{{ 'producerUi.resubmit.fieldTitle' | translate }}</label>
-                <input class="rs-input" formControlName="title" type="text" [placeholder]="'producerUi.resubmit.titlePlaceholder' | translate" />
+                <label class="rs-label" for="pm-rs-title">{{ 'producerUi.resubmit.fieldTitle' | translate }}</label>
+                <input id="pm-rs-title" class="rs-input" formControlName="title" type="text" [placeholder]="'producerUi.resubmit.titlePlaceholder' | translate" />
               </div>
               <div class="rs-field">
-                <label class="rs-label">{{ 'producerUi.resubmit.overview' | translate }}</label>
-                <textarea class="rs-textarea" formControlName="overview" rows="3" [placeholder]="'producerUi.resubmit.overviewPlaceholder' | translate"></textarea>
+                <label class="rs-label" for="pm-rs-overview">{{ 'producerUi.resubmit.overview' | translate }}</label>
+                <textarea id="pm-rs-overview" class="rs-textarea" formControlName="overview" rows="3" [placeholder]="'producerUi.resubmit.overviewPlaceholder' | translate"></textarea>
               </div>
               <div class="rs-row">
                 <div class="rs-field">
-                  <label class="rs-label">{{ 'producerUi.resubmit.releaseDate' | translate }}</label>
-                  <input class="rs-input" formControlName="release_date" type="date" />
+                  <label class="rs-label" for="pm-rs-release">{{ 'producerUi.resubmit.releaseDate' | translate }}</label>
+                  <input id="pm-rs-release" class="rs-input" formControlName="release_date" type="date" />
                 </div>
                 <div class="rs-field">
-                  <label class="rs-label">{{ 'producerUi.resubmit.price' | translate }}</label>
-                  <input class="rs-input" formControlName="price" type="number" min="0" placeholder="0" />
+                  <span class="rs-label">{{ 'producerUi.resubmit.price' | translate }}</span>
+                  <p class="rs-input rs-input--readonly">RWF {{ resubmitMovie()?.price | number }}</p>
                 </div>
               </div>
             </ng-container>
 
             <div class="rs-field">
-              <label class="rs-label">{{ 'producerUi.resubmit.genres' | translate }}</label>
+              <span class="rs-label">{{ 'producerUi.resubmit.genres' | translate }}</span>
               <div class="rs-genre-grid">
                 @for (g of ALL_GENRES; track g) {
                   <button type="button" class="rs-genre-chip"
@@ -362,7 +392,7 @@
             </div>
 
             <div class="rs-field">
-              <label class="rs-label">{{ 'producerUi.resubmit.cast' | translate }}</label>
+              <label class="rs-label" for="pm-rs-cast">{{ 'producerUi.resubmit.cast' | translate }}</label>
               <div class="rs-cast-wrap">
                 @for (name of resubmitCast(); track name) {
                   <span class="rs-cast-tag">
@@ -370,7 +400,7 @@
                     <button type="button" class="rs-cast-remove" (click)="removeCastMember(name)" [attr.aria-label]="'producerUi.resubmit.removeCastMember' | translate: { name: name }">×</button>
                   </span>
                 }
-                <input class="rs-cast-input" type="text" [placeholder]="'producerUi.resubmit.castPlaceholder' | translate"
+                <input id="pm-rs-cast" class="rs-cast-input" type="text" [placeholder]="'producerUi.resubmit.castPlaceholder' | translate"
                        [ngModel]="resubmitCastInput()" (ngModelChange)="resubmitCastInput.set($event)"
                        (keydown)="onCastKeydown($event)" />
               </div>
@@ -379,7 +409,7 @@
 
             <!-- Thumbnail -->
             <div class="rs-field">
-              <label class="rs-label">{{ 'producerUi.resubmit.thumbnail' | translate }}</label>
+              <span class="rs-label">{{ 'producerUi.resubmit.thumbnail' | translate }}</span>
               @if (resubmitThumbnailPreview()) {
                 <div class="rs-img-preview">
                   <img [src]="resubmitThumbnailPreview()!" [alt]="'producerUi.resubmit.newThumbnailAlt' | translate" />
@@ -405,7 +435,7 @@
 
             <!-- Backdrop -->
             <div class="rs-field">
-              <label class="rs-label">{{ 'producerUi.resubmit.backdrop' | translate }}</label>
+              <span class="rs-label">{{ 'producerUi.resubmit.backdrop' | translate }}</span>
               @if (resubmitBackdropPreview()) {
                 <div class="rs-img-preview rs-img-preview--wide">
                   <img [src]="resubmitBackdropPreview()!" [alt]="'producerUi.resubmit.newBackdropAlt' | translate" />

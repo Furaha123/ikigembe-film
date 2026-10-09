@@ -58,12 +58,9 @@ export class AdminService {
     return this.http.get<ProducerItem[]>(`${BASE}/admin/dashboard/producers/`);
   }
 
-  approveProducer(id: number): Observable<unknown> {
-    return this.http.post(`${BASE}/admin/dashboard/producers/${id}/approve/`, {});
-  }
-
-  rejectProducer(id: number, reason: string): Observable<unknown> {
-    return this.http.post(`${BASE}/admin/dashboard/producers/${id}/reject/`, { reason });
+  /** Lifts a suspension. Producers aren't approved by admins: they complete their profile and sign the agreement. */
+  reactivateProducer(id: number): Observable<unknown> {
+    return this.http.post(`${BASE}/admin/dashboard/producers/${id}/reactivate/`, {});
   }
 
   suspendProducer(id: number, reason?: string): Observable<unknown> {

@@ -44,14 +44,20 @@ export class ActorMarketplaceService {
     return this.access.request('talent-videos', () => this.http.post<ServicePurchaseAccepted>(`${BASE}/actor-videos/purchase/`, payload));
   }
 
-  /** Multipart endpoints for one paid video (402 fee unpaid, 409 already uploaded). */
+  /** Takes the video out of the directory (status removed). The payment stays; no refund. 409 while processing. */
+  deleteVideo(id: number): Observable<void> {
+    return this.access.request('talent-videos', () => this.http.delete<void>(`${BASE}/actor-videos/${id}/`));
+  }
+
+  /** Multipart endpoints for one paid video slot (402 fee unpaid, 409 slot already holds an upload). */
   videoUploadApi(videoId: number): MultipartUploadApi {
     const url = `${BASE}/actor-videos/${videoId}/upload`;
     const post = <T>(step: string, body: object) =>
       this.access.request('talent-videos', () => this.http.post<T>(`${url}/${step}/`, body));
     return {
       initiate: (file) => post<{ upload_id: string; file_key: string }>(
-        'initiate', { file_name: file.name, file_type: file.type }),
+        // file_size lets the API refuse an oversize file before any bytes are sent.
+        'initiate', { file_name: file.name, file_type: file.type, file_size: file.size }),
       signPart: (uploadId, fileKey, partNumber) => post<{ url: string }>(
         'sign-part', { upload_id: uploadId, file_key: fileKey, part_number: partNumber }),
       complete: (uploadId, fileKey, parts) => post<ActorVideo>(

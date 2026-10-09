@@ -15,7 +15,7 @@ export interface DateRange {
 }
 
 @Component({
-  selector: "procurement-date-picker",
+  selector: "app-date-picker",
   templateUrl: "./date-picker.html",
   styleUrl: "./date-picker.scss",
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -44,7 +44,7 @@ export class DatePickerComponent {
     const month = this.viewMonth();
     const first = new Date(year, month, 1);
     // Monday-based offset (0=Mon … 6=Sun)
-    let dow = first.getDay(); // 0=Sun
+    const dow = first.getDay(); // 0=Sun
     const offset = dow === 0 ? 6 : dow - 1;
 
     const days: (Date | null)[] = [];
@@ -150,7 +150,7 @@ export class DatePickerComponent {
 
   @HostListener('document:click', ['$event'])
   onDocClick(e: MouseEvent) {
-    const host = (e.target as HTMLElement).closest('procurement-date-picker');
+    const host = (e.target as HTMLElement).closest('app-date-picker');
     if (!host) this.open.set(false);
   }
 }

@@ -11,13 +11,13 @@ import { MarketplaceUser } from './marketplace-access';
 import { marketplaceUser, provideMarketplaceUser } from '../../shared/testing/marketplace-session';
 
 @Component({ template: 'page' })
-class PageStub {}
+class PageStubComponent {}
 
 const routes = [
-  { path: 'casting', component: PageStub, canActivate: [marketplaceGuard], data: marketplaceRoute('casting-calls') },
-  { path: 'actor/profile', component: PageStub, canActivate: [marketplaceGuard], data: marketplaceRoute('actor-profile') },
-  { path: 'producer/actors', component: PageStub, canActivate: [marketplaceGuard], data: marketplaceRoute('find-actors') },
-  { path: 'admin/marketplace', component: PageStub, canActivate: [marketplaceGuard], data: marketplaceRoute('moderation') },
+  { path: 'casting', component: PageStubComponent, canActivate: [marketplaceGuard], data: marketplaceRoute('casting-calls') },
+  { path: 'actor/profile', component: PageStubComponent, canActivate: [marketplaceGuard], data: marketplaceRoute('actor-profile') },
+  { path: 'producer/actors', component: PageStubComponent, canActivate: [marketplaceGuard], data: marketplaceRoute('find-actors') },
+  { path: 'admin/marketplace', component: PageStubComponent, canActivate: [marketplaceGuard], data: marketplaceRoute('moderation') },
 ];
 
 describe('marketplaceGuard', () => {

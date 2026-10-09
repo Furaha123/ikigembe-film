@@ -77,8 +77,9 @@ export class HeaderComponent implements OnInit, OnDestroy {
 
   /** Actors Casting is listed for guests and for accounts the marketplace map allows (not admins). */
   readonly navList = computed<{ label: string; labelKey?: string; route: string | null }[]>(() => [
-    { label: 'Home',               labelKey: 'header.nav.home',             route: '/browse' },
-    { label: 'My List',            labelKey: 'header.nav.myList',           route: '/my-list' },
+    { label: 'Home',               labelKey: 'header.nav.home',             route: this.isLoggedIn() ? '/browse' : '/' },
+    { label: 'Films',              labelKey: 'header.nav.films',            route: '/films' },
+    ...(this.isLoggedIn() ? [{ label: 'My List', labelKey: 'header.nav.myList', route: '/my-list' }] : []),
     { label: 'Producers',          labelKey: 'header.nav.producers',        route: '/producers' },
     ...(!this.isLoggedIn() || this.marketplace.can('casting-calls')
       ? [{ label: 'Actors Casting', labelKey: 'header.nav.actorsCasting', route: '/actors-casting' }]
@@ -195,6 +196,13 @@ export class HeaderComponent implements OnInit, OnDestroy {
     this.searchSubject.next(this.searchQuery);
   }
 
+  /** Enter: every result, paginated and filterable, on the catalog page. */
+  openFullSearch(): void {
+    const q = this.searchQuery.trim();
+    if (!q) return;
+    this.router.navigate(['/films'], { queryParams: { q } });
+  }
+
   clearSearch(): void {
     this.searchQuery = '';
     this.searchSubject.next('');
@@ -214,7 +222,7 @@ export class HeaderComponent implements OnInit, OnDestroy {
         this.inboxItems.set(resp.results);
         this.unreadCount.set(resp.unread_count);
       },
-      error: () => {},
+      error: () => { /* the inbox is optional: keep what is shown */ },
     });
   }
 

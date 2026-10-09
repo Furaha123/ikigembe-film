@@ -10,14 +10,15 @@ import { AuthService, RegisterErrors, resendCooldownLabel } from '../../core/ser
 import { SeoService } from '../../core/services/seo.service';
 import { TranslatePipe } from '@ngx-translate/core';
 
-declare const google: {
+/** The Google Identity Services global (loaded by a script tag), as far as this page uses it. */
+interface GoogleIdentity {
   accounts: {
     id: {
       initialize(cfg: { client_id: string; callback: (r: { credential: string }) => void }): void;
       renderButton(el: HTMLElement, opts: Record<string, unknown>): void;
     };
   };
-};
+}
 
 const GOOGLE_CLIENT_ID = '315063576340-dokh369lnriqdpermiha2iesqrm097dp.apps.googleusercontent.com';
 
@@ -46,7 +47,7 @@ export class RegisterComponent implements OnInit, AfterViewInit, OnDestroy {
       first_name:       ['', [Validators.required, Validators.minLength(2)]],
       last_name:        ['', [Validators.required, Validators.minLength(2)]],
       email:            ['', [Validators.required, Validators.email]],
-      phone_number:     ['', [Validators.pattern(/^\+?[0-9\s\-]{7,15}$/)]],
+      phone_number:     ['', [Validators.pattern(/^\+?[0-9\s-]{7,15}$/)]],
       password:         ['', [Validators.required, Validators.minLength(8)]],
       password_confirm: ['', Validators.required],
     },
@@ -151,7 +152,7 @@ export class RegisterComponent implements OnInit, AfterViewInit, OnDestroy {
   // ── Google ───────────────────────────────────────────────
   private tryInitGoogleButton(attempt: number) {
     const container = this.googleBtnContainer()?.nativeElement;
-    const gsi = (globalThis as { google?: typeof google }).google;
+    const gsi = (globalThis as { google?: GoogleIdentity }).google;
 
     if (!gsi || !container) {
       if (attempt < 10) setTimeout(() => this.tryInitGoogleButton(attempt + 1), 300);

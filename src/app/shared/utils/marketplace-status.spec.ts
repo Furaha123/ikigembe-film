@@ -12,6 +12,11 @@ describe('castingPublicationState', () => {
     expect(castingPublicationState(call('draft', 'Completed'), NOW)).toBe('processing');
   });
 
+  it('a paid call waits for review; payment alone is never "published"', () => {
+    expect(castingPublicationState(call('pending_review', 'Completed'), NOW)).toBe('inReview');
+    expect(castingPublicationState(call('rejected', 'Completed'), NOW)).toBe('rejected');
+  });
+
   it('never treats a pending or failed payment as published', () => {
     expect(castingPublicationState(call('draft', 'Pending'), NOW)).toBe('paymentPending');
     expect(castingPublicationState(call('draft', 'Failed'), NOW)).toBe('paymentFailed');

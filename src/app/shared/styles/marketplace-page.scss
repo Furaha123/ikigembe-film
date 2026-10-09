@@ -456,3 +456,21 @@ app-header ~ .mk-page { padding-top: calc(68px + 1.5rem); }
 @media (max-width: 600px) {
   .mk-casting-poster { width: 100%; max-height: 280px; aspect-ratio: unset; }
 }
+
+.mk-video-thumb {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+  border-radius: 8px;
+  margin: 0.5rem 0;
+}
+
+.mk-small { font-size: 0.8rem; }
+
+.mk-btn--danger {
+  background: transparent;
+  border: 1px solid #c0392b;
+  color: #e57368;
+
+  &:hover:not(:disabled) { background: rgba(192, 57, 43, 0.12); }
+}
