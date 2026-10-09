@@ -51,3 +51,6 @@ Thumbs.db
 # Local environment files
 .env
 .env.*
+
+# Vercel build output (scripts/vercel-output.mjs)
+/.vercel

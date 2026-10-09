@@ -170,7 +170,7 @@ ngx-translate with `src/assets/i18n/en.json` and `rw.json` (English fallback). A
 ### Environment & API
 
 `environment.apiUrl` is the same-origin path `/api`, so the refresh cookie is first-party:
-- Production: `vercel.json` rewrites `/api/*` to `https://ikigembe-backend.onrender.com/api/*` (change the backend there). Keep that rule above the SPA fallback.
+- Vercel: `npm run build:vercel` runs `scripts/vercel-output.mjs`, which writes the Build Output API routes: `/api/*` and `/sitemap.xml` proxy to `BACKEND_ORIGIN` (Vercel env var; production defaults to `https://ikigembe-backend.onrender.com`, previews must set it, e.g. the staging API), crawler routes for `/movie/:id` and `/casting/:id`, then the SPA fallback. `vercel.json` only names the build command. Environments and the release flow: `docs/environments.md`.
 - Development: `ng serve` proxies `/api` to `http://localhost:8000` (`proxy.conf.json`). Point `target` at the Render URL to develop against the hosted API.
 
 Absolute URLs the API returns (HLS `stream_url`, presigned storage URLs) are still fetched directly.

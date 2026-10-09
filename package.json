@@ -12,7 +12,9 @@
     "lint": "ng lint",
     "e2e": "playwright test",
     "e2e:report": "playwright show-report",
-    "e2e:typecheck": "tsc -p e2e/tsconfig.json"
+    "e2e:typecheck": "tsc -p e2e/tsconfig.json",
+    "build:vercel": "ng build && node scripts/vercel-output.mjs",
+    "test:scripts": "node --test scripts/vercel-output.test.mjs"
   },
   "private": true,
   "dependencies": {
