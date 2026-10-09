@@ -7,9 +7,10 @@ import { AdminTableComponent } from '../../shared/components/admin-table/admin-t
 import { TableColumn } from '../../shared/components/admin-table/table-column.interface';
 import { AdminSectionTabsComponent } from '../../shared/components/admin-section-tabs.component';
 
+import { ModalBackdropDirective } from '../../../shared/directives/modal-backdrop.directive';
 @Component({
   selector: 'app-admin-users',
-  imports: [CommonModule, AdminTableComponent, TranslatePipe, AdminSectionTabsComponent],
+  imports: [ModalBackdropDirective, CommonModule, AdminTableComponent, TranslatePipe, AdminSectionTabsComponent],
   templateUrl: './admin-users.component.html',
   styleUrl: './admin-users.component.scss'
 })

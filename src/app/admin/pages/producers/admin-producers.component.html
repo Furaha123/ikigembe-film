@@ -144,8 +144,8 @@
 
   <!-- Suspend with reason modal -->
   @if (suspendModal() !== null) {
-    <div class="overlay" (click)="closeSuspendModal()" (keydown.escape)="closeSuspendModal()" tabindex="-1">
-      <dialog open class="modal add-modal" tabindex="-1" (click)="$event.stopPropagation()" (keydown)="$event.stopPropagation()">
+    <div class="overlay" appModalBackdrop (dismiss)="closeSuspendModal()">
+      <dialog open class="modal add-modal" tabindex="-1">
         <div class="modal-header">
           <h3>{{ 'admin.producers.suspendProducer' | translate }}</h3>
           <button class="close-btn" (click)="closeSuspendModal()" [attr.aria-label]="'admin.producers.close' | translate">
@@ -171,8 +171,8 @@
 
   <!-- View Documents modal -->
   @if (docsModal()) {
-    <div class="overlay" (click)="closeDocsModal()" (keydown.escape)="closeDocsModal()" tabindex="-1">
-      <dialog open class="modal add-modal" tabindex="-1" (click)="$event.stopPropagation()" (keydown)="$event.stopPropagation()">
+    <div class="overlay" appModalBackdrop (dismiss)="closeDocsModal()">
+      <dialog open class="modal add-modal" tabindex="-1">
         <div class="modal-header">
           <h3>{{ 'admin.producers.documentsTitle' | translate: { name: docsModal()!.producerName } }}</h3>
           <button class="close-btn" (click)="closeDocsModal()" [attr.aria-label]="'admin.producers.close' | translate">
@@ -225,8 +225,8 @@
 
   <!-- Detail panel -->
   @if (detailReport() || detailLoading()) {
-    <div class="overlay" (click)="closeDetail()" tabindex="-1" (keydown.escape)="closeDetail()">
-      <div class="side-panel side-panel--detail" tabindex="-1" (click)="$event.stopPropagation()" (keydown)="$event.stopPropagation()">
+    <div class="overlay" appModalBackdrop (dismiss)="closeDetail()" >
+      <div class="side-panel side-panel--detail" tabindex="-1">
         <div class="panel-header">
           <h3>{{ 'admin.producers.producerDetails' | translate }}</h3>
           <button class="close-btn" (click)="closeDetail()" [attr.aria-label]="'admin.producers.close' | translate">
@@ -308,8 +308,8 @@
 
   <!-- Purchases panel -->
   @if (purchasesMovieId() !== null) {
-    <div class="overlay" (click)="closePurchases()" tabindex="-1" (keydown.escape)="closePurchases()">
-      <div class="side-panel side-panel--purchases" tabindex="-1" (click)="$event.stopPropagation()" (keydown)="$event.stopPropagation()">
+    <div class="overlay" appModalBackdrop (dismiss)="closePurchases()" >
+      <div class="side-panel side-panel--purchases" tabindex="-1">
         <div class="panel-header panel-header--lg">
           <div>
             <h3>{{ 'admin.producers.buyers' | translate }}</h3>
@@ -359,8 +359,8 @@
 
   <!-- Delete confirmation -->
   @if (confirmDeleteId() !== null) {
-    <div class="overlay" (click)="cancelDelete()" tabindex="-1" (keydown.escape)="cancelDelete()">
-      <dialog open class="modal" tabindex="-1" (click)="$event.stopPropagation()" (keydown)="$event.stopPropagation()">
+    <div class="overlay" appModalBackdrop (dismiss)="cancelDelete()" >
+      <dialog open class="modal" tabindex="-1">
         <div class="modal-icon danger">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg>
         </div>

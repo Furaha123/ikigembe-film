@@ -86,7 +86,7 @@ _Newest first. Each entry: date, phase, changed files, checks and results, next 
 - Bugs found by the suite and fixed: (1) refresh-token rotation signed users out when a page was left mid-refresh → `REFRESH_REUSE_GRACE_SECONDS` grace (backend tests added); (2) SQLite "database is locked" lost in-app notifications under runserver → SQLite `timeout` + `IMMEDIATE` transactions.
 - Backend: `seed_e2e` (+ `tests_seed_e2e.py`), `ikigembe_bn/e2e_storage.py`, settings (`REFRESH_REUSE_GRACE_SECONDS`, `E2E_LOCAL_STORAGE`, SQLite options).
 - Checks: BE 456 OK, `makemigrations --check` clean; FE lint 0 errors, 499 unit OK, build clean, `i18n:check` OK, `e2e:typecheck` OK, E2E 8/8 (three consecutive green runs).
-- Known limit: modal Escape closes only when the backdrop has focus (inner dialogs stop keydown); payment modal closes on Escape everywhere.
+- Escape for dialogs fixed in a follow-up (2026-10-09): shared `appModalBackdrop` directive on 38 backdrops in 17 components; Escape works from inside the dialog and closes only the topmost layer (payment modal joins the same stack). Directive spec (6) + E2E Escape checks on the receipt dialog and the refund drawer. FE 505 unit OK, lint 0, E2E 8/8.
 
 ### 2026-10-08 — Producer approval replaced by producer setup
 - Decision (product owner): admins don't approve producers; producers complete their profile once and sign the agreement.

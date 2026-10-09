@@ -11,6 +11,7 @@ import { AdminService } from '../../../services/admin.service';
 import { FilmRevenueShare, FilmRevenueShareList, FilmRevenueSharePayload, RevenueParty } from '../../../models/admin.interface';
 import { apiErrorMessage } from '../../../../shared/utils/api-error';
 
+import { ModalBackdropDirective } from '../../../../shared/directives/modal-backdrop.directive';
 type PartyGroup = FormGroup<{ name: FormControl<string>; percentage: FormControl<number | null> }>;
 
 /** Sum of producer + platform + other-party percentages. */
@@ -33,7 +34,7 @@ export function totalIs100(group: AbstractControl): ValidationErrors | null {
 @Component({
   selector: 'app-revenue-shares-dialog',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, TranslatePipe],
+  imports: [ModalBackdropDirective, CommonModule, ReactiveFormsModule, TranslatePipe],
   templateUrl: './revenue-shares-dialog.component.html',
   styleUrls: ['../../../pages/movies/admin-movies.component.scss', './revenue-shares-dialog.component.scss'],
 })

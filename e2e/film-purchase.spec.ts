@@ -49,5 +49,10 @@ test.describe('film purchase and playback', () => {
     await expect(receipt).toBeVisible();
     await expect(receipt).toContainText('1,000');
     await expect(receipt).toContainText(FILMS.released);
+
+    // Escape closes the dialog even with focus inside it.
+    await receipt.getByRole('button').first().focus();
+    await page.keyboard.press('Escape');
+    await expect(receipt).toBeHidden();
   });
 });

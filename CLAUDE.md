@@ -31,7 +31,7 @@ npm run serve:ssr:ikigembe-film
 npx ng <command>
 ```
 
-Fix lint findings in the code (buttons for clickable things, `for`/`id` on labels, keyboard handlers next to click handlers); don't disable rules. E2E specs live in `e2e/` and use the backend's `seed_e2e` accounts; they never reach real payments, storage or email.
+Fix lint findings in the code (buttons for clickable things, `for`/`id` on labels, keyboard handlers next to click handlers); don't disable rules. Dialogs, drawers and player overlays use `appModalBackdrop (dismiss)="close()"` on the backdrop (`shared/directives/modal-backdrop.directive.ts`): it closes on a click on the backdrop itself and on Escape from anywhere, topmost layer only. Don't add click/keydown `stopPropagation` handlers to the dialog inside; widgets that use Escape themselves call `preventDefault()`. E2E specs live in `e2e/` and use the backend's `seed_e2e` accounts; they never reach real payments, storage or email.
 
 ## Architecture
 

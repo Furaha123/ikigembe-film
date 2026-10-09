@@ -18,6 +18,7 @@ import { ActorVideo } from '../../../shared/models/marketplace.interface';
 import { actorVideoStatusClass } from '../../../shared/utils/marketplace-status';
 import { marketplaceErrorMessage } from '../../../shared/utils/marketplace-error';
 
+import { ModalBackdropDirective } from '../../../shared/directives/modal-backdrop.directive';
 export interface VideoUploadState {
   pct: number;
   error: string | null; // translation key or backend message
@@ -27,7 +28,7 @@ export interface VideoUploadState {
 @Component({
   selector: 'app-actor-videos',
   standalone: true,
-  imports: [
+  imports: [ModalBackdropDirective, 
     CommonModule, RouterLink, TranslatePipe,
     HeaderComponent, FooterComponent, MarketplaceNavComponent, VideoPlayerComponent,
   ],

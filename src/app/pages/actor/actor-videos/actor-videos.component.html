@@ -123,8 +123,8 @@
 <app-footer />
 
 @if (confirmDelete(); as d) {
-  <div class="mk-overlay" (click)="confirmDelete.set(null)" (keydown.escape)="confirmDelete.set(null)" tabindex="-1">
-    <div class="mk-dialog" role="alertdialog" aria-modal="true" aria-labelledby="av-del-title" (click)="$event.stopPropagation()" (keydown)="$event.stopPropagation()">
+  <div class="mk-overlay" appModalBackdrop (dismiss)="confirmDelete.set(null)">
+    <div class="mk-dialog" role="alertdialog" aria-modal="true" aria-labelledby="av-del-title">
       <header><span id="av-del-title">{{ 'marketplace.videos.deleteTitle' | translate: { title: d.title } }}</span></header>
       <p>{{ 'marketplace.videos.deleteBody' | translate }}</p>
       @if (deleteError()) { <p class="mk-error" role="alert">{{ deleteError()! | translate }}</p> }
@@ -139,8 +139,8 @@
 }
 
 @if (previewSrc(); as src) {
-  <div class="mk-overlay" (click)="closePreview()" (keydown.escape)="closePreview()" tabindex="-1">
-    <div class="mk-dialog" role="dialog" aria-modal="true" (click)="$event.stopPropagation()" (keydown)="$event.stopPropagation()">
+  <div class="mk-overlay" appModalBackdrop (dismiss)="closePreview()">
+    <div class="mk-dialog" role="dialog" aria-modal="true">
       <header>
         <span>{{ 'marketplace.common.preview' | translate }}</span>
         <button type="button" class="mk-btn mk-btn--ghost" (click)="closePreview()">{{ 'marketplace.common.close' | translate }}</button>

@@ -10,6 +10,7 @@ import { apiErrorMessage } from '../../../shared/utils/api-error';
 import { CmsTabsComponent } from './cms-tabs.component';
 import { AdminSectionTabsComponent } from '../../shared/components/admin-section-tabs.component';
 
+import { ModalBackdropDirective } from '../../../shared/directives/modal-backdrop.directive';
 /** Lowercase letters, numbers and single hyphens (e.g. `terms`, `privacy-rw`). */
 export const SLUG_PATTERN = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 
@@ -28,7 +29,7 @@ export function fieldErrors(err: HttpErrorResponse): Record<string, string> {
 @Component({
   selector: 'app-admin-cms-pages',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, TranslatePipe, CmsPageBodyComponent, CmsTabsComponent, AdminSectionTabsComponent],
+  imports: [ModalBackdropDirective, CommonModule, ReactiveFormsModule, TranslatePipe, CmsPageBodyComponent, CmsTabsComponent, AdminSectionTabsComponent],
   templateUrl: './admin-cms-pages.component.html',
   styleUrls: ['../movies/admin-movies.component.scss', './admin-cms.scss'],
 })

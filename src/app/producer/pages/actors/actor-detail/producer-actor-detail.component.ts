@@ -10,10 +10,11 @@ import { DirectoryActorDetail, DirectoryVideo } from '../../../../shared/models/
 import { marketplaceErrorMessage } from '../../../../shared/utils/marketplace-error';
 import { ReportButtonComponent } from '../../../../shared/components/report-button/report-button.component';
 
+import { ModalBackdropDirective } from '../../../../shared/directives/modal-backdrop.directive';
 @Component({
   selector: 'app-producer-actor-detail',
   standalone: true,
-  imports: [CommonModule, RouterLink, TranslatePipe, VideoPlayerComponent, ReportButtonComponent],
+  imports: [ModalBackdropDirective, CommonModule, RouterLink, TranslatePipe, VideoPlayerComponent, ReportButtonComponent],
   templateUrl: './producer-actor-detail.component.html',
   styleUrls: ['../../../../shared/styles/marketplace-page.scss', './producer-actor-detail.component.scss'],
 })

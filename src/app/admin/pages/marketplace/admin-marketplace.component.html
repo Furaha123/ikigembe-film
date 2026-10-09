@@ -300,8 +300,8 @@
 
   <!-- ── Approve confirmation dialog ──────────────────── -->
   @if (confirmApprove(); as v) {
-    <div class="overlay" (click)="confirmApprove.set(null)" (keydown.escape)="confirmApprove.set(null)" tabindex="-1">
-      <div class="dialog" role="dialog" aria-modal="true" aria-labelledby="am-approve-title" (click)="$event.stopPropagation()" (keydown)="$event.stopPropagation()">
+    <div class="overlay" appModalBackdrop (dismiss)="confirmApprove.set(null)">
+      <div class="dialog" role="dialog" aria-modal="true" aria-labelledby="am-approve-title">
         <h3 id="am-approve-title">{{ 'admin.marketplace.approveTitle' | translate }}</h3>
         <p><strong>{{ v.title }}</strong></p>
         <div class="dialog-actions">
@@ -314,8 +314,8 @@
 
   <!-- ── Reason dialog ─────────────────────────────────── -->
   @if (reasonDialog(); as d) {
-    <div class="overlay" (click)="reasonDialog.set(null)" (keydown.escape)="reasonDialog.set(null)" tabindex="-1">
-      <div class="dialog" role="dialog" aria-modal="true" aria-labelledby="am-reason-title" (click)="$event.stopPropagation()" (keydown)="$event.stopPropagation()">
+    <div class="overlay" appModalBackdrop (dismiss)="reasonDialog.set(null)">
+      <div class="dialog" role="dialog" aria-modal="true" aria-labelledby="am-reason-title">
         <h3 id="am-reason-title">{{ ('admin.marketplace.dialog.' + d.kind) | translate }}</h3>
         <p><strong>{{ d.title }}</strong></p>
         <div class="field">
@@ -336,8 +336,8 @@
 
   <!-- ── Video preview dialog ──────────────────────────── -->
   @if (previewSrc(); as src) {
-    <div class="overlay" (click)="previewSrc.set(null)" (keydown.escape)="previewSrc.set(null)" tabindex="-1">
-      <div class="dialog" role="dialog" aria-modal="true" style="max-width: 900px; width: 100%" (click)="$event.stopPropagation()" (keydown)="$event.stopPropagation()">
+    <div class="overlay" appModalBackdrop (dismiss)="previewSrc.set(null)">
+      <div class="dialog" role="dialog" aria-modal="true" style="max-width: 900px; width: 100%">
         <app-video-player [src]="src" [autoplay]="true" />
         <div class="dialog-actions">
           <button class="action-btn neutral" (click)="previewSrc.set(null)">{{ 'marketplace.common.close' | translate }}</button>

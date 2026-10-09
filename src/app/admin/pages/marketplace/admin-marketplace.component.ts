@@ -12,6 +12,7 @@ import {
 } from '../../../shared/models/marketplace.interface';
 import { marketplaceErrorMessage } from '../../../shared/utils/marketplace-error';
 
+import { ModalBackdropDirective } from '../../../shared/directives/modal-backdrop.directive';
 type Tab = 'videos' | 'casting';
 
 interface ReasonDialog {
@@ -31,7 +32,7 @@ const CALL_STATUSES: (CastingCallStatus | '')[] = ['pending_review', '', 'publis
 @Component({
   selector: 'app-admin-marketplace',
   standalone: true,
-  imports: [CommonModule, RouterLink, TranslatePipe, VideoPlayerComponent],
+  imports: [ModalBackdropDirective, CommonModule, RouterLink, TranslatePipe, VideoPlayerComponent],
   templateUrl: './admin-marketplace.component.html',
   styleUrls: [
     '../movies/admin-movies.component.scss',

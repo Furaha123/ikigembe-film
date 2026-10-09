@@ -176,12 +176,11 @@
 <!-- ── Video preview modal ──────────────────────────────────────────────── -->
 @if (preview(); as v) {
   <div class="ad-overlay"
-       (click)="preview.set(null)"
-       (keydown.escape)="preview.set(null)"
+       appModalBackdrop (dismiss)="preview.set(null)"
        role="dialog"
        aria-modal="true"
        [attr.aria-label]="v.title">
-    <div class="ad-dialog" tabindex="-1" (click)="$event.stopPropagation()" (keydown)="$event.stopPropagation()">
+    <div class="ad-dialog" tabindex="-1">
       <header>
         <span>{{ v.title }}</span>
         <button type="button" class="ad-dialog-close"

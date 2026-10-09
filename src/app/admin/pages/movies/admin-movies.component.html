@@ -160,8 +160,8 @@
 
   <!-- Reject submission modal -->
   @if (rejectSubmissionModal()) {
-    <div class="overlay" (click)="closeRejectSubmission()" (keydown.escape)="closeRejectSubmission()" tabindex="-1">
-      <div class="dialog" tabindex="-1" (click)="$event.stopPropagation()" (keydown)="$event.stopPropagation()">
+    <div class="overlay" appModalBackdrop (dismiss)="closeRejectSubmission()">
+      <div class="dialog" tabindex="-1">
         <h3>{{ 'admin.movies.rejectDialog.title' | translate }}</h3>
         <p><strong>{{ rejectSubmissionModal()!.title }}</strong></p>
         <div class="field">
@@ -182,8 +182,8 @@
 
   <!-- Remove film confirm -->
   @if (removeConfirmId() !== null) {
-    <div class="overlay" (click)="cancelRemove()" (keydown.escape)="cancelRemove()" tabindex="-1">
-      <div class="dialog" tabindex="-1" (click)="$event.stopPropagation()" (keydown)="$event.stopPropagation()">
+    <div class="overlay" appModalBackdrop (dismiss)="cancelRemove()">
+      <div class="dialog" tabindex="-1">
         <h3>{{ 'admin.movies.removeDialog.title' | translate }}</h3>
         <p>{{ 'admin.movies.removeDialog.message' | translate }}</p>
         <div class="dialog-actions">
@@ -198,8 +198,8 @@
 
   <!-- Submission detail panel -->
   @if (selectedSubmission()) {
-    <div class="overlay" (click)="closeSubmissionDetail()" tabindex="-1" (keydown.escape)="closeSubmissionDetail()">
-      <div class="side-panel side-panel--detail" tabindex="-1" (click)="$event.stopPropagation()" (keydown)="$event.stopPropagation()">
+    <div class="overlay" appModalBackdrop (dismiss)="closeSubmissionDetail()" >
+      <div class="side-panel side-panel--detail" tabindex="-1">
         <div class="panel-header">
           <h3>{{ 'admin.movies.detail.title' | translate }}</h3>
           <button class="close-btn" (click)="closeSubmissionDetail()" [attr.aria-label]="'admin.movies.detail.close' | translate">
@@ -315,8 +315,8 @@
 
   <!-- Request Changes modal -->
   @if (requestChangesModal()) {
-    <div class="overlay" (click)="closeRequestChanges()" (keydown.escape)="closeRequestChanges()" tabindex="-1">
-      <div class="dialog" tabindex="-1" (click)="$event.stopPropagation()" (keydown)="$event.stopPropagation()">
+    <div class="overlay" appModalBackdrop (dismiss)="closeRequestChanges()">
+      <div class="dialog" tabindex="-1">
         <h3>{{ 'admin.movies.requestDialog.title' | translate }}</h3>
         <p><strong>{{ requestChangesModal()!.title }}</strong></p>
         <div class="field">
@@ -344,8 +344,8 @@
 
   <!-- Delete catalog movie confirm -->
   @if (confirmDelete() !== null) {
-    <div class="overlay" (click)="cancelDelete()" (keydown.escape)="cancelDelete()" tabindex="-1">
-      <div class="dialog" tabindex="-1" (click)="$event.stopPropagation()" (keydown)="$event.stopPropagation()">
+    <div class="overlay" appModalBackdrop (dismiss)="cancelDelete()">
+      <div class="dialog" tabindex="-1">
         <h3>{{ 'admin.movies.deleteDialog.title' | translate }}</h3>
         <p>{{ 'admin.movies.deleteDialog.message' | translate }}</p>
         <div class="dialog-actions">
@@ -360,8 +360,8 @@
 
   <!-- ══════════════════════════ INLINE PLAYER OVERLAY ══ -->
   @if (isWatching()) {
-    <div class="player-overlay" (click)="closeWatchOverlay()" (keydown.escape)="closeWatchOverlay()" tabindex="-1">
-      <div class="player-container" tabindex="-1" (click)="$event.stopPropagation()" (keydown)="$event.stopPropagation()">
+    <div class="player-overlay" appModalBackdrop (dismiss)="closeWatchOverlay()">
+      <div class="player-container" tabindex="-1">
         <div class="player-topbar">
           <span class="player-film-title">{{ watchTitle() }}</span>
           <button class="player-close-btn" (click)="closeWatchOverlay()" [title]="'admin.movies.closePlayer' | translate" [attr.aria-label]="'admin.movies.closePlayer' | translate">

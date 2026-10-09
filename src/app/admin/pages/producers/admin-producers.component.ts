@@ -13,9 +13,10 @@ import {
 
 import { AdminSectionTabsComponent } from '../../shared/components/admin-section-tabs.component';
 
+import { ModalBackdropDirective } from '../../../shared/directives/modal-backdrop.directive';
 @Component({
   selector: 'app-admin-producers',
-  imports: [CommonModule, TranslatePipe, AdminSectionTabsComponent],
+  imports: [ModalBackdropDirective, CommonModule, TranslatePipe, AdminSectionTabsComponent],
   templateUrl: './admin-producers.component.html',
   styleUrl: './admin-producers.component.scss'
 })

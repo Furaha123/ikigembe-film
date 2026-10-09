@@ -9,9 +9,10 @@ import { apiErrorMessage } from '../../shared/utils/api-error';
 import { HeaderComponent } from '../../core/components/header/header.component';
 
 
+import { ModalBackdropDirective } from '../../shared/directives/modal-backdrop.directive';
 @Component({
   selector: 'app-profile',
-  imports: [CommonModule, ReactiveFormsModule, HeaderComponent, TranslatePipe],
+  imports: [ModalBackdropDirective, CommonModule, ReactiveFormsModule, HeaderComponent, TranslatePipe],
   templateUrl: './profile.component.html',
   styleUrl: './profile.component.scss'
 })

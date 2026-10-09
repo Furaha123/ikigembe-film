@@ -1,5 +1,5 @@
-<div class="overlay" (click)="closed.emit()" (keydown.escape)="closed.emit()" tabindex="-1">
-  <div class="dialog rs-dialog" role="dialog" aria-modal="true" aria-labelledby="rs-title" (click)="$event.stopPropagation()" (keydown)="$event.stopPropagation()">
+<div class="overlay" appModalBackdrop (dismiss)="closed.emit()">
+  <div class="dialog rs-dialog" role="dialog" aria-modal="true" aria-labelledby="rs-title">
     <div class="rs-head">
       <h3 id="rs-title">{{ 'admin.revenue.title' | translate }} — {{ movieTitle }}</h3>
       <button class="action-btn neutral" (click)="closed.emit()">{{ 'marketplace.common.close' | translate }}</button>

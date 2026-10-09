@@ -29,6 +29,12 @@ test('an admin refunds a demo purchase with a reason; the buyer sees it refunded
   await expect(drawer.locator('.status-badge.status-refund').first()).toHaveText('Completed');
   await expect(drawer.getByRole('button', { name: 'Refund', exact: true })).toHaveCount(0);  // nothing left to refund
 
+  // Escape closes the drawer from inside it; clicking inside never did.
+  await drawer.locator('h2').click();
+  await expect(drawer).toBeVisible();
+  await admin.keyboard.press('Escape');
+  await expect(drawer).toBeHidden();
+
   // The buyer's history shows it, and the film is no longer owned.
   const buyer = await browser.newPage();
   await signIn(buyer, 'refund');

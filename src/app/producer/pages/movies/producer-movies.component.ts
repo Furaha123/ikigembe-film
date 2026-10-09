@@ -10,6 +10,7 @@ import { ALLOWED_VIDEO_EXTENSIONS, extensionList, hasAllowedExtension, VIDEO_ACC
 import { uploadErrorMessage } from '../../../shared/utils/upload-error';
 import { apiErrorMessage } from '../../../shared/utils/api-error';
 
+import { ModalBackdropDirective } from '../../../shared/directives/modal-backdrop.directive';
 type SortCol = 'title' | 'views' | 'price' | 'release_date' | 'created_at';
 type StatusTab = 'all' | 'live' | 'pending' | 'rejected';
 
@@ -22,7 +23,7 @@ const ALL_GENRES = [
 
 @Component({
   selector: 'app-producer-movies',
-  imports: [TranslatePipe, CommonModule, FormsModule, ReactiveFormsModule],
+  imports: [ModalBackdropDirective, TranslatePipe, CommonModule, FormsModule, ReactiveFormsModule],
   templateUrl: './producer-movies.component.html',
   styleUrl: './producer-movies.component.scss',
 })

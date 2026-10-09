@@ -24,10 +24,11 @@ import { RETURN_URL_PARAM } from '../../shared/utils/safe-redirect';
 import { AnalyticsService } from '../../core/services/analytics.service';
 import { ReportButtonComponent } from '../../shared/components/report-button/report-button.component';
 
+import { ModalBackdropDirective } from '../../shared/directives/modal-backdrop.directive';
 @Component({
   selector: 'app-movie-detail',
   standalone: true,
-  imports: [CommonModule, RouterLink, TranslatePipe, HeaderComponent, FooterComponent, VideoPlayerComponent, PaymentModalComponent, AdSlotComponent, ViewingAccessComponent, ShareButtonComponent, ReportButtonComponent],
+  imports: [ModalBackdropDirective, CommonModule, RouterLink, TranslatePipe, HeaderComponent, FooterComponent, VideoPlayerComponent, PaymentModalComponent, AdSlotComponent, ViewingAccessComponent, ShareButtonComponent, ReportButtonComponent],
   templateUrl: './movie-detail.component.html',
   styleUrls: ['./movie-detail.component.scss']
 })

@@ -294,8 +294,8 @@
 </div>
 
 @if (receipt(); as r) {
-  <div class="receipt-overlay" (click)="receipt.set(null)" (keydown.escape)="receipt.set(null)" tabindex="-1">
-    <div class="receipt-dialog" role="dialog" aria-modal="true" aria-labelledby="receipt-title" (click)="$event.stopPropagation()" (keydown)="$event.stopPropagation()">
+  <div class="receipt-overlay" appModalBackdrop (dismiss)="receipt.set(null)">
+    <div class="receipt-dialog" role="dialog" aria-modal="true" aria-labelledby="receipt-title">
       <h2 id="receipt-title">{{ 'payments.receipt.title' | translate }}</h2>
       <dl class="receipt-rows">
         <dt>{{ 'payments.receipt.reference' | translate }}</dt><dd class="receipt-ref">{{ r.reference }}</dd>

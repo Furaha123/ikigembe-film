@@ -9,10 +9,11 @@ import { SeoService } from '../../core/services/seo.service';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { AnalyticsService } from '../../core/services/analytics.service';
 
+import { ModalBackdropDirective } from '../../shared/directives/modal-backdrop.directive';
 @Component({
   selector: 'app-preview',
   standalone: true,
-  imports: [CommonModule, RouterLink, VideoPlayerComponent, TranslatePipe],
+  imports: [ModalBackdropDirective, CommonModule, RouterLink, VideoPlayerComponent, TranslatePipe],
   templateUrl: './preview.component.html',
   styleUrl: './preview.component.scss',
 })

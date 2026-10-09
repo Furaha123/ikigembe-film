@@ -11,11 +11,12 @@ import { VideoPlayerComponent } from '../../../shared/components/video-player/vi
 import { RevenueSharesDialogComponent } from '../../shared/components/revenue-shares/revenue-shares-dialog.component';
 import { AdminSectionTabsComponent } from '../../shared/components/admin-section-tabs.component';
 
+import { ModalBackdropDirective } from '../../../shared/directives/modal-backdrop.directive';
 type ActiveTab = 'submissions' | 'catalog';
 
 @Component({
   selector: 'app-admin-movies',
-  imports: [CommonModule, ReactiveFormsModule, TranslatePipe, VideoPlayerComponent, RevenueSharesDialogComponent, AdminSectionTabsComponent],
+  imports: [ModalBackdropDirective, CommonModule, ReactiveFormsModule, TranslatePipe, VideoPlayerComponent, RevenueSharesDialogComponent, AdminSectionTabsComponent],
   templateUrl: './admin-movies.component.html',
   styleUrl: './admin-movies.component.scss'
 })

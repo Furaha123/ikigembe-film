@@ -13,7 +13,7 @@
 
 <!-- Dropdown panel -->
 @if (open()) {
-  <div class="dp-panel" tabindex="-1" (click)="$event.stopPropagation()" (keydown.escape)="open.set(false)">
+  <div class="dp-panel" tabindex="-1" (click)="$event.stopPropagation()" (keydown.escape)="open.set(false); $event.preventDefault()">
 
     <!-- Month / year navigation -->
     <div class="dp-nav">

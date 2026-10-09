@@ -6,12 +6,13 @@ import { AdminSectionTabsComponent } from '../../shared/components/admin-section
 import { WithdrawalItem } from '../../models/admin.interface';
 import { apiErrorMessage } from '../../../shared/utils/api-error';
 
+import { ModalBackdropDirective } from '../../../shared/directives/modal-backdrop.directive';
 // Processing = MoMo payout sent, awaiting PawaPay; Failed = payout refused (backend WithdrawalRequest.STATUS_CHOICES).
 type StatusFilter = 'all' | 'Pending' | 'Approved' | 'Processing' | 'Completed' | 'Failed' | 'Rejected';
 
 @Component({
   selector: 'app-admin-withdrawals',
-  imports: [CommonModule, TranslatePipe, AdminSectionTabsComponent],
+  imports: [ModalBackdropDirective, CommonModule, TranslatePipe, AdminSectionTabsComponent],
   templateUrl: './admin-withdrawals.component.html',
   styleUrl: './admin-withdrawals.component.scss'
 })

@@ -5,6 +5,7 @@ import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { AdminPaymentsService, PaymentDetail, RefundMethod, RefundRow } from '../../services/admin-payments.service';
 import { apiErrorMessage } from '../../../shared/utils/api-error';
 
+import { ModalBackdropDirective } from '../../../shared/directives/modal-backdrop.directive';
 /**
  * One payment: what it bought, its refunds and the admin actions on it. The server decides every
  * outcome (refund limits, provider support, status); this component only shows what it answers.
@@ -12,7 +13,7 @@ import { apiErrorMessage } from '../../../shared/utils/api-error';
 @Component({
   selector: 'app-payment-detail-drawer',
   standalone: true,
-  imports: [CommonModule, FormsModule, TranslatePipe],
+  imports: [ModalBackdropDirective, CommonModule, FormsModule, TranslatePipe],
   templateUrl: './payment-detail-drawer.component.html',
   styleUrl: './admin-payments.component.scss',
 })

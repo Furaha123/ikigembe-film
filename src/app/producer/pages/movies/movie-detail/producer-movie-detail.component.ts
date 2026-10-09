@@ -19,6 +19,7 @@ import {
   BarController, BarElement,
 } from 'chart.js';
 
+import { ModalBackdropDirective } from '../../../../shared/directives/modal-backdrop.directive';
 Chart.register(
   LineController, LineElement, PointElement,
   BarController, BarElement,
@@ -42,7 +43,7 @@ interface AnalyticsRow { label: string; views: number; watchTime: number; revenu
 @Component({
   selector: 'app-producer-movie-detail',
   standalone: true,
-  imports: [TranslatePipe, CommonModule, VideoPlayerComponent],
+  imports: [ModalBackdropDirective, TranslatePipe, CommonModule, VideoPlayerComponent],
   templateUrl: './producer-movie-detail.component.html',
   styleUrls: ['./producer-movie-detail.component.scss', './producer-movie-detail.overlays.scss'],
 })

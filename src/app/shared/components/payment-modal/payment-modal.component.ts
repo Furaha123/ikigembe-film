@@ -13,6 +13,7 @@ import {
 } from '../../../core/services/payment.service';
 import { ServicePurchase, ServiceQuote } from '../../models/marketplace.interface';
 import { apiErrorMessage } from '../../utils/api-error';
+import { closeEscapeLayer, isTopEscapeLayer, openEscapeLayer } from '../../directives/modal-backdrop.directive';
 import { safeReturnUrl } from '../../utils/safe-redirect';
 import { ViewingAccessComponent } from '../viewing-access/viewing-access.component';
 import { AnalyticsService } from '../../../core/services/analytics.service';
@@ -96,6 +97,7 @@ export class PaymentModalComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   ngOnInit() {
+    openEscapeLayer(this);
     this.analytics.track('checkout_open', this.service
       ? { props: { purpose: 'service' } }
       : { movie_id: this.movie?.id, props: { purpose: 'movie' } });
@@ -147,8 +149,11 @@ export class PaymentModalComponent implements OnInit, AfterViewInit, OnDestroy {
     });
   }
 
-  @HostListener('document:keydown.escape')
-  onEscape() {
+  /** Escape closes the payment modal only while it is the topmost dialog layer. */
+  @HostListener('document:keydown.escape', ['$event'])
+  onEscape(event: Event) {
+    if (event.defaultPrevented || !isTopEscapeLayer(this)) return;
+    event.preventDefault();
     this.close();
   }
 
@@ -419,6 +424,7 @@ export class PaymentModalComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   ngOnDestroy() {
+    closeEscapeLayer(this);
     clearTimeout(this.paidTimer);
     this.destroy$.next();
     this.destroy$.complete();
