@@ -44,12 +44,9 @@
         <span id="ps-tax-hint" class="muted">{{ 'admin.platformSettings.taxRateHint' | translate }}</span>
         @if (invalid('tax_rate_percent')) { <span class="error" role="alert">{{ 'admin.platformSettings.percentRange' | translate }}</span> }
       </label>
-      <label class="field">
-        <span>{{ 'admin.platformSettings.operations' | translate }} (%)</span>
-        <input type="number" min="0" max="100" step="0.01" formControlName="operations_percent" aria-describedby="ps-ops-hint" />
-        <span id="ps-ops-hint" class="muted">{{ 'admin.platformSettings.operationsHint' | translate }}</span>
-        @if (invalid('operations_percent')) { <span class="error" role="alert">{{ 'admin.platformSettings.percentRange' | translate }}</span> }
-      </label>
+      @if (env(); as e) {
+        <p class="muted">{{ 'admin.platformSettings.splitInfo' | translate: { p: e.default_producer_percent, platform: 100 - e.default_producer_percent } }}</p>
+      }
 
       <div aria-live="polite">
         @if (saveError()) { <p class="error" role="alert">{{ saveError()! | translate }}</p> }

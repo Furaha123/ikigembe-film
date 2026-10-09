@@ -121,8 +121,6 @@ export interface ProducerMovieDetail {
 export interface ProducerWithdrawal {
   id: number;
   amount: number;
-  tax_amount: number;
-  amount_after_tax: number;
   status: string;
   payment_method: string | null;
   bank_name: string | null;

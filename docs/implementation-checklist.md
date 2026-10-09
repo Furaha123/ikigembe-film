@@ -15,6 +15,7 @@ Update this file at the end of every work session: status, changed files, checks
 |---|---|
 | One view, one device | Backend-enforced, env flag `ENFORCE_SINGLE_DEVICE_VIEW` (on in staging, explicit in production). Device-bound, one active playback session, resume on the same device within the window. Failed authorization never consumes a purchase. |
 | Film price | Frw 1,000 default per film; only admins override; producers can't change a published price; server computes checkout amount. |
+| Tax | **Platform pays it** (2026-10-09): producers get their agreement % of the full sale price; tax comes out of the platform share. The rate itself still needs an accountant's confirmation. The 70/30 split is the agreement's (no free setting); change it per film (revenue share) or with a new agreement version. |
 | Producer setup | **Changed 2026-10-08: no admin approval.** A producer completes the profile once and signs the distribution agreement; then they can submit films, buy producer services, publish casting calls and search actors. Before that they can sign in and use their dashboard. An expired agreement locks services until renewal. Admins only suspend/reactivate. |
 | Casting calls | Published only after payment **and** admin approval. Draft → paid/pending review → published or rejected. No publication after the deadline. Refund eligibility is separate from moderation. |
 
@@ -79,6 +80,13 @@ Audit references (from the gap audit in the session that created this file):
 ## Session log
 
 _Newest first. Each entry: date, phase, changed files, checks and results, next task._
+
+### 2026-10-09 — Platform pays the tax; one source for the split
+- Allocation: partners share the gross; tax comes out of the platform share; close blocked if tax > platform share (names the film). Statement == wallet at any tax rate.
+- Removed the editable `operations_percent` setting (migration platform_settings 0002): the wallet used a fixed 70 % while statements used the setting, so a change would have desynced them. Standard split = `DEFAULT_PRODUCER_PERCENT` (agreement v1: 70/30).
+- Removed the misleading withdrawal fields `tax_amount` / `amount_after_tax` ("30 % government tax") — payouts always sent the full amount.
+- UI: settings page shows the split read-only with how to change it; tax hint, finance subtitle and producer statement wording updated.
+- Checks: BE 459 OK, migrations in sync; FE lint 0, 505 unit OK, build clean, i18n OK.
 
 ### 2026-10-08 — ESLint + Playwright E2E
 - ESLint: `angular-eslint` 19 (`eslint.config.js`, `npm run lint`): 274 errors → 0 by fixing code (keyboard support on clickable elements/backdrops, label `for`/`id`, `===`, real types instead of `any`, stub names, `app-date-picker` selector). No rules disabled.

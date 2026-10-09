@@ -2058,9 +2058,7 @@
       "windowRange": "Between 1 and 720 hours.",
       "finance": "Finance",
       "taxRate": "Tax rate",
-      "taxRateHint": "Leave empty until the applicable rate is confirmed. Revenue allocation will not run without an explicit rate (0 is allowed).",
-      "operations": "Operations share",
-      "operationsHint": "Share of post-tax revenue kept for platform operations before contract splits.",
+      "taxRateHint": "Leave empty until the applicable rate is confirmed (0 is allowed). The platform pays the tax from its own share; producers always receive their full percentage. Months will not close without an explicit rate.",
       "percentRange": "Between 0 and 100.",
       "save": "Save",
       "saving": "Saving…",
@@ -2075,7 +2073,8 @@
       "gateway": "Payment provider",
       "demo": "demo mode (no money moves)",
       "defaultSplit": "Default revenue split",
-      "defaultSplitValue": "{{p}}% producer when a film has no contract split"
+      "defaultSplitValue": "{{p}}% producer when a film has no contract split",
+      "splitInfo": "Revenue split (distribution agreement): producer {{p}}% · platform {{platform}}% of each sale. Change it for one film with a revenue share on the film, or for everyone with a new agreement version."
     },
     "filmRequests": {
       "title": "Film change requests",
@@ -2097,7 +2096,7 @@
     },
     "finance": {
       "title": "Revenue periods",
-      "subtitle": "Close each month once: tax, then platform operations, then the contract split. Closed months never change; later corrections land in the next open month.",
+      "subtitle": "Close each month once: producers and contract parties receive their percentage of each sale; the platform pays the tax from its share. Closed months never change; later corrections land in the next open month.",
       "month": "Month",
       "openMonth": "Open month",
       "monthFormat": "Pick a month.",
@@ -2982,7 +2981,7 @@
       "payout": "Payout",
       "paid": "Paid",
       "unpaid": "Not paid yet",
-      "method": "Tax is deducted first, then the platform operations share; the rest is split as your agreement says.",
+      "method": "You receive your agreement percentage of every sale. Tax is paid by Ikigembe from its own share, not from yours.",
       "loadFailed": "We could not load your statements."
     }
   },

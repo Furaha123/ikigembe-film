@@ -12,7 +12,6 @@ export interface PlatformSettings {
   single_view_window_hours: number;
   /** null until an admin sets it explicitly — finance allocation refuses to run without it. */
   tax_rate_percent: string | null;
-  operations_percent: string;
   updated_at: string | null;
   updated_by: string | null;
 }
@@ -51,7 +50,6 @@ export class AdminPlatformSettingsComponent implements OnInit {
     default_film_price: [null as number | null, [Validators.required, Validators.min(1)]],
     single_view_window_hours: [null as number | null, [Validators.required, Validators.min(1), Validators.max(720)]],
     tax_rate_percent: [null as number | null, [Validators.min(0), Validators.max(100)]],
-    operations_percent: [null as number | null, [Validators.required, Validators.min(0), Validators.max(100)]],
   });
 
   ngOnInit(): void {
@@ -107,7 +105,6 @@ export class AdminPlatformSettingsComponent implements OnInit {
       default_film_price: s.default_film_price,
       single_view_window_hours: s.single_view_window_hours,
       tax_rate_percent: s.tax_rate_percent === null ? null : Number(s.tax_rate_percent),
-      operations_percent: Number(s.operations_percent),
     });
     this.meta.set({ updated_at: s.updated_at, updated_by: s.updated_by });
   }

@@ -37,7 +37,7 @@ export class ProducerWalletComponent implements OnInit {
 
   /**
    * The backend deducts exactly `amount` from the balance. It used to show "+30% tax" on top,
-   * which no backend path does; any tax is reported on the withdrawal record (tax_amount).
+   * which no backend path does. Tax is paid by the platform from its share, never from the producer's.
    */
   taxBreakdown = computed(() => {
     const amount = this.withdrawAmount();
