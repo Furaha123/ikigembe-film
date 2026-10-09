@@ -361,7 +361,7 @@ $ctrl-width: 256px;
 
   /* Hide child export buttons & date pickers — topbar handles both */
   ::ng-deep .btn-export           { display: none; }
-  ::ng-deep procurement-date-picker { display: none; }
+  ::ng-deep app-date-picker { display: none; }
 
   /* Hide chart when toggled off */
   &.no-chart ::ng-deep .chart-body { display: none !important; }

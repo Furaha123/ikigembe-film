@@ -19,7 +19,16 @@
     <div class="empty-badge">{{ 'browse.comingSoon' | translate }}</div>
   </div>
 } @else {
-  <app-banner [bannerTitle]="bannerTitle" [bannerOverview]="bannerOverview" [trailerUrl]="bannerTrailerUrl" [bannerBackdropUrl]="bannerBackdropUrl" [movieId]="bannerId" />
+  <app-banner
+    [bannerTitle]="bannerTitle"
+    [bannerOverview]="bannerOverview"
+    [trailerUrl]="bannerTrailerUrl"
+    [bannerBackdropUrl]="bannerBackdropUrl"
+    [movieId]="bannerId"
+    [releaseDate]="bannerReleaseDate"
+    [durationMinutes]="bannerDuration"
+    [movieRating]="bannerRating"
+  />
 
   <app-ad-slot placement="home_hero" />
   <app-movie-carousel [title]="'browse.nowPlaying' | translate" [videoContents]="nowPlayingMovies" />

@@ -13,12 +13,24 @@ import {
 } from '../../../core/services/payment.service';
 import { ServicePurchase, ServiceQuote } from '../../models/marketplace.interface';
 import { apiErrorMessage } from '../../utils/api-error';
+import { closeEscapeLayer, isTopEscapeLayer, openEscapeLayer } from '../../directives/modal-backdrop.directive';
 import { safeReturnUrl } from '../../utils/safe-redirect';
 import { ViewingAccessComponent } from '../viewing-access/viewing-access.component';
+import { AnalyticsService } from '../../../core/services/analytics.service';
 
 const FOCUSABLE = 'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
 
-type StartResponse = { deposit_id: string; amount: number; demo?: boolean; payment_url?: string };
+interface StartResponse { deposit_id: string; amount: number; demo?: boolean; payment_url?: string }
+
+/** The film fields the modal shows and pays for (a film detail and a My List row both fit). */
+export interface PayableMovie {
+  id: number;
+  title: string;
+  thumbnail_url: string;
+  price: number | null;
+  duration_minutes?: number;
+  has_purchased?: boolean;
+}
 
 /**
  * Pays for a movie or a marketplace service with whichever gateway the backend runs:
@@ -34,13 +46,14 @@ type StartResponse = { deposit_id: string; amount: number; demo?: boolean; payme
   styleUrls: ['./payment-modal.component.scss']
 })
 export class PaymentModalComponent implements OnInit, AfterViewInit, OnDestroy {
-  @Input() movie: any;
+  @Input() movie!: PayableMovie;
   /** Non-movie purchase (marketplace fees). When set, `movie` is ignored. */
   @Input() service: ServicePurchase | null = null;
   @Output() paid   = new EventEmitter<void>();
   @Output() closed = new EventEmitter<void>();
 
   private readonly paymentService = inject(PaymentService);
+  private readonly analytics = inject(AnalyticsService);
   private readonly translate = inject(TranslateService);
   private readonly router = inject(Router);
   private readonly platformId = inject(PLATFORM_ID);
@@ -84,6 +97,10 @@ export class PaymentModalComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   ngOnInit() {
+    openEscapeLayer(this);
+    this.analytics.track('checkout_open', this.service
+      ? { props: { purpose: 'service' } }
+      : { movie_id: this.movie?.id, props: { purpose: 'movie' } });
     if (this.service) this.loadQuote();
     this.paymentService.getConfig().pipe(takeUntil(this.destroy$)).subscribe(cfg => {
       this.config.set(cfg);
@@ -132,8 +149,11 @@ export class PaymentModalComponent implements OnInit, AfterViewInit, OnDestroy {
     });
   }
 
-  @HostListener('document:keydown.escape')
-  onEscape() {
+  /** Escape closes the payment modal only while it is the topmost dialog layer. */
+  @HostListener('document:keydown.escape', ['$event'])
+  onEscape(event: Event) {
+    if (event.defaultPrevented || !isTopEscapeLayer(this)) return;
+    event.preventDefault();
     this.close();
   }
 
@@ -192,7 +212,7 @@ export class PaymentModalComponent implements OnInit, AfterViewInit, OnDestroy {
    *  Valid prefixes: 072 073 078 079
    *  Returns the normalised 10-digit local number or null if invalid. */
   private normaliseRwandaPhone(input: string): string | null {
-    let n = input.replace(/[\s\-\(\)]/g, '');
+    let n = input.replace(/[\s\-()]/g, '');
     if (n.startsWith('+250')) n = n.slice(4);
     else if (n.startsWith('250')) n = n.slice(3);
     if (n.startsWith('0')) n = n.slice(1);
@@ -404,6 +424,7 @@ export class PaymentModalComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   ngOnDestroy() {
+    closeEscapeLayer(this);
     clearTimeout(this.paidTimer);
     this.destroy$.next();
     this.destroy$.complete();

@@ -6,7 +6,7 @@
       <p>{{ 'admin.reports.topMovies.subtitle' | translate }}</p>
     </div>
     <div class="section-actions">
-      <procurement-date-picker (dateChange)="onDateRangeChange($event)" />
+      <app-date-picker (dateChange)="onDateRangeChange($event)" />
       <div class="tab-group">
         <button [class.active]="sort === 'revenue'" (click)="switchSort('revenue')">{{ 'admin.reports.topMovies.byRevenue' | translate }}</button>
         <button [class.active]="sort === 'views'"   (click)="switchSort('views')">{{ 'admin.reports.topMovies.byViews' | translate }}</button>

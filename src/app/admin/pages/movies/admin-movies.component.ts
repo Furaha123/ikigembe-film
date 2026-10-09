@@ -9,12 +9,14 @@ import { AdminService } from '../../services/admin.service';
 import { AdminMovie, FilmSubmissionItem } from '../../models/admin.interface';
 import { VideoPlayerComponent } from '../../../shared/components/video-player/video-player.component';
 import { RevenueSharesDialogComponent } from '../../shared/components/revenue-shares/revenue-shares-dialog.component';
+import { AdminSectionTabsComponent } from '../../shared/components/admin-section-tabs.component';
 
+import { ModalBackdropDirective } from '../../../shared/directives/modal-backdrop.directive';
 type ActiveTab = 'submissions' | 'catalog';
 
 @Component({
   selector: 'app-admin-movies',
-  imports: [CommonModule, ReactiveFormsModule, TranslatePipe, VideoPlayerComponent, RevenueSharesDialogComponent],
+  imports: [ModalBackdropDirective, CommonModule, ReactiveFormsModule, TranslatePipe, VideoPlayerComponent, RevenueSharesDialogComponent, AdminSectionTabsComponent],
   templateUrl: './admin-movies.component.html',
   styleUrl: './admin-movies.component.scss'
 })
@@ -247,7 +249,7 @@ export class AdminMoviesComponent implements OnInit, OnDestroy {
   approveSubmission(id: number) {
     this.actionId.set(id);
     this.adminService.approveFilm(id).subscribe({
-      next: (res: any) => {
+      next: (res) => {
         const newStatus = res?.approval_status ?? 'approved';
         this.submissions.update(list => list.map(s =>
           s.id === id ? { ...s, status: newStatus } : s

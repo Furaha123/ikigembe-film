@@ -8,6 +8,7 @@ import { ApplicationStatus, CastingApplication, CastingCall, DirectoryVideo } fr
 import { marketplaceErrorMessage } from '../../../../shared/utils/marketplace-error';
 import { applicationStatusClass } from '../../../../shared/utils/marketplace-status';
 
+import { ModalBackdropDirective } from '../../../../shared/directives/modal-backdrop.directive';
 export type ApplicationFilter = 'all' | ApplicationStatus;
 
 /**
@@ -18,7 +19,7 @@ export type ApplicationFilter = 'all' | ApplicationStatus;
 @Component({
   selector: 'app-casting-applications',
   standalone: true,
-  imports: [CommonModule, RouterLink, TranslatePipe, VideoPlayerComponent],
+  imports: [ModalBackdropDirective, CommonModule, RouterLink, TranslatePipe, VideoPlayerComponent],
   templateUrl: './casting-applications.component.html',
   styleUrls: ['../../../../shared/styles/marketplace-page.scss'],
 })

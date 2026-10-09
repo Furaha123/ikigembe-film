@@ -2,6 +2,7 @@ import { Component, inject, signal, computed, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { TranslatePipe } from '@ngx-translate/core';
 import { AdminService } from '../../services/admin.service';
+import { AdminSectionTabsComponent } from '../../shared/components/admin-section-tabs.component';
 import { ProducerContractItem } from '../../models/admin.interface';
 
 type ContractFilter = 'all' | 'active' | 'expiring' | 'expired' | 'none';
@@ -9,7 +10,7 @@ type ContractFilter = 'all' | 'active' | 'expiring' | 'expired' | 'none';
 @Component({
   selector: 'app-admin-contracts',
   standalone: true,
-  imports: [CommonModule, TranslatePipe],
+  imports: [CommonModule, TranslatePipe, AdminSectionTabsComponent],
   templateUrl: './admin-contracts.component.html',
   styleUrl: './admin-contracts.component.scss',
 })

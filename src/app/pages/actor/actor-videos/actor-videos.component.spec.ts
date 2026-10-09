@@ -14,11 +14,11 @@ import { MultipartUploadApi } from '../../../shared/models/upload.interface';
 import { marketplaceUser, provideMarketplaceUser } from '../../../shared/testing/marketplace-session';
 
 @Component({ selector: 'app-header', template: '' })
-class HeaderStub { @Input() userImg = ''; }
+class HeaderStubComponent { @Input() userImg = ''; }
 @Component({ selector: 'app-footer', template: '' })
-class FooterStub {}
+class FooterStubComponent {}
 @Component({ selector: 'app-video-player', template: '' })
-class PlayerStub { @Input() src = ''; @Input() autoplay = false; }
+class PlayerStubComponent { @Input() src = ''; @Input() autoplay = false; }
 
 const video = (over: Partial<ActorVideo> = {}): ActorVideo => ({
   id: 9, actor_id: 1, title: 'Monologue', description: '', status: 'pending_upload', reject_reason: null,
@@ -58,7 +58,7 @@ describe('ActorVideosComponent', () => {
     });
     TestBed.overrideComponent(ActorVideosComponent, {
       remove: { imports: [HeaderComponent, FooterComponent, VideoPlayerComponent] },
-      add: { imports: [HeaderStub, FooterStub, PlayerStub] },
+      add: { imports: [HeaderStubComponent, FooterStubComponent, PlayerStubComponent] },
     });
   });
 

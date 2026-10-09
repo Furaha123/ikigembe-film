@@ -4,7 +4,17 @@ import { marketplaceGuard, marketplaceRoute } from './core/access/marketplace.gu
 import { unsavedChangesGuard } from './core/guards/unsaved-changes.guard';
 
 export const routes: Routes = [
-  { path: '', redirectTo: 'login', pathMatch: 'full' },
+  // Public home page (signed in or not).
+  {
+    path: '',
+    pathMatch: 'full',
+    loadComponent: () => import('./pages/home/home.component').then(a => a.HomeComponent)
+  },
+  // Public catalog with search / filters / sort (state in the URL).
+  {
+    path: 'films',
+    loadComponent: () => import('./pages/films/films.component').then(a => a.FilmsComponent)
+  },
   {
     path: 'login',
     canActivate: [guestGuard],
@@ -34,8 +44,8 @@ export const routes: Routes = [
     loadComponent: () => import('./pages/browse/browse.component').then(a => a.BrowseComponent)
   },
   {
+    // Public film page: trailer and details for everyone; buying or watching asks visitors to sign in.
     path: 'movie/:id',
-    canActivate: [authGuard, viewerGuard],
     loadComponent: () => import('./pages/movie-detail/movie-detail.component').then(a => a.MovieDetailComponent)
   },
   {
@@ -101,6 +111,7 @@ export const routes: Routes = [
   { path: 'about',   data: { slug: 'about' },   loadComponent: () => import('./pages/cms-page/cms-page.component').then(a => a.CmsPageComponent) },
   { path: 'privacy', data: { slug: 'privacy' }, loadComponent: () => import('./pages/cms-page/cms-page.component').then(a => a.CmsPageComponent) },
   { path: 'contact', data: { slug: 'contact' }, loadComponent: () => import('./pages/cms-page/cms-page.component').then(a => a.CmsPageComponent) },
+  { path: 'refund-policy', data: { slug: 'refund-policy' }, loadComponent: () => import('./pages/cms-page/cms-page.component').then(a => a.CmsPageComponent) },
   { path: 'pages/:slug', loadComponent: () => import('./pages/cms-page/cms-page.component').then(a => a.CmsPageComponent) },
   {
     path: 'preview/:id',

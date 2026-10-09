@@ -1,0 +1,60 @@
+:host { display: block; background: #0a0a0a; min-height: 100vh; }
+
+main { padding-bottom: 3rem; }
+
+.home-state, .home-intro {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  min-height: 50vh;
+  padding: 6rem 16px 2rem;
+  text-align: center;
+  color: #ddd;
+
+  h1 { margin: 0; font-size: clamp(1.6rem, 4vw, 2.6rem); color: #fff; }
+  p { margin: 0; max-width: 560px; color: #aaa; }
+}
+
+.loader-ring {
+  width: 40px;
+  height: 40px;
+  border: 3px solid rgba(201, 168, 76, 0.25);
+  border-top-color: #c9a84c;
+  border-radius: 50%;
+  animation: spin 0.9s linear infinite;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.home-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  padding: 1.5rem 4%;
+}
+
+.home-btn {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.7rem 1.3rem;
+  border-radius: 8px;
+  border: 1.5px solid #c9a84c;
+  background: #c9a84c;
+  color: #000;
+  font-weight: 700;
+  font-size: 0.9rem;
+  text-decoration: none;
+  cursor: pointer;
+
+  &--ghost { background: transparent; color: #c9a84c; }
+  &:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
+}
+
+.home-empty { padding: 0 4%; color: #aaa; }
+
+@media (max-width: 600px) {
+  .home-actions { padding: 1rem 16px; }
+  .home-btn { flex: 1 1 100%; justify-content: center; }
+}

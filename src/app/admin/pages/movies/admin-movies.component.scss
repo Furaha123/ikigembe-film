@@ -13,6 +13,16 @@ $muted: #888;
   gap: 1rem; margin-bottom: 1.75rem; flex-wrap: wrap;
   h1 { font-size: 1.75rem; font-weight: 700; color: #fff; margin: 0 0 0.35rem; }
   p  { color: $muted; font-size: 0.875rem; margin: 0; }
+  .btn-settings {
+    display: inline-flex; align-items: center; gap: 0.45rem;
+    padding: 0.5rem 1rem; border-radius: 8px; font-size: 0.82rem; font-weight: 600;
+    background: rgba(197, 162, 83, 0.12); color: $gold;
+    border: 1px solid rgba(197, 162, 83, 0.3); text-decoration: none;
+    transition: background 0.15s, border-color 0.15s;
+    white-space: nowrap; align-self: flex-start; margin-top: 0.25rem;
+    svg { width: 15px; height: 15px; }
+    &:hover { background: rgba(197, 162, 83, 0.22); border-color: rgba(197, 162, 83, 0.55); }
+  }
 }
 
 .add-btn {

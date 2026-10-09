@@ -127,13 +127,13 @@ export class RevenueTrendComponent implements OnInit, AfterViewChecked, OnDestro
           tooltip: {
             backgroundColor: '#1c1c1c', borderColor: '#333', borderWidth: 1,
             titleColor: '#888', bodyColor: '#e5e5e5', padding: 10,
-            callbacks: { label: (ctx: any) => `  RWF ${ctx.parsed.y.toLocaleString()}` },
+            callbacks: { label: (ctx) => `  RWF ${(ctx.parsed.y ?? 0).toLocaleString()}` },
           },
         },
         scales: {
           x: { ticks: { color: '#555', font: { size: 11 } }, grid: { display: false }, border: { display: false } },
           y: {
-            ticks: { color: '#555', font: { size: 11 }, callback: (v: any) => Number(v) >= 1000 ? (Number(v)/1000).toFixed(0)+'K' : String(v) },
+            ticks: { color: '#555', font: { size: 11 }, callback: (v) => Number(v) >= 1000 ? (Number(v)/1000).toFixed(0)+'K' : String(v) },
             grid: { color: 'rgba(255,255,255,0.04)' }, border: { display: false },
           },
         },

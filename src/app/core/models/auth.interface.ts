@@ -45,6 +45,16 @@ export interface LoginUser {
   role?: string;
   date_joined?: string;
   onboarding_completed?: boolean;
+  account_status?: string;
+  /** Producers only (null otherwise). */
+  producer_setup?: ProducerSetup | null;
+}
+
+/** A producer's one-time setup (the API's `producer_setup`); there is no admin approval. */
+export interface ProducerSetup {
+  profile_complete: boolean;
+  contract_signed: boolean;
+  ready: boolean;
 }
 
 /** Covers DRF token, JWT, and AWS Cognito response shapes */
@@ -70,4 +80,5 @@ export interface LoginResponse {
   first_name?: string;
   last_name?: string;
   email?: string;
+  account_status?: string;
 }

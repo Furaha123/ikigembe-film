@@ -861,3 +861,17 @@ tbody tr.movie-row {
   .movie-thumb { width: 72px; height: 40px; }
   .th-type, .td-type, .th-release, .td-release { display: none; }
 }
+
+// Price is admin-only: shown, not editable.
+.edit-input--readonly, .rs-input--readonly {
+  margin: 0;
+  opacity: 0.8;
+  cursor: default;
+}
+
+.edit-hint {
+  display: block;
+  margin-top: 0.3rem;
+  font-size: 0.75rem;
+  color: var(--ik-text-muted, #9a9a9a);
+}

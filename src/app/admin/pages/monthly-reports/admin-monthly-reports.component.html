@@ -1,0 +1,156 @@
+<div class="admin-page">
+  <app-admin-section-tabs [tabs]="[
+    { labelKey: 'admin.nav.reports',        path: '/admin/reports',         exact: true },
+    { labelKey: 'admin.monthlyReports.tab', path: '/admin/reports/monthly', exact: true }
+  ]" ariaLabel="admin.nav.reports" />
+
+  <div class="page-header">
+    <div>
+      <h1>{{ 'admin.monthlyReports.title' | translate }}</h1>
+      <p>{{ 'admin.monthlyReports.subtitle' | translate }}</p>
+    </div>
+    <form class="header-actions" (ngSubmit)="generate()">
+      <label class="field">
+        <span>{{ 'admin.finance.month' | translate }}</span>
+        <input type="month" name="month" [(ngModel)]="month" required />
+      </label>
+      <button type="submit" class="btn" [disabled]="generating()" [attr.aria-busy]="generating()">
+        {{ (generating() ? 'admin.monthlyReports.generating' : 'admin.monthlyReports.generate') | translate }}
+      </button>
+    </form>
+  </div>
+
+  <div aria-live="polite">
+    @if (error()) { <p class="error" role="alert">{{ error() }}</p> }
+  </div>
+
+  @if (loading()) {
+    <p class="muted" role="status">{{ 'admin.payments.loading' | translate }}</p>
+  } @else if (history().length === 0) {
+    <div class="empty-state">{{ 'admin.monthlyReports.empty' | translate }}</div>
+  } @else {
+    <div class="filters" role="group" [attr.aria-label]="'admin.monthlyReports.history' | translate">
+      @for (h of history(); track h.id) {
+        <button type="button" class="btn small" [class.ghost]="selected()?.id !== h.id" [attr.aria-pressed]="selected()?.id === h.id" (click)="select(h.id)">
+          {{ h.month }} · {{ h.generated_at | date:'short' }}@if (h.partial) { · {{ 'admin.monthlyReports.partial' | translate }} }
+        </button>
+      }
+    </div>
+
+    @if (detailLoading()) {
+      <p class="muted" role="status">{{ 'admin.payments.loading' | translate }}</p>
+    } @else if (selected()) {
+      @let r = selected()!;
+      @let d = r.data;
+      <section class="refund-form" aria-labelledby="report-title">
+        <div class="row-between">
+          <h2 id="report-title">{{ 'admin.monthlyReports.reportFor' | translate: { month: r.month } }}</h2>
+          <div class="drawer-actions">
+            <button type="button" class="btn ghost" (click)="download('csv')" [disabled]="downloading() !== null" [attr.aria-busy]="downloading() === 'csv'">CSV</button>
+            <button type="button" class="btn ghost" (click)="download('pdf')" [disabled]="downloading() !== null" [attr.aria-busy]="downloading() === 'pdf'">PDF</button>
+          </div>
+        </div>
+        <p class="muted">
+          {{ 'admin.monthlyReports.generatedInfo' | translate: { date: (r.generated_at | date:'medium'), by: r.generated_by ?? ('admin.monthlyReports.scheduled' | translate) } }}
+        </p>
+        @if (d.partial) { <p class="warn">{{ 'admin.monthlyReports.partialInfo' | translate }}</p> }
+        @if (!d.finance_period || d.finance_period.status !== 'closed') {
+          <p class="muted">{{ 'admin.monthlyReports.periodOpen' | translate }}</p>
+        }
+
+        <h3>{{ 'admin.monthlyReports.revenue' | translate }}</h3>
+        <div class="table-wrap">
+          <table class="ledger">
+            <thead><tr>
+              <th scope="col">{{ 'admin.finance.category' | translate }}</th>
+              <th scope="col" class="num">{{ 'admin.monthlyReports.payments' | translate }}</th>
+              <th scope="col" class="num">{{ 'admin.finance.gross' | translate }}</th>
+              <th scope="col" class="num">{{ 'admin.monthlyReports.refunded' | translate }}</th>
+              <th scope="col" class="num">{{ 'admin.monthlyReports.net' | translate }}</th>
+            </tr></thead>
+            <tbody>
+              @for (row of d.revenue; track row.category) {
+                <tr>
+                  <td>{{ 'admin.finance.categoryLabel.' + row.category | translate }}</td>
+                  <td class="num">{{ row.payments | number }}</td>
+                  <td class="num">{{ row.gross | number }}</td>
+                  <td class="num">{{ row.refunded | number }} ({{ row.refunds }})</td>
+                  <td class="num">{{ row.net | number }}</td>
+                </tr>
+              }
+              <tr>
+                <th scope="row">{{ 'admin.monthlyReports.total' | translate }}</th>
+                <td class="num">{{ d.revenue_totals.payments | number }}</td>
+                <td class="num">{{ d.revenue_totals.gross | number }}</td>
+                <td class="num">{{ d.revenue_totals.refunded | number }} ({{ d.revenue_totals.refunds }})</td>
+                <td class="num"><strong>RWF {{ d.revenue_totals.net | number }}</strong></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h3>{{ 'admin.monthlyReports.views' | translate }}</h3>
+        <dl class="facts">
+          <dt>{{ 'admin.monthlyReports.playbackStarts' | translate }}</dt><dd>{{ d.views.playback_starts | number }}</dd>
+          <dt>{{ 'admin.monthlyReports.playbackCompletions' | translate }}</dt><dd>{{ d.views.playback_completions | number }}</dd>
+          <dt>{{ 'admin.monthlyReports.trailerPlays' | translate }}</dt><dd>{{ d.views.trailer_plays | number }}</dd>
+          <dt>{{ 'admin.monthlyReports.pageViews' | translate }}</dt><dd>{{ d.views.page_views | number }}</dd>
+          <dt>{{ 'admin.monthlyReports.checkoutsOpened' | translate }}</dt><dd>{{ d.views.checkouts_opened | number }}</dd>
+        </dl>
+        <p class="muted">
+          @if (d.views.tracking_since) {
+            {{ 'admin.monthlyReports.trackingSince' | translate: { date: (d.views.tracking_since | date:'mediumDate') } }}
+          } @else {
+            {{ 'admin.monthlyReports.noTracking' | translate }}
+          }
+        </p>
+
+        @if (d.top_films.length) {
+          <h3>{{ 'admin.monthlyReports.topFilms' | translate }}</h3>
+          <div class="table-wrap">
+            <table class="ledger">
+              <thead><tr>
+                <th scope="col">{{ 'admin.payments.item' | translate }}</th>
+                <th scope="col" class="num">{{ 'admin.monthlyReports.purchases' | translate }}</th>
+                <th scope="col" class="num">{{ 'admin.monthlyReports.plays' | translate }}</th>
+                <th scope="col" class="num">{{ 'admin.monthlyReports.net' | translate }}</th>
+              </tr></thead>
+              <tbody>
+                @for (f of d.top_films; track f.movie_id) {
+                  <tr><td>{{ f.title }}</td><td class="num">{{ f.purchases | number }}</td><td class="num">{{ f.plays | number }}</td><td class="num">{{ f.net | number }}</td></tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        }
+
+        <h3>{{ 'admin.monthlyReports.users' | translate }}</h3>
+        <dl class="facts">
+          @for (e of entries(d.users.new_by_role); track e.key) {
+            <dt>{{ 'admin.monthlyReports.newRole' | translate: { role: e.key } }}</dt>
+            <dd>{{ e.value | number }} / {{ d.users.total_by_role[e.key] | number }}</dd>
+          }
+          <dt>{{ 'admin.monthlyReports.newTotal' | translate }}</dt><dd>{{ d.users.new_total | number }} / {{ d.users.total | number }}</dd>
+        </dl>
+
+        <h3>{{ 'admin.monthlyReports.content' | translate }}</h3>
+        <dl class="facts">
+          <dt>{{ 'admin.monthlyReports.filmsSubmitted' | translate }}</dt><dd>{{ d.films.submitted | number }}</dd>
+          <dt>{{ 'admin.monthlyReports.filmsReleased' | translate }}</dt><dd>{{ d.films.released | number }}</dd>
+          <dt>{{ 'admin.monthlyReports.filmsListed' | translate }}</dt><dd>{{ d.films.listed_at_generation | number }}</dd>
+          <dt>{{ 'admin.monthlyReports.actorSlots' | translate }}</dt><dd>{{ d.actor_uploads.slots_paid | number }}</dd>
+          <dt>{{ 'admin.monthlyReports.actorReviewed' | translate }}</dt><dd>{{ d.actor_uploads.approved | number }} / {{ d.actor_uploads.rejected | number }}</dd>
+        </dl>
+
+        <h3>{{ 'admin.monthlyReports.producerServices' | translate }}</h3>
+        <dl class="facts">
+          <dt>{{ 'admin.monthlyReports.castingPaid' | translate }}</dt>
+          <dd>{{ d.producer_services.casting_announcements.payments | number }} · RWF {{ d.producer_services.casting_announcements.gross | number }}</dd>
+          <dt>{{ 'admin.monthlyReports.searchPaid' | translate }}</dt>
+          <dd>{{ d.producer_services.actor_search_access.payments | number }} · RWF {{ d.producer_services.actor_search_access.gross | number }}</dd>
+          <dt>{{ 'admin.monthlyReports.castingPublished' | translate }}</dt><dd>{{ d.producer_services.casting_calls_published | number }}</dd>
+        </dl>
+      </section>
+    }
+  }
+</div>

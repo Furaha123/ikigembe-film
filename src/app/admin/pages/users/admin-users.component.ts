@@ -5,10 +5,12 @@ import { AdminService, ViewerPaymentItem } from '../../services/admin.service';
 import { ViewerItem, ViewerDetail } from '../../models/admin.interface';
 import { AdminTableComponent } from '../../shared/components/admin-table/admin-table.component';
 import { TableColumn } from '../../shared/components/admin-table/table-column.interface';
+import { AdminSectionTabsComponent } from '../../shared/components/admin-section-tabs.component';
 
+import { ModalBackdropDirective } from '../../../shared/directives/modal-backdrop.directive';
 @Component({
   selector: 'app-admin-users',
-  imports: [CommonModule, AdminTableComponent, TranslatePipe],
+  imports: [ModalBackdropDirective, CommonModule, AdminTableComponent, TranslatePipe, AdminSectionTabsComponent],
   templateUrl: './admin-users.component.html',
   styleUrl: './admin-users.component.scss'
 })
@@ -45,7 +47,7 @@ export class AdminUsersComponent implements OnInit {
 
   private downloadCSV(filename: string, headers: string[], rows: unknown[][]) {
     const esc = (v: unknown) => `"${String(v ?? '').replace(/"/g, '""')}"`;
-    const csv = [headers.map(esc).join(','), ...rows.map((r: any) => r.map(esc).join(','))].join('\n');
+    const csv = [headers.map(esc).join(','), ...rows.map(r => r.map(esc).join(','))].join('\n');
     const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');

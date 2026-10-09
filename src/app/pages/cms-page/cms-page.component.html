@@ -1,6 +1,9 @@
 @if (missing() && slug() === 'terms') {
   <!-- Built-in terms text: only used when the CMS page is missing or unreachable -->
   <app-terms />
+} @else if (missing() && slug() === 'refund-policy') {
+  <!-- Built-in refund policy (describes the implemented process) until an admin publishes a CMS page -->
+  <app-refund-policy />
 } @else {
   <main class="cms-page">
     <div class="cms-container">

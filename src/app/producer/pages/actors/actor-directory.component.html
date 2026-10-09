@@ -1,4 +1,5 @@
 <div class="mk-page">
+
   <div class="mk-header">
     <div>
       <h1>{{ (tab === 'shortlist' ? 'marketplace.nav.shortlist' : 'marketplace.directory.title') | translate }}</h1>
@@ -14,8 +15,9 @@
   </div>
 
   @if (access(); as a) {
+
     @if (!a.active) {
-      <!-- Gate: no active pass -->
+      <!-- ── Gate: no active pass ─────────────────────────────────── -->
       <section class="mk-card" aria-labelledby="dir-gate-title">
         @if (expired()) {
           <p class="mk-error" role="alert">{{ 'marketplace.directory.expired' | translate }}</p>
@@ -25,18 +27,29 @@
         <a routerLink="/producer/access" class="mk-btn">{{ 'marketplace.directory.buy' | translate }}</a>
         @if (error()) { <p class="mk-error" role="alert">{{ error()! | translate }}</p> }
       </section>
-    } @else {
-      <p class="mk-banner" role="status">
-        <strong>{{ 'marketplace.directory.activeUntil' | translate }} {{ a.expires_at | date:'medium' }}</strong>
-        · <a routerLink="/producer/access" class="mk-btn mk-btn--ghost">{{ 'marketplace.directory.extend' | translate }}</a>
-      </p>
 
+    } @else {
+
+      <!-- ── Access banner ──────────────────────────────────────────── -->
+      <div class="dir-banner" role="status">
+        <span>
+          <strong>{{ 'marketplace.directory.activeUntil' | translate }} {{ a.expires_at | date:'medium' }}</strong>
+        </span>
+        <a routerLink="/producer/access" class="mk-btn mk-btn--ghost" style="font-size:.8rem;padding:.4rem .8rem">
+          {{ 'marketplace.directory.extend' | translate }}
+        </a>
+      </div>
+
+      <!-- ── Tabs ───────────────────────────────────────────────────── -->
       <nav class="mk-tabs" [attr.aria-label]="'marketplace.directory.title' | translate">
         <a routerLink="/producer/actors" routerLinkActive="active" ariaCurrentWhenActive="page">
           {{ 'marketplace.directory.tabSearch' | translate }}
         </a>
         <a routerLink="/producer/shortlist" routerLinkActive="active" ariaCurrentWhenActive="page">
-          {{ 'marketplace.directory.tabShortlist' | translate }} ({{ shortlist().length }})
+          {{ 'marketplace.directory.tabShortlist' | translate }}
+          @if (shortlist().length) {
+            <span class="mk-badge mk-badge--info" style="margin-left:.35rem">{{ shortlist().length }}</span>
+          }
         </a>
       </nav>
 
@@ -44,103 +57,240 @@
         @if (error()) { <p class="mk-error" role="alert">{{ error()! | translate }}</p> }
       </div>
 
+      <!-- ── Search tab ─────────────────────────────────────────────── -->
       @if (tab === 'search') {
-        <form class="mk-card" [formGroup]="filters" (ngSubmit)="search(1)" role="search">
-          <div class="mk-form">
-            <div class="mk-field">
-              <label for="df-q">{{ 'marketplace.directory.q' | translate }}</label>
-              <input id="df-q" formControlName="q" />
-            </div>
-            <div class="mk-field">
-              <label for="df-gender">{{ 'marketplace.profile.gender' | translate }}</label>
-              <select id="df-gender" formControlName="gender">
-                <option value="">{{ 'marketplace.directory.any' | translate }}</option>
-                @for (g of genders; track g) { <option [value]="g">{{ 'marketplace.gender.' + g | translate }}</option> }
-              </select>
-            </div>
-            <div class="mk-field">
-              <label for="df-min">{{ 'marketplace.directory.minAge' | translate }}</label>
-              <input id="df-min" type="number" min="0" formControlName="min_age" />
-            </div>
-            <div class="mk-field">
-              <label for="df-max">{{ 'marketplace.directory.maxAge' | translate }}</label>
-              <input id="df-max" type="number" min="0" formControlName="max_age" />
-            </div>
-            <div class="mk-field">
-              <label for="df-location">{{ 'marketplace.profile.location' | translate }}</label>
-              <input id="df-location" formControlName="location" />
-            </div>
-            <div class="mk-field">
-              <label for="df-skill">{{ 'marketplace.directory.skill' | translate }}</label>
-              <input id="df-skill" formControlName="skill" />
-            </div>
-            <div class="mk-field">
-              <label for="df-language">{{ 'marketplace.directory.language' | translate }}</label>
-              <input id="df-language" formControlName="language" />
-            </div>
-          </div>
-          <div class="mk-row" style="margin-top: .9rem">
-            <button type="submit" class="mk-btn" [disabled]="searching()">{{ 'marketplace.directory.search' | translate }}</button>
-            <button type="button" class="mk-btn mk-btn--ghost" (click)="resetFilters()">{{ 'marketplace.directory.reset' | translate }}</button>
-          </div>
-        </form>
 
-        <p class="mk-muted" aria-live="polite">
-          @if (searching()) { {{ 'marketplace.common.loading' | translate }} }
-          @else if (range()) { {{ 'marketplace.directory.range' | translate: { from: range()!.from, to: range()!.to, total: totalCount() } }} }
-          @else { {{ 'marketplace.directory.noResults' | translate }} }
+        <!-- Filter bar -->
+        <div class="dir-filter">
+          <form [formGroup]="filters" (ngSubmit)="search(1)" role="search"
+                [attr.aria-label]="'marketplace.directory.search' | translate">
+            <div class="dir-filter__grid">
+              <div class="mk-field">
+                <label for="df-q">{{ 'marketplace.directory.q' | translate }}</label>
+                <input id="df-q" formControlName="q" [placeholder]="'marketplace.directory.qPlaceholder' | translate" />
+              </div>
+              <div class="mk-field">
+                <label for="df-gender">{{ 'marketplace.profile.gender' | translate }}</label>
+                <select id="df-gender" formControlName="gender">
+                  <option value="">{{ 'marketplace.directory.any' | translate }}</option>
+                  @for (g of genders; track g) {
+                    <option [value]="g">{{ 'marketplace.gender.' + g | translate }}</option>
+                  }
+                </select>
+              </div>
+              <div class="mk-field">
+                <label for="df-min">{{ 'marketplace.directory.minAge' | translate }}</label>
+                <input id="df-min" type="number" min="0" max="100" formControlName="min_age" placeholder="e.g. 18" />
+              </div>
+              <div class="mk-field">
+                <label for="df-max">{{ 'marketplace.directory.maxAge' | translate }}</label>
+                <input id="df-max" type="number" min="0" max="100" formControlName="max_age" placeholder="e.g. 35" />
+              </div>
+              <div class="mk-field">
+                <label for="df-location">{{ 'marketplace.profile.province' | translate }}</label>
+                <select id="df-location" formControlName="location">
+                  <option value="">{{ 'marketplace.directory.anyProvince' | translate }}</option>
+                  @for (p of provinces; track p.name) {
+                    <option [value]="p.name">{{ p.name }}</option>
+                  }
+                </select>
+              </div>
+              <div class="mk-field">
+                <label for="df-skill">{{ 'marketplace.directory.skill' | translate }}</label>
+                <input id="df-skill" formControlName="skill" placeholder="e.g. Drama" />
+              </div>
+              <div class="mk-field">
+                <label for="df-language">{{ 'marketplace.directory.language' | translate }}</label>
+                <input id="df-language" formControlName="language" placeholder="e.g. Kinyarwanda" />
+              </div>
+            </div>
+            <div class="dir-filter__actions">
+              <button type="submit" class="mk-btn" [disabled]="searching()">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true">
+                  <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+                </svg>
+                {{ 'marketplace.directory.search' | translate }}
+              </button>
+              <button type="button" class="mk-btn mk-btn--ghost" (click)="resetFilters()">
+                {{ 'marketplace.directory.reset' | translate }}
+              </button>
+            </div>
+          </form>
+        </div>
+
+        <!-- Count / state -->
+        <p class="dir-count" aria-live="polite">
+          @if (searching()) {
+            {{ 'marketplace.common.loading' | translate }}
+          } @else if (range()) {
+            {{ 'marketplace.directory.range' | translate: { from: range()!.from, to: range()!.to, total: totalCount() } }}
+          } @else if (!searching()) {
+            {{ 'marketplace.directory.noResults' | translate }}
+          }
         </p>
 
-        <div class="mk-grid">
+        <!-- Actor grid -->
+        <div class="dir-grid">
           @for (actor of actors(); track actor.id) {
-            <article class="mk-card">
-              <h2><a [routerLink]="['/producer/actors', actor.id]">{{ actor.stage_name }}</a></h2>
-              <p class="mk-muted">
-                @if (actor.age !== null) { {{ actor.age }} · }
-                @if (actor.gender) { {{ 'marketplace.gender.' + actor.gender | translate }} · }
-                {{ actor.location }}
-              </p>
-              <div class="mk-chips">@for (s of actor.skills; track $index) { <span>{{ s }}</span> }</div>
-              <p class="mk-muted">
-                @if (actor.contact_email) { <a [href]="'mailto:' + actor.contact_email">{{ actor.contact_email }}</a> }
-                @if (actor.contact_phone) { · <a [href]="'tel:' + actor.contact_phone">{{ actor.contact_phone }}</a> }
-              </p>
-              @if (shortlistedIds().has(actor.id)) {
-                <button type="button" class="mk-btn mk-btn--ghost" (click)="removeFromShortlist(actor.id)" [disabled]="shortlistBusyId() === actor.id">
-                  {{ 'marketplace.directory.unshortlist' | translate }}
-                </button>
-              } @else {
-                <button type="button" class="mk-btn" (click)="addToShortlist(actor)" [disabled]="shortlistBusyId() === actor.id">
-                  {{ 'marketplace.directory.shortlist' | translate }}
-                </button>
+            <article class="dir-card">
+
+              <!-- Top: avatar + name + meta -->
+              <div class="dir-card__top">
+                <div class="dir-avatar" aria-hidden="true">
+                  {{ actor.stage_name.charAt(0).toUpperCase() }}
+                </div>
+                <div class="dir-card__info">
+                  <h2 class="dir-card__name">
+                    <a [routerLink]="['/producer/actors', actor.id]">{{ actor.stage_name }}</a>
+                  </h2>
+                  <div class="dir-card__meta">
+                    @if (actor.age !== null) {
+                      <span class="dir-meta-chip">{{ actor.age }} yrs</span>
+                    }
+                    @if (actor.gender) {
+                      <span class="dir-meta-chip">{{ 'marketplace.gender.' + actor.gender | translate }}</span>
+                    }
+                    @if (actor.district && actor.province) {
+                      <span class="dir-meta-chip">{{ actor.district }}, {{ actor.province }}</span>
+                    } @else if (actor.location) {
+                      <span class="dir-meta-chip">{{ actor.location }}</span>
+                    }
+                  </div>
+                </div>
+              </div>
+
+              <!-- Skills -->
+              @if (actor.skills.length) {
+                <div class="dir-card__skills">
+                  @for (s of actor.skills.slice(0, 4); track $index) { <span>{{ s }}</span> }
+                  @if (actor.skills.length > 4) { <span>+{{ actor.skills.length - 4 }}</span> }
+                </div>
               }
+
+              <!-- Contact -->
+              @if (actor.contact_email || actor.contact_phone) {
+                <div class="dir-card__contact">
+                  @if (actor.contact_email) {
+                    <a [href]="'mailto:' + actor.contact_email" class="dir-contact-link">
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                        <path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4-8 5-8-5V6l8 5 8-5v2z"/>
+                      </svg>
+                      {{ actor.contact_email }}
+                    </a>
+                  }
+                  @if (actor.contact_phone) {
+                    <a [href]="'tel:' + actor.contact_phone" class="dir-contact-link">
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                        <path d="M6.62 10.79c1.44 2.83 3.76 5.15 6.59 6.59l2.2-2.2c.28-.28.67-.36 1.02-.25 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.24.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/>
+                      </svg>
+                      {{ actor.contact_phone }}
+                    </a>
+                  }
+                </div>
+              }
+
+              <!-- Footer: view profile + shortlist star -->
+              <div class="dir-card__footer">
+                <a [routerLink]="['/producer/actors', actor.id]" class="dir-btn-view"
+                   [attr.aria-label]="('marketplace.directory.tabSearch' | translate) + ': ' + actor.stage_name">
+                  {{ 'marketplace.apply.viewProfile' | translate }}
+                </a>
+                <button type="button"
+                        class="dir-btn-star"
+                        [class.is-shortlisted]="shortlistedIds().has(actor.id)"
+                        [disabled]="shortlistBusyId() === actor.id"
+                        [attr.aria-pressed]="shortlistedIds().has(actor.id)"
+                        [attr.aria-label]="(shortlistedIds().has(actor.id) ? 'marketplace.directory.unshortlist' : 'marketplace.directory.shortlist') | translate"
+                        (click)="shortlistedIds().has(actor.id) ? removeFromShortlist(actor.id) : addToShortlist(actor)">
+                  @if (shortlistedIds().has(actor.id)) {
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                      <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/>
+                    </svg>
+                  } @else {
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                      <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+                    </svg>
+                  }
+                </button>
+              </div>
+
             </article>
           }
         </div>
 
+        <!-- Pagination -->
         @if (totalPages() > 1) {
           <nav class="mk-pager" [attr.aria-label]="'marketplace.common.pagination' | translate">
-            <button type="button" class="mk-btn mk-btn--ghost" [disabled]="page() <= 1" (click)="search(page() - 1)">{{ 'marketplace.common.prev' | translate }}</button>
+            <button type="button" class="mk-btn mk-btn--ghost" [disabled]="page() <= 1" (click)="search(page() - 1)">
+              {{ 'marketplace.common.prev' | translate }}
+            </button>
             <span class="mk-muted">{{ page() }} / {{ totalPages() }}</span>
-            <button type="button" class="mk-btn mk-btn--ghost" [disabled]="page() >= totalPages()" (click)="search(page() + 1)">{{ 'marketplace.common.next' | translate }}</button>
+            <button type="button" class="mk-btn mk-btn--ghost" [disabled]="page() >= totalPages()" (click)="search(page() + 1)">
+              {{ 'marketplace.common.next' | translate }}
+            </button>
           </nav>
         }
+
       } @else {
+
+        <!-- ── Shortlist tab ────────────────────────────────────────── -->
         @if (shortlist().length === 0) {
           <p class="mk-empty">{{ 'marketplace.directory.shortlistEmpty' | translate }}</p>
+        } @else {
+          <div class="sl-list">
+            @for (e of shortlist(); track e.id) {
+              <article class="sl-card">
+
+                <div class="dir-avatar" aria-hidden="true" style="width:40px;height:40px;font-size:1rem;flex-shrink:0">
+                  {{ e.actor.stage_name.charAt(0).toUpperCase() }}
+                </div>
+
+                <div class="sl-card__body">
+                  <h2 class="sl-card__name">
+                    <a [routerLink]="['/producer/actors', e.actor.id]">{{ e.actor.stage_name }}</a>
+                  </h2>
+                  <div class="sl-card__contact">
+                    @if (e.actor.contact_email) {
+                      <a [href]="'mailto:' + e.actor.contact_email" class="sl-contact-link">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                          <path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4-8 5-8-5V6l8 5 8-5v2z"/>
+                        </svg>
+                        {{ e.actor.contact_email }}
+                      </a>
+                    }
+                    @if (e.actor.contact_phone) {
+                      <a [href]="'tel:' + e.actor.contact_phone" class="sl-contact-link">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                          <path d="M6.62 10.79c1.44 2.83 3.76 5.15 6.59 6.59l2.2-2.2c.28-.28.67-.36 1.02-.25 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.24.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/>
+                        </svg>
+                        {{ e.actor.contact_phone }}
+                      </a>
+                    }
+                  </div>
+                  @if (e.note) {
+                    <p class="sl-card__note">"{{ e.note }}"</p>
+                  }
+                </div>
+
+                <div class="sl-card__actions">
+                  <a [routerLink]="['/producer/actors', e.actor.id]" class="dir-btn-view" style="white-space:nowrap">
+                    {{ 'marketplace.apply.viewProfile' | translate }}
+                  </a>
+                  <button type="button" class="sl-btn-remove"
+                          [disabled]="shortlistBusyId() === e.actor.id"
+                          (click)="removeFromShortlist(e.actor.id)">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                      <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/>
+                    </svg>
+                    {{ 'marketplace.directory.unshortlist' | translate }}
+                  </button>
+                </div>
+
+              </article>
+            }
+          </div>
         }
-        @for (e of shortlist(); track e.id) {
-          <article class="mk-card mk-row" style="justify-content: space-between">
-            <div>
-              <h2><a [routerLink]="['/producer/actors', e.actor.id]">{{ e.actor.stage_name }}</a></h2>
-              <p class="mk-muted">{{ e.actor.contact_email }} · {{ e.actor.contact_phone }}</p>
-              @if (e.note) { <p>{{ e.note }}</p> }
-            </div>
-            <button type="button" class="mk-btn mk-btn--danger" (click)="removeFromShortlist(e.actor.id)" [disabled]="shortlistBusyId() === e.actor.id">
-              {{ 'marketplace.directory.unshortlist' | translate }}
-            </button>
-          </article>
-        }
+
       }
     }
   }

@@ -42,6 +42,8 @@ type EditableMovie = MovieDetailResponse & {
  * `trailer_key` — `/movies/create/` and `/movies/<id>/update/` ignore raw
  * `video_file` / `trailer_file` uploads. Images are sent as files.
  */
+import { isoToKigaliParts, kigaliDateTimeToIso } from '../../../shared/utils/local-date';
+import { DEFAULT_FILM_PRICE } from '../../../shared/models/video-content.interface';
 @Component({
   selector: 'app-admin-movie-form',
   imports: [CommonModule, ReactiveFormsModule, TranslatePipe],
@@ -59,6 +61,7 @@ export class AdminMovieFormComponent implements OnInit, OnDestroy {
   private readonly translate     = inject(TranslateService);
 
   readonly videoAccept = VIDEO_ACCEPT;
+  readonly languages = ['rw', 'en', 'fr', 'sw'];
 
   // ── Mode ──────────────────────────────────────────────────────────────
   editId     = signal<number | null>(null);
@@ -87,9 +90,13 @@ export class AdminMovieFormComponent implements OnInit, OnDestroy {
     title:        ['', Validators.required],
     overview:     ['', Validators.required],
     release_date: ['', Validators.required],
-    price:        [0, [Validators.min(0)]],
+    release_time: ['00:00'],   // Kigali time; the film is purchasable/streamable from this moment
+    price:        [DEFAULT_FILM_PRICE, [Validators.required, Validators.min(1)]],
     cast:         [''],
     genres:       [''],
+    director:     [''],
+    writer:       [''],
+    original_language: [''],
     producer:     [''],   // producer account id (sent as producer_profile)
     is_active:    [true],
   });
@@ -100,7 +107,7 @@ export class AdminMovieFormComponent implements OnInit, OnDestroy {
         const list = data as ProducerItem[] | { results?: ProducerItem[] };
         this.producers.set(Array.isArray(list) ? list : list.results ?? []);
       },
-      error: () => {},
+      error: () => { /* the producer picker stays empty; the film can still be saved */ },
     });
 
     const id = this.route.snapshot.paramMap.get('id');
@@ -125,9 +132,14 @@ export class AdminMovieFormComponent implements OnInit, OnDestroy {
         this.form.patchValue({
           title:        movie.title ?? '',
           overview:     movie.overview ?? '',
-          release_date: movie.release_date ?? '',
-          price:        movie.price ?? 0,
+          ...(movie.release_at
+            ? { release_date: isoToKigaliParts(movie.release_at).date, release_time: isoToKigaliParts(movie.release_at).time }
+            : { release_date: movie.release_date ?? '', release_time: '00:00' }),
+          price:        movie.price ?? DEFAULT_FILM_PRICE,
           cast:         list(movie.cast),
+          director:     movie.director ?? '',
+          writer:       movie.writer ?? '',
+          original_language: movie.original_language ?? '',
           genres:       list(movie.genres),
           producer:     movie.producer_profile?.id ? String(movie.producer_profile.id) : '',
           is_active:    movie.is_active ?? true,
@@ -245,11 +257,15 @@ export class AdminMovieFormComponent implements OnInit, OnDestroy {
     fd.append('title',        v.title ?? '');
     fd.append('overview',     v.overview ?? '');
     fd.append('release_date', v.release_date ?? '');
-    fd.append('price',        String(v.price ?? 0));
+    if (v.release_date) fd.append('release_at', kigaliDateTimeToIso(v.release_date, v.release_time));
+    fd.append('price',        String(v.price ?? DEFAULT_FILM_PRICE));
     fd.append('is_active',    String(v.is_active ?? true));
 
     const list = (s: string | null | undefined) => JSON.stringify((s ?? '').split(',').map(x => x.trim()).filter(Boolean));
     if (v.cast?.trim())   fd.append('cast',   list(v.cast));
+    fd.append('director', v.director?.trim() ?? '');
+    fd.append('writer', v.writer?.trim() ?? '');
+    fd.append('original_language', v.original_language ?? '');
     if (v.genres?.trim()) fd.append('genres', list(v.genres));
 
     // Link the film to the producer's account (earnings, dashboard) and keep the display name.

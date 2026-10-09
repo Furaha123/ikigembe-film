@@ -1,14 +1,15 @@
-import { Component, EventEmitter, Input, OnDestroy, Output } from '@angular/core';
+import { Component, EventEmitter, Input, OnDestroy, Output, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { HttpErrorResponse, provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
-import { provideRouter } from '@angular/router';
+import { Router, provideRouter } from '@angular/router';
 import { RouterTestingHarness } from '@angular/router/testing';
 import { provideTranslateService } from '@ngx-translate/core';
 import { Observable, of, throwError } from 'rxjs';
 import { MovieDetailComponent } from './movie-detail.component';
 import { MovieService } from '../../shared/services/movie.service';
 import { PaymentService } from '../../core/services/payment.service';
+import { AuthService } from '../../core/services/auth.service';
 import { HeaderComponent } from '../../core/components/header/header.component';
 import { FooterComponent } from '../../core/components/footer/footer.component';
 import { VideoPlayerComponent } from '../../shared/components/video-player/video-player.component';
@@ -18,13 +19,13 @@ import { WatchProgressService } from '../../shared/services/watch-progress.servi
 import { makeStreamResponse } from '../../shared/testing/stream-fixtures';
 
 @Component({ selector: 'app-header', template: '' })
-class HeaderStub { @Input() userImg = ''; }
+class HeaderStubComponent { @Input() userImg = ''; }
 
 @Component({ selector: 'app-footer', template: '' })
-class FooterStub {}
+class FooterStubComponent {}
 
 @Component({ selector: 'app-video-player', template: '' })
-class PlayerStub implements OnDestroy {
+class PlayerStubComponent implements OnDestroy {
   @Input() src = '';
   @Input() source: PlaybackSource | null = null;
   @Input() refreshSource: (() => Observable<PlaybackSource>) | null = null;
@@ -40,7 +41,7 @@ class PlayerStub implements OnDestroy {
 }
 
 @Component({ selector: 'app-payment-modal', template: '' })
-class PaymentModalStub {
+class PaymentModalStubComponent {
   @Input() movie: unknown;
   @Output() paid = new EventEmitter<void>();
   @Output() closed = new EventEmitter<void>();
@@ -76,13 +77,16 @@ describe('MovieDetailComponent (viewer playback)', () => {
 
   const el = () => harness.routeNativeElement as HTMLElement;
   const watchButton = () => el().querySelector<HTMLButtonElement>('.btn-watch')!;
-  const player = () => harness.fixture.debugElement.query(d => d.componentInstance instanceof PlayerStub)?.componentInstance as PlayerStub | undefined;
+  const player = () => harness.fixture.debugElement.query(d => d.componentInstance instanceof PlayerStubComponent)?.componentInstance as PlayerStubComponent | undefined;
+
+  /** Signed in by default; the visitor spec signs out. */
+  const loggedIn = signal(true);
 
   beforeEach(() => {
+    loggedIn.set(true);
     movieService = jasmine.createSpyObj<MovieService>('MovieService',
-      ['getMovieDetails', 'getMovieCredits', 'getSimilarMovies', 'getMoviesByProducer', 'getStream']);
-    movieService.getMovieCredits.and.returnValue(of({ cast: [] }));
-    movieService.getSimilarMovies.and.returnValue(of({ results: [] }));
+      ['getMovieDetails', 'getRelatedMovies', 'getMoviesByProducer', 'getStream']);
+    movieService.getRelatedMovies.and.returnValue(of({ results: [] }));
     watchProgress = jasmine.createSpyObj<WatchProgressService>('WatchProgressService', ['report']);
     watchProgress.report.and.resolveTo();
     payments = jasmine.createSpyObj<PaymentService>('PaymentService', ['hasPurchased', 'forgetPurchase', 'pendingDeposit']);
@@ -98,11 +102,40 @@ describe('MovieDetailComponent (viewer playback)', () => {
         { provide: MovieService, useValue: movieService },
         { provide: PaymentService, useFactory: () => payments },
         { provide: WatchProgressService, useFactory: () => watchProgress },
+        { provide: AuthService, useValue: { isLoggedIn: loggedIn } },
       ],
     });
     TestBed.overrideComponent(MovieDetailComponent, {
       remove: { imports: [HeaderComponent, FooterComponent, VideoPlayerComponent, PaymentModalComponent] },
-      add: { imports: [HeaderStub, FooterStub, PlayerStub, PaymentModalStub] },
+      add: { imports: [HeaderStubComponent, FooterStubComponent, PlayerStubComponent, PaymentModalStubComponent] },
+    });
+  });
+
+  describe('visitors', () => {
+    it('sends a signed-out visitor to sign in instead of the payment', async () => {
+      loggedIn.set(false);
+      await open(movieDetails({ release_state: 'released' }));
+      const router = TestBed.inject(Router);
+      const nav = spyOn(router, 'navigate').and.resolveTo(true);
+      (el().querySelector('button.btn-watch') as HTMLButtonElement).click();
+      expect(nav).toHaveBeenCalledWith(['/login'], jasmine.objectContaining({ queryParams: jasmine.any(Object) }));
+      expect(movieService.getStream).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('coming soon', () => {
+    it('shows the release moment instead of a buy button and never requests the stream', async () => {
+      await open(movieDetails({ release_state: 'coming_soon', release_at: '2031-03-01T16:00:00Z', trailer_url: 't.mp4' }));
+      expect(el().querySelector('button.btn-watch')).toBeNull();
+      expect(el().querySelector('.btn-watch--soon')!.textContent).toContain('viewer.detail.availableOn');
+      expect(el().querySelector('.btn-trailer')).not.toBeNull();
+      expect(movieService.getStream).not.toHaveBeenCalled();
+    });
+
+    it('a released film keeps the buy action', async () => {
+      await open(movieDetails({ release_state: 'released' }));
+      expect(el().querySelector('button.btn-watch')).not.toBeNull();
+      expect(el().querySelector('.btn-watch--soon')).toBeNull();
     });
   });
 
@@ -131,7 +164,7 @@ describe('MovieDetailComponent (viewer playback)', () => {
     });
 
     it('failing credits or similar films do not take the page down', async () => {
-      movieService.getSimilarMovies.and.returnValue(throwError(() => new HttpErrorResponse({ status: 500 })));
+      movieService.getRelatedMovies.and.returnValue(throwError(() => new HttpErrorResponse({ status: 500 })));
       await open(movieDetails());
       expect(el().querySelector('h1')!.textContent).toContain('Umurage');
       expect(el().querySelector('.similar-title')).toBeNull(); // no empty "You may also like" heading
@@ -203,7 +236,7 @@ describe('MovieDetailComponent (viewer playback)', () => {
 
     watchButton().click();
     harness.detectChanges();
-    const modal = harness.fixture.debugElement.query(d => d.componentInstance instanceof PaymentModalStub).componentInstance as PaymentModalStub;
+    const modal = harness.fixture.debugElement.query(d => d.componentInstance instanceof PaymentModalStubComponent).componentInstance as PaymentModalStubComponent;
     modal.paid.emit();
     harness.detectChanges();
 

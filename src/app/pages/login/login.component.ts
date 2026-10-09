@@ -8,14 +8,15 @@ import { SeoService } from '../../core/services/seo.service';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { apiErrorMessage } from '../../shared/utils/api-error';
 
-declare const google: {
+/** The Google Identity Services global (loaded by a script tag), as far as this page uses it. */
+interface GoogleIdentity {
   accounts: {
     id: {
       initialize(cfg: { client_id: string; callback: (r: { credential: string }) => void }): void;
       renderButton(el: HTMLElement, opts: Record<string, unknown>): void;
     };
   };
-};
+}
 
 const GOOGLE_CLIENT_ID = '315063576340-dokh369lnriqdpermiha2iesqrm097dp.apps.googleusercontent.com';
 
@@ -70,7 +71,7 @@ export class LoginComponent implements AfterViewInit, OnInit {
 
   private tryInitGoogleButton(attempt: number) {
     const container = this.googleBtnContainer()?.nativeElement;
-    const gsi = (globalThis as { google?: typeof google }).google;
+    const gsi = (globalThis as { google?: GoogleIdentity }).google;
 
     if (!gsi || !container) {
       if (attempt < 10) {
@@ -135,7 +136,10 @@ export class LoginComponent implements AfterViewInit, OnInit {
         this.isLoading.set(false);
         this.serverErrors.set(err.status === 400 && err.error
           ? err.error
-          : { detail: apiErrorMessage(err) ?? this.translate.instant('auth.login.failed') });
+          : err.status === 429
+            // Account lockout or too many attempts from this network: the API says how long to wait.
+            ? { detail: (typeof err.error?.detail === 'string' && err.error.detail) || this.translate.instant('auth.login.tooManyAttempts') }
+            : { detail: apiErrorMessage(err) ?? this.translate.instant('auth.login.failed') });
       }
     });
   }

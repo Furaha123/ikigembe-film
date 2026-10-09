@@ -1,4 +1,4 @@
-import { IVideoContent } from './video-content.interface';
+import { IVideoContent, ReleaseState } from './video-content.interface';
 
 export interface MovieListResponse {
   page: number;
@@ -7,7 +7,10 @@ export interface MovieListResponse {
   total_pages: number;
 }
 
-export interface MovieDetailResponse extends IVideoContent {}
+export interface MovieDetailResponse extends IVideoContent {
+  /** The producer's display name (detail responses only). */
+  producer?: string;
+}
 
 export interface MovieCreditsResponse {
   cast: CastMember[];
@@ -60,6 +63,8 @@ export interface MoviePreview {
   trailer_url: string | null;
   duration_minutes: number;
   release_date: string;
+  release_at?: string | null;
+  release_state?: ReleaseState;
   rating: number;
   price: number;
   has_free_preview: boolean;
@@ -99,8 +104,11 @@ export interface StreamResponse {
   stream_url: string;
   stream_type: StreamType;
   hls_status: HlsStatus;
+  /** Null for encrypted films (an MP4 would bypass the encryption). */
   fallback_url: string | null;
   subtitles: SubtitleTrack[];
+  /** Pseudonymous session code to draw over the video (PLAYBACK_WATERMARK); null when off. */
+  watermark?: string | null;
 }
 
 /**
@@ -112,6 +120,7 @@ export interface PlaybackSource {
   type: StreamType;
   fallbackSrc: string | null;
   subtitles: SubtitleTrack[];
+  watermark?: string | null;
 }
 
 /** POST /api/movies/<id>/progress/ — whole seconds; a view is consumed at >= 90 %. */
@@ -133,4 +142,33 @@ export interface PlaybackProgress {
   position: number;
   duration: number;
   reason: PlaybackProgressReason;
+}
+
+export type CatalogSort = 'newest' | 'most_watched' | 'title' | 'release_soon';
+export type CatalogAvailability = 'released' | 'coming_soon' | 'all';
+
+/** Query of GET /movies/catalog/ — also the URL query params of /films. */
+export interface CatalogFilters {
+  q?: string;
+  genre?: string;
+  language?: string;
+  year?: number | null;
+  availability?: CatalogAvailability;
+  sort?: CatalogSort;
+  page?: number;
+  page_size?: number;
+}
+
+export interface CatalogPage {
+  page: number;
+  page_size: number;
+  total_results: number;
+  total_pages: number;
+  sort: CatalogSort;
+  results: IVideoContent[];
+}
+
+export interface GenresResponse {
+  results: { name: string; count: number }[];
+  languages: { code: string; name: string }[];
 }

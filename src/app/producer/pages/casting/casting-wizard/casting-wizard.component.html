@@ -20,6 +20,12 @@
     @if (!loading() && !loadError()) {
       <app-wizard-steps [steps]="stepLabels" [current]="stepIndex()" />
 
+      @if (call()?.status === 'rejected' && step() !== 'result') {
+        <div class="mk-banner" role="alert">
+          <strong>{{ 'marketplace.publication.rejected' | translate }}:</strong> {{ call()!.review_note }}
+          <p class="mk-muted" style="margin: .25rem 0 0">{{ 'marketplace.postCasting.rejectedHelp' | translate }}</p>
+        </div>
+      }
       @switch (step()) {
         @case ('type') {
           <section class="mk-card" aria-labelledby="cw-type">
@@ -48,6 +54,8 @@
             <h2 id="cw-details" #stepHeading tabindex="-1">{{ 'marketplace.postCasting.detailsTitle' | translate }}</h2>
             <form [formGroup]="details" (ngSubmit)="next()" novalidate>
               <div class="mk-form">
+
+                <!-- Title -->
                 <div class="mk-field mk-field--wide">
                   <label for="cw-title">{{ 'marketplace.producerCasting.fieldTitle' | translate }} *</label>
                   <input id="cw-title" formControlName="title" maxlength="255" (input)="persist()"
@@ -56,16 +64,47 @@
                     <p id="cw-title-err" class="mk-error">{{ 'marketplace.errors.required' | translate }}</p>
                   }
                 </div>
-                <div class="mk-field mk-field--wide">
-                  <label for="cw-desc">{{ 'marketplace.postCasting.description' | translate }} *</label>
-                  <textarea id="cw-desc" formControlName="description" rows="6" (input)="persist()"
-                            [attr.aria-invalid]="details.controls.description.invalid && details.controls.description.touched"
-                            aria-describedby="cw-desc-hint cw-desc-err"></textarea>
-                  <span id="cw-desc-hint" class="mk-hint">{{ 'marketplace.postCasting.descriptionHint' | translate }}</span>
-                  @if (details.controls.description.invalid && details.controls.description.touched) {
-                    <p id="cw-desc-err" class="mk-error">{{ 'marketplace.errors.required' | translate }}</p>
-                  }
+
+                <!-- Project type -->
+                <div class="mk-field">
+                  <label for="cw-ptype">{{ 'marketplace.postCasting.projectType' | translate }}</label>
+                  <select id="cw-ptype" formControlName="project_type" (change)="persist()">
+                    <option value="">{{ 'marketplace.postCasting.projectTypeAny' | translate }}</option>
+                    @for (pt of projectTypes; track pt) {
+                      <option [value]="pt">{{ pt }}</option>
+                    }
+                  </select>
                 </div>
+
+                <!-- Genre -->
+                <div class="mk-field">
+                  <label for="cw-genre">{{ 'marketplace.postCasting.genre' | translate }}</label>
+                  <input id="cw-genre" formControlName="genre" maxlength="100" (input)="persist()"
+                         [placeholder]="'marketplace.postCasting.genrePlaceholder' | translate" />
+                </div>
+
+                <!-- Shooting location -->
+                <div class="mk-field">
+                  <label for="cw-location">{{ 'marketplace.postCasting.shootingLocation' | translate }}</label>
+                  <input id="cw-location" formControlName="shooting_location" maxlength="200" (input)="persist()"
+                         [placeholder]="'marketplace.postCasting.locationPlaceholder' | translate" />
+                </div>
+
+                <!-- Project start date -->
+                <div class="mk-field">
+                  <label for="cw-start">{{ 'marketplace.postCasting.projectStartDate' | translate }}</label>
+                  <input id="cw-start" type="date" formControlName="project_start_date" [min]="today" (input)="persist()"
+                         aria-describedby="cw-date-hint" />
+                </div>
+
+                <!-- Project end date -->
+                <div class="mk-field">
+                  <label for="cw-end">{{ 'marketplace.postCasting.projectEndDate' | translate }}</label>
+                  <input id="cw-end" type="date" formControlName="project_end_date" [min]="details.controls.project_start_date.value || today" (input)="persist()" />
+                  <span id="cw-date-hint" class="mk-hint">{{ 'marketplace.postCasting.projectDateHint' | translate }}</span>
+                </div>
+
+                <!-- Application deadline -->
                 <div class="mk-field">
                   <label for="cw-deadline">{{ 'marketplace.postCasting.deadline' | translate }} *</label>
                   <input id="cw-deadline" type="datetime-local" formControlName="deadline_at" [min]="minDeadline" (input)="persist()"
@@ -78,6 +117,19 @@
                     <p id="cw-deadline-err" class="mk-error">{{ 'marketplace.producerCasting.deadlineFuture' | translate }}</p>
                   }
                 </div>
+
+                <!-- Description -->
+                <div class="mk-field mk-field--wide">
+                  <label for="cw-desc">{{ 'marketplace.postCasting.description' | translate }} *</label>
+                  <textarea id="cw-desc" formControlName="description" rows="5" (input)="persist()"
+                            [attr.aria-invalid]="details.controls.description.invalid && details.controls.description.touched"
+                            aria-describedby="cw-desc-hint cw-desc-err"></textarea>
+                  <span id="cw-desc-hint" class="mk-hint">{{ 'marketplace.postCasting.descriptionHint' | translate }}</span>
+                  @if (details.controls.description.invalid && details.controls.description.touched) {
+                    <p id="cw-desc-err" class="mk-error">{{ 'marketplace.errors.required' | translate }}</p>
+                  }
+                </div>
+
               </div>
               <div class="mk-actions">
                 <button type="button" class="mk-btn mk-btn--ghost" (click)="back()">{{ 'marketplace.wizard.back' | translate }}</button>
@@ -98,7 +150,7 @@
                           [attr.aria-invalid]="ctrl.invalid && ctrl.touched"></textarea>
                 @if (ctrl.invalid && ctrl.touched) { <p class="mk-error">{{ 'marketplace.errors.required' | translate }}</p> }
                 @if (type() === 'various' && roles.length > 1) {
-                  <button type="button" class="mk-btn mk-btn--ghost" style="align-self: flex-start" (click)="removeRole(i)">
+                  <button type="button" class="mk-btn mk-btn--ghost" style="align-self: flex-start; margin-top: .25rem" (click)="removeRole(i)">
                     {{ 'marketplace.postCasting.removeRole' | translate }}
                   </button>
                 }
@@ -107,9 +159,154 @@
             @if (type() === 'various') {
               <button type="button" class="mk-btn mk-btn--ghost" (click)="addRole()">+ {{ 'marketplace.postCasting.addRole' | translate }}</button>
             }
+
+            <!-- Talent requirements (optional, global) -->
+            <div class="mk-section-head" style="margin-top: 1.25rem">
+              <h3>{{ 'marketplace.postCasting.talentReqs' | translate }}</h3>
+            </div>
+            <p class="mk-hint mk-muted">{{ 'marketplace.postCasting.talentReqsHint' | translate }}</p>
+            <form [formGroup]="requirements" novalidate>
+              <div class="mk-form" style="margin-top: .5rem">
+                <div class="mk-field">
+                  <label for="cw-minage">{{ 'marketplace.postCasting.minAge' | translate }}</label>
+                  <input id="cw-minage" type="number" formControlName="min_age" min="0" max="100" (input)="persist()"
+                         [attr.aria-invalid]="requirements.controls.min_age.invalid && requirements.controls.min_age.touched" />
+                  @if (requirements.controls.min_age.invalid && requirements.controls.min_age.touched) {
+                    <p class="mk-error">{{ 'marketplace.postCasting.ageRangeError' | translate }}</p>
+                  }
+                </div>
+                <div class="mk-field">
+                  <label for="cw-maxage">{{ 'marketplace.postCasting.maxAge' | translate }}</label>
+                  <input id="cw-maxage" type="number" formControlName="max_age" min="0" max="100" (input)="persist()"
+                         [attr.aria-invalid]="requirements.controls.max_age.invalid && requirements.controls.max_age.touched" />
+                  @if (requirements.controls.max_age.invalid && requirements.controls.max_age.touched) {
+                    <p class="mk-error">{{ 'marketplace.postCasting.ageRangeError' | translate }}</p>
+                  }
+                </div>
+                <div class="mk-field">
+                  <label for="cw-gender">{{ 'marketplace.postCasting.genderPref' | translate }}</label>
+                  <select id="cw-gender" formControlName="gender_preference" (change)="persist()">
+                    @for (g of genders; track g) {
+                      <option [value]="g">{{ (g ? 'marketplace.gender.' + g : 'marketplace.postCasting.anyGender') | translate }}</option>
+                    }
+                  </select>
+                </div>
+                <div class="mk-field">
+                  <label for="cw-numactors">{{ 'marketplace.postCasting.numActors' | translate }}</label>
+                  <input id="cw-numactors" type="number" formControlName="num_actors" min="1" max="999" (input)="persist()"
+                         [placeholder]="'marketplace.postCasting.numActorsHint' | translate" />
+                  @if (requirements.controls.num_actors.invalid && requirements.controls.num_actors.touched) {
+                    <p class="mk-error">{{ 'marketplace.postCasting.numActorsError' | translate }}</p>
+                  }
+                </div>
+
+                <!-- Physical requirements -->
+                <div class="mk-field mk-field--wide">
+                  <div class="mk-section-head" style="margin: .5rem 0 0; color: #bbb"><h3>{{ 'marketplace.postCasting.physicalReqs' | translate }}</h3></div>
+                </div>
+                <div class="mk-field">
+                  <label for="cw-hmin">{{ 'marketplace.postCasting.heightMin' | translate }}</label>
+                  <input id="cw-hmin" type="number" formControlName="height_min" min="50" max="300" (input)="persist()"
+                         [placeholder]="'marketplace.postCasting.heightPlaceholder' | translate" />
+                </div>
+                <div class="mk-field">
+                  <label for="cw-hmax">{{ 'marketplace.postCasting.heightMax' | translate }}</label>
+                  <input id="cw-hmax" type="number" formControlName="height_max" min="50" max="300" (input)="persist()"
+                         [placeholder]="'marketplace.postCasting.heightPlaceholder' | translate" />
+                </div>
+                <div class="mk-field">
+                  <label for="cw-bodytype">{{ 'marketplace.postCasting.bodyType' | translate }}</label>
+                  <input id="cw-bodytype" formControlName="body_type" maxlength="100" (input)="persist()" />
+                </div>
+                <div class="mk-field">
+                  <label for="cw-complexion">{{ 'marketplace.postCasting.complexion' | translate }}</label>
+                  <input id="cw-complexion" formControlName="complexion" maxlength="100" (input)="persist()" />
+                </div>
+                <div class="mk-field mk-field--wide">
+                  <label for="cw-appearance">{{ 'marketplace.postCasting.appearanceNotes' | translate }}</label>
+                  <textarea id="cw-appearance" formControlName="appearance_notes" rows="3" (input)="persist()"></textarea>
+                </div>
+
+                <!-- Skills & languages -->
+                <div class="mk-field mk-field--wide">
+                  <div class="mk-section-head" style="margin: .5rem 0 0; color: #bbb"><h3>{{ 'marketplace.postCasting.skillsLangs' | translate }}</h3></div>
+                </div>
+                <div class="mk-field mk-field--wide">
+                  <label for="cw-skills">{{ 'marketplace.postCasting.requiredSkills' | translate }}</label>
+                  <input id="cw-skills" formControlName="required_skills" (input)="persist()"
+                         [placeholder]="'marketplace.postCasting.skillsPlaceholder' | translate" />
+                  <span class="mk-hint">{{ 'marketplace.profile.listHint' | translate }}</span>
+                </div>
+                <div class="mk-field mk-field--wide">
+                  <label for="cw-langs">{{ 'marketplace.postCasting.requiredLanguages' | translate }}</label>
+                  <input id="cw-langs" formControlName="required_languages" (input)="persist()"
+                         [placeholder]="'marketplace.postCasting.langsPlaceholder' | translate" />
+                  <span class="mk-hint">{{ 'marketplace.profile.listHint' | translate }}</span>
+                </div>
+              </div>
+            </form>
+
+            <!-- Availability & notes -->
+            <div class="mk-section-head" style="margin-top: 1.25rem">
+              <h3>{{ 'marketplace.postCasting.availabilityTitle' | translate }}</h3>
+            </div>
+            <form [formGroup]="details" novalidate>
+              <div class="mk-field">
+                <label for="cw-availability">{{ 'marketplace.postCasting.availabilityNotes' | translate }}</label>
+                <textarea id="cw-availability" formControlName="availability_notes" rows="4" (input)="persist()"
+                          [placeholder]="'marketplace.postCasting.availabilityPlaceholder' | translate"></textarea>
+              </div>
+            </form>
+
             <div class="mk-actions">
               <button type="button" class="mk-btn mk-btn--ghost" (click)="back()">{{ 'marketplace.wizard.back' | translate }}</button>
-              <button type="button" class="mk-btn" (click)="next()">{{ 'marketplace.postCasting.toReview' | translate }}</button>
+              <button type="button" class="mk-btn" (click)="next()" [disabled]="saving()" [attr.aria-busy]="saving()">
+                {{ (saving() ? 'marketplace.common.saving' : 'marketplace.wizard.next') | translate }}
+              </button>
+            </div>
+          </section>
+        }
+
+        @case ('poster') {
+          <section class="mk-card" aria-labelledby="cw-poster">
+            <h2 id="cw-poster" #stepHeading tabindex="-1">{{ 'marketplace.postCasting.posterTitle' | translate }}</h2>
+            <p class="mk-muted">{{ 'marketplace.postCasting.posterHint' | translate }}</p>
+
+            <div class="mk-file" style="margin: 1rem 0">
+              @if (posterPreview()) {
+                <img [src]="posterPreview()!" alt="" class="mk-casting-poster" />
+              } @else {
+                <div class="mk-poster-placeholder" aria-hidden="true"></div>
+              }
+              <div style="display: flex; flex-direction: column; gap: .6rem; justify-content: flex-end">
+                <label class="mk-btn" [class.mk-btn--ghost]="!!posterPreview()" style="cursor: pointer">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16" aria-hidden="true">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/>
+                  </svg>
+                  {{ (posterPreview() ? 'marketplace.postCasting.posterReplace' : 'marketplace.postCasting.posterUpload') | translate }}
+                  <input type="file" accept="image/jpeg,image/png,image/webp" class="sr-only" (change)="onPosterFile($event)" [disabled]="posterUploading()" />
+                </label>
+                @if (posterPreview()) {
+                  <button type="button" class="mk-btn mk-btn--danger" (click)="onRemovePoster()" [disabled]="posterUploading()">
+                    {{ 'marketplace.postCasting.posterRemove' | translate }}
+                  </button>
+                }
+                <span class="mk-hint mk-muted">{{ 'marketplace.postCasting.posterFormats' | translate }}</span>
+              </div>
+            </div>
+
+            <div aria-live="polite">
+              @if (posterUploading()) {
+                <p class="mk-muted">{{ 'marketplace.postCasting.posterUploading' | translate }}</p>
+              }
+              @if (posterError()) {
+                <p class="mk-error" role="alert">{{ posterError()! | translate }}</p>
+              }
+            </div>
+
+            <div class="mk-actions">
+              <button type="button" class="mk-btn mk-btn--ghost" (click)="back()">{{ 'marketplace.wizard.back' | translate }}</button>
+              <button type="button" class="mk-btn" (click)="next()" [disabled]="posterUploading()">{{ 'marketplace.wizard.next' | translate }}</button>
             </div>
           </section>
         }
@@ -117,6 +314,14 @@
         @case ('review') {
           <section class="mk-card" aria-labelledby="cw-review">
             <h2 id="cw-review" #stepHeading tabindex="-1">{{ 'marketplace.postCasting.reviewTitle' | translate }}</h2>
+
+            @if (posterPreview()) {
+              <div class="mk-section-head">
+                <h3>{{ 'marketplace.postCasting.posterTitle' | translate }}</h3>
+                <button type="button" class="mk-btn mk-btn--ghost" (click)="editSection('poster')">{{ 'marketplace.wizard.edit' | translate }}</button>
+              </div>
+              <img [src]="posterPreview()!" alt="" class="mk-casting-poster" style="margin-bottom: .75rem" />
+            }
 
             <div class="mk-section-head">
               <h3>{{ 'marketplace.postCasting.postedAs' | translate }}</h3>
@@ -135,8 +340,23 @@
             </div>
             <dl class="mk-summary">
               <dt>{{ 'marketplace.producerCasting.fieldTitle' | translate }}</dt><dd>{{ details.controls.title.value }}</dd>
-              <dt>{{ 'marketplace.postCasting.description' | translate }}</dt><dd>{{ details.controls.description.value }}</dd>
+              @if (details.controls.project_type.value) {
+                <dt>{{ 'marketplace.postCasting.projectType' | translate }}</dt><dd>{{ details.controls.project_type.value }}</dd>
+              }
+              @if (details.controls.genre.value) {
+                <dt>{{ 'marketplace.postCasting.genre' | translate }}</dt><dd>{{ details.controls.genre.value }}</dd>
+              }
+              @if (details.controls.shooting_location.value) {
+                <dt>{{ 'marketplace.postCasting.shootingLocation' | translate }}</dt><dd>{{ details.controls.shooting_location.value }}</dd>
+              }
+              @if (details.controls.project_start_date.value) {
+                <dt>{{ 'marketplace.postCasting.projectStartDate' | translate }}</dt><dd>{{ details.controls.project_start_date.value | date:'mediumDate' }}</dd>
+              }
+              @if (details.controls.project_end_date.value) {
+                <dt>{{ 'marketplace.postCasting.projectEndDate' | translate }}</dt><dd>{{ details.controls.project_end_date.value | date:'mediumDate' }}</dd>
+              }
               <dt>{{ 'marketplace.postCasting.deadline' | translate }}</dt><dd>{{ details.controls.deadline_at.value | date:'medium' }}</dd>
+              <dt>{{ 'marketplace.postCasting.description' | translate }}</dt><dd style="white-space: pre-line">{{ details.controls.description.value }}</dd>
             </dl>
 
             <div class="mk-section-head">
@@ -146,6 +366,60 @@
             <ul class="mk-list">
               @for (r of roles.value; track $index) { <li>{{ r }}</li> }
             </ul>
+            @let req = requirements.getRawValue();
+            @if (req.min_age !== null || req.max_age !== null || req.gender_preference || req.num_actors !== null ||
+                 req.height_min !== null || req.height_max !== null || req.body_type || req.complexion ||
+                 req.appearance_notes || req.required_skills || req.required_languages) {
+              <dl class="mk-summary" style="margin-top: .5rem">
+                @if (req.min_age !== null || req.max_age !== null) {
+                  <dt>{{ 'marketplace.postCasting.ageRange' | translate }}</dt>
+                  <dd>
+                    @if (req.min_age !== null) { {{ req.min_age }} }
+                    @if (req.min_age !== null && req.max_age !== null) { – }
+                    @if (req.max_age !== null) { {{ req.max_age }} }
+                  </dd>
+                }
+                @if (req.gender_preference) {
+                  <dt>{{ 'marketplace.postCasting.genderPref' | translate }}</dt>
+                  <dd>{{ 'marketplace.gender.' + req.gender_preference | translate }}</dd>
+                }
+                @if (req.num_actors !== null) {
+                  <dt>{{ 'marketplace.postCasting.numActors' | translate }}</dt><dd>{{ req.num_actors }}</dd>
+                }
+                @if (req.height_min !== null || req.height_max !== null) {
+                  <dt>{{ 'marketplace.postCasting.physicalReqs' | translate }}</dt>
+                  <dd>
+                    @if (req.height_min !== null) { {{ req.height_min }} }
+                    @if (req.height_min !== null && req.height_max !== null) { – }
+                    @if (req.height_max !== null) { {{ req.height_max }} }
+                    cm
+                  </dd>
+                }
+                @if (req.body_type) {
+                  <dt>{{ 'marketplace.postCasting.bodyType' | translate }}</dt><dd>{{ req.body_type }}</dd>
+                }
+                @if (req.complexion) {
+                  <dt>{{ 'marketplace.postCasting.complexion' | translate }}</dt><dd>{{ req.complexion }}</dd>
+                }
+                @if (req.appearance_notes) {
+                  <dt>{{ 'marketplace.postCasting.appearanceNotes' | translate }}</dt><dd style="white-space: pre-line">{{ req.appearance_notes }}</dd>
+                }
+                @if (req.required_skills) {
+                  <dt>{{ 'marketplace.postCasting.requiredSkills' | translate }}</dt><dd>{{ req.required_skills }}</dd>
+                }
+                @if (req.required_languages) {
+                  <dt>{{ 'marketplace.postCasting.requiredLanguages' | translate }}</dt><dd>{{ req.required_languages }}</dd>
+                }
+              </dl>
+            }
+
+            @if (details.controls.availability_notes.value) {
+              <div class="mk-section-head" style="margin-top: .75rem">
+                <h3>{{ 'marketplace.postCasting.availabilityTitle' | translate }}</h3>
+                <button type="button" class="mk-btn mk-btn--ghost" (click)="editSection('roles')">{{ 'marketplace.wizard.edit' | translate }}</button>
+              </div>
+              <p style="white-space: pre-line; margin: 0">{{ details.controls.availability_notes.value }}</p>
+            }
 
             <div class="mk-banner">
               @if (quote(); as q) {
@@ -169,7 +443,7 @@
                   {{ (saving() ? 'marketplace.common.saving' : 'marketplace.postCasting.saveDraft') | translate }}
                 </button>
                 <button type="button" class="mk-btn" (click)="payAndPublish()" [disabled]="saving() || !!purchase()">
-                  {{ 'marketplace.postCasting.payPublish' | translate }}
+                  {{ (alreadyPaid() ? 'marketplace.postCasting.sendForReview' : 'marketplace.postCasting.payPublish') | translate }}
                 </button>
               </div>
             </div>
@@ -186,7 +460,7 @@
               <p class="mk-muted">{{ 'marketplace.common.loading' | translate }}</p>
             }
             <div class="mk-actions">
-              @if (state() === 'processing' || state() === 'paymentPending') {
+              @if (state() === 'processing' || state() === 'paymentPending' || state() === 'inReview') {
                 <button type="button" class="mk-btn mk-btn--ghost" (click)="refreshState()" [disabled]="checking()">{{ 'marketplace.common.refresh' | translate }}</button>
               } @else { <span></span> }
               <div class="mk-actions__end">

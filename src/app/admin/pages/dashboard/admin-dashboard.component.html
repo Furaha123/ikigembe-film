@@ -12,126 +12,279 @@
     </a>
   </div>
 
-  <!-- ── Metric KPI cards (drive the chart) ── -->
+  <!-- ── KPI cards (click to switch chart) ── -->
   <div class="kpi-row">
 
-    <div class="kpi-card" [class.active-gold]="activeTab() === 'revenue'" (click)="setTab('revenue')">
-      <div class="kpi-bar"></div>
-      <div class="kpi-icon icon-gold">
-        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M11.8 10.9c-2.27-.59-3-1.2-3-2.15 0-1.09 1.01-1.85 2.7-1.85 1.78 0 2.44.85 2.5 2.1h2.21c-.07-1.72-1.12-3.3-3.21-3.81V3h-3v2.16c-1.94.42-3.5 1.68-3.5 3.61 0 2.31 1.91 3.46 4.7 4.13 2.5.6 3 1.48 3 2.41 0 .69-.49 1.79-2.7 1.79-2.06 0-2.87-.92-2.98-2.1h-2.2c.12 2.19 1.76 3.42 3.68 3.83V21h3v-2.15c1.95-.37 3.5-1.5 3.5-3.55 0-2.84-2.43-3.81-4.7-4.4z"/></svg>
+    <!-- Total Revenue -->
+    <div class="kpi-card" [class.kpi-card--active]="activeTab() === 'revenue'"
+         [class.kpi-card--gold]="activeTab() === 'revenue'" (click)="setTab('revenue')"
+         role="button" tabindex="0" (keydown.enter)="setTab('revenue')" (keydown.space)="setTab('revenue')"
+         [attr.aria-pressed]="activeTab() === 'revenue'">
+      <div class="kpi-card__head">
+        <span class="kpi-card__label">{{ 'admin.dashboard.kpi.totalRevenue' | translate }}</span>
+        <div class="kpi-badge kpi-badge--gold">
+          <svg viewBox="0 0 24 24" fill="currentColor" width="14" height="14"><path d="M11.8 10.9c-2.27-.59-3-1.2-3-2.15 0-1.09 1.01-1.85 2.7-1.85 1.78 0 2.44.85 2.5 2.1h2.21c-.07-1.72-1.12-3.3-3.21-3.81V3h-3v2.16c-1.94.42-3.5 1.68-3.5 3.61 0 2.31 1.91 3.46 4.7 4.13 2.5.6 3 1.48 3 2.41 0 .69-.49 1.79-2.7 1.79-2.06 0-2.87-.92-2.98-2.1h-2.2c.12 2.19 1.76 3.42 3.68 3.83V21h3v-2.15c1.95-.37 3.5-1.5 3.5-3.55 0-2.84-2.43-3.81-4.7-4.4z"/></svg>
+        </div>
       </div>
-      <div class="kpi-label">{{ 'admin.dashboard.kpi.totalRevenue' | translate }}</div>
-      <div class="kpi-value">
+      <div class="kpi-card__value">
         @if (loadingOverview()) { <span class="skel skel-val"></span> }
         @else { {{ fmt(totalRevenue()) }} }
       </div>
+      <div class="kpi-card__footer">
+        <span class="kpi-sub">
+          @if (loadingOverview()) { <span class="skel skel-xs"></span> }
+          @else { {{ fmt(revenueMonth()) }} {{ 'admin.dashboard.kpi.thisMonth' | translate }} }
+        </span>
+        @if (!loadingTrend() && revenueTrend() !== null) {
+          <span class="kpi-trend" [class.kpi-trend--up]="revenueTrend()! >= 0" [class.kpi-trend--down]="revenueTrend()! < 0">
+            @if (revenueTrend()! >= 0) {
+              <svg viewBox="0 0 24 24" fill="currentColor" width="10" height="10"><path d="M7 14l5-5 5 5z"/></svg>
+            } @else {
+              <svg viewBox="0 0 24 24" fill="currentColor" width="10" height="10"><path d="M7 10l5 5 5-5z"/></svg>
+            }
+            {{ revenueTrend()! >= 0 ? '+' : '' }}{{ revenueTrend() }}%
+          </span>
+        }
+      </div>
     </div>
 
-    <div class="kpi-card" [class.active-purple]="activeTab() === 'commission'" (click)="setTab('commission')">
-      <div class="kpi-bar"></div>
-      <div class="kpi-icon icon-purple">
-        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M16 6l2.29 2.29-4.88 4.88-4-4L2 16.59 3.41 18l6-6 4 4 6.3-6.29L22 12V6h-6z"/></svg>
+    <!-- Platform Commission -->
+    <div class="kpi-card" [class.kpi-card--active]="activeTab() === 'commission'"
+         [class.kpi-card--purple]="activeTab() === 'commission'" (click)="setTab('commission')"
+         role="button" tabindex="0" (keydown.enter)="setTab('commission')" (keydown.space)="setTab('commission')"
+         [attr.aria-pressed]="activeTab() === 'commission'">
+      <div class="kpi-card__head">
+        <span class="kpi-card__label">{{ 'admin.dashboard.kpi.platformCommission' | translate }}</span>
+        <div class="kpi-badge kpi-badge--purple">
+          <svg viewBox="0 0 24 24" fill="currentColor" width="14" height="14"><path d="M16 6l2.29 2.29-4.88 4.88-4-4L2 16.59 3.41 18l6-6 4 4 6.3-6.29L22 12V6h-6z"/></svg>
+        </div>
       </div>
-      <div class="kpi-label">{{ 'admin.dashboard.kpi.platformCommission' | translate }}</div>
-      <div class="kpi-value">
+      <div class="kpi-card__value">
         @if (loadingOverview()) { <span class="skel skel-val"></span> }
         @else { {{ fmt(totalComm()) }} }
       </div>
+      <div class="kpi-card__footer">
+        <span class="kpi-sub">{{ 'admin.dashboard.kpi.allTime' | translate }}</span>
+        @if (!loadingTrend() && commTrend() !== null) {
+          <span class="kpi-trend" [class.kpi-trend--up]="commTrend()! >= 0" [class.kpi-trend--down]="commTrend()! < 0">
+            @if (commTrend()! >= 0) {
+              <svg viewBox="0 0 24 24" fill="currentColor" width="10" height="10"><path d="M7 14l5-5 5 5z"/></svg>
+            } @else {
+              <svg viewBox="0 0 24 24" fill="currentColor" width="10" height="10"><path d="M7 10l5 5 5-5z"/></svg>
+            }
+            {{ commTrend()! >= 0 ? '+' : '' }}{{ commTrend() }}% {{ 'admin.dashboard.kpi.vsLastMonth' | translate }}
+          </span>
+        }
+      </div>
     </div>
 
-    <div class="kpi-card" [class.active-teal]="activeTab() === 'producer'" (click)="setTab('producer')">
-      <div class="kpi-bar"></div>
-      <div class="kpi-icon icon-teal">
-        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M21 18v1c0 1.1-.9 2-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14c1.1 0 2 .9 2 2v1h-9a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h9zm-9-2h10V8H12v8zm4-2.5a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3z"/></svg>
+    <!-- Producer Payouts -->
+    <div class="kpi-card" [class.kpi-card--active]="activeTab() === 'producer'"
+         [class.kpi-card--teal]="activeTab() === 'producer'" (click)="setTab('producer')"
+         role="button" tabindex="0" (keydown.enter)="setTab('producer')" (keydown.space)="setTab('producer')"
+         [attr.aria-pressed]="activeTab() === 'producer'">
+      <div class="kpi-card__head">
+        <span class="kpi-card__label">{{ 'admin.dashboard.kpi.producerPayouts' | translate }}</span>
+        <div class="kpi-badge kpi-badge--teal">
+          <svg viewBox="0 0 24 24" fill="currentColor" width="14" height="14"><path d="M21 18v1c0 1.1-.9 2-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14c1.1 0 2 .9 2 2v1h-9a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h9zm-9-2h10V8H12v8zm4-2.5a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3z"/></svg>
+        </div>
       </div>
-      <div class="kpi-label">{{ 'admin.dashboard.kpi.producerPayouts' | translate }}</div>
-      <div class="kpi-value">
+      <div class="kpi-card__value">
         @if (loadingOverview()) { <span class="skel skel-val"></span> }
         @else { {{ fmt(producerPayout()) }} }
+      </div>
+      <div class="kpi-card__footer">
+        <span class="kpi-sub">{{ 'admin.dashboard.kpi.allTime' | translate }}</span>
+        @if (!loadingTrend() && producerTrend() !== null) {
+          <span class="kpi-trend" [class.kpi-trend--up]="producerTrend()! >= 0" [class.kpi-trend--down]="producerTrend()! < 0">
+            @if (producerTrend()! >= 0) {
+              <svg viewBox="0 0 24 24" fill="currentColor" width="10" height="10"><path d="M7 14l5-5 5 5z"/></svg>
+            } @else {
+              <svg viewBox="0 0 24 24" fill="currentColor" width="10" height="10"><path d="M7 10l5 5 5-5z"/></svg>
+            }
+            {{ producerTrend()! >= 0 ? '+' : '' }}{{ producerTrend() }}% {{ 'admin.dashboard.kpi.vsLastMonth' | translate }}
+          </span>
+        }
+      </div>
+    </div>
+
+    <!-- Revenue Today -->
+    <div class="kpi-card kpi-card--muted">
+      <div class="kpi-card__head">
+        <span class="kpi-card__label">{{ 'admin.dashboard.kpi.revenueToday' | translate }}</span>
+        <div class="kpi-badge kpi-badge--gold">
+          <svg viewBox="0 0 24 24" fill="currentColor" width="14" height="14"><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67V7z"/></svg>
+        </div>
+      </div>
+      <div class="kpi-card__value">
+        @if (loadingOverview()) { <span class="skel skel-val"></span> }
+        @else { {{ fmt(revenueToday()) }} }
+      </div>
+      <div class="kpi-card__footer">
+        <span class="kpi-sub">{{ 'admin.dashboard.kpi.today' | translate }}</span>
       </div>
     </div>
 
   </div>
 
-  <!-- ── Platform stats (secondary metrics, linkable) ── -->
-  <div class="stats-row">
+  <!-- ── Platform stat cards ── -->
+  <div class="stats-grid">
 
-    <a routerLink="/admin/users" class="stat-card">
-      <div class="stat-icon icon-teal">
-        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg>
-      </div>
-      <div class="stat-body">
-        <div class="stat-value">
-          @if (loadingOverview()) { <span class="skel skel-sm"></span> }
-          @else { {{ fmtNum(overview()?.total_viewers ?? 0) }} }
+    <!-- Viewers -->
+    <a routerLink="/admin/users" class="scard">
+      <div class="scard__head">
+        <span class="scard__label">{{ 'admin.dashboard.stats.totalUsers' | translate }}</span>
+        <div class="scard__icon scard__icon--blue">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg>
         </div>
-        <div class="stat-label">{{ 'admin.dashboard.stats.totalUsers' | translate }}</div>
       </div>
-      <svg class="stat-arrow" viewBox="0 0 24 24" fill="currentColor"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6z"/></svg>
+      <div class="scard__value">
+        @if (loadingOverview()) { <span class="skel skel-lg"></span> }
+        @else { {{ fmtNum(overview()?.total_viewers ?? 0) }} }
+      </div>
+      <div class="scard__footer">
+        <span class="scard__sub">{{ 'admin.dashboard.stats.registeredViewers' | translate }}</span>
+        <svg class="scard__arrow" viewBox="0 0 24 24" fill="currentColor"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6z"/></svg>
+      </div>
     </a>
 
-    <a routerLink="/admin/producers" class="stat-card">
-      <div class="stat-icon icon-teal">
-        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 14.5v-9l6 4.5-6 4.5z"/></svg>
-      </div>
-      <div class="stat-body">
-        <div class="stat-value">
-          @if (loadingOverview()) { <span class="skel skel-sm"></span> }
-          @else { {{ fmtNum(overview()?.total_producers ?? 0) }} }
+    <!-- Producers -->
+    <a routerLink="/admin/producers" class="scard">
+      <div class="scard__head">
+        <span class="scard__label">{{ 'admin.dashboard.stats.producers' | translate }}</span>
+        <div class="scard__icon scard__icon--blue">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 14.5v-9l6 4.5-6 4.5z"/></svg>
         </div>
-        <div class="stat-label">{{ 'admin.dashboard.stats.producers' | translate }}</div>
       </div>
-      <svg class="stat-arrow" viewBox="0 0 24 24" fill="currentColor"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6z"/></svg>
+      <div class="scard__value">
+        @if (loadingOverview()) { <span class="skel skel-lg"></span> }
+        @else { {{ fmtNum(overview()?.total_producers ?? 0) }} }
+      </div>
+      <div class="scard__footer">
+        <span class="scard__sub">{{ 'admin.dashboard.stats.activeProducers' | translate }}</span>
+        <svg class="scard__arrow" viewBox="0 0 24 24" fill="currentColor"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6z"/></svg>
+      </div>
     </a>
 
-    <a routerLink="/admin/movies" class="stat-card">
-      <div class="stat-icon icon-teal">
-        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M18 4l2 4h-3l-2-4h-2l2 4h-3l-2-4H8l2 4H7L5 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V4h-4z"/></svg>
-      </div>
-      <div class="stat-body">
-        <div class="stat-value">
-          @if (loadingOverview()) { <span class="skel skel-sm"></span> }
-          @else { {{ fmtNum(overview()?.total_movies ?? 0) }} }
+    <!-- Movies -->
+    <a routerLink="/admin/movies" class="scard">
+      <div class="scard__head">
+        <span class="scard__label">{{ 'admin.dashboard.stats.movies' | translate }}</span>
+        <div class="scard__icon scard__icon--blue">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M18 4l2 4h-3l-2-4h-2l2 4h-3l-2-4H8l2 4H7L5 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V4h-4z"/></svg>
         </div>
-        <div class="stat-label">{{ 'admin.dashboard.stats.movies' | translate }}</div>
       </div>
-      <svg class="stat-arrow" viewBox="0 0 24 24" fill="currentColor"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6z"/></svg>
+      <div class="scard__value">
+        @if (loadingOverview()) { <span class="skel skel-lg"></span> }
+        @else { {{ fmtNum(overview()?.total_movies ?? 0) }} }
+      </div>
+      <div class="scard__footer">
+        @if (!loadingOverview() && (overview()?.pending_submissions ?? 0) > 0) {
+          <span class="scard__badge scard__badge--warn">
+            {{ overview()!.pending_submissions }} {{ 'admin.dashboard.stats.pendingReview' | translate }}
+          </span>
+        } @else {
+          <span class="scard__sub">{{ 'admin.dashboard.stats.totalMovies' | translate }}</span>
+        }
+        <svg class="scard__arrow" viewBox="0 0 24 24" fill="currentColor"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6z"/></svg>
+      </div>
     </a>
 
-    <a routerLink="/admin/withdrawals" class="stat-card" [class.stat-urgent]="pendingCount() > 0">
-      <div class="stat-icon" [class.icon-gold]="pendingCount() > 0" [class.icon-teal]="pendingCount() === 0">
-        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67V7z"/></svg>
-      </div>
-      <div class="stat-body">
-        <div class="stat-value">
-          @if (loadingTx()) { <span class="skel skel-sm"></span> }
-          @else { {{ pendingCount() }} }
+    <!-- Pending withdrawals -->
+    <a routerLink="/admin/withdrawals" class="scard" [class.scard--urgent]="pendingCount() > 0">
+      <div class="scard__head">
+        <span class="scard__label">{{ 'admin.dashboard.stats.pendingWithdrawals' | translate }}</span>
+        <div class="scard__icon" [class.scard__icon--gold]="pendingCount() > 0" [class.scard__icon--blue]="pendingCount() === 0">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M11.8 10.9c-2.27-.59-3-1.2-3-2.15 0-1.09 1.01-1.85 2.7-1.85 1.78 0 2.44.85 2.5 2.1h2.21c-.07-1.72-1.12-3.3-3.21-3.81V3h-3v2.16c-1.94.42-3.5 1.68-3.5 3.61 0 2.31 1.91 3.46 4.7 4.13 2.5.6 3 1.48 3 2.41 0 .69-.49 1.79-2.7 1.79-2.06 0-2.87-.92-2.98-2.1h-2.2c.12 2.19 1.76 3.42 3.68 3.83V21h3v-2.15c1.95-.37 3.5-1.5 3.5-3.55 0-2.84-2.43-3.81-4.7-4.4z"/></svg>
         </div>
-        <div class="stat-label">{{ 'admin.dashboard.stats.pendingWithdrawals' | translate }}</div>
       </div>
-      @if (pendingCount() > 0) {
-        <span class="stat-badge">{{ 'admin.dashboard.stats.actionNeeded' | translate }}</span>
-      } @else {
-        <svg class="stat-arrow" viewBox="0 0 24 24" fill="currentColor"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6z"/></svg>
-      }
+      <div class="scard__value">
+        @if (loadingTx()) { <span class="skel skel-lg"></span> }
+        @else { {{ pendingCount() }} }
+      </div>
+      <div class="scard__footer">
+        @if (pendingCount() > 0) {
+          <span class="scard__badge scard__badge--urgent">{{ 'admin.dashboard.stats.actionNeeded' | translate }}</span>
+        } @else {
+          <span class="scard__sub">{{ 'admin.dashboard.stats.noPendingWithdrawals' | translate }}</span>
+        }
+        <svg class="scard__arrow" viewBox="0 0 24 24" fill="currentColor"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6z"/></svg>
+      </div>
     </a>
 
-    <a routerLink="/admin/marketplace" class="stat-card" [class.stat-urgent]="(pendingVideos() ?? 0) > 0">
-      <div class="stat-icon" [class.icon-gold]="(pendingVideos() ?? 0) > 0" [class.icon-teal]="!pendingVideos()">
-        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M17 10.5V7c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h12c.55 0 1-.45 1-1v-3.5l4 4v-11l-4 4z"/></svg>
-      </div>
-      <div class="stat-body">
-        <div class="stat-value">
-          @if (loadingVideos()) { <span class="skel skel-sm"></span> }
-          @else { {{ pendingVideos() ?? '—' }} }
+    <!-- Pending talent videos -->
+    <a routerLink="/admin/marketplace" class="scard" [class.scard--urgent]="(overview()?.pending_talent_videos ?? 0) > 0">
+      <div class="scard__head">
+        <span class="scard__label">{{ 'admin.dashboard.stats.pendingTalentVideos' | translate }}</span>
+        <div class="scard__icon" [class.scard__icon--gold]="(overview()?.pending_talent_videos ?? 0) > 0" [class.scard__icon--blue]="!(overview()?.pending_talent_videos)">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M17 10.5V7c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h12c.55 0 1-.45 1-1v-3.5l4 4v-11l-4 4z"/></svg>
         </div>
-        <div class="stat-label">{{ 'admin.dashboard.stats.pendingTalentVideos' | translate }}</div>
       </div>
-      @if ((pendingVideos() ?? 0) > 0) {
-        <span class="stat-badge">{{ 'admin.dashboard.stats.actionNeeded' | translate }}</span>
-      } @else {
-        <svg class="stat-arrow" viewBox="0 0 24 24" fill="currentColor"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6z"/></svg>
-      }
+      <div class="scard__value">
+        @if (loadingOverview()) { <span class="skel skel-lg"></span> }
+        @else { {{ overview()?.pending_talent_videos ?? 0 }} }
+      </div>
+      <div class="scard__footer">
+        @if ((overview()?.pending_talent_videos ?? 0) > 0) {
+          <span class="scard__badge scard__badge--urgent">{{ 'admin.dashboard.stats.actionNeeded' | translate }}</span>
+        } @else {
+          <span class="scard__sub">{{ 'admin.dashboard.stats.reviewQueue' | translate }}</span>
+        }
+        <svg class="scard__arrow" viewBox="0 0 24 24" fill="currentColor"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6z"/></svg>
+      </div>
+    </a>
+
+    <!-- Actors with approved videos -->
+    <a routerLink="/admin/marketplace" class="scard">
+      <div class="scard__head">
+        <span class="scard__label">{{ 'admin.dashboard.stats.actorsWithVideos' | translate }}</span>
+        <div class="scard__icon scard__icon--teal">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+        </div>
+      </div>
+      <div class="scard__value">
+        @if (loadingOverview()) { <span class="skel skel-lg"></span> }
+        @else { {{ overview()?.actors_with_approved_videos ?? 0 }} }
+      </div>
+      <div class="scard__footer">
+        <span class="scard__sub">{{ 'admin.dashboard.stats.inDirectory' | translate }}</span>
+        <svg class="scard__arrow" viewBox="0 0 24 24" fill="currentColor"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6z"/></svg>
+      </div>
+    </a>
+
+    <!-- Marketplace payments confirmed -->
+    <div class="scard">
+      <div class="scard__head">
+        <span class="scard__label">{{ 'admin.dashboard.stats.marketplacePayments' | translate }}</span>
+        <div class="scard__icon scard__icon--teal">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M20 4H4c-1.11 0-2 .89-2 2v12c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V6c0-1.11-.89-2-2-2zm0 14H4v-6h16v6zm0-10H4V6h16v2z"/></svg>
+        </div>
+      </div>
+      <div class="scard__value">
+        @if (loadingOverview()) { <span class="skel skel-lg"></span> }
+        @else { {{ fmtNum(overview()?.marketplace_payments_confirmed ?? 0) }} }
+      </div>
+      <div class="scard__footer">
+        <span class="scard__sub">{{ 'admin.dashboard.stats.confirmedPayments' | translate }}</span>
+      </div>
+    </div>
+
+    <!-- Total views -->
+    <a routerLink="/admin/reports" class="scard">
+      <div class="scard__head">
+        <span class="scard__label">{{ 'admin.dashboard.stats.totalViews' | translate }}</span>
+        <div class="scard__icon scard__icon--purple">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg>
+        </div>
+      </div>
+      <div class="scard__value">
+        @if (loadingOverview()) { <span class="skel skel-lg"></span> }
+        @else { {{ fmtNum(overview()?.total_views ?? 0) }} }
+      </div>
+      <div class="scard__footer">
+        <span class="scard__sub">{{ 'admin.dashboard.stats.filmViews' | translate }}</span>
+        <svg class="scard__arrow" viewBox="0 0 24 24" fill="currentColor"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6z"/></svg>
+      </div>
     </a>
 
   </div>

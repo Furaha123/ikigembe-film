@@ -1,6 +1,7 @@
 import { Component, Input } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { HttpErrorResponse } from '@angular/common/http';
+import { provideRouter } from '@angular/router';
 import { provideTranslateService } from '@ngx-translate/core';
 import { of, throwError } from 'rxjs';
 import { AdminMarketplaceComponent } from './admin-marketplace.component';
@@ -9,7 +10,7 @@ import { VideoPlayerComponent } from '../../../shared/components/video-player/vi
 import { ActorVideo, CastingCall } from '../../../shared/models/marketplace.interface';
 
 @Component({ selector: 'app-video-player', template: '' })
-class PlayerStub { @Input() src = ''; @Input() autoplay = false; }
+class PlayerStubComponent { @Input() src = ''; @Input() autoplay = false; }
 
 const VIDEO: ActorVideo = {
   id: 4, actor_id: 1, title: 'Monologue', description: '', status: 'pending_review', reject_reason: null,
@@ -38,6 +39,7 @@ describe('AdminMarketplaceComponent (moderation)', () => {
   beforeEach(() => {
     svc = jasmine.createSpyObj<AdminMarketplaceService>('AdminMarketplaceService', [
       'listActorVideos', 'approveVideo', 'rejectVideo', 'removeVideo', 'listCastingCalls', 'removeCastingCall',
+      'approveCastingCall', 'rejectCastingCall',
     ]);
     svc.listActorVideos.and.returnValue(of(pageOf([VIDEO])));
     svc.listCastingCalls.and.returnValue(of(pageOf([CALL])));
@@ -48,11 +50,11 @@ describe('AdminMarketplaceComponent (moderation)', () => {
 
     TestBed.configureTestingModule({
       imports: [AdminMarketplaceComponent],
-      providers: [provideTranslateService(), { provide: AdminMarketplaceService, useValue: svc }],
+      providers: [provideRouter([]), provideTranslateService(), { provide: AdminMarketplaceService, useValue: svc }],
     });
     TestBed.overrideComponent(AdminMarketplaceComponent, {
       remove: { imports: [VideoPlayerComponent] },
-      add: { imports: [PlayerStub] },
+      add: { imports: [PlayerStubComponent] },
     });
     fixture = TestBed.createComponent(AdminMarketplaceComponent);
     fixture.detectChanges();
@@ -68,10 +70,13 @@ describe('AdminMarketplaceComponent (moderation)', () => {
     fixture.detectChanges();
     expect(svc.approveVideo).not.toHaveBeenCalled();
 
+    // The page also loads one count per status pill; only reloads of the open queue matter here.
+    const queueLoads = () => svc.listActorVideos.calls.allArgs().filter(([s]) => s === 'pending_review').length;
+    const before = queueLoads();
     button('admin.marketplace.approve', dialog()).click();
     fixture.detectChanges();
     expect(svc.approveVideo).toHaveBeenCalledOnceWith(4);
-    expect(svc.listActorVideos).toHaveBeenCalledTimes(2);
+    expect(queueLoads()).toBeGreaterThan(before);
     expect(dialog()).toBeNull();
   });
 
@@ -112,7 +117,8 @@ describe('AdminMarketplaceComponent (moderation)', () => {
   it('casting calls tab: removal requires a reason', () => {
     button('admin.marketplace.tabCasting').click();
     fixture.detectChanges();
-    expect(svc.listCastingCalls).toHaveBeenCalledWith('', 1);
+    // Calls waiting for a decision are listed first.
+    expect(svc.listCastingCalls).toHaveBeenCalledWith('pending_review', 1);
     expect(el().textContent).toContain('Lead role');
 
     button('admin.marketplace.remove').click();
@@ -123,5 +129,25 @@ describe('AdminMarketplaceComponent (moderation)', () => {
     typeReason('Spam');
     button('admin.marketplace.confirm').click();
     expect(svc.removeCastingCall).toHaveBeenCalledOnceWith(7, 'Spam');
+  });
+
+  it('casting call awaiting review: approve publishes, reject needs a reason', () => {
+    svc.listCastingCalls.and.returnValue(of(pageOf([{ ...CALL, status: 'pending_review' as const }])));
+    svc.approveCastingCall.and.returnValue(of({ ...CALL, status: 'published' as const }));
+    svc.rejectCastingCall.and.returnValue(of({ ...CALL, status: 'rejected' as const }));
+    button('admin.marketplace.tabCasting').click();
+    fixture.detectChanges();
+    expect(button('admin.marketplace.remove')).toBeUndefined();
+
+    button('admin.marketplace.approvePublish').click();
+    expect(svc.approveCastingCall).toHaveBeenCalledOnceWith(7);
+
+    button('admin.marketplace.reject').click();
+    fixture.detectChanges();
+    button('admin.marketplace.confirm').click();
+    expect(svc.rejectCastingCall).not.toHaveBeenCalled();
+    typeReason('Missing dates');
+    button('admin.marketplace.confirm').click();
+    expect(svc.rejectCastingCall).toHaveBeenCalledOnceWith(7, 'Missing dates');
   });
 });

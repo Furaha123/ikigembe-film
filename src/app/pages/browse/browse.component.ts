@@ -30,6 +30,9 @@ export class BrowseComponent implements OnInit {
   bannerTrailerUrl = '';
   bannerBackdropUrl = '';
   bannerId: number | null = null;
+  bannerReleaseDate = '';
+  bannerDuration = 0;
+  bannerRating = 0;
 
   movies: IVideoContent[] = [];
   popularMovies: IVideoContent[] = [];
@@ -57,7 +60,7 @@ export class BrowseComponent implements OnInit {
 
   ngOnInit(): void {
     this.seo.setTranslated({ titleKey: 'browse.seoTitle', descriptionKey: 'browse.seoDescription', noIndex: true });
-    forkJoin(this.sources).subscribe((res: any[]) => {
+    forkJoin(this.sources).subscribe(res => {
       const [movies, popular, nowPlaying, upcoming, topRated] = res;
       this.movies = movies.results as IVideoContent[];
       this.popularMovies = popular.results as IVideoContent[];
@@ -87,6 +90,9 @@ export class BrowseComponent implements OnInit {
     this.bannerOverview = movie.overview;
     this.bannerTrailerUrl = movie.trailer_url || '';
     this.bannerBackdropUrl = movie.backdrop_url || movie.thumbnail_url || '';
+    this.bannerReleaseDate = movie.release_date || '';
+    this.bannerDuration = movie.duration_minutes || 0;
+    this.bannerRating = movie.rating || 0;
   }
 
   signOut() {

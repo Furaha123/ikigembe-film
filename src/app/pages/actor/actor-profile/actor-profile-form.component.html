@@ -30,8 +30,25 @@
     </div>
 
     <div class="mk-field">
-      <label for="ap-location">{{ 'marketplace.profile.location' | translate }}</label>
-      <input id="ap-location" formControlName="location" />
+      <label for="ap-province">{{ 'marketplace.profile.province' | translate }}</label>
+      <select id="ap-province" formControlName="province" (change)="onProvinceChange()">
+        <option value="">{{ 'marketplace.profile.provinceUnset' | translate }}</option>
+        @for (p of provinces; track p.name) {
+          <option [value]="p.name">{{ p.name }}</option>
+        }
+      </select>
+      @if (fieldErrors()['province']) { <p class="mk-error">{{ fieldErrors()['province'] }}</p> }
+    </div>
+
+    <div class="mk-field">
+      <label for="ap-district">{{ 'marketplace.profile.district' | translate }}</label>
+      <select id="ap-district" formControlName="district" [attr.disabled]="!form.controls.province.value || null">
+        <option value="">{{ 'marketplace.profile.districtUnset' | translate }}</option>
+        @for (d of districts(); track d) {
+          <option [value]="d">{{ d }}</option>
+        }
+      </select>
+      @if (fieldErrors()['district']) { <p class="mk-error">{{ fieldErrors()['district'] }}</p> }
     </div>
 
     <div class="mk-field">

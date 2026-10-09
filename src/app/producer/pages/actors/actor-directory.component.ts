@@ -10,6 +10,7 @@ import { CastingService } from '../../services/casting.service';
 import {
   ActorGender, ActorSearchAccess, DirectoryActor, DirectoryFilters, Paginated, ShortlistEntry,
 } from '../../../shared/models/marketplace.interface';
+import { RWANDA_PROVINCES } from '../../../shared/models/rwanda-locations';
 import { marketplaceErrorMessage } from '../../../shared/utils/marketplace-error';
 
 type Tab = 'search' | 'shortlist';
@@ -64,7 +65,7 @@ export function visibleRange(res: Paginated<unknown>): { from: number; to: numbe
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule, RouterLink, RouterLinkActive, TranslatePipe],
   templateUrl: './actor-directory.component.html',
-  styleUrls: ['../../../shared/styles/marketplace-page.scss'],
+  styleUrls: ['../../../shared/styles/marketplace-page.scss', './actor-directory.component.scss'],
 })
 export class ActorDirectoryComponent implements OnInit, OnDestroy {
   private readonly fb = inject(FormBuilder);
@@ -75,6 +76,7 @@ export class ActorDirectoryComponent implements OnInit, OnDestroy {
   private readonly platformId = inject(PLATFORM_ID);
 
   readonly genders = GENDERS;
+  readonly provinces = RWANDA_PROVINCES;
 
   access        = signal<ActorSearchAccess | null>(null);
   accessLoading = signal(true);

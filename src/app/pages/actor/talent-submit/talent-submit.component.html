@@ -12,6 +12,9 @@
 
   <div class="mk-wizard">
     <app-wizard-steps [steps]="stepLabels" [current]="stepIndex()" />
+    @if (replaces()) {
+      <p class="mk-banner" role="status">{{ 'marketplace.talent.replacing' | translate }}</p>
+    }
 
     @switch (step()) {
       @case ('welcome') {

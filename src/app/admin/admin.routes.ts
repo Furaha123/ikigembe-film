@@ -23,6 +23,30 @@ export const adminRoutes: Routes = [
         loadComponent: () => import('./pages/users/admin-users.component').then(m => m.AdminUsersComponent),
       },
       {
+        path: 'payments',
+        loadComponent: () => import('./pages/payments/admin-payments.component').then(m => m.AdminPaymentsComponent),
+      },
+      {
+        path: 'film-requests',
+        loadComponent: () => import('./pages/film-requests/admin-film-requests.component').then(m => m.AdminFilmRequestsComponent),
+      },
+      {
+        path: 'transcodes',
+        loadComponent: () => import('./pages/transcodes/admin-transcodes.component').then(m => m.AdminTranscodesComponent),
+      },
+      {
+        path: 'platform-settings',
+        loadComponent: () => import('./pages/platform-settings/admin-platform-settings.component').then(m => m.AdminPlatformSettingsComponent),
+      },
+      {
+        path: 'finance',
+        loadComponent: () => import('./pages/finance/admin-finance.component').then(m => m.AdminFinanceComponent),
+      },
+      {
+        path: 'audit-log',
+        loadComponent: () => import('./pages/audit-log/admin-audit-log.component').then(m => m.AdminAuditLogComponent),
+      },
+      {
         path: 'producers',
         loadComponent: () => import('./pages/producers/admin-producers.component').then(m => m.AdminProducersComponent),
       },
@@ -62,8 +86,20 @@ export const adminRoutes: Routes = [
         loadComponent: () => import('./pages/marketplace/admin-marketplace.component').then(m => m.AdminMarketplaceComponent),
       },
       {
+        path: 'marketplace-settings',
+        loadComponent: () => import('./pages/marketplace-settings/admin-marketplace-settings.component').then(m => m.AdminMarketplaceSettingsComponent),
+      },
+      {
         path: 'reports',
         loadComponent: () => import('./pages/reports/admin-reports.component').then(m => m.AdminReportsComponent),
+      },
+      {
+        path: 'abuse-reports',
+        loadComponent: () => import('./pages/abuse-reports/admin-abuse-reports.component').then(m => m.AdminAbuseReportsComponent),
+      },
+      {
+        path: 'reports/monthly',
+        loadComponent: () => import('./pages/monthly-reports/admin-monthly-reports.component').then(m => m.AdminMonthlyReportsComponent),
       },
       {
         path: 'settings',

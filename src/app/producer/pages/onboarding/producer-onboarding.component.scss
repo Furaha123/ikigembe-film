@@ -39,13 +39,6 @@ $red:    #f87171;
   p  { font-size: 0.82rem; color: $muted; margin: 0; line-height: 1.6; }
 }
 
-.skip-all-btn {
-  background: none; border: none; color: $muted;
-  font-size: 0.78rem; cursor: pointer; padding: 0;
-  text-align: left; margin-top: auto;
-  transition: color 0.15s;
-  &:hover { color: #999; }
-}
 
 /* ── Right form panel ── */
 .ob-form-panel {
@@ -220,7 +213,6 @@ $red:    #f87171;
   }
 
   .ob-brand-text { display: none; }
-  .skip-all-btn { margin-top: 0; margin-left: auto; white-space: nowrap; }
 
   .ob-form-wrap { padding: 1.5rem 1.25rem; }
   .step-title { font-size: 1.35rem; }

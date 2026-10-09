@@ -10,6 +10,7 @@ import {
   viewChild,
   inject,
 } from '@angular/core';
+import { DecimalPipe } from '@angular/common';
 import { Router } from '@angular/router';
 import { TranslatePipe } from '@ngx-translate/core';
 import Swiper from 'swiper';
@@ -21,7 +22,7 @@ import { animate, style, transition, trigger } from '@angular/animations';
   selector: 'app-movie-carousel',
   templateUrl: './movie-carousel.component.html',
   styleUrls: ['./movie-carousel.component.scss'],
-  imports: [TranslatePipe],
+  imports: [TranslatePipe, DecimalPipe],
   encapsulation: ViewEncapsulation.None,
   animations: [
     trigger('fade', [

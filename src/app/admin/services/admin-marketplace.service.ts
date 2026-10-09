@@ -9,6 +9,21 @@ import { MarketplaceAccessService } from '../../core/access/marketplace-access.s
 
 const BASE = `${environment.apiUrl}/marketplace/admin`;
 
+export interface MarketplaceSettings {
+  actor_video_fee_under_30: number;
+  actor_video_fee_30_plus:  number;
+  casting_announcement_fee: number;
+  actor_search_fee:         number;
+  actor_search_access_days: number;
+  /** Talent-video upload limits checked by the server after upload. */
+  talent_video_max_mb: number;
+  talent_video_max_seconds: number;
+  updated_at:   string | null;
+  updated_by:   number | null;
+}
+
+export type MarketplaceSettingsPayload = Omit<MarketplaceSettings, 'updated_at' | 'updated_by'>;
+
 /** Admin moderation of actor talent videos and casting calls (gated by the access map like the rest of the marketplace). */
 @Injectable({ providedIn: 'root' })
 export class AdminMarketplaceService {
@@ -40,8 +55,28 @@ export class AdminMarketplaceService {
     return this.access.request('moderation', () => this.http.get<Paginated<CastingCall>>(`${BASE}/casting-calls/`, { params }));
   }
 
+  /** Publishes a paid call awaiting review (400 if unpaid, past its deadline or not awaiting review). */
+  approveCastingCall(id: number): Observable<CastingCall> {
+    return this.access.request('moderation', () => this.http.post<CastingCall>(`${BASE}/casting-calls/${id}/approve/`, {}));
+  }
+
+  /** Reason required; the producer can edit and resend without paying again. */
+  rejectCastingCall(id: number, reason: string): Observable<CastingCall> {
+    return this.access.request('moderation', () => this.http.post<CastingCall>(`${BASE}/casting-calls/${id}/reject/`, { reason }));
+  }
+
   /** Reason required. */
   removeCastingCall(id: number, reason: string): Observable<AdminActionResponse> {
     return this.access.request('moderation', () => this.http.post<AdminActionResponse>(`${BASE}/casting-calls/${id}/remove/`, { reason }));
+  }
+
+  // ── Marketplace fee / access settings (admin-only, no marketplace guard) ──
+
+  getSettings(): Observable<MarketplaceSettings> {
+    return this.http.get<MarketplaceSettings>(`${BASE}/settings/`);
+  }
+
+  updateSettings(data: MarketplaceSettingsPayload): Observable<MarketplaceSettings> {
+    return this.http.put<MarketplaceSettings>(`${BASE}/settings/`, data);
   }
 }

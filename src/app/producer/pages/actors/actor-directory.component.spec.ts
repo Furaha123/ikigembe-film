@@ -74,7 +74,7 @@ describe('ActorDirectoryComponent (gated directory)', () => {
   it('with a pass shows the expiry prominently and lists actors with contact details', () => {
     casting.getSearchAccess.and.returnValue(of({ active: true, expires_at: '2030-01-01T00:00:00Z' }));
     create();
-    expect(el().querySelector('.mk-banner')?.textContent).toContain('2030');
+    expect(el().querySelector('.dir-banner[role="status"]')?.textContent).toContain('2030');
     expect(el().textContent).toContain('aline@example.rw');
   });
 
@@ -104,7 +104,7 @@ describe('ActorDirectoryComponent (gated directory)', () => {
     casting.getSearchAccess.and.returnValue(of({ active: true, expires_at: '2030-01-01T00:00:00Z' }));
     casting.addToShortlist.and.returnValue(throwError(() => new HttpErrorResponse({ status: 409 })));
     create();
-    const btn = [...el().querySelectorAll<HTMLButtonElement>('.mk-grid .mk-btn')].find(b => b.textContent?.includes('marketplace.directory.shortlist'))!;
+    const btn = el().querySelector<HTMLButtonElement>('button[aria-label="marketplace.directory.shortlist"]')!;
     btn.click();
     expect(casting.addToShortlist).toHaveBeenCalledOnceWith(5);
     expect(casting.getShortlist).toHaveBeenCalledTimes(2);

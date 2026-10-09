@@ -1,144 +1,336 @@
+$gold: #C5A253;
+
+// ── Entrance animations ───────────────────────────────
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(24px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes scaleIn {
+  from { transform: scale(1.04); opacity: 0.85; }
+  to   { transform: scale(1);    opacity: 1; }
+}
+
+// ── Host ──────────────────────────────────────────────
 :host {
   display: block;
   position: relative;
+  height: 85vh;
+  min-height: 540px;
+  max-height: 900px;
   overflow: hidden;
-  z-index: 1;
+  background: #0a0a0f;
 }
 
-.video-bg {
+// ── Video background ──────────────────────────────────
+.banner-video {
   position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 100vw;
-  height: 100vh;
-  min-width: 177.78vh;
-  min-height: 56.25vw;
-  transform: translate(-50%, -50%);
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center top;
   pointer-events: none;
   border: none;
-  object-fit: cover;
+  animation: scaleIn 1.2s ease-out forwards;
 }
 
-.banner {
-  height: 100vh;
-  position: relative;
-  display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
+// ── Static backdrop ───────────────────────────────────
+.banner-backdrop {
+  position: absolute;
+  inset: 0;
   background-size: cover;
   background-position: center top;
   background-repeat: no-repeat;
+  animation: scaleIn 1s ease-out forwards;
+}
+
+// ── Gradient overlays ─────────────────────────────────
+.banner-grad {
+  position: absolute;
+  pointer-events: none;
+  z-index: 1;
+}
+
+// Bottom: main readability gradient + page blend
+.banner-grad--bottom {
+  left: 0; right: 0; bottom: 0;
+  height: 75%;
+  background: linear-gradient(
+    to top,
+    #0a0a0f        0%,
+    rgba(10,10,15,0.88) 30%,
+    rgba(10,10,15,0.5)  55%,
+    rgba(10,10,15,0.1)  80%,
+    transparent    100%
+  );
+}
+
+// Left: text legibility (subtler than before)
+.banner-grad--left {
+  top: 0; left: 0; bottom: 0;
+  width: 60%;
+  background: linear-gradient(
+    to right,
+    rgba(10,10,15,0.72) 0%,
+    rgba(10,10,15,0.3)  50%,
+    transparent         100%
+  );
+}
+
+// Top: subtle dark tint so the header nav stays readable
+.banner-grad--top {
+  top: 0; left: 0; right: 0;
+  height: 200px;
+  background: linear-gradient(
+    to bottom,
+    rgba(0,0,0,0.45) 0%,
+    transparent      100%
+  );
+}
+
+// ── Banner body (full-size positioning layer) ─────────
+.banner-body {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+}
+
+// ── Content block ─────────────────────────────────────
+.banner-content {
+  padding: 0 4rem 5.5rem;
+  max-width: 44%;
+  min-width: 320px;
+}
+
+// ── Metadata chips ────────────────────────────────────
+.banner-meta {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin-bottom: 0.9rem;
+  animation: fadeUp 0.6s ease-out 0.1s both;
+}
+
+.meta-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.2rem;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: #94a3b8;
+  letter-spacing: 0.03em;
+
+  &.meta-chip--rating {
+    color: #e8c87a;
+    svg { color: $gold; }
+  }
+}
+
+.meta-sep {
+  color: #4a5568;
+  font-size: 0.7rem;
+}
+
+// ── Title ─────────────────────────────────────────────
+.banner-title {
+  font-size: clamp(2.2rem, 5vw, 4rem);
+  font-weight: 900;
+  color: #fff;
+  line-height: 1.05;
+  letter-spacing: -0.025em;
+  margin: 0 0 1rem;
+  text-shadow: 0 2px 20px rgba(0,0,0,0.5);
+  animation: fadeUp 0.65s ease-out 0.2s both;
+}
+
+// ── Overview with bottom fade ─────────────────────────
+.banner-overview-wrap {
+  position: relative;
+  margin-bottom: 1.75rem;
+  animation: fadeUp 0.7s ease-out 0.32s both;
+}
+
+.banner-overview {
+  font-size: clamp(0.85rem, 1.1vw, 1rem);
+  line-height: 1.65;
+  color: #cbd5e1;
+  margin: 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 4;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-shadow: 0 1px 8px rgba(0,0,0,0.4);
+}
+
+// Soft gradient mask at bottom of description
+.overview-fade {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 2.5rem;
+  background: linear-gradient(transparent, rgba(10,10,15,0.75));
+  pointer-events: none;
+}
+
+// ── Action buttons ────────────────────────────────────
+.banner-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  flex-wrap: wrap;
+  animation: fadeUp 0.7s ease-out 0.44s both;
+
+  button {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.7rem 1.75rem;
+    font-size: 0.95rem;
+    font-weight: 700;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    transition: transform 0.15s ease, opacity 0.15s ease, background 0.2s ease;
+    white-space: nowrap;
+
+    &:hover  { transform: scale(1.03); }
+    &:active { transform: scale(0.98); }
+    &:focus-visible { outline: 2px solid $gold; outline-offset: 3px; }
+
+    svg { width: 20px; height: 20px; flex-shrink: 0; }
+  }
+}
+
+.btn-play {
+  background: #fff;
+  color: #0a0a0a;
+
+  &:hover { background: rgba(255,255,255,0.88); }
+}
+
+.btn-info {
+  background: rgba(255,255,255,0.14);
+  color: #fff;
+  border: 1px solid rgba(255,255,255,0.2);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+
+  &:hover { background: rgba(255,255,255,0.22); }
+}
+
+// ── Mute control ──────────────────────────────────────
+.banner-controls {
+  padding: 0 2.5rem 5.5rem;
+  z-index: 2;
+  animation: fadeIn 1s ease-out 0.6s both;
+}
+
+.btn-mute {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  border: 1.5px solid rgba(255,255,255,0.5);
+  background: rgba(0,0,0,0.4);
+  backdrop-filter: blur(8px);
+  color: #fff;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: border-color 0.2s, background 0.2s;
+
+  svg { width: 18px; height: 18px; }
+
+  &:hover {
+    border-color: #fff;
+    background: rgba(0,0,0,0.6);
+  }
+
+  &:focus-visible { outline: 2px solid $gold; outline-offset: 3px; }
+}
+
+// ── Responsive ────────────────────────────────────────
+@media (max-width: 900px) {
+  :host {
+    height: 75vh;
+    min-height: 480px;
+  }
 
   .banner-content {
-    padding: 0 4rem 8rem;
-    color: #fff;
-    position: relative;
-    z-index: 1;
-    max-width: 40%;
+    padding: 0 2.5rem 4rem;
+    max-width: 70%;
+  }
 
-    h1 {
-      font-size: 3rem;
-      font-weight: 700;
-      text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.6);
-    }
+  .banner-controls {
+    padding: 0 2rem 4rem;
+  }
+}
 
-    .overview {
-      margin: 0.75rem 0 1.25rem;
-      font-size: 0.95rem;
-      line-height: 1.4;
-      color: #e5e5e5;
-      text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.6);
-      display: -webkit-box;
-      -webkit-line-clamp: 3;
-      -webkit-box-orient: vertical;
-      overflow: hidden;
-    }
+@media (max-width: 640px) {
+  :host {
+    height: 100svh;
+    max-height: 700px;
+  }
 
-    .actions {
-      display: flex;
-      gap: 0.75rem;
+  .banner-body {
+    align-items: flex-end;
+    justify-content: flex-end;
+    flex-direction: column;
+  }
 
-      button {
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-        padding: 0.5rem 1.5rem;
-        font-size: 1rem;
-        font-weight: 600;
-        border-radius: 4px;
-        border: none;
-        cursor: pointer;
-        transition: background-color 0.2s;
-      }
+  .banner-content {
+    padding: 0 1.25rem 5rem;
+    max-width: 100%;
+    width: 100%;
+  }
 
-      .btn-play {
-        background-color: #fff;
-        color: #000;
+  .banner-title {
+    font-size: clamp(1.8rem, 7vw, 2.4rem);
+    -webkit-line-clamp: 2;
+  }
 
-        &:hover {
-          background-color: rgba(255, 255, 255, 0.75);
-        }
-      }
+  .banner-overview {
+    font-size: 0.85rem;
+    -webkit-line-clamp: 3;
+  }
 
-      .btn-info {
-        background-color: rgba(109, 109, 110, 0.7);
-        color: #fff;
+  .banner-actions {
+    gap: 0.65rem;
 
-        &:hover {
-          background-color: rgba(109, 109, 110, 0.4);
-        }
-      }
+    button {
+      padding: 0.65rem 1.25rem;
+      font-size: 0.88rem;
     }
   }
 
-  .banner-right {
-    display: flex;
-    align-items: center;
-    padding: 0 2.5rem 8rem;
-    z-index: 1;
-
-    .btn-mute {
-      width: 40px;
-      height: 40px;
-      border-radius: 50%;
-      border: 2px solid rgba(255, 255, 255, 0.7);
-      background: rgba(0, 0, 0, 0.4);
-      color: #fff;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: border-color 0.2s;
-
-      &:hover {
-        border-color: #fff;
-      }
-    }
-  }
-
-  // Bottom fade to blend into content below
-  &::after {
-    content: '';
+  .banner-controls {
     position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    height: 200px;
-    background: linear-gradient(transparent, #141414);
-    z-index: 0;
-    pointer-events: none;
+    bottom: 5rem;
+    right: 1.25rem;
+    padding: 0;
   }
 
-  // Left side gradient for text readability
-  &::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    bottom: 0;
-    width: 50%;
-    background: linear-gradient(to right, rgba(0, 0, 0, 0.7), transparent);
-    z-index: 0;
-    pointer-events: none;
+  // Left gradient wider on mobile for full readability
+  .banner-grad--left {
+    width: 100%;
+    background: linear-gradient(
+      to top,
+      rgba(10,10,15,0.3) 0%,
+      transparent 100%
+    );
   }
+}
+
+@media (max-width: 380px) {
+  .banner-content { padding: 0 1rem 4.5rem; }
 }

@@ -60,3 +60,24 @@ describe('resendCooldownLabel', () => {
     expect(resendCooldownLabel(61)).toEqual({ key: 'auth.common.resendInMinutes', n: 2 });
   });
 });
+
+describe('AuthService.changePassword', () => {
+  let service: AuthService;
+  let http: HttpTestingController;
+
+  beforeEach(() => {
+    localStorage.clear();
+    TestBed.configureTestingModule({ providers: [provideHttpClient(), provideHttpClientTesting()] });
+    service = TestBed.inject(AuthService);
+    http = TestBed.inject(HttpTestingController);
+  });
+  afterEach(() => { http.verify(); localStorage.clear(); });
+
+  it('sends the confirmation and switches to the new session the API returns', () => {
+    service.changePassword('OldPass1!', 'NewPass2!', 'NewPass2!').subscribe();
+    const req = http.expectOne(`${environment.apiUrl}/auth/change-password/`);
+    expect(req.request.body).toEqual({ current_password: 'OldPass1!', new_password: 'NewPass2!', confirm_password: 'NewPass2!' });
+    req.flush({ access: 'new-access', user: { first_name: 'A', last_name: 'B', role: 'Viewer' } });
+    expect(service.getAccessToken()).toBe('new-access');
+  });
+});

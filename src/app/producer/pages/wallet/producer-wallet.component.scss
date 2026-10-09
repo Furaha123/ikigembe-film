@@ -107,7 +107,7 @@ $muted: #888;
   gap: 0.4rem;
   margin-bottom: 1.1rem;
 
-  label { font-size: 0.8rem; font-weight: 500; color: rgba(255,255,255,0.6); letter-spacing: 0.04em; text-transform: uppercase; }
+  label, .field-label { font-size: 0.8rem; font-weight: 500; color: rgba(255,255,255,0.6); letter-spacing: 0.04em; text-transform: uppercase; }
 
   input, select {
     background: #1a1a1a;

@@ -11,9 +11,9 @@ import { HeaderComponent } from '../../core/components/header/header.component';
 import { FooterComponent } from '../../core/components/footer/footer.component';
 
 @Component({ selector: 'app-header', template: '' })
-class HeaderStub { @Input() userImg = ''; }
+class HeaderStubComponent { @Input() userImg = ''; }
 @Component({ selector: 'app-footer', template: '' })
-class FooterStub {}
+class FooterStubComponent {}
 
 const DEP = '11111111-2222-3333-4444-555555555555';
 const status = (over: Partial<PaymentStatusResponse>): PaymentStatusResponse => ({
@@ -47,7 +47,7 @@ describe('PaymentReturnComponent', () => {
     });
     TestBed.overrideComponent(PaymentReturnComponent, {
       remove: { imports: [HeaderComponent, FooterComponent] },
-      add: { imports: [HeaderStub, FooterStub] },
+      add: { imports: [HeaderStubComponent, FooterStubComponent] },
     });
   });
 

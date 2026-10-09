@@ -14,6 +14,9 @@ export interface DashboardOverview {
   total_movies: number;
   total_views: number;
   pending_submissions: number;
+  actors_with_approved_videos: number;
+  pending_talent_videos: number;
+  marketplace_payments_confirmed: number;
   financials: DashboardFinancials;
 }
 
@@ -50,7 +53,12 @@ export interface ProducerItem {
   total_withdrawn: number;
   is_active: boolean;
   date_joined: string;
-  status?: 'pending' | 'approved' | 'suspended';
+  /** Server-computed: suspended (account) wins, then whether the one-time setup is finished. */
+  status?: ProducerListStatus;
+  /** Setup step 1: the producer profile (onboarding) is completed. */
+  profile_complete?: boolean;
+  /** Setup step 2: an active signed distribution agreement. */
+  contract_signed?: boolean;
   suspension_reason?: string | null;
   country?: string | null;
   bio?: string | null;
@@ -110,9 +118,20 @@ export interface ProducerContractItem {
   created_at: string;
 }
 
+export type ProducerListStatus = 'ready' | 'incomplete' | 'suspended';
+
+/** GET /admin/dashboard/producers/<id>/documents/ — onboarding details and per-film copyright proofs. */
 export interface ProducerDocuments {
-  copyright_url: string | null;
-  id_url: string | null;
+  profile: {
+    studio_name: string; country: string; bio: string; experience: string; address: string; copyright_code: string;
+  };
+  copyright_documents: {
+    movie_id: number;
+    title: string;
+    approval_status: string;
+    /** Short-lived private link, or null when the film has no document. */
+    url: string | null;
+  }[];
 }
 
 export interface PaymentItem {

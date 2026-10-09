@@ -5,7 +5,9 @@
  * role-restricted `/api/marketplace/` endpoint read from FEATURES, so the rules
  * below mirror the backend's permission classes:
  * - actor endpoints: role === 'Viewer' and account_status === 'active'
- * - producer endpoints: role === 'Producer' and account_status === 'active'
+ * - producer endpoints: role === 'Producer', account_status === 'active' and a finished
+ *   setup: profile completed and distribution agreement signed (IsReadyProducer). There is
+ *   no admin approval; until setup is done producers only get their dashboard and profile
  * - published casting calls: any signed-in account
  * - moderation (`/api/marketplace/admin/...`): admins
  * Actors are Viewer accounts; there is no Actor role. Admins only moderate:
@@ -14,12 +16,17 @@
 
 export type Role = 'Viewer' | 'Producer' | 'Admin';
 
-/** The backend's `account_status` values. */
+/** The backend's `account_status` values (sign-in state). */
 export type AccountStatus = 'active' | 'pending_approval' | 'suspended';
 
 export interface MarketplaceUser {
   role: Role;
   accountStatus: AccountStatus;
+  /**
+   * Producers only: profile completed and agreement signed (the API's `producer_setup.ready`).
+   * Missing means not known yet (treated as not ready).
+   */
+  producerReady?: boolean;
 }
 
 export type MarketplaceFeatureKey =
@@ -51,6 +58,8 @@ export interface MarketplaceFeature {
   roles: readonly Role[];
   /** The backend refuses accounts whose status isn't `active`. */
   requiresActive?: boolean;
+  /** Producer features: the backend also requires a finished producer setup. */
+  requiresReadyProducer?: boolean;
   /** Shown in the marketplace tabs (moderation lives in the admin dashboard instead). */
   tab?: boolean;
   /** Highlight the tab only on its own URL (another tab lives below it). */
@@ -65,12 +74,12 @@ export const MARKETPLACE_FEATURES: readonly MarketplaceFeature[] = [
   { key: 'talent-videos',        labelKey: 'marketplace.nav.videos',         route: '/actor/videos',           icon: 'videos',       roles: ['Viewer'],   requiresActive: true, tab: true },
   { key: 'submit-talent',        labelKey: 'marketplace.nav.submitTalent',   route: '/actor/talent/new',                             roles: ['Viewer'],   requiresActive: true },
   { key: 'apply-casting',        labelKey: 'marketplace.casting.apply',                                                                roles: ['Viewer'],   requiresActive: true },
-  { key: 'find-actors',          labelKey: 'marketplace.nav.findActors',     route: '/producer/actors',        icon: 'actors',       roles: ['Producer'], requiresActive: true, tab: true },
-  { key: 'shortlist',            labelKey: 'marketplace.nav.shortlist',      route: '/producer/shortlist',     icon: 'shortlist',    roles: ['Producer'], requiresActive: true, tab: true },
-  { key: 'post-casting',         labelKey: 'marketplace.nav.postCasting',    route: '/producer/casting/new',   icon: 'post',         roles: ['Producer'], requiresActive: true, tab: true },
-  { key: 'my-casting-calls',     labelKey: 'marketplace.nav.myCastingCalls', route: '/producer/casting',       icon: 'my-casting',   roles: ['Producer'], requiresActive: true, tab: true, exact: true },
-  { key: 'casting-applications', labelKey: 'marketplace.nav.castingApplications', route: '/producer/applications', icon: 'inbox',   roles: ['Producer'], requiresActive: true, tab: true },
-  { key: 'my-access',            labelKey: 'marketplace.nav.myAccess',       route: '/producer/access',        icon: 'access',       roles: ['Producer'], requiresActive: true, tab: true },
+  { key: 'find-actors',          labelKey: 'marketplace.nav.findActors',     route: '/producer/actors',        icon: 'actors',       roles: ['Producer'], requiresActive: true, requiresReadyProducer: true, tab: true },
+  { key: 'shortlist',            labelKey: 'marketplace.nav.shortlist',      route: '/producer/shortlist',     icon: 'shortlist',    roles: ['Producer'], requiresActive: true, requiresReadyProducer: true, tab: true },
+  { key: 'post-casting',         labelKey: 'marketplace.nav.postCasting',    route: '/producer/casting/new',   icon: 'post',         roles: ['Producer'], requiresActive: true, requiresReadyProducer: true, tab: true },
+  { key: 'my-casting-calls',     labelKey: 'marketplace.nav.myCastingCalls', route: '/producer/casting',       icon: 'my-casting',   roles: ['Producer'], requiresActive: true, requiresReadyProducer: true, tab: true, exact: true },
+  { key: 'casting-applications', labelKey: 'marketplace.nav.castingApplications', route: '/producer/applications', icon: 'inbox',   roles: ['Producer'], requiresActive: true, requiresReadyProducer: true, tab: true },
+  { key: 'my-access',            labelKey: 'marketplace.nav.myAccess',       route: '/producer/access',        icon: 'access',       roles: ['Producer'], requiresActive: true, requiresReadyProducer: true, tab: true },
   { key: 'moderation',           labelKey: 'admin.nav.marketplace',          route: '/admin/marketplace',      icon: 'moderation',   roles: ['Admin'] },
 ];
 
@@ -85,10 +94,16 @@ export function isActiveAccount(user: MarketplaceUser): boolean {
   return user.accountStatus === 'active';
 }
 
+/** Whether a producer finished setup (profile + signed agreement) and may use producer services. */
+export function isReadyProducer(user: MarketplaceUser | null): boolean {
+  return !!user && user.role === 'Producer' && isActiveAccount(user) && user.producerReady === true;
+}
+
 /** Whether `user` (null when signed out) may open the feature or call its endpoints. */
 export function can(user: MarketplaceUser | null, key: MarketplaceFeatureKey): boolean {
   const feature = BY_KEY.get(key);
   if (!user || !feature || !feature.roles.includes(user.role)) return false;
+  if (feature.requiresReadyProducer && user.role === 'Producer' && !isReadyProducer(user)) return false;
   return !feature.requiresActive || isActiveAccount(user);
 }
 
@@ -104,13 +119,17 @@ export function marketplaceHomeFor(user: MarketplaceUser | null): string {
   return marketplaceTabsFor(user)[0]?.route ?? '/browse';
 }
 
+export type InactiveNotice = 'suspended' | 'notActive' | 'producerSetup';
+
 /**
  * The notice to show instead of features that would all answer 403, or null.
  * Admins aren't subject to the status check.
  */
-export function inactiveNoticeFor(user: MarketplaceUser | null): 'suspended' | 'notActive' | null {
-  if (!user || user.role === 'Admin' || isActiveAccount(user)) return null;
-  return user.accountStatus === 'suspended' ? 'suspended' : 'notActive';
+export function inactiveNoticeFor(user: MarketplaceUser | null): InactiveNotice | null {
+  if (!user || user.role === 'Admin') return null;
+  if (!isActiveAccount(user)) return user.accountStatus === 'suspended' ? 'suspended' : 'notActive';
+  if (user.role === 'Producer' && !isReadyProducer(user)) return 'producerSetup';
+  return null;
 }
 
 /** Role as the marketplace sees it: staff accounts are admins, as on the backend. */

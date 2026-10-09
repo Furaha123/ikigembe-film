@@ -98,10 +98,31 @@ export interface PaymentHistoryItem {
   /** null for non-movie purposes. */
   movie_id: number | null;
   movie_title: string | null;
+  /** Server-written label, e.g. "Film: Umurage" or "Actor search access until 12 Nov 2026". */
+  item?: string;
   amount: number;
   currency: string;
   status: string;
   created_at: string;
+}
+
+/** GET /payments/<deposit_id>/receipt/ — owner (or admin) only. */
+export interface PaymentReceipt {
+  reference: string;
+  item: string;
+  purpose: PaymentPurpose;
+  amount: number;
+  currency: string;
+  status: string;
+  status_label: string;
+  failure_reason: string | null;
+  method: string;
+  /** Masked (last 4 digits). */
+  payer_phone: string;
+  created_at: string;
+  completed_at: string | null;
+  date: string;
+  refunded_amount: number;
 }
 
 const PURCHASED_KEY = 'purchased_movies';
@@ -239,6 +260,10 @@ export class PaymentService {
     return this.http.get<{ count: number; results: PaymentHistoryItem[] }>(
       `${environment.apiUrl}/payments/history/`
     );
+  }
+
+  getReceipt(depositId: string): Observable<PaymentReceipt> {
+    return this.http.get<PaymentReceipt>(`${environment.apiUrl}/payments/${encodeURIComponent(depositId)}/receipt/`);
   }
 
   hasPurchased(movieId: number): boolean {

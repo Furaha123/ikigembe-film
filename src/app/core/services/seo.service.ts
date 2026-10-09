@@ -64,7 +64,7 @@ export class SeoService {
     // Canonical URLs drop query strings and fragments (e.g. ?returnUrl=…).
     const path       = routeUrl.split(/[?#]/)[0];
     const url        = `${BASE_URL}${path}`;
-    const privatePage = /^\/(browse|movie|profile|my-list|actor|casting|producer|admin|login|register|forgot-password|reset-password|verify-email)(\/|$)/.test(path);
+    const privatePage = /^\/(browse|profile|my-list|actor|casting|producer|admin|login|register|forgot-password|reset-password|verify-email)(\/|$)/.test(path);
 
     this.title.setTitle(fullTitle);
 
@@ -106,7 +106,7 @@ export class SeoService {
       dateCreated: movie.release_date ?? '',
       duration: movie.duration_minutes ? `PT${movie.duration_minutes}M` : undefined,
       genre: movie.genre ?? '',
-      url: `${BASE_URL}/preview/${movie.id}`,
+      url: `${BASE_URL}/movie/${movie.id}`,
     };
     this.injectJsonLd(schema);
   }

@@ -1,3 +1,4 @@
+import { RouterLink } from '@angular/router';
 import { Component, signal, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { TranslatePipe } from '@ngx-translate/core';
@@ -24,6 +25,7 @@ type RangePreset  = '7D' | '14D' | '28D' | '1M' | '3M' | '6M' | '1Y';
     PayingUsersComponent,
     DatePickerComponent,
     TranslatePipe,
+    RouterLink,
   ],
   templateUrl: './admin-reports.component.html',
   styleUrl: './admin-reports.component.scss',

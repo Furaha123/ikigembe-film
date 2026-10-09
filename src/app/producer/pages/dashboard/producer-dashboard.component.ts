@@ -129,7 +129,7 @@ export class ProducerDashboardComponent implements OnInit, AfterViewInit, OnDest
 
   /**
    * The backend deducts exactly `amount` from the balance. It used to show "+30% tax" on top,
-   * which no backend path does; any tax is reported on the withdrawal record (tax_amount).
+   * which no backend path does. Tax is paid by the platform from its share, never from the producer's.
    */
   taxBreakdown = computed(() => {
     const amount = this.withdrawAmount();
@@ -166,12 +166,12 @@ export class ProducerDashboardComponent implements OnInit, AfterViewInit, OnDest
 
     this.producerService.getMovies().subscribe({
       next: (m) => this.movies.set(m),
-      error: () => {},
+      error: () => { /* the film list stays empty */ },
     });
 
     this.contractService.getStatus().subscribe({
       next: (s) => this.contractStatus.set(s),
-      error: () => {},
+      error: () => { /* no contract banner without a status */ },
     });
   }
 
@@ -428,7 +428,7 @@ export class ProducerDashboardComponent implements OnInit, AfterViewInit, OnDest
     const fill   = metric === 'watchTime' ? 'rgba(45,212,191,0.12)' : 'rgba(200,168,75,0.12)';
     const trend  = this.trendData();
 
-    let rawValues = trend.map(r =>
+    const rawValues = trend.map(r =>
       metric === 'earnings'  ? r.earnings  :
       metric === 'watchTime' ? r.watchTime :
       r.views

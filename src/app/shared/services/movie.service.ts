@@ -1,13 +1,13 @@
 import { Injectable, inject } from '@angular/core';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { environment } from '../../../environments/environment';
 import { DeviceIdService } from '../../core/services/device-id.service';
-import { of } from 'rxjs';
 import {
   MovieListResponse,
   MovieDetailResponse,
-  MovieCreditsResponse,
-  SimilarMoviesResponse,
+  CatalogFilters,
+  CatalogPage,
+  GenresResponse,
   ProducersListResponse,
   ProducerMoviesResponse,
   MoviePreview,
@@ -16,6 +16,7 @@ import {
   WatchProgressPayload,
   WatchProgressResponse,
 } from '../models/movie-api.interface';
+import { IVideoContent } from '../models/video-content.interface';
 
 @Injectable({
   providedIn: 'root'
@@ -57,12 +58,27 @@ export class MovieService {
     return this.http.get<MoviePreview>(`${this.baseUrl}/${id}/preview/`);
   }
 
-  getMovieCredits(_id: number) {
-    return of<MovieCreditsResponse>({ cast: [] });
+  /** Public catalog: search, genre, language, year, availability, sort; server-side paging (≤ 48). */
+  getCatalog(filters: CatalogFilters) {
+    let params = new HttpParams();
+    for (const [key, value] of Object.entries(filters)) {
+      if (value !== undefined && value !== null && value !== '') params = params.set(key, String(value));
+    }
+    return this.http.get<CatalogPage>(`${this.baseUrl}/catalog/`, { params });
   }
 
-  getSimilarMovies(_id: number) {
-    return of<SimilarMoviesResponse>({ results: [] });
+  getGenres() {
+    return this.http.get<GenresResponse>(`${this.baseUrl}/genres/`);
+  }
+
+  /** Listed films sharing a genre (released first); never the film itself or unpublished films. */
+  getRelatedMovies(id: number) {
+    return this.http.get<{ results: IVideoContent[] }>(`${this.baseUrl}/${id}/related/`);
+  }
+
+  /** The admin-featured released film, else the most watched one; `result` is null on an empty catalog. */
+  getFeatured() {
+    return this.http.get<{ result: IVideoContent | null }>(`${this.baseUrl}/featured/`);
   }
 
   getProducers() {
@@ -114,6 +130,7 @@ export function toPlaybackSource(res: StreamResponse): PlaybackSource {
     type: res.stream_type,
     fallbackSrc: res.fallback_url,
     subtitles: res.subtitles ?? [],
+    ...(res.watermark ? { watermark: res.watermark } : {}),
   };
 }
 

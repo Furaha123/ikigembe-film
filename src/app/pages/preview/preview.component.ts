@@ -7,11 +7,13 @@ import { VideoPlayerComponent } from '../../shared/components/video-player/video
 import { MoviePreview } from '../../shared/models/movie-api.interface';
 import { SeoService } from '../../core/services/seo.service';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
+import { AnalyticsService } from '../../core/services/analytics.service';
 
+import { ModalBackdropDirective } from '../../shared/directives/modal-backdrop.directive';
 @Component({
   selector: 'app-preview',
   standalone: true,
-  imports: [CommonModule, RouterLink, VideoPlayerComponent, TranslatePipe],
+  imports: [ModalBackdropDirective, CommonModule, RouterLink, VideoPlayerComponent, TranslatePipe],
   templateUrl: './preview.component.html',
   styleUrl: './preview.component.scss',
 })
@@ -19,6 +21,7 @@ export class PreviewComponent implements OnInit {
   private readonly route        = inject(ActivatedRoute);
   private readonly movieService = inject(MovieService);
   private readonly seo          = inject(SeoService);
+  private readonly analytics    = inject(AnalyticsService);
   private readonly platformId   = inject(PLATFORM_ID);
   private readonly translate    = inject(TranslateService);
   readonly dataSaver            = inject(DataSaverService);
@@ -56,6 +59,7 @@ export class PreviewComponent implements OnInit {
     if (!url) return;
     this.videoSrc.set(url);
     this.isPlaying.set(true);
+    this.analytics.track('trailer_play', { movie_id: this.movie()?.id, props: { source: 'preview' } });
   }
 
   closePlayer() { this.isPlaying.set(false); }

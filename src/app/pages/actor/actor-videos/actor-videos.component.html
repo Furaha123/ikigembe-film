@@ -41,8 +41,36 @@
           </div>
           @if (v.description) { <p class="mk-muted">{{ v.description }}</p> }
 
-          @if (v.status === 'rejected' && v.reject_reason) {
-            <p class="mk-error">{{ 'marketplace.videos.rejectReason' | translate }}: {{ v.reject_reason }}</p>
+          @if (v.thumbnail_url) {
+            <img [src]="v.thumbnail_url" alt="" class="mk-video-thumb" loading="lazy" />
+          }
+          @if (v.duration_seconds || v.size_bytes) {
+            <p class="mk-muted mk-small">
+              @if (v.duration_seconds) { {{ formatDuration(v.duration_seconds) }} }
+              @if (v.duration_seconds && v.size_bytes) { · }
+              @if (v.size_bytes) { {{ formatFileSize(v.size_bytes) }} }
+            </p>
+          }
+
+          @if (v.status === 'processing') {
+            <p class="mk-muted" role="status">{{ 'marketplace.videos.processing' | translate }}</p>
+          }
+          @if (v.status === 'upload_failed') {
+            <p class="mk-error" role="alert">{{ 'marketplace.videos.checkFailed' | translate }}: {{ v.failure_reason }}</p>
+            <p class="mk-muted">{{ 'marketplace.videos.retryFree' | translate }}</p>
+          }
+          @if (v.status === 'pending_review') {
+            <p class="mk-muted">{{ 'marketplace.videos.inReview' | translate }}</p>
+          }
+          @if (v.replaces_id && v.status !== 'approved') {
+            <p class="mk-muted">{{ 'marketplace.videos.replacementNote' | translate }}</p>
+          }
+          @if (v.status === 'rejected') {
+            @if (v.reject_reason) {
+              <p class="mk-error">{{ 'marketplace.videos.rejectReason' | translate }}: {{ v.reject_reason }}</p>
+            }
+            <p class="mk-muted">{{ 'marketplace.videos.newContentNeedsFee' | translate }}</p>
+            <a routerLink="/actor/talent/new" class="mk-btn mk-btn--ghost">{{ 'marketplace.videos.submitNew' | translate }}</a>
           }
 
           @if (v.status === 'pending_upload') {
@@ -67,16 +95,25 @@
               </div>
             } @else {
               <label class="mk-btn">
-                {{ 'marketplace.videos.upload' | translate }}
+                {{ (v.status === 'upload_failed' ? 'marketplace.videos.uploadAgain' : 'marketplace.videos.upload') | translate }}
                 <input type="file" [accept]="videoAccept" hidden (change)="onFileSelected(v, $event)" />
               </label>
+              <p class="mk-hint mk-muted">{{ 'marketplace.talent.limits' | translate }}</p>
             }
             @if (up?.error) { <p class="mk-error" role="alert">{{ up!.error! | translate }}</p> }
           }
 
-          @if (v.video_url && (v.status === 'approved' || v.status === 'pending_review')) {
-            <button type="button" class="mk-btn mk-btn--ghost" (click)="preview(v)">{{ 'marketplace.common.watch' | translate }}</button>
-          }
+          <div class="mk-actions">
+            @if (v.video_url && (v.status === 'approved' || v.status === 'pending_review')) {
+              <button type="button" class="mk-btn mk-btn--ghost" (click)="preview(v)">{{ 'marketplace.common.watch' | translate }}</button>
+            }
+            @if (v.status === 'approved') {
+              <a class="mk-btn mk-btn--ghost" routerLink="/actor/talent/new" [queryParams]="{ replaces: v.id }">{{ 'marketplace.videos.replace' | translate }}</a>
+            }
+            @if (canDelete(v)) {
+              <button type="button" class="mk-btn mk-btn--danger" (click)="askDelete(v)">{{ 'marketplace.videos.delete' | translate }}</button>
+            }
+          </div>
         </article>
       }
     </div>
@@ -85,9 +122,25 @@
 
 <app-footer />
 
+@if (confirmDelete(); as d) {
+  <div class="mk-overlay" appModalBackdrop (dismiss)="confirmDelete.set(null)">
+    <div class="mk-dialog" role="alertdialog" aria-modal="true" aria-labelledby="av-del-title">
+      <header><span id="av-del-title">{{ 'marketplace.videos.deleteTitle' | translate: { title: d.title } }}</span></header>
+      <p>{{ 'marketplace.videos.deleteBody' | translate }}</p>
+      @if (deleteError()) { <p class="mk-error" role="alert">{{ deleteError()! | translate }}</p> }
+      <div class="mk-actions">
+        <button type="button" class="mk-btn mk-btn--ghost" (click)="confirmDelete.set(null)">{{ 'marketplace.common.cancel' | translate }}</button>
+        <button type="button" class="mk-btn mk-btn--danger" (click)="deleteVideo()" [disabled]="deleting()" [attr.aria-busy]="deleting()">
+          {{ 'marketplace.videos.delete' | translate }}
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
 @if (previewSrc(); as src) {
-  <div class="mk-overlay" (click)="closePreview()">
-    <div class="mk-dialog" role="dialog" aria-modal="true" (click)="$event.stopPropagation()">
+  <div class="mk-overlay" appModalBackdrop (dismiss)="closePreview()">
+    <div class="mk-dialog" role="dialog" aria-modal="true">
       <header>
         <span>{{ 'marketplace.common.preview' | translate }}</span>
         <button type="button" class="mk-btn mk-btn--ghost" (click)="closePreview()">{{ 'marketplace.common.close' | translate }}</button>

@@ -1,6 +1,11 @@
 <div class="mk-page">
-  <a routerLink="/producer/actors" class="mk-muted">← {{ 'marketplace.directory.title' | translate }}</a>
 
+  <a routerLink="/producer/actors" class="mk-muted" style="display:inline-flex;align-items:center;gap:.35rem;margin-bottom:1.25rem;text-decoration:none;font-size:.875rem">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
+    {{ 'marketplace.directory.title' | translate }}
+  </a>
+
+  <!-- Status messages -->
   <div aria-live="polite">
     @if (loading()) {
       <p class="mk-muted">{{ 'marketplace.common.loading' | translate }}</p>
@@ -15,52 +20,176 @@
   </div>
 
   @if (actor(); as a) {
-    <article class="mk-card">
-      <div class="mk-row" style="justify-content: space-between">
-        <h1>{{ a.stage_name }}</h1>
-        <button type="button" class="mk-btn" [class.mk-btn--ghost]="shortlisted()" (click)="toggleShortlist()" [disabled]="busy()">
-          {{ (shortlisted() ? 'marketplace.directory.unshortlist' : 'marketplace.directory.shortlist') | translate }}
-        </button>
-      </div>
-      <p class="mk-muted">
-        @if (a.age !== null) { {{ a.age }} · }
-        @if (a.gender) { {{ 'marketplace.gender.' + a.gender | translate }} · }
-        {{ a.location }}
-      </p>
-      @if (a.bio) { <p style="white-space: pre-line">{{ a.bio }}</p> }
-      <h2>{{ 'marketplace.profile.skills' | translate }}</h2>
-      <div class="mk-chips">@for (s of a.skills; track $index) { <span>{{ s }}</span> }</div>
-      <h2>{{ 'marketplace.profile.languages' | translate }}</h2>
-      <div class="mk-chips">@for (l of a.languages; track $index) { <span>{{ l }}</span> }</div>
-      <h2>{{ 'marketplace.directory.contact' | translate }}</h2>
-      <p>
-        @if (a.contact_email) { <a [href]="'mailto:' + a.contact_email">{{ a.contact_email }}</a> }
-        @if (a.contact_phone) { · <a [href]="'tel:' + a.contact_phone">{{ a.contact_phone }}</a> }
-      </p>
-    </article>
 
-    <section aria-labelledby="actor-videos-title">
-      <h2 id="actor-videos-title">{{ 'marketplace.nav.videos' | translate }}</h2>
-      @if (a.videos.length === 0) { <p class="mk-empty">{{ 'marketplace.directory.noVideos' | translate }}</p> }
-      <div class="mk-grid">
+    <!-- ── Hero ─────────────────────────────────────────────────────── -->
+    <div class="ad-hero">
+      <div class="ad-avatar" aria-hidden="true">
+        {{ a.stage_name.charAt(0).toUpperCase() }}
+      </div>
+
+      <div class="ad-hero__info">
+        <h1 class="ad-hero__name">{{ a.stage_name }}</h1>
+        <app-report-button targetType="actor" [targetId]="a.id" [label]="a.stage_name" />
+
+        <div class="ad-hero__meta">
+          @if (a.age !== null) {
+            <span class="ad-meta-chip">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+              {{ a.age }} yrs
+            </span>
+          }
+          @if (a.gender) {
+            <span class="ad-meta-chip">{{ 'marketplace.gender.' + a.gender | translate }}</span>
+          }
+          @if (a.district && a.province) {
+            <span class="ad-meta-chip">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5S10.62 6.5 12 6.5s2.5 1.12 2.5 2.5S13.38 11.5 12 11.5z"/></svg>
+              {{ a.district }}, {{ a.province }}
+            </span>
+          } @else if (a.location) {
+            <span class="ad-meta-chip">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5S10.62 6.5 12 6.5s2.5 1.12 2.5 2.5S13.38 11.5 12 11.5z"/></svg>
+              {{ a.location }}
+            </span>
+          }
+        </div>
+
+        <div class="ad-hero__actions">
+          <button type="button"
+                  class="ad-btn-shortlist"
+                  [class.is-shortlisted]="shortlisted()"
+                  (click)="toggleShortlist()"
+                  [disabled]="busy()"
+                  [attr.aria-pressed]="shortlisted()">
+            @if (shortlisted()) {
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
+              {{ 'marketplace.directory.unshortlist' | translate }}
+            } @else {
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+              {{ 'marketplace.directory.shortlist' | translate }}
+            }
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Body: bio + skills / contact ─────────────────────────────── -->
+    <div class="ad-body">
+
+      <!-- Left column: bio + skills + languages -->
+      <div style="display:flex;flex-direction:column;gap:1rem">
+
+        @if (a.bio) {
+          <div class="ad-card">
+            <p class="ad-card__title">{{ 'marketplace.profile.bio' | translate }}</p>
+            <p class="ad-bio">{{ a.bio }}</p>
+          </div>
+        }
+
+        <div class="ad-card">
+          <p class="ad-card__title">{{ 'marketplace.profile.skills' | translate }}</p>
+          @if (a.skills.length) {
+            <div class="ad-chips">
+              @for (s of a.skills; track $index) { <span>{{ s }}</span> }
+            </div>
+          } @else {
+            <p class="ad-empty-chips">—</p>
+          }
+        </div>
+
+        <div class="ad-card">
+          <p class="ad-card__title">{{ 'marketplace.profile.languages' | translate }}</p>
+          @if (a.languages.length) {
+            <div class="ad-chips">
+              @for (l of a.languages; track $index) { <span>{{ l }}</span> }
+            </div>
+          } @else {
+            <p class="ad-empty-chips">—</p>
+          }
+        </div>
+
+      </div>
+
+      <!-- Right column: contact -->
+      <div class="ad-card">
+        <p class="ad-card__title">{{ 'marketplace.directory.contact' | translate }}</p>
+        @if (a.contact_email || a.contact_phone) {
+          <div class="ad-contact-list">
+            @if (a.contact_email) {
+              <a [href]="'mailto:' + a.contact_email" class="ad-contact-link">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4-8 5-8-5V6l8 5 8-5v2z"/></svg>
+                <span>{{ a.contact_email }}</span>
+              </a>
+            }
+            @if (a.contact_phone) {
+              <a [href]="'tel:' + a.contact_phone" class="ad-contact-link">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M6.62 10.79c1.44 2.83 3.76 5.15 6.59 6.59l2.2-2.2c.28-.28.67-.36 1.02-.25 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.24.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/></svg>
+                <span>{{ a.contact_phone }}</span>
+              </a>
+            }
+          </div>
+        } @else {
+          <p class="ad-no-contact">{{ 'marketplace.directory.noContact' | translate }}</p>
+        }
+      </div>
+
+    </div>
+
+    <!-- ── Talent videos ─────────────────────────────────────────────── -->
+    <h2 class="ad-section-title">{{ 'marketplace.nav.videos' | translate }}</h2>
+
+    @if (a.videos.length === 0) {
+      <p class="mk-empty">{{ 'marketplace.directory.noVideos' | translate }}</p>
+    } @else {
+      <div class="ad-video-grid">
         @for (v of a.videos; track v.id) {
-          <article class="mk-card">
-            <h3>{{ v.title }}</h3>
-            @if (v.description) { <p class="mk-muted">{{ v.description }}</p> }
-            <button type="button" class="mk-btn mk-btn--ghost" (click)="preview.set(v)" [disabled]="!v.video_url">{{ 'marketplace.common.watch' | translate }}</button>
+          <article class="ad-video-card">
+            <div class="ad-video-thumb"
+                 [attr.role]="v.video_url ? 'button' : null"
+                 [attr.tabindex]="v.video_url ? 0 : null"
+                 [attr.aria-label]="v.video_url ? (('marketplace.common.watch' | translate) + ': ' + v.title) : null"
+                 (click)="v.video_url && preview.set(v)"
+                 (keydown.enter)="v.video_url && preview.set(v)"
+                 (keydown.space)="v.video_url && preview.set(v)">
+              <button type="button"
+                      class="ad-play-btn"
+                      [disabled]="!v.video_url"
+                      [attr.aria-label]="('marketplace.common.watch' | translate) + ': ' + v.title"
+                      (click)="$event.stopPropagation(); v.video_url && preview.set(v)">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                  <path d="M8 5v14l11-7z"/>
+                </svg>
+              </button>
+            </div>
+            <div class="ad-video-body">
+              <h3>{{ v.title }}</h3>
+              @if (v.description) { <p>{{ v.description }}</p> }
+            </div>
           </article>
         }
       </div>
-    </section>
+    }
+
   }
 </div>
 
+<!-- ── Video preview modal ──────────────────────────────────────────────── -->
 @if (preview(); as v) {
-  <div class="mk-overlay" (click)="preview.set(null)">
-    <div class="mk-dialog" role="dialog" aria-modal="true" [attr.aria-label]="v.title" (click)="$event.stopPropagation()">
+  <div class="ad-overlay"
+       appModalBackdrop (dismiss)="preview.set(null)"
+       role="dialog"
+       aria-modal="true"
+       [attr.aria-label]="v.title">
+    <div class="ad-dialog" tabindex="-1">
       <header>
         <span>{{ v.title }}</span>
-        <button type="button" class="mk-btn mk-btn--ghost" (click)="preview.set(null)">{{ 'marketplace.common.close' | translate }}</button>
+        <button type="button" class="ad-dialog-close"
+                (click)="preview.set(null)"
+                [attr.aria-label]="'marketplace.common.close' | translate">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+            <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+          </svg>
+        </button>
       </header>
       <app-video-player [src]="v.video_url ?? ''" [autoplay]="true" />
     </div>

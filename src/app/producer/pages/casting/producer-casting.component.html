@@ -35,7 +35,11 @@
 
   @for (c of visible(); track c.id) {
     @let state = publicationState(c);
-    <article class="mk-card">
+    <article class="mk-card mk-casting-card">
+      @if (c.poster_url) {
+        <img [src]="c.poster_url" alt="" class="mk-casting-card__poster" loading="lazy" />
+      }
+      <div class="mk-casting-card__body">
       <div class="mk-row" style="justify-content: space-between">
         <h2>{{ c.title }}</h2>
         <span [class]="publicationClass(state)">{{ 'marketplace.publication.' + state | translate }}</span>
@@ -44,13 +48,33 @@
         {{ 'marketplace.casting.deadline' | translate }}: {{ c.deadline_at | date:'medium' }}
         @if (c.published_at) { · {{ 'marketplace.casting.published' | translate }}: {{ c.published_at | date:'mediumDate' }} }
       </p>
+      @if (c.shooting_location) {
+        <p class="mk-muted">📍 {{ c.shooting_location }}</p>
+      }
+      @if (c.project_start_date || c.project_end_date) {
+        <p class="mk-muted">
+          🎬
+          @if (c.project_start_date) { {{ c.project_start_date | date:'mediumDate' }} }
+          @if (c.project_start_date && c.project_end_date) { – }
+          @if (c.project_end_date) { {{ c.project_end_date | date:'mediumDate' }} }
+        </p>
+      }
       <div class="mk-chips">
         @for (r of c.roles; track $index) { <span>{{ r }}</span> }
       </div>
       @if (state !== 'published' && state !== 'draft') {
         <p class="mk-muted">{{ 'marketplace.publication.' + state + 'Text' | translate }}</p>
       }
+      @if (c.status === 'rejected' && c.review_note) {
+        <p class="mk-error">{{ 'marketplace.producerCasting.reviewNote' | translate }}: {{ c.review_note }}</p>
+      }
+      @if (c.status === 'removed' && c.removal_reason) {
+        <p class="mk-error">{{ 'marketplace.producerCasting.reviewNote' | translate }}: {{ c.removal_reason }}</p>
+      }
       <div class="mk-row" style="margin-top: .75rem">
+        @if (c.status === 'rejected') {
+          <a class="mk-btn" [routerLink]="['/producer/casting', c.id, 'edit']">{{ 'marketplace.producerCasting.editResend' | translate }}</a>
+        }
         @if (c.status === 'draft') {
           <a class="mk-btn mk-btn--ghost" [routerLink]="['/producer/casting', c.id, 'edit']">{{ 'marketplace.common.edit' | translate }}</a>
           @if (state === 'draft' || state === 'paymentFailed') {
@@ -71,6 +95,7 @@
             <button type="button" class="mk-btn mk-btn--danger" (click)="confirmCloseId.set(c.id)">{{ 'marketplace.producerCasting.close' | translate }}</button>
           }
         }
+      </div>
       </div>
     </article>
   }

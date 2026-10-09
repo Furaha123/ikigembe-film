@@ -2,7 +2,7 @@ import { Component, inject, OnInit, signal, computed } from '@angular/core';
 import { TranslatePipe } from '@ngx-translate/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
-import { ProducerService, ProducerWallet } from '../../services/producer.service';
+import { ProducerService, ProducerWallet, WithdrawalRequest } from '../../services/producer.service';
 
 @Component({
   selector: 'app-producer-wallet',
@@ -37,7 +37,7 @@ export class ProducerWalletComponent implements OnInit {
 
   /**
    * The backend deducts exactly `amount` from the balance. It used to show "+30% tax" on top,
-   * which no backend path does; any tax is reported on the withdrawal record (tax_amount).
+   * which no backend path does. Tax is paid by the platform from its share, never from the producer's.
    */
   taxBreakdown = computed(() => {
     const amount = this.withdrawAmount();
@@ -68,9 +68,9 @@ export class ProducerWalletComponent implements OnInit {
     this.apiError.set('');
 
     const val = this.form.getRawValue();
-    const payload: any = {
-      amount: val.amount,
-      payment_method: val.payment_method,
+    const payload: WithdrawalRequest = {
+      amount: val.amount!,
+      payment_method: val.payment_method!,
     };
 
     if (val.payment_method === 'Bank') {

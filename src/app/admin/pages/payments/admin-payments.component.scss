@@ -1,0 +1,228 @@
+// Shared by the payments ledger, its detail drawer and the audit log (same admin look as Withdrawals).
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.4} }
+
+$gold:    #C5A253;
+$border:  #2a2a2a;
+$surface: #141414;
+$text:    #e5e5e5;
+$muted:   #888;
+$red:     #e57368;
+$green:   #4caf7a;
+
+.admin-page { max-width: 1280px; }
+
+.page-header {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 1.25rem;
+  h1 { font-size: 1.75rem; font-weight: 700; color: #fff; margin: 0 0 0.3rem; }
+  p  { color: $muted; font-size: 0.875rem; margin: 0; }
+}
+
+.header-actions, .filter-actions, .drawer-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.btn {
+  padding: 0.5rem 0.95rem;
+  border-radius: 8px;
+  border: 1px solid $gold;
+  background: $gold;
+  color: #000;
+  font-weight: 600;
+  font-size: 0.82rem;
+  cursor: pointer;
+
+  &.ghost { background: transparent; color: $text; border-color: #444; }
+  &.danger { background: transparent; color: $red; border-color: $red; }
+  &.small { padding: 0.3rem 0.65rem; font-size: 0.75rem; }
+  &:disabled { opacity: 0.55; cursor: not-allowed; }
+  &:focus-visible { outline: 2px solid $gold; outline-offset: 2px; }
+}
+
+.link { background: none; border: none; color: $gold; text-decoration: underline; cursor: pointer; font: inherit; }
+
+.filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  align-items: flex-end;
+  padding: 1rem;
+  margin-bottom: 1rem;
+  border: 1px solid $border;
+  border-radius: 10px;
+  background: $surface;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  font-size: 0.75rem;
+  color: $muted;
+  min-width: 140px;
+  border: none;
+  padding: 0;
+  margin: 0;
+
+  &.grow { flex: 1 1 220px; }
+  &.check { flex-direction: row; align-items: center; min-width: 0; }
+
+  input:not([type=checkbox]):not([type=radio]), select, textarea {
+    padding: 0.5rem 0.6rem;
+    border-radius: 6px;
+    border: 1px solid #333;
+    background: #0d0d0d;
+    color: $text;
+    font: inherit;
+    font-size: 0.85rem;
+  }
+}
+
+.check { display: flex; gap: 0.4rem; align-items: center; color: $text; font-size: 0.85rem; }
+
+.totals {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.25rem;
+  margin-bottom: 0.75rem;
+  font-size: 0.85rem;
+  color: $muted;
+  strong { color: $text; }
+}
+
+.table-wrap {
+  overflow-x: auto;
+  border: 1px solid $border;
+  border-radius: 10px;
+  &.is-loading { opacity: 0.6; }
+}
+
+.ledger {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.85rem;
+
+  th, td { padding: 0.65rem 0.8rem; text-align: left; border-bottom: 1px solid $border; vertical-align: top; }
+  th { color: $muted; font-weight: 600; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.03em; }
+  tr.unresolved td:first-child { box-shadow: inset 3px 0 0 $red; }
+  .num { text-align: right; white-space: nowrap; }
+}
+
+.muted { color: $muted; }
+.block { display: block; font-size: 0.75rem; }
+.mono { font-family: monospace; font-size: 0.8rem; word-break: break-all; }
+.cell-title { color: $text; font-weight: 600; }
+.error { color: $red; }
+.success { color: $green; }
+.warn { color: $gold; font-size: 0.85rem; }
+
+.status-badge {
+  display: inline-block;
+  margin: 0 0.25rem 0.25rem 0;
+  padding: 0.1rem 0.5rem;
+  border-radius: 20px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  background: #2a2a2a;
+  color: $text;
+}
+.status-completed { background: rgba(76, 175, 122, 0.15); color: $green; }
+.status-pending { background: rgba(197, 162, 83, 0.15); color: $gold; }
+.status-failed { background: rgba(229, 115, 104, 0.15); color: $red; }
+.status-refunded, .status-refund { background: rgba(120, 140, 255, 0.15); color: #9aa8ff; }
+
+.pager {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+  justify-content: center;
+  margin-top: 1rem;
+}
+
+.table-skeleton {
+  display: flex; flex-direction: column; gap: 0.5rem;
+  .row-skeleton { height: 48px; background: $surface; border: 1px solid $border; border-radius: 8px; animation: pulse 1.5s ease-in-out infinite; }
+}
+
+.empty-state { padding: 2.5rem 1rem; text-align: center; color: $muted; border: 1px dashed $border; border-radius: 10px; }
+
+// ── Drawer ──────────────────────────────────────────────
+.drawer-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  justify-content: flex-end;
+  background: rgba(0, 0, 0, 0.6);
+}
+
+.drawer {
+  width: min(520px, 100%);
+  height: 100%;
+  overflow-y: auto;
+  padding: 1.25rem 16px 2rem;
+  background: #101010;
+  border-left: 1px solid $border;
+  color: $text;
+
+  h3 { margin: 1.25rem 0 0.5rem; font-size: 1rem; }
+}
+
+.drawer-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+  h2 { margin: 0; font-size: 1.15rem; }
+}
+
+.facts {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0.45rem 1rem;
+  margin: 0 0 1rem;
+  font-size: 0.85rem;
+  dt { color: $muted; }
+  dd { margin: 0; word-break: break-word; }
+}
+
+.refund-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-top: 1rem;
+  padding: 1rem;
+  border: 1px solid $border;
+  border-radius: 10px;
+}
+
+.refund-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+
+  li { padding: 0.75rem; border: 1px solid $border; border-radius: 8px; font-size: 0.85rem; }
+  p { margin: 0.25rem 0; }
+}
+
+.row-between { display: flex; justify-content: space-between; align-items: center; gap: 0.5rem; }
+
+.detail-json {
+  margin: 0.4rem 0 0;
+  padding: 0.6rem;
+  border-radius: 6px;
+  background: #0b0b0b;
+  font-size: 0.75rem;
+  white-space: pre-wrap;
+  word-break: break-word;
+}

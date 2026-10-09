@@ -1,0 +1,71 @@
+<div class="admin-page">
+  <div class="page-header">
+    <div>
+      <h1>{{ 'producerUi.statements.title' | translate }}</h1>
+      <p>{{ 'producerUi.statements.subtitle' | translate }}</p>
+    </div>
+  </div>
+
+  <div aria-live="polite">
+    @if (error()) { <p class="error" role="alert">{{ error()! | translate }}</p> }
+  </div>
+
+  @if (loading()) {
+    <p class="muted" role="status">{{ 'admin.payments.loading' | translate }}</p>
+  } @else if (rows().length === 0) {
+    <div class="empty-state">{{ 'producerUi.statements.empty' | translate }}</div>
+  } @else {
+    <div class="table-wrap">
+      <table class="ledger">
+        <thead><tr>
+          <th scope="col">{{ 'producerUi.statements.period' | translate }}</th>
+          <th scope="col" class="num">{{ 'producerUi.statements.sales' | translate }}</th>
+          <th scope="col" class="num">{{ 'producerUi.statements.share' | translate }}</th>
+          <th scope="col">{{ 'producerUi.statements.payout' | translate }}</th>
+          <th scope="col"><span class="sr-only">{{ 'admin.payments.open' | translate }}</span></th>
+        </tr></thead>
+        <tbody>
+          @for (r of rows(); track r.id) {
+            <tr>
+              <td>{{ r.period }}</td>
+              <td class="num">RWF {{ r.gross | number }}</td>
+              <td class="num"><strong>RWF {{ r.amount | number }}</strong></td>
+              <td>
+                @if (r.payout_status === 'paid') {
+                  <span class="status-badge status-completed">{{ 'producerUi.statements.paid' | translate }}</span>
+                  @if (r.payout_reference) { <span class="muted block">{{ r.payout_reference }}</span> }
+                } @else {
+                  <span class="status-badge status-pending">{{ 'producerUi.statements.unpaid' | translate }}</span>
+                }
+              </td>
+              <td><button type="button" class="btn ghost small" (click)="open(r)">{{ 'admin.payments.open' | translate }}</button></td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+
+  @if (detail(); as d) {
+    <section class="refund-form" aria-labelledby="st-detail">
+      <div class="row-between">
+        <h2 id="st-detail">{{ d.period }}</h2>
+        <button type="button" class="btn ghost small" (click)="detail.set(null)">{{ 'admin.payments.close' | translate }}</button>
+      </div>
+      <p class="muted">{{ 'producerUi.statements.method' | translate }}</p>
+      <table class="ledger">
+        <thead><tr>
+          <th scope="col">{{ 'admin.payments.item' | translate }}</th>
+          <th scope="col" class="num">{{ 'producerUi.statements.sales' | translate }}</th>
+          <th scope="col" class="num">{{ 'producerUi.statements.share' | translate }}</th>
+          <th scope="col">{{ 'admin.finance.rule' | translate }}</th>
+        </tr></thead>
+        <tbody>
+          @for (f of d.films; track f.movie_id + f.rule) {
+            <tr><td>{{ f.movie__title }}</td><td class="num">{{ f.basis | number }}</td><td class="num">{{ f.amount | number }}</td><td class="muted">{{ f.rule }}</td></tr>
+          }
+        </tbody>
+      </table>
+    </section>
+  }
+</div>

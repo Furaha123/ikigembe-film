@@ -200,6 +200,16 @@
 
       &:hover { background: #235e35; }
     }
+
+    // Coming soon: a status, not an action.
+    &--soon {
+      background: transparent;
+      border: 1.5px dashed rgba(201,168,76,0.6);
+      color: #c9a84c;
+      cursor: default;
+
+      &:hover { background: transparent; transform: none; }
+    }
   }
 
   .overview {
@@ -671,4 +681,11 @@
   }
 
   .detail-skeleton .sk-row { flex-direction: column; }
+}
+
+.detail-secondary-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: .75rem 1.25rem;
 }

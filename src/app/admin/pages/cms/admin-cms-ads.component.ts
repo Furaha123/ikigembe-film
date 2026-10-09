@@ -8,7 +8,9 @@ import { AD_PLACEMENTS, AdPlacement, AdminAd, AdminAdPayload } from '../../../sh
 import { apiErrorMessage } from '../../../shared/utils/api-error';
 import { CmsTabsComponent } from './cms-tabs.component';
 import { fieldErrors } from './admin-cms-pages.component';
+import { AdminSectionTabsComponent } from '../../shared/components/admin-section-tabs.component';
 
+import { ModalBackdropDirective } from '../../../shared/directives/modal-backdrop.directive';
 /** Group validator: the campaign must end after it starts. */
 export function endsAfterStarts(group: AbstractControl): ValidationErrors | null {
   const { starts_at, ends_at } = group.value as { starts_at: string; ends_at: string };
@@ -28,7 +30,7 @@ function toLocalInput(iso: string): string {
 @Component({
   selector: 'app-admin-cms-ads',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, TranslatePipe, CmsTabsComponent],
+  imports: [ModalBackdropDirective, CommonModule, ReactiveFormsModule, TranslatePipe, CmsTabsComponent, AdminSectionTabsComponent],
   templateUrl: './admin-cms-ads.component.html',
   styleUrls: ['../movies/admin-movies.component.scss', './admin-cms.scss'],
 })

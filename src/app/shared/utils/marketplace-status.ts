@@ -21,9 +21,11 @@ export function actorVideoStatusClass(status: ActorVideoStatus): string {
   switch (status) {
     case 'approved': return 'mk-badge mk-badge--ok';
     case 'rejected':
+    case 'upload_failed':
     case 'removed': return 'mk-badge mk-badge--danger';
     case 'pending_review':
     case 'processing': return 'mk-badge mk-badge--info';
+    case 'replaced': return 'mk-badge';
     default: return 'mk-badge mk-badge--warn';
   }
 }
@@ -31,6 +33,8 @@ export function actorVideoStatusClass(status: ActorVideoStatus): string {
 export function castingCallStatusClass(status: CastingCallStatus): string {
   switch (status) {
     case 'published': return 'mk-badge mk-badge--ok';
+    case 'pending_review': return 'mk-badge mk-badge--info';
+    case 'rejected':
     case 'removed': return 'mk-badge mk-badge--danger';
     case 'closed': return 'mk-badge';
     default: return 'mk-badge mk-badge--warn';
@@ -54,15 +58,16 @@ export function accessTimeLeft(expiresAt: string | null, now = Date.now()): Time
 
 /**
  * Where a producer's casting call stands, from the server's fields only:
- * "published" only when the server says published; a completed fee on a
- * draft is "processing" (publication follows the payment confirmation).
+ * "published" only when the server says published (paid AND approved by an admin). A paid call waits
+ * for review ("inReview"); a completed fee on a draft is "processing" until the confirmation lands.
  */
 export type CastingPublicationState =
-  | 'draft' | 'paymentPending' | 'paymentFailed' | 'processing' | 'published' | 'closed' | 'removed';
+  | 'draft' | 'paymentPending' | 'paymentFailed' | 'processing' | 'inReview' | 'rejected' | 'published' | 'closed' | 'removed';
 
 export function castingPublicationState(call: CastingCall, now = Date.now()): CastingPublicationState {
   const status = castingDisplayStatus(call, now);
-  if (status === 'published' || status === 'closed' || status === 'removed') return status;
+  if (status === 'published' || status === 'closed' || status === 'removed' || status === 'rejected') return status;
+  if (status === 'pending_review') return 'inReview';
   switch (call.payment_status) {
     case 'Pending': return 'paymentPending';
     case 'Failed': return 'paymentFailed';
@@ -75,9 +80,11 @@ export function castingPublicationClass(state: CastingPublicationState): string 
   switch (state) {
     case 'published': return 'mk-badge mk-badge--ok';
     case 'removed':
+    case 'rejected':
     case 'paymentFailed': return 'mk-badge mk-badge--danger';
     case 'paymentPending':
-    case 'processing': return 'mk-badge mk-badge--info';
+    case 'processing':
+    case 'inReview': return 'mk-badge mk-badge--info';
     case 'closed': return 'mk-badge';
     default: return 'mk-badge mk-badge--warn';
   }

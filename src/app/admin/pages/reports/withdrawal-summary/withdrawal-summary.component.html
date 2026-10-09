@@ -6,7 +6,7 @@
       <p>{{ 'admin.reports.withdrawalSummary.subtitle' | translate }}</p>
     </div>
     <div class="section-actions">
-      <procurement-date-picker (dateChange)="onDateRangeChange($event)" />
+      <app-date-picker (dateChange)="onDateRangeChange($event)" />
       <div class="legend-inline">
         <span class="legend-dot" style="background:#34d399"></span> {{ 'admin.reports.withdrawalSummary.completed' | translate }}
         <span class="legend-dot" style="background:#f59e0b; margin-left:0.5rem"></span> {{ 'admin.reports.withdrawalSummary.pending' | translate }}

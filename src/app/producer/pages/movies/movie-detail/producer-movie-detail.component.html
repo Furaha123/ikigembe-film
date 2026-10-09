@@ -314,8 +314,8 @@
 
 <!-- ══════════════════════════════════ ADVANCED MODE OVERLAY ═ -->
 @if (showAdvanced()) {
-  <div class="advanced-overlay" (click)="closeAdvanced()">
-    <div class="advanced-panel" (click)="$event.stopPropagation()">
+  <div class="advanced-overlay" appModalBackdrop (dismiss)="closeAdvanced()">
+    <div class="advanced-panel" tabindex="-1">
 
       <!-- Header -->
       <div class="adv-header">
@@ -488,8 +488,8 @@
 
 <!-- ═══════════════════════ SHARE TRAILER SHEET ═══════════════════ -->
 @if (isShareOpen()) {
-  <div class="share-overlay" (click)="closeShare()">
-    <div class="share-sheet" (click)="$event.stopPropagation()" role="dialog" aria-modal="true" [attr.aria-label]="'producerUi.movieDetail.shareDialog' | translate">
+  <div class="share-overlay" appModalBackdrop (dismiss)="closeShare()">
+    <div class="share-sheet" role="dialog" aria-modal="true" [attr.aria-label]="'producerUi.movieDetail.shareDialog' | translate">
 
       <div class="share-header">
         <span class="share-title">{{ 'movieDetail.shareTrailer' | translate }}</span>
@@ -537,8 +537,8 @@
 
 <!-- ══════════════════════════════ RESUBMIT MODAL ══ -->
 @if (resubmitOpen()) {
-  <div class="resubmit-overlay" (click)="closeResubmit()">
-    <div class="resubmit-dialog" (click)="$event.stopPropagation()">
+  <div class="resubmit-overlay" appModalBackdrop (dismiss)="closeResubmit()">
+    <div class="resubmit-dialog" tabindex="-1">
       <div class="resubmit-header">
         <h3>{{ 'producerUi.resubmit.submit' | translate }}</h3>
         <button class="close-btn" (click)="closeResubmit()" [attr.aria-label]="'movieDetail.resubmit.close' | translate">
@@ -548,11 +548,11 @@
       <p class="resubmit-hint">{{ 'producerUi.movieDetail.resubmitHint' | translate }}</p>
 
       <div class="resubmit-field">
-        <label class="resubmit-label">{{ 'producerUi.movieDetail.newVideo' | translate }} <span class="resubmit-optional">{{ 'producerUi.common.optionalLower' | translate }}</span></label>
+        <label class="resubmit-label" for="pmd-resubmit-video">{{ 'producerUi.movieDetail.newVideo' | translate }} <span class="resubmit-optional">{{ 'producerUi.common.optionalLower' | translate }}</span></label>
         <label class="resubmit-file-btn" [class.has-file]="resubmitVideoFile()">
           <svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16"><path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM14 13v4h-4v-4H7l5-5 5 5h-3z"/></svg>
           {{ resubmitVideoFile() ? resubmitVideoFile()!.name : ('producerUi.movieDetail.chooseVideo' | translate) }}
-          <input type="file" [accept]="videoAccept" class="hidden-input" (change)="onResubmitVideoSelected($event)" />
+          <input id="pmd-resubmit-video" type="file" [accept]="videoAccept" class="hidden-input" (change)="onResubmitVideoSelected($event)" />
         </label>
         @if (resubmitVideoUploading()) {
           <div class="resubmit-progress-bar"><div class="resubmit-progress-fill" [style.width.%]="resubmitVideoProgress()"></div></div>
@@ -563,11 +563,11 @@
       </div>
 
       <div class="resubmit-field">
-        <label class="resubmit-label">{{ 'producerUi.movieDetail.newCopyright' | translate }} <span class="resubmit-optional">{{ 'producerUi.common.optionalLower' | translate }}</span></label>
+        <label class="resubmit-label" for="pmd-resubmit-copyright">{{ 'producerUi.movieDetail.newCopyright' | translate }} <span class="resubmit-optional">{{ 'producerUi.common.optionalLower' | translate }}</span></label>
         <label class="resubmit-file-btn" [class.has-file]="resubmitCopyrightFile()">
           <svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6zm-1 1.5L18.5 9H13V3.5z"/></svg>
           {{ resubmitCopyrightFile() ? resubmitCopyrightFile()!.name : ('producerUi.movieDetail.chooseCopyright' | translate) }}
-          <input type="file" [accept]="documentAccept" class="hidden-input" (change)="onResubmitCopyrightSelected($event)" />
+          <input id="pmd-resubmit-copyright" type="file" [accept]="documentAccept" class="hidden-input" (change)="onResubmitCopyrightSelected($event)" />
         </label>
         @if (resubmitCopyrightUploading()) {
           <div class="resubmit-progress-bar"><div class="resubmit-progress-fill" [style.width.%]="resubmitCopyrightProgress()"></div></div>
@@ -593,8 +593,8 @@
 
 <!-- ══════════════════════════════ INLINE PLAYER OVERLAY ══ -->
 @if (isWatching()) {
-  <div class="player-overlay" (click)="closePlayer()">
-    <div class="player-modal" (click)="$event.stopPropagation()">
+  <div class="player-overlay" appModalBackdrop (dismiss)="closePlayer()">
+    <div class="player-modal" tabindex="-1">
       <button class="player-close" (click)="closePlayer()">
         <svg viewBox="0 0 24 24" fill="currentColor"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
       </button>

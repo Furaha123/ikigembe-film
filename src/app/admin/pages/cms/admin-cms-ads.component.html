@@ -1,4 +1,10 @@
 <div class="admin-page">
+  <app-admin-section-tabs [tabs]="[
+    { labelKey: 'admin.nav.movies', path: '/admin/movies', exact: true },
+    { labelKey: 'admin.nav.filmRequests', path: '/admin/film-requests', exact: true },
+    { labelKey: 'admin.nav.transcodes', path: '/admin/transcodes', exact: true },
+    { labelKey: 'admin.nav.cms', path: '/admin/cms/pages' }
+  ]" ariaLabel="'admin.nav.content'" />
   <div class="page-header">
     <div>
       <h1>{{ 'admin.cms.title' | translate }}</h1>
@@ -136,8 +142,8 @@
   }
 
   @if (confirmDelete(); as ad) {
-    <div class="overlay" (click)="confirmDelete.set(null)">
-      <div class="dialog" role="dialog" aria-modal="true" aria-labelledby="ad-del-title" (click)="$event.stopPropagation()">
+    <div class="overlay" appModalBackdrop (dismiss)="confirmDelete.set(null)">
+      <div class="dialog" role="dialog" aria-modal="true" aria-labelledby="ad-del-title">
         <h3 id="ad-del-title">{{ 'admin.cms.deleteAdTitle' | translate }}</h3>
         <p><strong>{{ ad.name }}</strong></p>
         <div class="dialog-actions">

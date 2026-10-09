@@ -1,6 +1,5 @@
 import { Component, DestroyRef, OnInit, inject, signal } from '@angular/core';
 import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
-import { HttpErrorResponse } from '@angular/common/http';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { TranslatePipe } from '@ngx-translate/core';
 import { catchError, combineLatest, map, of, switchMap } from 'rxjs';
@@ -10,6 +9,7 @@ import { SeoService } from '../../core/services/seo.service';
 import { CmsPageBodyComponent } from '../../shared/components/cms-page-body/cms-page-body.component';
 import { CmsPage } from '../../shared/models/cms.interface';
 import { TermsComponent } from '../terms/terms.component';
+import { RefundPolicyComponent } from '../refund-policy/refund-policy.component';
 
 type LoadResult = { page: CmsPage } | { missing: true };
 
@@ -28,7 +28,7 @@ export function summarize(html: string, max = 155): string {
 @Component({
   selector: 'app-cms-page',
   standalone: true,
-  imports: [RouterLink, TranslatePipe, CmsPageBodyComponent, TermsComponent],
+  imports: [RouterLink, TranslatePipe, CmsPageBodyComponent, TermsComponent, RefundPolicyComponent],
   templateUrl: './cms-page.component.html',
   styleUrls: ['./cms-page.component.scss'],
 })
@@ -57,7 +57,7 @@ export class CmsPageComponent implements OnInit {
         return this.cms.getLocalizedPage(slug, lang).pipe(
           map((page): LoadResult => ({ page })),
           // 404, network error or server timeout → fallback content, never a blank page
-          catchError((_err: HttpErrorResponse | Error) => of<LoadResult>({ missing: true })),
+          catchError(() => of<LoadResult>({ missing: true })),
         );
       }),
       takeUntilDestroyed(this.destroyRef),
@@ -70,7 +70,7 @@ export class CmsPageComponent implements OnInit {
       } else {
         this.page.set(null);
         this.missing.set(true);
-        if (this.slug() !== 'terms') {
+        if (this.slug() !== 'terms' && this.slug() !== 'refund-policy') {
           this.seo.setTranslated({ titleKey: 'cms.notFoundTitle', noIndex: true });
         }
       }

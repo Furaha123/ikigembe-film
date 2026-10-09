@@ -50,11 +50,28 @@ export class AdminDashboardComponent implements OnInit, AfterViewChecked, OnDest
     weekday: 'long', day: 'numeric', month: 'long', year: 'numeric',
   });
 
-  totalRevenue   = computed(() => this.overview()?.financials.total_revenue     ?? 0);
+  totalRevenue   = computed(() => this.overview()?.financials.total_revenue      ?? 0);
   totalComm      = computed(() => this.overview()?.financials.platform_commission ?? 0);
   producerPayout = computed(() => this.overview()?.financials.producer_revenue   ?? 0);
+  revenueToday   = computed(() => this.overview()?.financials.revenue_today      ?? 0);
+  revenueMonth   = computed(() => this.overview()?.financials.revenue_this_month ?? 0);
   pendingCount   = computed(() => this.txHistory()?.pending_withdrawals.length   ?? 0);
   recentPayments = computed(() => (this.txHistory()?.payments ?? []).slice(0, 5));
+
+  /** Month-over-month % change derived from the last two trend data points. */
+  private trendChange = (key: 'total_revenue' | 'platform_commission' | 'producer_share') =>
+    computed(() => {
+      const data = this.trend();
+      if (data.length < 2) return null;
+      const prev = data[data.length - 2][key];
+      const last = data[data.length - 1][key];
+      if (!prev) return null;
+      return Math.round(((last - prev) / prev) * 100);
+    });
+
+  revenueTrend   = this.trendChange('total_revenue');
+  commTrend      = this.trendChange('platform_commission');
+  producerTrend  = this.trendChange('producer_share');
 
   private chart: Chart | null = null;
   private needsBuild = false;

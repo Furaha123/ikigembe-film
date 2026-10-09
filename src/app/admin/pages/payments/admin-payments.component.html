@@ -1,0 +1,155 @@
+<div class="admin-page">
+  <app-admin-section-tabs [tabs]="[
+    { labelKey: 'admin.nav.payments',    path: '/admin/payments',    exact: true },
+    { labelKey: 'admin.nav.finance',     path: '/admin/finance',     exact: true },
+    { labelKey: 'admin.nav.withdrawals', path: '/admin/withdrawals', exact: true },
+    { labelKey: 'admin.nav.contracts',   path: '/admin/contracts',   exact: true }
+  ]" ariaLabel="admin.nav.financials" />
+
+  <div class="page-header">
+    <div>
+      <h1>{{ 'admin.payments.title' | translate }}</h1>
+      <p>{{ 'admin.payments.subtitle' | translate }}</p>
+    </div>
+    <div class="header-actions">
+      <button type="button" class="btn ghost" (click)="showUnresolved()">{{ 'admin.payments.unresolved' | translate }}</button>
+      <button type="button" class="btn" (click)="export()" [disabled]="exporting()" [attr.aria-busy]="exporting()">
+        {{ (exporting() ? 'admin.payments.exporting' : 'admin.payments.export') | translate }}
+      </button>
+    </div>
+  </div>
+
+  <form class="filters" role="search" (ngSubmit)="search()">
+    <label class="field grow">
+      <span>{{ 'admin.payments.search' | translate }}</span>
+      <input type="search" name="q" [(ngModel)]="filters.q" [placeholder]="'admin.payments.searchPlaceholder' | translate" />
+    </label>
+    <label class="field">
+      <span>{{ 'admin.payments.purpose' | translate }}</span>
+      <select name="purpose" [(ngModel)]="filters.purpose">
+        <option value="">{{ 'admin.payments.any' | translate }}</option>
+        @for (p of purposes; track p) { <option [value]="p">{{ 'payments.purpose.' + p | translate }}</option> }
+      </select>
+    </label>
+    <label class="field">
+      <span>{{ 'admin.payments.status' | translate }}</span>
+      <select name="status" [(ngModel)]="filters.status">
+        <option value="">{{ 'admin.payments.any' | translate }}</option>
+        @for (s of statuses; track s) { <option [value]="s">{{ 'admin.payments.statusLabel.' + s | translate }}</option> }
+      </select>
+    </label>
+    <label class="field">
+      <span>{{ 'admin.payments.refund' | translate }}</span>
+      <select name="refund" [(ngModel)]="filters.refund">
+        <option value="">{{ 'admin.payments.any' | translate }}</option>
+        <option value="any">{{ 'admin.payments.refundAny' | translate }}</option>
+        <option value="in_progress">{{ 'admin.payments.refundState.in_progress' | translate }}</option>
+        <option value="partial">{{ 'admin.payments.refundState.partial' | translate }}</option>
+        <option value="refunded">{{ 'admin.payments.refundState.refunded' | translate }}</option>
+      </select>
+    </label>
+    <label class="field">
+      <span>{{ 'admin.payments.gateway' | translate }}</span>
+      <select name="gateway" [(ngModel)]="filters.gateway">
+        <option value="">{{ 'admin.payments.any' | translate }}</option>
+        <option value="pawapay">PawaPay</option>
+        <option value="dpo">DPO</option>
+        <option value="demo">Demo</option>
+      </select>
+    </label>
+    <label class="field">
+      <span>{{ 'admin.payments.from' | translate }}</span>
+      <input type="date" name="date_from" [(ngModel)]="filters.date_from" />
+    </label>
+    <label class="field">
+      <span>{{ 'admin.payments.to' | translate }}</span>
+      <input type="date" name="date_to" [(ngModel)]="filters.date_to" />
+    </label>
+    <label class="field check">
+      <input type="checkbox" name="unresolved" [(ngModel)]="filters.unresolved" />
+      <span>{{ 'admin.payments.unresolvedOnly' | translate }}</span>
+    </label>
+    <div class="filter-actions">
+      <button type="submit" class="btn">{{ 'admin.payments.apply' | translate }}</button>
+      <button type="button" class="btn ghost" (click)="reset()">{{ 'admin.payments.reset' | translate }}</button>
+    </div>
+  </form>
+
+  <div aria-live="polite">
+    @if (error()) {
+      <p class="error" role="alert">{{ error() }} <button type="button" class="link" (click)="load()">{{ 'admin.payments.retry' | translate }}</button></p>
+    }
+  </div>
+
+  @if (data(); as d) {
+    <div class="totals" aria-live="polite">
+      <span>{{ 'admin.payments.totalResults' | translate: { n: d.total_results } }}</span>
+      <span>{{ 'admin.payments.paid' | translate }}: <strong>RWF {{ d.totals.paid | number }}</strong></span>
+      <span>{{ 'admin.payments.refunded' | translate }}: <strong>RWF {{ d.totals.refunded | number }}</strong></span>
+      <span>{{ 'admin.payments.net' | translate }}: <strong>RWF {{ d.totals.net | number }}</strong></span>
+    </div>
+  }
+
+  @if (loading() && !data()) {
+    <div class="table-skeleton" aria-hidden="true">@for (i of [1,2,3,4,5]; track i) { <div class="row-skeleton"></div> }</div>
+    <p class="sr-only" role="status">{{ 'admin.payments.loading' | translate }}</p>
+  } @else if (data()) {
+    @let d = data()!;
+    @if (d.results.length === 0) {
+      <div class="empty-state">{{ 'admin.payments.empty' | translate }}</div>
+    } @else {
+      <div class="table-wrap" [class.is-loading]="loading()">
+        <table class="ledger">
+          <thead>
+            <tr>
+              <th scope="col">{{ 'admin.payments.date' | translate }}</th>
+              <th scope="col">{{ 'admin.payments.reference' | translate }}</th>
+              <th scope="col">{{ 'admin.payments.user' | translate }}</th>
+              <th scope="col">{{ 'admin.payments.item' | translate }}</th>
+              <th scope="col" class="num">{{ 'admin.payments.amount' | translate }}</th>
+              <th scope="col">{{ 'admin.payments.status' | translate }}</th>
+              <th scope="col"><span class="sr-only">{{ 'admin.payments.open' | translate }}</span></th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (r of d.results; track r.id) {
+              <tr [class.unresolved]="r.unresolved">
+                <td class="muted">{{ r.created_at | date:'d MMM y, HH:mm' }}</td>
+                <td class="mono">{{ r.reference | slice:0:8 }}</td>
+                <td>
+                  <span class="cell-title">{{ r.user.name || r.user.email || r.user.phone_number }}</span>
+                  @if (r.user.email && r.user.name) { <span class="muted block">{{ r.user.email }}</span> }
+                </td>
+                <td>{{ r.item }}</td>
+                <td class="num">
+                  RWF {{ r.amount | number }}
+                  @if (r.refunded_amount) { <span class="muted block">−{{ r.refunded_amount | number }}</span> }
+                </td>
+                <td>
+                  <span [class]="statusClass(r.status)">{{ 'admin.payments.statusLabel.' + r.status | translate }}</span>
+                  @if (r.refund_state !== 'none' && r.status !== 'Refunded') {
+                    <span class="status-badge status-refund">{{ 'admin.payments.refundState.' + r.refund_state | translate }}</span>
+                  }
+                  @if (r.unresolved) { <span class="status-badge status-failed">{{ 'admin.payments.unresolvedShort' | translate }}</span> }
+                </td>
+                <td><button type="button" class="btn ghost small" (click)="open(r)">{{ 'admin.payments.open' | translate }}</button></td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+
+      @if (d.total_pages > 1) {
+        <nav class="pager" [attr.aria-label]="'admin.payments.pagination' | translate">
+          <button type="button" class="btn ghost" [disabled]="d.page <= 1" (click)="search(d.page - 1)">{{ 'admin.payments.prev' | translate }}</button>
+          <span>{{ d.page }} / {{ d.total_pages }}</span>
+          <button type="button" class="btn ghost" [disabled]="d.page >= d.total_pages" (click)="search(d.page + 1)">{{ 'admin.payments.next' | translate }}</button>
+        </nav>
+      }
+    }
+  }
+</div>
+
+@if (selectedId(); as id) {
+  <app-payment-detail-drawer [paymentId]="id" (closed)="selectedId.set(null)" (changed)="onChanged()" />
+}

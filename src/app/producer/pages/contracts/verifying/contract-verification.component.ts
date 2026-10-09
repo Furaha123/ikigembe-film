@@ -6,6 +6,7 @@ import { TranslatePipe } from '@ngx-translate/core';
 import { ContractService, ProducerContract } from '../../../services/contract.service';
 import { ContractFlowService } from '../contract-flow.service';
 import { apiErrorMessage } from '../../../../shared/utils/api-error';
+import { AuthService } from '../../../../core/services/auth.service';
 
 @Component({
   selector: 'app-contract-verification',
@@ -18,6 +19,7 @@ export class ContractVerificationComponent implements OnInit {
   private readonly router          = inject(Router);
   private readonly contractService = inject(ContractService);
   private readonly flow            = inject(ContractFlowService);
+  private readonly auth            = inject(AuthService);
   private readonly platformId      = inject(PLATFORM_ID);
 
   /** null while submitting; '' means "show the generic message". */
@@ -42,6 +44,7 @@ export class ContractVerificationComponent implements OnInit {
       termsVersion: agreement.terms_version,
     }).subscribe({
       next: (contract: ProducerContract) => {
+        this.auth.refreshProfile().subscribe();
         this.router.navigate(['/producer/contracts/success'], {
           state: { expiresAt: contract.expires_at },
         });

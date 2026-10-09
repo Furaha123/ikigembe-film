@@ -22,7 +22,14 @@
     "settings": "Settings",
     "terms": "Terms & Conditions",
     "signOut": "Sign Out",
-    "signingOut": "Signing out…"
+    "signingOut": "Signing out…",
+    "group": {
+      "castingManagement": "Casting",
+      "talentDiscovery": "Talent",
+      "mediaDistribution": "Media",
+      "financialsAccess": "Financials"
+    },
+    "statements": "Statements"
   },
   "topbar": {
     "uploadFilm": "Upload Film"
@@ -34,7 +41,9 @@
   },
   "statusBanner": {
     "pending": "Your account is under review. You can prepare submissions but nothing goes live until approved.",
-    "suspended": "Your account has been suspended. All upload, submit, and film management actions are blocked."
+    "suspended": "Your account has been suspended. All upload, submit, and film management actions are blocked.",
+    "producerSetup": "Finish setting up your producer account to submit films and use producer services: complete your profile and sign the distribution agreement.",
+    "signAgreement": "Sign the agreement"
   },
   "dashboard": {
     "title": "Producer Dashboard",
@@ -123,7 +132,6 @@
   "onboarding": {
     "welcome": "Welcome to IKIGEMBE",
     "subtitle": "Complete your producer profile so viewers and our admin team can learn about you and your work.",
-    "skip": "Skip setup for now",
     "stepTitle": "Tell us about yourself",
     "stepDesc": "Help viewers and IKIGEMBE's team understand who you are as a producer.",
     "photo": "Profile Photo",
@@ -409,7 +417,7 @@
       "statusExpired": "Expired",
       "statusNone": "No Agreement",
       "daysRemaining": "{{days}} day(s) remaining",
-      "descNone": "You haven't signed a Distribution Agreement yet. You must sign one before any approved films go live on the platform.",
+      "descNone": "You haven't signed a Distribution Agreement yet. Sign it to submit films and use producer services.",
       "descActive": "Your agreement is active. All approved films are live on the platform.",
       "descExpiring": "Your agreement expires soon. Renew now to avoid any interruption to your films.",
       "descExpired": "Your agreement has expired. Your films have been taken offline until you renew.",
@@ -419,8 +427,6 @@
       "signBtn": "Sign Agreement",
       "renewBtn": "Renew Agreement",
       "renewNowBtn": "Renew Now",
-      "noMovies": "You need to upload at least one movie before you can sign a Distribution Agreement.",
-      "uploadMovieBtn": "Upload a Movie",
       "infoRevenue": {
         "title": "Revenue Rights",
         "desc": "You retain your earnings. Ikigembe takes a platform fee as defined in the agreement."
@@ -435,17 +441,15 @@
       }
     },
     "welcome": {
-      "title": "Congratulations!",
-      "subtitle": "Your movie has been approved for distribution on Ikigembe.",
+      "title": "Sign the distribution agreement",
+      "subtitle": "Sign once to submit films and use producer services on Ikigembe.",
       "infoLine1": "To distribute content on our platform, you must complete a",
       "agreementName": "Producer Distribution Agreement",
       "infoLine2": "This agreement applies to your account and covers all movies you distribute on Ikigembe. It remains valid for",
       "validity": "2 years",
       "validityEnd": "from the date of signing.",
       "back": "Back",
-      "continue": "Continue",
-      "noMovies": "You need to upload at least one movie before you can sign a Distribution Agreement.",
-      "uploadBtn": "Upload a Movie"
+      "continue": "Continue"
     },
     "language": {
       "title": "Select Language",
@@ -538,7 +542,9 @@
     "detail": {
       "watchMovie": "Watch Movie",
       "buyToWatch": "Watch Full Movie — RWF {{price}}",
-      "loadingStream": "Loading…"
+      "loadingStream": "Loading…",
+      "availableOn": "Available from {{date}}",
+      "comingSoon": "Coming soon"
     },
     "stream": {
       "purchaseRequired": "Purchase required to stream this movie.",
@@ -547,7 +553,8 @@
       "otherDevice": "This purchase is already being watched on another device.",
       "notFound": "This movie is no longer available.",
       "buyAgain": "Buy again — RWF {{price}}",
-      "buyAgainShort": "Buy again"
+      "buyAgainShort": "Buy again",
+      "notReleased": "This film is not released yet. You can watch it from its release date."
     }
   },
   "payments": {
@@ -560,6 +567,16 @@
       "actor_video": "Talent video upload fee",
       "casting_announcement": "Casting call announcement",
       "actor_search": "Actor directory access"
+    },
+    "receipt": {
+      "title": "Receipt",
+      "view": "Receipt",
+      "reference": "Reference",
+      "method": "Method",
+      "paidFrom": "Paid from",
+      "refunded": "Refunded",
+      "print": "Print",
+      "loadFailed": "We could not load this receipt. Please try again."
     }
   },
   "marketplace": {
@@ -622,13 +639,17 @@
       "pending_review": "In review",
       "approved": "Approved",
       "rejected": "Rejected",
-      "removed": "Removed"
+      "removed": "Removed",
+      "upload_failed": "Upload not accepted",
+      "replaced": "Replaced"
     },
     "castingStatus": {
       "draft": "Draft",
       "published": "Published",
       "closed": "Closed",
-      "removed": "Removed"
+      "removed": "Removed",
+      "pending_review": "In review",
+      "rejected": "Not approved"
     },
     "applicationStatus": {
       "submitted": "Submitted",
@@ -645,6 +666,10 @@
       "gender": "Gender",
       "genderUnset": "Prefer not to say",
       "location": "Location",
+      "province": "Province",
+      "provinceUnset": "Select province…",
+      "district": "District",
+      "districtUnset": "Select district…",
       "languages": "Languages",
       "skills": "Skills",
       "listHint": "Separate items with commas.",
@@ -674,7 +699,20 @@
       "paymentFailed": "The payment failed. Add the video again to retry.",
       "upload": "Upload video",
       "uploading": "Uploading video",
-      "uploadFailed": "Upload failed. Please try again."
+      "uploadFailed": "Upload failed. Please try again.",
+      "processing": "Checking your upload (format, size and length)… this page updates by itself.",
+      "checkFailed": "Upload not accepted",
+      "retryFree": "Upload a corrected file to this same slot — no extra fee.",
+      "uploadAgain": "Upload again",
+      "inReview": "Waiting for review by the Ikigembe team.",
+      "replacementNote": "Replaces one of your approved videos, which stays visible until this one is approved.",
+      "newContentNeedsFee": "Different content needs a new talent video (a new upload fee applies).",
+      "submitNew": "Submit a new video",
+      "replace": "Replace (new fee)",
+      "delete": "Delete",
+      "deleteTitle": "Delete \"{{title}}\"?",
+      "deleteBody": "It will no longer be shown to producers. The fee you paid is not refunded.",
+      "deleteFailed": "We could not delete this video. Please try again."
     },
     "casting": {
       "title": "Casting calls",
@@ -696,7 +734,17 @@
       "count": "{{n}} open casting calls",
       "producer": "Producer",
       "published": "Published",
-      "about": "About this casting"
+      "about": "About this casting",
+      "search": "Search casting calls",
+      "searchPlaceholder": "Title, role, or location…",
+      "clearSearch": "Clear search",
+      "noResults": "No casting calls found for \"{{q}}\".",
+      "searchCount": "{{n}} casting calls matching \"{{q}}\"",
+      "shootingDates": "Shooting dates",
+      "ageRange": "Age range",
+      "from": "From",
+      "until": "Until",
+      "upTo": "Up to"
     },
     "applications": {
       "title": "My applications",
@@ -723,7 +771,7 @@
       "paymentPending": "Payment pending — the call publishes automatically once it completes.",
       "publish": "Pay and publish",
       "publishTitle": "Casting call announcement fee",
-      "publishDesc": "Your call is published automatically once the payment completes.",
+      "publishDesc": "Announcement fee. After payment your casting call is reviewed by an admin before it is published.",
       "viewApplications": "Applications",
       "close": "Close call",
       "confirmClose": "Close this call to new applications?",
@@ -742,7 +790,9 @@
       "emptyFilter": "Nothing here.",
       "closedNotice": "Casting closed. It no longer accepts applications.",
       "pickCall": "Casting call",
-      "noPublishedCalls": "You don't have any published castings yet."
+      "noPublishedCalls": "You don't have any published castings yet.",
+      "reviewNote": "Reason",
+      "editResend": "Edit & send again"
     },
     "directory": {
       "title": "Actor directory",
@@ -758,6 +808,7 @@
       "tabSearch": "Search",
       "tabShortlist": "Shortlist",
       "q": "Name or keyword",
+      "qPlaceholder": "Search by name, skill…",
       "any": "Any",
       "minAge": "Min age",
       "maxAge": "Max age",
@@ -770,10 +821,12 @@
       "unshortlist": "Remove from shortlist",
       "shortlistEmpty": "Your shortlist is empty.",
       "contact": "Contact",
+      "noContact": "No contact details available.",
       "noVideos": "No approved videos yet.",
       "actorNotFound": "This actor is no longer in the directory.",
       "range": "{{from}}–{{to}} of {{total}} actors",
-      "noResults": "No actors match these filters."
+      "noResults": "No actors match these filters.",
+      "anyProvince": "Any province"
     },
     "access": {
       "suspended": "Your account is suspended, so marketplace features are unavailable. You can still browse published casting calls. Contact support if you think this is a mistake.",
@@ -822,7 +875,8 @@
       "doneTitle": "Payment confirmed",
       "granted": "Your directory access is active.",
       "awaitingGrant": "Your payment is confirmed, but the access isn't showing yet. Check again in a moment.",
-      "toDashboard": "Go to dashboard"
+      "toDashboard": "Go to dashboard",
+      "producerSetup": "Producer services open once you complete your profile and sign the distribution agreement in your producer dashboard."
     },
     "wizard": {
       "back": "Back",
@@ -870,7 +924,8 @@
       "doneTitle": "Application submitted",
       "doneText": "The producer will review applications and may contact the applicants they select. You can follow the status in My applications.",
       "browseMore": "Browse more casting calls",
-      "home": "Home"
+      "home": "Home",
+      "viewProfile": "View profile"
     },
     "talent": {
       "title": "Show your talent",
@@ -925,7 +980,10 @@
       "noPaidVideo": "We couldn't find the paid video. Open My talent videos to upload it.",
       "doneTitle": "Video submitted",
       "doneText": "Your video is waiting for review. Paid does not mean approved: you'll see the result, and any rejection reason, in My talent videos.",
-      "another": "Submit another video"
+      "another": "Submit another video",
+      "tooLarge": "This video is larger than 500 MB. Compress it and try again.",
+      "limits": "MP4 or MOV, up to 500 MB and 5 minutes.",
+      "replacing": "You are replacing an approved video. It stays visible to producers until this new one is approved. A new upload fee applies."
     },
     "postCasting": {
       "title": "Post a casting",
@@ -956,28 +1014,80 @@
       "reviewTitle": "Review your casting",
       "postedAs": "Posted as",
       "fee": "Announcement fee",
-      "publishRules": "Your casting is published by our server once the fee payment is confirmed. Until then it stays a draft that only you can see.",
+      "publishRules": "After payment, an admin reviews your casting call. It is published only when approved, and never after its deadline.",
       "saveDraft": "Save draft",
-      "payPublish": "Pay & publish",
+      "payPublish": "Pay & send for review",
       "draftSaved": "Draft saved.",
       "fixErrors": "Some details are missing. Check each section.",
-      "notDraft": "This casting is no longer a draft, so it can't be edited."
+      "notDraft": "This casting is no longer a draft, so it can't be edited.",
+      "projectType": "Project type",
+      "projectTypeAny": "Select type…",
+      "genre": "Genre",
+      "genrePlaceholder": "e.g. Drama, Comedy, Thriller…",
+      "shootingLocation": "Shooting location",
+      "locationPlaceholder": "e.g. Kigali, Musanze…",
+      "projectStartDate": "Shooting start date",
+      "projectEndDate": "Shooting end date",
+      "projectDateHint": "Leave blank if not yet confirmed.",
+      "talentReqs": "Talent requirements",
+      "talentReqsHint": "All fields are optional — fill in only what applies.",
+      "minAge": "Min age",
+      "maxAge": "Max age",
+      "ageRangeError": "Max age must be greater than min age.",
+      "genderPref": "Gender preference",
+      "anyGender": "Any gender",
+      "numActors": "Number of actors needed",
+      "numActorsHint": "Leave blank if not fixed.",
+      "numActorsError": "Enter a number between 1 and 999.",
+      "ageRange": "Age {{min}}–{{max}}",
+      "stepPoster": "Poster",
+      "posterTitle": "Project poster",
+      "posterHint": "Upload a poster or key image for your casting. Optional — you can skip this step.",
+      "posterUpload": "Upload image",
+      "posterReplace": "Replace",
+      "posterRemove": "Remove poster",
+      "posterFormats": "JPG, PNG or WebP · max 5 MB",
+      "posterUploading": "Uploading…",
+      "posterBadType": "Only JPEG, PNG, or WebP images are accepted.",
+      "posterTooLarge": "Image must be 5 MB or smaller.",
+      "posterUploadFailed": "Could not upload the poster. Please try again.",
+      "physicalReqs": "Physical requirements",
+      "heightMin": "Min height (cm)",
+      "heightMax": "Max height (cm)",
+      "heightPlaceholder": "e.g. 170",
+      "bodyType": "Body type",
+      "complexion": "Complexion",
+      "appearanceNotes": "Appearance notes",
+      "skillsLangs": "Skills & languages",
+      "requiredSkills": "Required skills",
+      "skillsPlaceholder": "e.g. Drama, Dancing, Singing…",
+      "requiredLanguages": "Required languages",
+      "langsPlaceholder": "e.g. Kinyarwanda, English, French…",
+      "availabilityTitle": "Availability & notes",
+      "availabilityNotes": "Availability & additional information",
+      "availabilityPlaceholder": "Required shoot dates, call times, travel requirements, or any other information for applicants…",
+      "sendForReview": "Send for review again",
+      "rejectedHelp": "Fix what was asked, then send it for review again. The fee you paid stays attached; refunds are handled separately by support."
     },
     "publication": {
       "draft": "Draft",
-      "draftText": "Not published. Pay the announcement fee to publish it.",
+      "draftText": "Not published. Pay the announcement fee to send it for review.",
       "paymentPending": "Payment pending",
       "paymentPendingText": "We're waiting for the payment to be confirmed.",
       "paymentFailed": "Payment failed",
       "paymentFailedText": "The payment didn't go through. You can try again.",
-      "processing": "Paid – publishing",
-      "processingText": "Payment confirmed. The casting is being published; refresh in a moment.",
+      "processing": "Paid — sending for review",
+      "processingText": "Payment confirmed. Your casting call is being sent for review; refresh in a moment.",
       "published": "Published",
       "publishedText": "Your casting is live and actors can apply.",
       "closed": "Closed",
       "closedText": "This casting no longer accepts applications.",
       "removed": "Removed",
-      "removedText": "This casting was removed by a moderator."
+      "removedText": "This casting was removed by a moderator.",
+      "inReview": "In review",
+      "inReviewText": "Paid and waiting for an admin. It is published once approved, before its deadline.",
+      "rejected": "Not approved",
+      "rejectedText": "An admin did not approve this casting call. Edit it and send it again — no new payment."
     }
   },
   "admin": {
@@ -1006,9 +1116,57 @@
       "dialog": {
         "reject-video": "Reject talent video",
         "remove-video": "Remove talent video",
-        "remove-call": "Remove casting call"
+        "remove-call": "Remove casting call",
+        "reject-call": "Reject this casting call"
       },
-      "resultCount": "{{n}} results"
+      "resultCount": "{{n}} results",
+      "shown": "shown",
+      "pricingSettings": "Pricing Settings",
+      "kpiTotal": "Total submitted",
+      "kpiPending": "Pending review",
+      "kpiApproved": "Approved",
+      "kpiRejected": "Rejected",
+      "allClearTitle": "All caught up!",
+      "allClearDesc": "No talent videos are waiting for review right now.",
+      "viewApproved": "View approved videos",
+      "statusFilter": "Filter by status",
+      "searchVideos": "Search by title or actor…",
+      "searchCalls": "Search by title or producer…",
+      "noSearchResults": "No results match your search.",
+      "approvePublish": "Approve & publish"
+    },
+    "marketplaceSettings": {
+      "title": "Marketplace Pricing & Access",
+      "subtitle": "Adjust fees and access duration for actors, casting calls and directory search. Changes take effect within 5 minutes.",
+      "loading": "Loading settings…",
+      "lastUpdated": "Last saved:",
+      "sectionActorVideos": "Talent Video Upload",
+      "sectionActorVideosDesc": "One-time fee paid by actors before uploading a talent video for review. Two tiers based on the actor's age at purchase time.",
+      "sectionCasting": "Casting Announcement",
+      "sectionCastingDesc": "Fee paid by producers to publish a casting call and make it visible to actors.",
+      "sectionSearch": "Actor Directory Search",
+      "sectionSearchDesc": "Fee paid by producers to unlock contact details and full profiles in the actor directory for a set number of days.",
+      "feeUnder30": "Under 30",
+      "fee30Plus": "30 and over",
+      "feeCasting": "Publication fee",
+      "feeSearch": "Search access fee",
+      "accessDays": "Access window",
+      "days": "days",
+      "feeMin": "Must be greater than 0.",
+      "daysMin": "Must be at least 1 day.",
+      "save": "Save changes",
+      "saving": "Saving…",
+      "saved": "Settings saved. New prices apply within 5 minutes.",
+      "cacheNote": "Prices are cached server-side for up to 5 minutes before propagating to payment endpoints.",
+      "loadFailed": "Could not load settings. Please try again.",
+      "saveFailed": "Could not save settings. Please try again.",
+      "sectionLimits": "Talent video limits",
+      "sectionLimitsDesc": "Checked by the server on every upload. Changes apply to new uploads only.",
+      "maxSize": "Largest file",
+      "maxSizeRange": "Between 1 and 4096 MB.",
+      "maxLength": "Longest video",
+      "seconds": "seconds",
+      "maxLengthRange": "Between 10 and 3600 seconds."
     },
     "revenue": {
       "open": "Revenue split",
@@ -1156,26 +1314,44 @@
         "imageType": "Choose an image file (JPG, PNG or WEBP).",
         "uploadFailed": "Upload failed. Check your connection and retry.",
         "waitForUpload": "Please wait for the upload to finish.",
-        "saveFailed": "Something went wrong. Please try again."
-      }
+        "saveFailed": "Something went wrong. Please try again.",
+        "priceMin": "Enter a price of at least Frw 1."
+      },
+      "releaseTime": "Release time (Kigali)",
+      "releaseTimeHint": "Before this moment the film is \"coming soon\": trailer only, no purchase or playback.",
+      "priceHint": "Default Frw 1,000. Only admins can change a film's price; buyers are always charged this amount."
     },
     "nav": {
       "dashboard": "Dashboard",
+      "userMgmt": "User Management",
       "users": "Users",
       "producers": "Producers",
+      "content": "Content",
       "movies": "Movies",
+      "financials": "Financials",
       "withdrawals": "Withdrawals",
       "contracts": "Contracts",
-      "marketplace": "Marketplace",
+      "marketplace": "Marketplace & Talent",
       "cms": "Pages & Ads",
-      "reports": "Reports",
-      "settings": "Settings"
+      "reports": "Analytics & Reports",
+      "settings": "Settings",
+      "payments": "Payments",
+      "auditLog": "Audit log",
+      "transcodes": "Transcoding",
+      "platformSettings": "Platform",
+      "marketplaceSettings": "Marketplace fees",
+      "myAccount": "My account",
+      "filmRequests": "Change requests",
+      "finance": "Revenue periods",
+      "abuseReports": "Abuse reports"
     },
     "layout": {
       "browseHomepage": "Browse Homepage",
       "signingOut": "Signing out...",
       "signOut": "Sign Out",
       "toggleSidebar": "Toggle sidebar",
+      "sidebarNav": "Admin navigation",
+      "sectionTabs": "Section tabs",
       "adminFallback": "Admin",
       "roleFallback": "Administrator"
     },
@@ -1243,12 +1419,10 @@
     },
     "producers": {
       "title": "Producers",
-      "subtitle": "Approve and manage film producers on the platform.",
+      "subtitle": "Producers set up their own accounts: they complete their profile and sign the distribution agreement. Track setup and manage accounts here.",
       "exportCsv": "Export CSV",
       "dismiss": "Dismiss",
       "filterAll": "All",
-      "pending": "Pending",
-      "approved": "Approved",
       "suspended": "Suspended",
       "colName": "Name",
       "colStudio": "Studio",
@@ -1259,15 +1433,8 @@
       "viewDocuments": "View Documents",
       "resetPassword": "Reset Password",
       "resetting": "Resetting...",
-      "approve": "Approve",
-      "reject": "Reject",
       "suspend": "Suspend",
       "delete": "Delete",
-      "rejectProducer": "Reject Producer",
-      "rejectionReason": "Rejection Reason",
-      "rejectPlaceholder": "Explain why this producer's account is being rejected…",
-      "rejecting": "Rejecting...",
-      "rejectAccount": "Reject Account",
       "suspendProducer": "Suspend Producer",
       "suspensionReason": "Suspension Reason",
       "suspendPlaceholder": "Explain why this producer's account is being suspended…",
@@ -1278,14 +1445,13 @@
       "documentsTitle": "Documents — {{name}}",
       "loadingDocuments": "Loading documents…",
       "copyrightDocument": "Copyright Document",
-      "idVerification": "ID Verification",
       "viewDocument": "View Document",
       "notUploaded": "Not uploaded",
       "producerDetails": "Producer Details",
       "loadingDetails": "Loading producer details...",
       "phone": "Phone",
       "address": "Address",
-      "copyrightCode": "Copyright Code",
+      "copyrightCode": "Copyright code",
       "country": "Country",
       "experience": "Experience",
       "experienceYear": "{{years}} yr",
@@ -1334,7 +1500,16 @@
       "deleteConfirmBefore": "You are about to permanently delete",
       "deleteConfirmAfter": ". This action <strong>cannot be undone</strong>.",
       "actionFailed": "That action didn't go through. Please try again.",
-      "rejectUnsupported": "Rejecting producer applications isn't supported by the server yet. Nothing was changed."
+      "reactivate": "Reactivate",
+      "studio": "Studio",
+      "noFilms": "No films submitted yet.",
+      "documentsFailed": "Could not load the documents. Please try again.",
+      "ready": "Ready",
+      "incomplete": "Setup incomplete",
+      "profileDone": "Profile complete",
+      "profileMissing": "Profile missing",
+      "agreementDone": "Agreement signed",
+      "agreementMissing": "Agreement not signed"
     },
     "withdrawalsPage": {
       "title": "Withdrawals",
@@ -1535,15 +1710,32 @@
       "kpi": {
         "totalRevenue": "Total Revenue",
         "platformCommission": "Platform Commission",
-        "producerPayouts": "Producer Payouts"
+        "producerPayouts": "Producer Payouts",
+        "revenueToday": "Revenue Today",
+        "thisMonth": "this month",
+        "today": "Today",
+        "allTime": "All time",
+        "vsLastMonth": "vs last month"
       },
       "stats": {
         "totalUsers": "Total Users",
+        "registeredViewers": "Registered viewers",
         "producers": "Producers",
+        "activeProducers": "Active producers",
         "movies": "Movies",
+        "totalMovies": "Total in library",
         "pendingWithdrawals": "Pending Withdrawals",
+        "noPendingWithdrawals": "No pending requests",
         "actionNeeded": "Action needed",
-        "pendingTalentVideos": "Talent videos to review"
+        "pendingReview": "pending review",
+        "reviewQueue": "Review queue",
+        "pendingTalentVideos": "Talent videos to review",
+        "actorsWithVideos": "Actors with approved videos",
+        "inDirectory": "In actor directory",
+        "marketplacePayments": "Confirmed marketplace payments",
+        "confirmedPayments": "All confirmed",
+        "totalViews": "Total Views",
+        "filmViews": "Film views"
       },
       "chart": {
         "title": "Revenue Trend",
@@ -1564,7 +1756,7 @@
         "pendingCount": "{{count}} pending",
         "noPending": "No pending requests",
         "producers": "Manage Producers",
-        "producersSub": "Approve, suspend, view reports",
+        "producersSub": "Track setup, suspend, view reports",
         "users": "Manage Users",
         "usersSub": "View, suspend, payment history",
         "upload": "Upload Movie",
@@ -1718,6 +1910,301 @@
         "exportTitle": "WITHDRAWAL SUMMARY REPORT",
         "sheetName": "Withdrawals"
       }
+    },
+    "payments": {
+      "title": "Payments",
+      "subtitle": "Every payment on the platform — films and marketplace fees — with refunds.",
+      "unresolved": "Unresolved payments",
+      "unresolvedOnly": "Pending > 30 min only",
+      "unresolvedShort": "Unresolved",
+      "export": "Export CSV",
+      "exporting": "Exporting…",
+      "exportFailed": "The export failed. Please try again.",
+      "search": "Search",
+      "searchPlaceholder": "Reference, email, phone or name",
+      "purpose": "Item type",
+      "status": "Status",
+      "refund": "Refunds",
+      "refundAny": "Any refund",
+      "gateway": "Provider",
+      "from": "From",
+      "to": "To",
+      "any": "Any",
+      "apply": "Apply",
+      "reset": "Reset",
+      "retry": "Retry",
+      "loadFailed": "We could not load payments. Please try again.",
+      "loading": "Loading…",
+      "empty": "No payments match these filters.",
+      "totalResults": "{{n}} results",
+      "paid": "Paid",
+      "refunded": "Refunded",
+      "net": "Net",
+      "date": "Date",
+      "reference": "Reference",
+      "user": "User",
+      "item": "Item",
+      "amount": "Amount",
+      "open": "Details",
+      "pagination": "Pages",
+      "prev": "Previous",
+      "next": "Next",
+      "statusLabel": {
+        "Pending": "Pending",
+        "Completed": "Paid",
+        "Failed": "Failed",
+        "Refunded": "Refunded"
+      },
+      "refundState": {
+        "in_progress": "Refund in progress",
+        "partial": "Partly refunded",
+        "refunded": "Refunded",
+        "none": "No refund"
+      },
+      "detailTitle": "Payment",
+      "close": "Close",
+      "completedAt": "Completed",
+      "benefit": "What it bought",
+      "benefitKind": {
+        "film": "Film",
+        "talent_video": "Talent video",
+        "casting_call": "Casting call",
+        "actor_search": "Actor search"
+      },
+      "recheck": "Re-check with provider",
+      "rechecked": "Checked with the provider.",
+      "refundAction": "Refund",
+      "refundHelp": "Refunds are recorded against this payment; the original record is kept. A full refund removes what was bought.",
+      "methodLabel": "How the money is returned",
+      "methodProvider": "Through the payment provider",
+      "methodManual": "Manual transfer (confirm with its reference afterwards)",
+      "providerUnsupported": "This provider is not connected for refunds here.",
+      "methods": {
+        "provider": "Provider",
+        "manual": "Manual"
+      },
+      "reason": "Reason",
+      "fullRefundWarning": "This refunds the full amount: once confirmed, the buyer loses what this payment bought.",
+      "submitRefund": "Start refund",
+      "cancel": "Cancel",
+      "confirm": "Confirm",
+      "refundRequested": "Refund started. It counts as refunded only once the money return is confirmed.",
+      "refundCompleted": "Refund confirmed.",
+      "refundFailed": "Refund marked as failed.",
+      "refunds": "Refunds",
+      "noRefunds": "No refunds.",
+      "transferRef": "Transfer reference",
+      "markPaidOut": "Confirm paid out",
+      "markFailed": "Mark failed",
+      "refundStatus": {
+        "requested": "Requested",
+        "processing": "Processing",
+        "completed": "Completed",
+        "failed": "Failed"
+      },
+      "reasonRequired": "Please give a reason.",
+      "referenceRequired": "Enter the transfer reference.",
+      "amountRange": "Enter an amount between 1 and {{max}} RWF.",
+      "actionFailed": "That did not work. Please try again."
+    },
+    "audit": {
+      "title": "Audit log",
+      "subtitle": "Every sensitive admin action, newest first. Entries cannot be edited.",
+      "action": "Action",
+      "actor": "Admin",
+      "target": "Affected user",
+      "emailOrId": "Email or id",
+      "resource": "Resource",
+      "resourcePlaceholder": "Payment reference, movie_id, casting_call_id…",
+      "details": "Details",
+      "show": "Show",
+      "hide": "Hide",
+      "empty": "No entries match these filters.",
+      "loadFailed": "We could not load the audit log. Please try again."
+    },
+    "transcodes": {
+      "title": "Transcoding",
+      "subtitle": "Video processing jobs. Failed jobs retry automatically up to 3 times; after that they need an admin.",
+      "filter": "Filter by state",
+      "state": {
+        "queued": "Queued",
+        "processing": "Processing",
+        "succeeded": "Succeeded",
+        "failed": "Failed"
+      },
+      "needsAdmin": "Needs attention",
+      "stateLabel": "State",
+      "film": "Film",
+      "attempts": "Attempts",
+      "started": "Started",
+      "error": "Error",
+      "retry": "Retry",
+      "restarted": "Transcoding restarted for \"{{title}}\".",
+      "retryFailed": "The retry could not start.",
+      "empty": "No jobs in this state.",
+      "loadFailed": "We could not load transcoding jobs."
+    },
+    "platformSettings": {
+      "title": "Platform settings",
+      "subtitle": "Values the server applies from now on. Past purchases and closed periods keep the values they were made with.",
+      "lastUpdated": "Last changed {{date}} by {{by}}",
+      "pricing": "Films",
+      "defaultFilmPrice": "Default film price",
+      "defaultFilmPriceHint": "Given to new films. Admins can still set another price on a film; producers cannot.",
+      "min1": "Enter at least 1.",
+      "playback": "Playback",
+      "window": "Single-view resume window (hours)",
+      "windowHint": "When the single-device policy is on: how long after the first play the viewer can resume on the same device.",
+      "windowRange": "Between 1 and 720 hours.",
+      "finance": "Finance",
+      "taxRate": "Tax rate",
+      "taxRateHint": "Leave empty until the applicable rate is confirmed (0 is allowed). The platform pays the tax from its own share; producers always receive their full percentage. Months will not close without an explicit rate.",
+      "percentRange": "Between 0 and 100.",
+      "save": "Save",
+      "saving": "Saving…",
+      "saved": "Settings saved.",
+      "saveFailed": "The settings could not be saved.",
+      "loadFailed": "The settings could not be loaded.",
+      "environment": "Deployment switches",
+      "environmentHint": "Set on the server (environment variables), not here.",
+      "singleDevice": "One view, one device",
+      "on": "On",
+      "off": "Off",
+      "gateway": "Payment provider",
+      "demo": "demo mode (no money moves)",
+      "defaultSplit": "Default revenue split",
+      "defaultSplitValue": "{{p}}% producer when a film has no contract split",
+      "splitInfo": "Revenue split (distribution agreement): producer {{p}}% · platform {{platform}}% of each sale. Change it for one film with a revenue share on the film, or for everyone with a new agreement version."
+    },
+    "filmRequests": {
+      "title": "Film change requests",
+      "subtitle": "Producers ask here to change or unpublish an approved film. Approving applies the change.",
+      "status": {
+        "pending": "Pending",
+        "approved": "Approved",
+        "rejected": "Rejected",
+        "cancelled": "Withdrawn"
+      },
+      "kind": {
+        "edit": "Metadata change",
+        "unpublish": "Unpublish"
+      },
+      "approveEdit": "Approve & apply",
+      "approveUnpublish": "Approve & unpublish",
+      "empty": "No requests here.",
+      "loadFailed": "We could not load the requests."
+    },
+    "finance": {
+      "title": "Revenue periods",
+      "subtitle": "Close each month once: producers and contract parties receive their percentage of each sale; the platform pays the tax from its share. Closed months never change; later corrections land in the next open month.",
+      "month": "Month",
+      "openMonth": "Open month",
+      "monthFormat": "Pick a month.",
+      "noPeriods": "No periods yet. Open the previous month to start.",
+      "periods": "Periods",
+      "status": {
+        "open": "open",
+        "closed": "closed"
+      },
+      "exportCsv": "Export allocations (CSV)",
+      "close": "Close period",
+      "confirmClose": "Closing is final. Continue?",
+      "closed": "{{label}} is closed.",
+      "closedInfo": "Closed {{date}} by {{by}} · tax {{tax}} % · operations {{ops}} %",
+      "previewInfo": "Preview with the current settings. Nothing is saved until the period is closed.",
+      "blocked": "This period cannot be allocated yet:",
+      "gross": "Ledger total",
+      "category": "Category",
+      "partyLabel": "Party",
+      "basis": "Basis",
+      "rule": "Rule",
+      "party": {
+        "tax": "Tax",
+        "operations": "Platform operations",
+        "producer": "Producers",
+        "partner": "Other parties",
+        "platform": "Platform (fees)"
+      },
+      "categoryLabel": {
+        "film": "Film sales",
+        "actor_fee": "Actor fees",
+        "producer_service": "Producer services"
+      },
+      "statements": "Producer statements",
+      "recordPayout": "Record payout",
+      "paidOut": "Paid out ({{ref}}) on {{date}}"
+    },
+    "monthlyReports": {
+      "tab": "Monthly reports",
+      "title": "Monthly reports",
+      "subtitle": "Frozen snapshots per Kigali month: revenue and refunds from the ledger, views, users, films, actor uploads and producer services. Last month's report is generated automatically.",
+      "generate": "Generate report",
+      "generating": "Generating…",
+      "empty": "No reports yet. Pick a month and generate one.",
+      "history": "Report history",
+      "partial": "partial",
+      "reportFor": "Report for {{month}}",
+      "generatedInfo": "Generated {{date}} by {{by}}. A snapshot never changes; generate again for newer numbers.",
+      "scheduled": "the scheduled job",
+      "partialInfo": "This month had not ended when the report was generated, so the numbers are partial.",
+      "periodOpen": "The finance period for this month is not closed yet; allocations may still change.",
+      "revenue": "Revenue",
+      "payments": "Payments",
+      "refunded": "Refunded",
+      "net": "Net (RWF)",
+      "total": "Total",
+      "views": "Views",
+      "playbackStarts": "Playbacks started",
+      "playbackCompletions": "Playbacks completed (≥ 90 %)",
+      "trailerPlays": "Trailer plays",
+      "pageViews": "Page views",
+      "checkoutsOpened": "Checkouts opened",
+      "trackingSince": "Event tracking started on {{date}}; earlier periods show no views.",
+      "noTracking": "No events recorded yet, so view numbers are zero.",
+      "topFilms": "Top films",
+      "purchases": "Purchases",
+      "plays": "Plays",
+      "users": "Users (new / total)",
+      "newRole": "{{role}}",
+      "newTotal": "All accounts",
+      "content": "Films and actor uploads",
+      "filmsSubmitted": "Films submitted",
+      "filmsReleased": "Films released",
+      "filmsListed": "Films listed (at generation)",
+      "actorSlots": "Actor video slots paid",
+      "actorReviewed": "Actor videos approved / rejected",
+      "producerServices": "Producer services",
+      "castingPaid": "Casting announcements paid",
+      "searchPaid": "Actor search passes paid",
+      "castingPublished": "Casting calls published"
+    },
+    "abuse": {
+      "title": "Abuse reports",
+      "subtitle": "Reports from users about films, casting calls and actors. Resolving a report records your decision and tells the reporter; act on the content from its moderation page.",
+      "itemType": "Item type",
+      "allItems": "All items",
+      "statusFilter": "Report status",
+      "status": {
+        "open": "Open",
+        "actioned": "Action taken",
+        "dismissed": "Dismissed"
+      },
+      "target": {
+        "film": "Film",
+        "casting_call": "Casting call",
+        "actor": "Actor"
+      },
+      "empty": "No reports here.",
+      "openForItem": "{{count}} open reports for this item",
+      "reportedBy": "Reported by {{who}}",
+      "resolvedBy": "Resolved by {{who}} on {{date}}",
+      "openItem": "Open item",
+      "markActioned": "Mark action taken",
+      "dismiss": "Dismiss",
+      "actionNote": "What was done (required)",
+      "dismissNote": "Note (optional)",
+      "noteRequired": "Say what action was taken.",
+      "resolved": "Report resolved."
     }
   },
   "cms": {
@@ -1839,7 +2326,8 @@
       "googleLoading": "Signing in with Google…",
       "newToIkigembe": "New to Ikigembe?",
       "signUpNow": "Sign up now",
-      "failed": "We couldn't sign you in right now. Check your connection and try again."
+      "failed": "We couldn't sign you in right now. Check your connection and try again.",
+      "tooManyAttempts": "Too many sign-in attempts. Please wait a few minutes and try again, or reset your password."
     },
     "register": {
       "seoTitle": "Create Account",
@@ -2010,7 +2498,7 @@
       "title": "Become a Producer",
       "subtitle": "Share your stories with the world. Upload your films to Ikigembe and start earning.",
       "cta": "Become a Producer",
-      "note": "Your account will be upgraded to a Producer account. You'll complete a short onboarding to set up your producer profile.",
+      "note": "Your account becomes a producer account right away. To submit films and use producer services (casting calls, actor search), complete your producer profile and sign the distribution agreement once. No admin approval is needed.",
       "upgrading": "Upgrading…",
       "confirm": "Confirm",
       "failed": "Upgrade failed. Please try again."
@@ -2029,7 +2517,8 @@
       "home": "Explore Films",
       "myList": "My List",
       "producers": "Producers",
-      "actorsCasting": "Actors Casting"
+      "actorsCasting": "Actors Casting",
+      "films": "Films"
     },
     "toggleNav": "Toggle navigation",
     "logoAlt": "Ikigembe logo",
@@ -2147,7 +2636,11 @@
     "loadErrorTitle": "We couldn't load this film",
     "loadErrorText": "Check your connection and try again.",
     "retry": "Try again",
-    "backToFilms": "Back to films"
+    "backToFilms": "Back to films",
+    "director": "Director",
+    "writer": "Writer",
+    "language": "Language",
+    "genres": "Genres"
   },
   "myList": {
     "title": "My List",
@@ -2307,7 +2800,18 @@
       "resultsFooter": "1–{{count}} of {{total}}",
       "titlePlaceholder": "Film title",
       "overviewPlaceholder": "Short description of the film",
-      "saveFailed": "Failed to save changes. Please try again."
+      "saveFailed": "Failed to save changes. Please try again.",
+      "priceAdminOnly": "The selling price is set by Ikigembe (default Frw 1,000). Contact support to discuss it.",
+      "requestChanges": "Request changes",
+      "requestUnpublish": "Request unpublish",
+      "requestPending": "Request pending review",
+      "requestNote": "This film is approved. Your changes are sent to an admin and apply only once approved.",
+      "sendRequest": "Send request",
+      "changeRequestSent": "Change request sent. You will be notified when an admin decides.",
+      "unpublishSent": "Unpublish request sent. The film stays live until an admin approves it.",
+      "unpublishNote": "The film stays available until an admin approves the request. Existing buyers keep their purchase history.",
+      "reason": "Reason",
+      "reasonRequired": "Please give a reason."
     },
     "resubmit": {
       "title": "Resubmit: {{title}}",
@@ -2465,9 +2969,20 @@
       "saveFailed": "Failed to save your profile. Please try again."
     },
     "contracts": {
-      "underReview": "Your film is under review. You can sign the contract once the admin approves your submission.",
-      "viewMyFilms": "View My Films",
       "signatureAlt": "Signature preview"
+    },
+    "statements": {
+      "title": "Statements",
+      "subtitle": "Your share for each closed month, by film.",
+      "empty": "No closed months yet.",
+      "period": "Month",
+      "sales": "Sales",
+      "share": "Your share",
+      "payout": "Payout",
+      "paid": "Paid",
+      "unpaid": "Not paid yet",
+      "method": "You receive your agreement percentage of every sale. Tax is paid by Ikigembe from its own share, not from yours.",
+      "loadFailed": "We could not load your statements."
     }
   },
   "uploadErrors": {
@@ -2525,6 +3040,136 @@
       "actor_search": "Actor directory pass",
       "casting_announcement": "Casting call announcement",
       "movie": "Film"
+    }
+  },
+  "share": {
+    "button": "Share",
+    "label": "Share {{title}}",
+    "copied": "Link copied",
+    "copyFailed": "Could not copy the link"
+  },
+  "languages": {
+    "en": "English",
+    "fr": "French",
+    "rw": "Kinyarwanda",
+    "sw": "Swahili",
+    "ar": "Arabic",
+    "es": "Spanish",
+    "pt": "Portuguese",
+    "zh": "Chinese",
+    "de": "German",
+    "it": "Italian"
+  },
+  "home": {
+    "seoTitle": "Rwandan films to watch online",
+    "seoDescription": "Watch Rwandan films and trailers on Ikigembe. Pay per film with Mobile Money.",
+    "errorTitle": "We could not load the films",
+    "errorText": "Check your connection and try again.",
+    "retry": "Try again",
+    "introTitle": "Rwandan cinema, one film at a time",
+    "introText": "New films are added regularly. Watch trailers for free; pay only for the films you want to see.",
+    "actionsLabel": "Get started",
+    "browseAll": "Browse all films",
+    "createAccount": "Create a free account",
+    "actorsCasting": "Actors & casting",
+    "empty": "No films are available yet. Come back soon.",
+    "latest": "New releases",
+    "comingSoon": "Coming soon",
+    "popular": "Most watched"
+  },
+  "films": {
+    "seoTitle": "All films",
+    "seoDescription": "Search and browse every film on Ikigembe by genre, language and year.",
+    "title": "Films",
+    "subtitle": "Search the catalog, filter by genre, language or year.",
+    "search": "Search",
+    "searchPlaceholder": "Title, actor or director",
+    "genre": "Genre",
+    "allGenres": "All genres",
+    "language": "Language",
+    "allLanguages": "All languages",
+    "year": "Year",
+    "anyYear": "Any year",
+    "show": "Show",
+    "availability": {
+      "released": "Available now",
+      "coming_soon": "Coming soon",
+      "all": "All"
+    },
+    "sort": "Sort by",
+    "sortBy": {
+      "newest": "Newest",
+      "most_watched": "Most watched",
+      "title": "Title (A–Z)"
+    },
+    "apply": "Search",
+    "clear": "Clear filters",
+    "count": "{{n}} films",
+    "error": "We could not load the catalog.",
+    "noMatch": "No films match these filters.",
+    "empty": "No films are available yet."
+  },
+  "refundPolicy": {
+    "title": "Refund policy",
+    "intro": "How refunds work on Ikigembe today.",
+    "contact": "Contact support about a payment",
+    "sections": {
+      "scope": {
+        "title": "What this covers",
+        "body": "Payments for films and for marketplace services (talent video uploads, casting announcements and actor search access)."
+      },
+      "when": {
+        "title": "When a refund can be considered",
+        "body": "Refunds are not automatic. Our team reviews each request, for example when a film could not be played because of a problem on our side, or when you were charged twice. A moderation decision (such as a rejected talent video or casting call) does not by itself mean a refund."
+      },
+      "request": {
+        "title": "How to ask",
+        "body": "Contact support with the payment reference shown on your receipt (Profile → Payment history → Receipt) and explain what happened."
+      },
+      "how": {
+        "title": "How the money is returned",
+        "body": "If a refund is approved, it is returned through the original payment provider when that provider supports refunds, or otherwise by a manual transfer (for example Mobile Money). A refund only counts as completed once the provider or the transfer confirms that the money was sent."
+      },
+      "effects": {
+        "title": "What a refund changes",
+        "body": "A full refund removes what the payment bought: access to the film, the talent video slot, the casting call or the actor search access. A partial refund keeps it. Your original payment stays in your history."
+      },
+      "marketplace": {
+        "title": "Marketplace services",
+        "body": "Fees for casting announcements and actor search are reviewed the same way. A casting call that is not approved can be corrected and sent again without paying again."
+      },
+      "status": {
+        "title": "Following a refund",
+        "body": "Your receipt shows any amount refunded once it is confirmed. We do not promise a fixed time for the money to arrive; it depends on the provider."
+      }
+    }
+  },
+  "abuse": {
+    "button": "Report",
+    "title": "Report “{{name}}”",
+    "signInFirst": "Sign in to report content. Reports are reviewed by the Ikigembe team.",
+    "signIn": "Sign in",
+    "reason": "What is the problem?",
+    "details": "Details (optional)",
+    "reviewNote": "Our team reviews every report. Nothing is removed automatically.",
+    "send": "Send report",
+    "sending": "Sending…",
+    "cancel": "Cancel",
+    "close": "Close",
+    "thanks": "Thanks — your report was sent. Our team will review it.",
+    "already": "You already reported this. Our team will review it.",
+    "tooMany": "Too many reports from this connection. Please try again later.",
+    "failed": "Could not send the report. Please try again.",
+    "category": {
+      "copyright": "Copyright or stolen content",
+      "sexual": "Sexual content",
+      "violence": "Violence or dangerous content",
+      "hate": "Hate or harassment",
+      "scam": "Scam or fraud",
+      "impersonation": "Impersonation",
+      "minor_safety": "Child safety",
+      "spam": "Spam or misleading",
+      "other": "Other"
     }
   }
 }

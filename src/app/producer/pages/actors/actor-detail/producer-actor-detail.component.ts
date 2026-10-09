@@ -8,13 +8,15 @@ import { CastingService } from '../../../services/casting.service';
 import { VideoPlayerComponent } from '../../../../shared/components/video-player/video-player.component';
 import { DirectoryActorDetail, DirectoryVideo } from '../../../../shared/models/marketplace.interface';
 import { marketplaceErrorMessage } from '../../../../shared/utils/marketplace-error';
+import { ReportButtonComponent } from '../../../../shared/components/report-button/report-button.component';
 
+import { ModalBackdropDirective } from '../../../../shared/directives/modal-backdrop.directive';
 @Component({
   selector: 'app-producer-actor-detail',
   standalone: true,
-  imports: [CommonModule, RouterLink, TranslatePipe, VideoPlayerComponent],
+  imports: [ModalBackdropDirective, CommonModule, RouterLink, TranslatePipe, VideoPlayerComponent, ReportButtonComponent],
   templateUrl: './producer-actor-detail.component.html',
-  styleUrls: ['../../../../shared/styles/marketplace-page.scss'],
+  styleUrls: ['../../../../shared/styles/marketplace-page.scss', './producer-actor-detail.component.scss'],
 })
 export class ProducerActorDetailComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);

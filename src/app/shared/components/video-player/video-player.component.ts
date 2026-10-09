@@ -10,6 +10,8 @@ import { Observable, Subscription } from 'rxjs';
 import Hls from 'hls.js';
 import { PlaybackProgress, PlaybackProgressReason, PlaybackSource, SubtitleTrack } from '../../models/movie-api.interface';
 
+const WATERMARK_MOVE_MS = 30_000;
+
 /** Translation key for the adaptive quality option; level labels (e.g. 1080p) pass through the pipe unchanged. */
 const AUTO_QUALITY_LABEL = 'playerUi.auto';
 
@@ -64,6 +66,9 @@ export class VideoPlayerComponent implements AfterViewInit, OnChanges, OnDestroy
 
   // Playback state
   playing     = signal(false);
+  /** Where the session watermark sits (percent of the frame); moved every WATERMARK_MOVE_MS. */
+  watermarkPos = signal({ top: 8, left: 6 });
+  private watermarkTimer: ReturnType<typeof setInterval> | null = null;
   muted       = signal(false);
   volume      = signal(1);
   currentTime = signal(0);
@@ -98,6 +103,10 @@ export class VideoPlayerComponent implements AfterViewInit, OnChanges, OnDestroy
     this.attachVideoEvents();
     document.addEventListener('visibilitychange', this.onVisibilityChange);
     window.addEventListener('pagehide', this.onPageHide);
+    this.watermarkTimer = setInterval(() => this.watermarkPos.set({
+      top: 5 + Math.round(Math.random() * 80),
+      left: 4 + Math.round(Math.random() * 72),
+    }), WATERMARK_MOVE_MS);
     this.loadFromInputs();
   }
 
@@ -110,6 +119,7 @@ export class VideoPlayerComponent implements AfterViewInit, OnChanges, OnDestroy
 
   ngOnDestroy() {
     if (this.hideTimer) clearTimeout(this.hideTimer);
+    if (this.watermarkTimer) clearInterval(this.watermarkTimer);
     this.stopProgressTimer();
     if (isPlatformBrowser(this.platformId)) {
       document.removeEventListener('visibilitychange', this.onVisibilityChange);
@@ -177,7 +187,7 @@ export class VideoPlayerComponent implements AfterViewInit, OnChanges, OnDestroy
           const levels: QualityLevel[] = [
             { index: -1, label: AUTO_QUALITY_LABEL, bitrate: 0 },
             ...[...data.levels]
-              .map((l: any, i: number) => ({
+              .map((l, i) => ({
                 index: i,
                 label: this.levelLabel(l),
                 bitrate: l.bitrate ?? 0,
@@ -185,7 +195,7 @@ export class VideoPlayerComponent implements AfterViewInit, OnChanges, OnDestroy
               .reverse(),
           ];
           this.qualityLevels.set(levels);
-          if (this.autoplay) v.play().catch(() => {});
+          if (this.autoplay) v.play().catch(() => { /* autoplay refused: the viewer presses play */ });
         });
 
         this.hls.on(Hls.Events.ERROR, (_evt, data) => {
@@ -197,7 +207,7 @@ export class VideoPlayerComponent implements AfterViewInit, OnChanges, OnDestroy
       } else if (v.canPlayType('application/vnd.apple.mpegurl')) {
         // Safari native HLS — the tokenised URL works unchanged
         v.src = src;
-        if (this.autoplay) v.play().catch(() => {});
+        if (this.autoplay) v.play().catch(() => { /* autoplay refused: the viewer presses play */ });
       } else if (source.fallbackSrc) {
         this.attachSource(source, true);
       } else {
@@ -206,7 +216,7 @@ export class VideoPlayerComponent implements AfterViewInit, OnChanges, OnDestroy
     } else {
       v.src = src;
       if (this.autoplay) {
-        v.addEventListener('canplay', () => v.play().catch(() => {}), { once: true });
+        v.addEventListener('canplay', () => v.play().catch(() => { /* autoplay refused: the viewer presses play */ }), { once: true });
       }
     }
   }
@@ -384,7 +394,7 @@ export class VideoPlayerComponent implements AfterViewInit, OnChanges, OnDestroy
 
   close() {
     if (document.fullscreenElement) {
-      document.exitFullscreen().catch(() => {});
+      document.exitFullscreen().catch(() => { /* already left fullscreen */ });
     }
     this.closed.emit();
   }

@@ -42,3 +42,15 @@ testem.log
 Thumbs.db
 
 .claude/
+# Playwright
+/test-results
+/playwright-report
+/blob-report
+/playwright/.cache
+
+# Local environment files
+.env
+.env.*
+
+# Vercel build output (scripts/vercel-output.mjs)
+/.vercel

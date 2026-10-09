@@ -12,11 +12,14 @@ import { FooterComponent } from '../../../core/components/footer/footer.componen
 import { MARKETPLACE_SESSION } from '../../../core/access/marketplace-access.service';
 import { MarketplaceUser } from '../../../core/access/marketplace-access';
 import { marketplaceUser, provideMarketplaceUser } from '../../../shared/testing/marketplace-session';
+import { ReportButtonComponent } from '../../../shared/components/report-button/report-button.component';
 
 @Component({ selector: 'app-header', template: '' })
-class HeaderStub { @Input() userImg = ''; }
+class HeaderStubComponent { @Input() userImg = ''; }
 @Component({ selector: 'app-footer', template: '' })
-class FooterStub {}
+class FooterStubComponent {}
+@Component({ selector: 'app-report-button', template: '' })
+class ReportButtonStubComponent { @Input() targetType = ''; @Input() targetId = 0; @Input() label = ''; }
 
 const PROFILE = { stage_name: 'Aline', date_of_birth: '2000-01-01', gender: 'female', location: 'Kigali', contact_phone: '0788', contact_email: 'a@b.rw' } as ActorProfile;
 const VIDEO = { id: 7, title: 'Monologue', status: 'approved' } as ActorVideo;
@@ -46,8 +49,8 @@ describe('CastingCallDetailComponent', () => {
       ],
     });
     TestBed.overrideComponent(CastingCallDetailComponent, {
-      remove: { imports: [HeaderComponent, FooterComponent] },
-      add: { imports: [HeaderStub, FooterStub] },
+      remove: { imports: [HeaderComponent, FooterComponent, ReportButtonComponent] },
+      add: { imports: [HeaderStubComponent, FooterStubComponent, ReportButtonStubComponent] },
     });
   });
   afterEach(() => sessionStorage.clear());

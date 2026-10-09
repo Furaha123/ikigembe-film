@@ -77,8 +77,8 @@
     <form [formGroup]="form" (ngSubmit)="submit()">
       <!-- Amount -->
       <div class="field">
-        <label>{{ 'wallet.form.amount' | translate }}</label>
-        <input type="number" formControlName="amount" placeholder="e.g. 50000" min="1" />
+        <label for="pw-amount">{{ 'wallet.form.amount' | translate }}</label>
+        <input id="pw-amount" type="number" formControlName="amount" placeholder="e.g. 50000" min="1" />
         @if (form.get('amount')?.touched && form.get('amount')?.hasError('required')) {
           <span class="field-error">{{ 'wallet.form.amountRequired' | translate }}</span>
         }
@@ -106,7 +106,7 @@
 
       <!-- Payment method toggle -->
       <div class="field">
-        <label>{{ 'dashboard.withdraw.method' | translate }}</label>
+        <span class="field-label">{{ 'dashboard.withdraw.method' | translate }}</span>
         <div class="method-tabs">
           <button type="button" class="method-tab" [class.active]="isBank()" (click)="setMethod('Bank')">
             <svg viewBox="0 0 24 24" fill="currentColor"><path d="M4 10v7h3v-7H4zm6 0v7h3v-7h-3zM2 22h19v-3H2v3zm14-12v7h3v-7h-3zM11.5 1L2 6v2h19V6l-9.5-5z"/></svg>
@@ -122,25 +122,25 @@
       <!-- Bank fields -->
       @if (isBank()) {
         <div class="field">
-          <label>{{ 'wallet.form.bankName' | translate }}</label>
-          <input type="text" formControlName="bank_name" [placeholder]="'producerUi.wallet.bankPlaceholder' | translate" />
+          <label for="pw-bank-name">{{ 'wallet.form.bankName' | translate }}</label>
+          <input id="pw-bank-name" type="text" formControlName="bank_name" [placeholder]="'producerUi.wallet.bankPlaceholder' | translate" />
         </div>
         <div class="field">
-          <label>{{ 'wallet.form.accountNumber' | translate }}</label>
-          <input type="text" formControlName="account_number" placeholder="e.g. 1234567890" />
+          <label for="pw-account-number">{{ 'wallet.form.accountNumber' | translate }}</label>
+          <input id="pw-account-number" type="text" formControlName="account_number" placeholder="e.g. 1234567890" />
         </div>
         <div class="field">
-          <label>{{ 'wallet.form.accountHolder' | translate }}</label>
-          <input type="text" formControlName="account_holder_name" [placeholder]="'producerUi.wallet.holderPlaceholder' | translate" />
+          <label for="pw-account-holder">{{ 'wallet.form.accountHolder' | translate }}</label>
+          <input id="pw-account-holder" type="text" formControlName="account_holder_name" [placeholder]="'producerUi.wallet.holderPlaceholder' | translate" />
         </div>
       } @else {
         <div class="field">
-          <label>{{ 'wallet.form.momoNumber' | translate }}</label>
-          <input type="text" formControlName="momo_number" [placeholder]="'producerUi.wallet.momoPlaceholder' | translate" />
+          <label for="pw-momo-number">{{ 'wallet.form.momoNumber' | translate }}</label>
+          <input id="pw-momo-number" type="text" formControlName="momo_number" [placeholder]="'producerUi.wallet.momoPlaceholder' | translate" />
         </div>
         <div class="field">
-          <label>{{ 'wallet.form.momoProvider' | translate }}</label>
-          <select formControlName="momo_provider">
+          <label for="pw-momo-provider">{{ 'wallet.form.momoProvider' | translate }}</label>
+          <select id="pw-momo-provider" formControlName="momo_provider">
             <option value="">{{ 'wallet.form.selectProvider' | translate }}</option>
             <option value="MTN">{{ 'wallet.form.mtn' | translate }}</option>
             <option value="Airtel">{{ 'wallet.form.airtel' | translate }}</option>

@@ -14,13 +14,13 @@ import { PaymentModalComponent } from '../../shared/components/payment-modal/pay
 import { makeStreamResponse } from '../../shared/testing/stream-fixtures';
 
 @Component({ selector: 'app-header', template: '' })
-class HeaderStub { @Input() userImg = ''; }
+class HeaderStubComponent { @Input() userImg = ''; }
 
 @Component({ selector: 'app-footer', template: '' })
-class FooterStub {}
+class FooterStubComponent {}
 
 @Component({ selector: 'app-video-player', template: '' })
-class PlayerStub implements OnDestroy {
+class PlayerStubComponent implements OnDestroy {
   @Input() source: PlaybackSource | null = null;
   @Input() refreshSource: (() => Observable<PlaybackSource>) | null = null;
   @Input() poster = '';
@@ -35,7 +35,7 @@ class PlayerStub implements OnDestroy {
 }
 
 @Component({ selector: 'app-payment-modal', template: '' })
-class PaymentModalStub {
+class PaymentModalStubComponent {
   @Input() movie: unknown;
   @Output() paid = new EventEmitter<void>();
   @Output() closed = new EventEmitter<void>();
@@ -53,7 +53,7 @@ describe('MyListComponent (playback)', () => {
   let watchProgress: jasmine.SpyObj<WatchProgressService>;
 
   const card = () => fixture.nativeElement.querySelector('.movie-card') as HTMLButtonElement;
-  const player = () => fixture.debugElement.query(d => d.componentInstance instanceof PlayerStub)?.componentInstance as PlayerStub | undefined;
+  const player = () => fixture.debugElement.query(d => d.componentInstance instanceof PlayerStubComponent)?.componentInstance as PlayerStubComponent | undefined;
 
   beforeEach(() => {
     movieService = jasmine.createSpyObj<MovieService>('MovieService', ['getMyList', 'getStream', 'getMovieDetails', 'saveProgress']);
@@ -71,7 +71,7 @@ describe('MyListComponent (playback)', () => {
     });
     TestBed.overrideComponent(MyListComponent, {
       remove: { imports: [HeaderComponent, FooterComponent, VideoPlayerComponent, PaymentModalComponent] },
-      add: { imports: [HeaderStub, FooterStub, PlayerStub, PaymentModalStub] },
+      add: { imports: [HeaderStubComponent, FooterStubComponent, PlayerStubComponent, PaymentModalStubComponent] },
     });
     fixture = TestBed.createComponent(MyListComponent);
     fixture.detectChanges();
@@ -118,7 +118,7 @@ describe('MyListComponent (playback)', () => {
 
     buyAgain.click();
     fixture.detectChanges();
-    const modal = fixture.debugElement.query(d => d.componentInstance instanceof PaymentModalStub).componentInstance as PaymentModalStub;
+    const modal = fixture.debugElement.query(d => d.componentInstance instanceof PaymentModalStubComponent).componentInstance as PaymentModalStubComponent;
     expect(modal.movie).toEqual(ITEM);
 
     modal.paid.emit();

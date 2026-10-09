@@ -22,7 +22,7 @@ export const MARKETPLACE_SESSION = new InjectionToken<MarketplaceSession>('MARKE
     const auth = inject(AuthService);
     return {
       user: computed(() => auth.isLoggedIn()
-        ? { role: toRole(auth.userRole(), auth.isAdmin()), accountStatus: auth.accountStatus() }
+        ? { role: toRole(auth.userRole(), auth.isAdmin()), accountStatus: auth.accountStatus(), producerReady: auth.producerReady() }
         : null),
       resolved: () => auth.syncProfile(),
     };
@@ -48,7 +48,7 @@ export class MarketplaceAccessService {
   readonly user = this.session.user;
   readonly tabs = computed<MarketplaceFeature[]>(() => marketplaceTabsFor(this.user()));
   readonly home = computed(() => marketplaceHomeFor(this.user()));
-  /** 'suspended' / 'notActive' when the account can't use the actor or producer features. */
+  /** Why the account can't use the actor or producer features (suspended, inactive, producer not approved). */
   readonly inactiveNotice = computed(() => inactiveNoticeFor(this.user()));
 
   can(feature: MarketplaceFeatureKey): boolean {

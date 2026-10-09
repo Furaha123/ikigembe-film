@@ -17,24 +17,131 @@
       @case ('details') {
         <article class="mk-card">
           <a routerLink="/casting" class="mk-muted">← {{ 'marketplace.casting.backToList' | translate }}</a>
-          <h1>{{ c.title }}</h1>
-          <span [class]="statusClass(unavailable() ? 'closed' : displayStatus(c, now()))">{{ 'marketplace.castingStatus.' + (unavailable() ? 'closed' : displayStatus(c, now())) | translate }}</span>
-          <dl class="mk-summary" style="margin-top: .75rem">
-            <dt>{{ 'marketplace.casting.producer' | translate }}</dt>
-            <dd>{{ c.studio_name || c.producer_name }}</dd>
-            <dt>{{ 'marketplace.casting.deadline' | translate }}</dt>
-            <dd>{{ c.deadline_at | date:'medium' }}</dd>
-            @if (c.published_at) {
-              <dt>{{ 'marketplace.casting.published' | translate }}</dt>
-              <dd>{{ c.published_at | date:'mediumDate' }}</dd>
+
+          <div class="mk-casting-detail">
+            @if (c.poster_url) {
+              <img [src]="c.poster_url" [alt]="c.title" class="mk-casting-poster" loading="lazy" />
             }
-          </dl>
-          <h2>{{ 'marketplace.casting.roles' | translate }}</h2>
-          <ul class="mk-list">
-            @for (r of c.roles; track $index) { <li>{{ r }}</li> }
-          </ul>
-          <h2>{{ 'marketplace.casting.about' | translate }}</h2>
-          <p style="white-space: pre-line">{{ c.description }}</p>
+
+            <div class="mk-casting-detail__body">
+              <h1>{{ c.title }}</h1>
+              <app-report-button targetType="casting_call" [targetId]="c.id" [label]="c.title" />
+              <span [class]="statusClass(unavailable() ? 'closed' : displayStatus(c, now()))">
+                {{ 'marketplace.castingStatus.' + (unavailable() ? 'closed' : displayStatus(c, now())) | translate }}
+              </span>
+
+              <dl class="mk-summary" style="margin-top: .75rem">
+                <dt>{{ 'marketplace.casting.producer' | translate }}</dt>
+                <dd>{{ c.studio_name || c.producer_name }}</dd>
+
+                @if (c.project_type) {
+                  <dt>{{ 'marketplace.postCasting.projectType' | translate }}</dt>
+                  <dd>{{ c.project_type }}</dd>
+                }
+
+                @if (c.genre) {
+                  <dt>{{ 'marketplace.postCasting.genre' | translate }}</dt>
+                  <dd>{{ c.genre }}</dd>
+                }
+
+                @if (c.shooting_location) {
+                  <dt>{{ 'marketplace.postCasting.shootingLocation' | translate }}</dt>
+                  <dd>{{ c.shooting_location }}</dd>
+                }
+
+                @if (c.project_start_date || c.project_end_date) {
+                  <dt>{{ 'marketplace.casting.shootingDates' | translate }}</dt>
+                  <dd>
+                    @if (c.project_start_date && c.project_end_date) {
+                      {{ c.project_start_date | date:'mediumDate' }} – {{ c.project_end_date | date:'mediumDate' }}
+                    } @else if (c.project_start_date) {
+                      {{ 'marketplace.casting.from' | translate }} {{ c.project_start_date | date:'mediumDate' }}
+                    } @else {
+                      {{ 'marketplace.casting.until' | translate }} {{ c.project_end_date | date:'mediumDate' }}
+                    }
+                  </dd>
+                }
+
+                @if ((c.min_age ?? null) !== null || (c.max_age ?? null) !== null) {
+                  <dt>{{ 'marketplace.casting.ageRange' | translate }}</dt>
+                  <dd>
+                    @if ((c.min_age ?? null) !== null && (c.max_age ?? null) !== null) {
+                      {{ c.min_age }}–{{ c.max_age }}
+                    } @else if ((c.min_age ?? null) !== null) {
+                      {{ c.min_age }}+
+                    } @else {
+                      {{ 'marketplace.casting.upTo' | translate }} {{ c.max_age }}
+                    }
+                  </dd>
+                }
+
+                @if (c.gender_preference) {
+                  <dt>{{ 'marketplace.postCasting.genderPref' | translate }}</dt>
+                  <dd>{{ 'marketplace.gender.' + c.gender_preference | translate }}</dd>
+                }
+
+                @if ((c.num_actors ?? null) !== null) {
+                  <dt>{{ 'marketplace.postCasting.numActors' | translate }}</dt>
+                  <dd>{{ c.num_actors }}</dd>
+                }
+
+                @if ((c.height_min ?? null) !== null || (c.height_max ?? null) !== null) {
+                  <dt>{{ 'marketplace.postCasting.heightMin' | translate }}/{{ 'marketplace.postCasting.heightMax' | translate }}</dt>
+                  <dd>
+                    @if ((c.height_min ?? null) !== null && (c.height_max ?? null) !== null) { {{ c.height_min }}–{{ c.height_max }} cm }
+                    @else if ((c.height_min ?? null) !== null) { {{ c.height_min }}+ cm }
+                    @else { {{ 'marketplace.casting.upTo' | translate }} {{ c.height_max }} cm }
+                  </dd>
+                }
+
+                @if (c.body_type) {
+                  <dt>{{ 'marketplace.postCasting.bodyType' | translate }}</dt>
+                  <dd>{{ c.body_type }}</dd>
+                }
+
+                @if (c.complexion) {
+                  <dt>{{ 'marketplace.postCasting.complexion' | translate }}</dt>
+                  <dd>{{ c.complexion }}</dd>
+                }
+
+                @if (c.appearance_notes) {
+                  <dt>{{ 'marketplace.postCasting.appearanceNotes' | translate }}</dt>
+                  <dd style="white-space: pre-line">{{ c.appearance_notes }}</dd>
+                }
+
+                @if (c.required_skills?.length) {
+                  <dt>{{ 'marketplace.postCasting.requiredSkills' | translate }}</dt>
+                  <dd>{{ c.required_skills!.join(', ') }}</dd>
+                }
+
+                @if (c.required_languages?.length) {
+                  <dt>{{ 'marketplace.postCasting.requiredLanguages' | translate }}</dt>
+                  <dd>{{ c.required_languages!.join(', ') }}</dd>
+                }
+
+                <dt>{{ 'marketplace.casting.deadline' | translate }}</dt>
+                <dd>{{ c.deadline_at | date:'medium' }}</dd>
+
+                @if (c.published_at) {
+                  <dt>{{ 'marketplace.casting.published' | translate }}</dt>
+                  <dd>{{ c.published_at | date:'mediumDate' }}</dd>
+                }
+              </dl>
+
+              <h2>{{ 'marketplace.casting.roles' | translate }}</h2>
+              <ul class="mk-list">
+                @for (r of c.roles; track $index) { <li>{{ r }}</li> }
+              </ul>
+
+              <h2>{{ 'marketplace.casting.about' | translate }}</h2>
+              <p style="white-space: pre-line">{{ c.description }}</p>
+
+              @if (c.availability_notes) {
+                <h2>{{ 'marketplace.postCasting.availabilityTitle' | translate }}</h2>
+                <p style="white-space: pre-line">{{ c.availability_notes }}</p>
+              }
+            </div>
+          </div>
         </article>
 
         @if (canApply()) {
@@ -87,7 +194,14 @@
                       <dt>{{ 'marketplace.profile.stageName' | translate }}</dt><dd>{{ p.stage_name }}</dd>
                       <dt>{{ 'marketplace.apply.age' | translate }}</dt><dd>{{ age() ?? '—' }}</dd>
                       <dt>{{ 'marketplace.profile.gender' | translate }}</dt><dd>{{ p.gender ? ('marketplace.gender.' + p.gender | translate) : '—' }}</dd>
-                      <dt>{{ 'marketplace.profile.location' | translate }}</dt><dd>{{ p.location || '—' }}</dd>
+                      <dt>{{ 'marketplace.profile.location' | translate }}</dt>
+                      <dd>
+                        @if (p.district && p.province) {
+                          {{ p.district }}, {{ p.province }}
+                        } @else {
+                          {{ p.location || '—' }}
+                        }
+                      </dd>
                       <dt>{{ 'marketplace.profile.contactPhone' | translate }}</dt><dd>{{ p.contact_phone || '—' }}</dd>
                       <dt>{{ 'marketplace.profile.contactEmail' | translate }}</dt><dd>{{ p.contact_email || '—' }}</dd>
                     </dl>

@@ -9,12 +9,16 @@ import { MarketplaceNavComponent } from '../../../shared/components/marketplace-
 import { VideoPlayerComponent } from '../../../shared/components/video-player/video-player.component';
 import { ActorMarketplaceService } from '../../../shared/services/actor-marketplace.service';
 import { MultipartUploadService, UploadAbortedError } from '../../../shared/services/multipart-upload.service';
-import { ALLOWED_VIDEO_EXTENSIONS, extensionList, hasAllowedExtension, VIDEO_ACCEPT } from '../../../shared/models/upload.constants';
+import { extensionList, hasAllowedExtension } from '../../../shared/models/upload.constants';
+import {
+  TALENT_VIDEO_ACCEPT, TALENT_VIDEO_EXTENSIONS, TALENT_VIDEO_MAX_BYTES, formatDuration, formatFileSize,
+} from '../../../shared/utils/talent-video';
 import { uploadErrorMessage } from '../../../shared/utils/upload-error';
 import { ActorVideo } from '../../../shared/models/marketplace.interface';
 import { actorVideoStatusClass } from '../../../shared/utils/marketplace-status';
 import { marketplaceErrorMessage } from '../../../shared/utils/marketplace-error';
 
+import { ModalBackdropDirective } from '../../../shared/directives/modal-backdrop.directive';
 export interface VideoUploadState {
   pct: number;
   error: string | null; // translation key or backend message
@@ -24,7 +28,7 @@ export interface VideoUploadState {
 @Component({
   selector: 'app-actor-videos',
   standalone: true,
-  imports: [
+  imports: [ModalBackdropDirective, 
     CommonModule, RouterLink, TranslatePipe,
     HeaderComponent, FooterComponent, MarketplaceNavComponent, VideoPlayerComponent,
   ],
@@ -36,7 +40,16 @@ export class ActorVideosComponent implements OnInit, OnDestroy {
   private readonly uploader = inject(MultipartUploadService);
   private readonly translate = inject(TranslateService);
 
-  readonly videoAccept = VIDEO_ACCEPT;
+  readonly videoAccept = TALENT_VIDEO_ACCEPT;
+  readonly formatDuration = formatDuration;
+  readonly formatFileSize = formatFileSize;
+
+  /** Video awaiting the delete confirmation. */
+  confirmDelete = signal<ActorVideo | null>(null);
+  deleting = signal(false);
+  deleteError = signal<string | null>(null);
+  /** While a video is being checked by the server, the list refreshes itself. */
+  private pollTimer: ReturnType<typeof setTimeout> | null = null;
 
   videos   = signal<ActorVideo[]>([]);
   loading  = signal(true);
@@ -56,13 +69,19 @@ export class ActorVideosComponent implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     this.controllers.forEach(c => c.abort());
     this.controllers.clear();
+    this.stopPolling();
   }
 
-  load(): void {
-    this.loading.set(true);
+  load(quiet = false): void {
+    if (!quiet) this.loading.set(true);
     this.error.set(null);
     this.marketplace.getMyVideos().subscribe({
-      next: (list) => { this.videos.set(list); this.loading.set(false); },
+      next: (list) => {
+        // Deleted and superseded videos aren't the actor's to manage any more.
+        this.videos.set(list.filter(v => v.status !== 'removed' && v.status !== 'replaced'));
+        this.loading.set(false);
+        this.schedulePoll();
+      },
       error: (err: HttpErrorResponse) => {
         this.loading.set(false);
         this.error.set(marketplaceErrorMessage(err) ?? 'marketplace.errors.loadFailed');
@@ -70,8 +89,48 @@ export class ActorVideosComponent implements OnInit, OnDestroy {
     });
   }
 
+  /** Paid slot waiting for a file: the first upload, or a free retry after a failed server check. */
   canUpload(v: ActorVideo): boolean {
-    return v.status === 'pending_upload' && v.payment_status === 'Completed';
+    return v.can_upload ?? ((v.status === 'pending_upload' || v.status === 'upload_failed') && v.payment_status === 'Completed');
+  }
+
+  /** Deletable once nothing is in flight (not while the server checks it or a fee payment is pending). */
+  canDelete(v: ActorVideo): boolean {
+    return v.status !== 'processing' && !(v.status === 'pending_upload' && v.payment_status === 'Pending');
+  }
+
+  askDelete(v: ActorVideo): void {
+    this.deleteError.set(null);
+    this.confirmDelete.set(v);
+  }
+
+  deleteVideo(): void {
+    const v = this.confirmDelete();
+    if (!v || this.deleting()) return;
+    this.deleting.set(true);
+    this.marketplace.deleteVideo(v.id).subscribe({
+      next: () => {
+        this.deleting.set(false);
+        this.confirmDelete.set(null);
+        this.videos.update(list => list.filter(x => x.id !== v.id));
+      },
+      error: (err: HttpErrorResponse) => {
+        this.deleting.set(false);
+        this.deleteError.set(marketplaceErrorMessage(err) ?? 'marketplace.videos.deleteFailed');
+      },
+    });
+  }
+
+  private schedulePoll(): void {
+    this.stopPolling();
+    if (this.videos().some(v => v.status === 'processing')) {
+      this.pollTimer = setTimeout(() => this.load(true), 5000);
+    }
+  }
+
+  private stopPolling(): void {
+    if (this.pollTimer) clearTimeout(this.pollTimer);
+    this.pollTimer = null;
   }
 
   /**
@@ -83,8 +142,12 @@ export class ActorVideosComponent implements OnInit, OnDestroy {
     const file = input.files?.[0];
     input.value = '';
     if (!file) return;
-    if (!hasAllowedExtension(file.name, ALLOWED_VIDEO_EXTENSIONS)) {
-      this.setUpload(video.id, { pct: 0, uploading: false, error: this.translate.instant('uploadErrors.videoType', { types: extensionList(ALLOWED_VIDEO_EXTENSIONS) }) });
+    if (!hasAllowedExtension(file.name, TALENT_VIDEO_EXTENSIONS)) {
+      this.setUpload(video.id, { pct: 0, uploading: false, error: this.translate.instant('uploadErrors.videoType', { types: extensionList(TALENT_VIDEO_EXTENSIONS) }) });
+      return;
+    }
+    if (file.size > TALENT_VIDEO_MAX_BYTES) {
+      this.setUpload(video.id, { pct: 0, uploading: false, error: 'marketplace.talent.tooLarge' });
       return;
     }
 

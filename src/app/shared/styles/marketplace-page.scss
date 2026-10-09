@@ -345,3 +345,132 @@ app-header ~ .mk-page { padding-top: calc(68px + 1.5rem); }
   grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
   align-items: end;
 }
+
+// ── Search bar (casting calls list, directory) ──────────────────────────
+.mk-search-bar {
+  margin-bottom: 1rem;
+}
+
+.mk-search-field {
+  max-width: 560px;
+}
+
+.mk-search-input-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+
+  .mk-search-icon {
+    position: absolute;
+    left: 0.65rem;
+    width: 16px;
+    height: 16px;
+    color: $muted;
+    pointer-events: none;
+    flex-shrink: 0;
+  }
+
+  input[type='search'] {
+    width: 100%;
+    background: #111;
+    border: 1px solid $border;
+    border-radius: 8px;
+    color: #eee;
+    padding: 0.55rem 2.2rem 0.55rem 2.2rem;
+    font: inherit;
+    min-height: 44px;
+
+    &:focus-visible { outline: 2px solid $gold; outline-offset: 1px; }
+    &::-webkit-search-cancel-button { display: none; }
+  }
+
+  .mk-search-clear {
+    position: absolute;
+    right: 0.5rem;
+    background: none;
+    border: none;
+    color: $muted;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    padding: 0.25rem;
+    border-radius: 4px;
+
+    &:hover { color: #fff; }
+    &:focus-visible { outline: 2px solid $gold; }
+  }
+}
+
+// ── Casting call detail ─────────────────────────────────────────────────
+.mk-casting-detail {
+  display: flex;
+  gap: 1.5rem;
+  align-items: flex-start;
+  flex-wrap: wrap;
+}
+
+.mk-casting-poster {
+  width: min(220px, 100%);
+  border-radius: 8px;
+  object-fit: cover;
+  aspect-ratio: 2 / 3;
+  background: #2a2a2a;
+  flex-shrink: 0;
+}
+
+.mk-casting-detail__body {
+  flex: 1;
+  min-width: 240px;
+}
+
+// ── Producer casting card with optional poster thumbnail ────────────────
+.mk-casting-card {
+  display: flex;
+  gap: 1rem;
+  align-items: flex-start;
+}
+
+.mk-casting-card__poster {
+  width: 72px;
+  height: 108px;
+  object-fit: cover;
+  border-radius: 6px;
+  background: #2a2a2a;
+  flex-shrink: 0;
+}
+
+.mk-casting-card__body {
+  flex: 1;
+  min-width: 0;
+}
+
+.mk-poster-placeholder {
+  width: min(220px, 100%);
+  aspect-ratio: 2 / 3;
+  background: #2a2a2a;
+  border-radius: 8px;
+  border: 2px dashed #4a4a4a;
+  flex-shrink: 0;
+}
+
+@media (max-width: 600px) {
+  .mk-casting-poster { width: 100%; max-height: 280px; aspect-ratio: unset; }
+}
+
+.mk-video-thumb {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+  border-radius: 8px;
+  margin: 0.5rem 0;
+}
+
+.mk-small { font-size: 0.8rem; }
+
+.mk-btn--danger {
+  background: transparent;
+  border: 1px solid #c0392b;
+  color: #e57368;
+
+  &:hover:not(:disabled) { background: rgba(192, 57, 43, 0.12); }
+}

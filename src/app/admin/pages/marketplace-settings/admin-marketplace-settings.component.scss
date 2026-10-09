@@ -1,0 +1,253 @@
+$gold:    #C5A253;
+$surface: #16161e;
+$border:  rgba(255,255,255,0.08);
+$text:    #e2e8f0;
+$muted:   #94a3b8;
+$error:   #f87171;
+
+// ── Page shell ──────────────────────────────────────────
+.ms-page {
+  padding: 2rem 2.5rem 4rem;
+  max-width: 760px;
+}
+
+// ── Back link ────────────────────────────────────────────
+.ms-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: $muted;
+  text-decoration: none;
+  margin-bottom: 1.25rem;
+  transition: color 0.15s;
+
+  svg { width: 16px; height: 16px; }
+
+  &:hover { color: $text; }
+}
+
+// ── Header ───────────────────────────────────────────────
+.ms-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-bottom: 2rem;
+}
+
+.ms-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: $text;
+  margin: 0 0 0.2rem;
+}
+
+.ms-subtitle {
+  color: $muted;
+  font-size: 0.88rem;
+  margin: 0;
+}
+
+.ms-updated {
+  font-size: 0.78rem;
+  color: $muted;
+  margin: 0;
+  align-self: flex-end;
+}
+
+// ── Toast ────────────────────────────────────────────────
+.ms-toast {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.75rem 1rem;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  margin-bottom: 1.5rem;
+
+  svg { width: 18px; height: 18px; flex-shrink: 0; }
+
+  &--success {
+    background: rgba(74, 222, 128, 0.12);
+    color: #4ade80;
+    border: 1px solid rgba(74, 222, 128, 0.25);
+  }
+
+  &--error {
+    background: rgba(248, 113, 113, 0.12);
+    color: $error;
+    border: 1px solid rgba(248, 113, 113, 0.25);
+  }
+}
+
+// ── Loading state ────────────────────────────────────────
+.ms-loading {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  color: $muted;
+  font-size: 0.9rem;
+  padding: 2rem 0;
+}
+
+// ── Section cards ────────────────────────────────────────
+.ms-section {
+  background: $surface;
+  border: 1px solid $border;
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin-bottom: 1.25rem;
+}
+
+.ms-section__title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: $text;
+  margin: 0 0 0.35rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.ms-section__icon { font-size: 1.1rem; }
+
+.ms-section__desc {
+  font-size: 0.83rem;
+  color: $muted;
+  margin: 0 0 1.25rem;
+  line-height: 1.55;
+}
+
+// ── Fields grid ──────────────────────────────────────────
+.ms-fields {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 1rem;
+}
+
+// ── Individual field ─────────────────────────────────────
+.ms-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+
+  &--error .ms-input {
+    border-color: $error;
+    &:focus { box-shadow: 0 0 0 3px rgba(248, 113, 113, 0.2); }
+  }
+}
+
+.ms-label {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: $muted;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.ms-label__unit {
+  font-weight: 400;
+  text-transform: none;
+  color: #6b7b8f;
+  font-size: 0.78rem;
+}
+
+.ms-input {
+  background: rgba(255,255,255,0.04);
+  border: 1px solid $border;
+  border-radius: 8px;
+  color: $text;
+  font-size: 1rem;
+  font-weight: 600;
+  padding: 0.6rem 0.85rem;
+  width: 100%;
+  transition: border-color 0.15s, box-shadow 0.15s;
+  -moz-appearance: textfield;
+
+  &::-webkit-outer-spin-button,
+  &::-webkit-inner-spin-button { -webkit-appearance: none; }
+
+  &:focus {
+    outline: none;
+    border-color: $gold;
+    box-shadow: 0 0 0 3px rgba(197, 162, 83, 0.18);
+  }
+
+  &:disabled { opacity: 0.45; cursor: not-allowed; }
+}
+
+.ms-error {
+  font-size: 0.78rem;
+  color: $error;
+}
+
+// ── Actions row ──────────────────────────────────────────
+.ms-actions {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  flex-wrap: wrap;
+  margin-top: 0.5rem;
+}
+
+.ms-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.65rem 1.75rem;
+  border-radius: 8px;
+  font-size: 0.93rem;
+  font-weight: 700;
+  border: none;
+  cursor: pointer;
+  transition: opacity 0.15s, transform 0.15s;
+
+  &:hover:not(:disabled) { opacity: 0.88; transform: translateY(-1px); }
+  &:active:not(:disabled) { transform: translateY(0); }
+  &:disabled { opacity: 0.45; cursor: not-allowed; }
+
+  &--primary {
+    background: $gold;
+    color: #0a0a0f;
+  }
+}
+
+.ms-note {
+  font-size: 0.78rem;
+  color: $muted;
+  margin: 0;
+}
+
+// ── Spinner ──────────────────────────────────────────────
+.ms-spinner {
+  width: 28px;
+  height: 28px;
+  border: 3px solid rgba(255,255,255,0.15);
+  border-top-color: $gold;
+  border-radius: 50%;
+  animation: ms-spin 0.7s linear infinite;
+
+  &--sm {
+    width: 16px;
+    height: 16px;
+    border-width: 2px;
+  }
+}
+
+@keyframes ms-spin {
+  to { transform: rotate(360deg); }
+}
+
+// ── Responsive ───────────────────────────────────────────
+@media (max-width: 640px) {
+  .ms-page { padding: 1.25rem 1rem 3rem; }
+  .ms-header { flex-direction: column; }
+  .ms-fields { grid-template-columns: 1fr; }
+}

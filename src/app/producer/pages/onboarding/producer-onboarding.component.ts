@@ -116,22 +116,10 @@ export class ProducerOnboardingComponent implements OnInit {
     });
   }
 
-  skip() {
-    this.isSaving.set(true);
-    const payload = {
-      country:    this.profileForm.value.country    || null,
-      bio:        this.profileForm.value.bio        || null,
-      experience: this.profileForm.value.experience || null,
-    };
-    this.http.post(`${environment.apiUrl}/producer/onboarding/`, payload).subscribe({
-      next:  () => this.finishOnboarding(),
-      error: () => this.finishOnboarding(),
-    });
-  }
-
+  /** The profile is completed once; signing the distribution agreement is the other setup step. */
   private finishOnboarding() {
     this.authService.completeOnboarding();
     this.isSaving.set(false);
-    this.router.navigate(['/producer/dashboard']);
+    this.router.navigate([this.authService.contractSigned() ? '/producer/dashboard' : '/producer/contracts/start']);
   }
 }

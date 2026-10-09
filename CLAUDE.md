@@ -17,6 +17,13 @@ npx ng test --watch=false --browsers=ChromeHeadless
 # Run a single test file
 npx ng test --include='**/auth.service.spec.ts'
 
+# Lint (angular-eslint, incl. template accessibility rules) — must stay at 0 errors
+npm run lint
+
+# End-to-end (Playwright; starts its own seeded API on 8001 + app on 4300 — see e2e/README.md)
+npm run e2e
+npm run e2e:typecheck
+
 # SSR serve (only works once SSR is enabled in angular.json — see "SSR" below)
 npm run serve:ssr:ikigembe-film
 
@@ -24,7 +31,7 @@ npm run serve:ssr:ikigembe-film
 npx ng <command>
 ```
 
-No dedicated lint script in package.json; use `npx ng lint` if ESLint is configured.
+Fix lint findings in the code (buttons for clickable things, `for`/`id` on labels, keyboard handlers next to click handlers); don't disable rules. Dialogs, drawers and player overlays use `appModalBackdrop (dismiss)="close()"` on the backdrop (`shared/directives/modal-backdrop.directive.ts`): it closes on a click on the backdrop itself and on Escape from anywhere, topmost layer only. Don't add click/keydown `stopPropagation` handlers to the dialog inside; widgets that use Escape themselves call `preventDefault()`. E2E specs live in `e2e/` and use the backend's `seed_e2e` accounts; they never reach real payments, storage or email.
 
 ## Architecture
 
@@ -96,11 +103,18 @@ Actors are **Viewer** accounts with an actor profile — there is no Actor role.
 - Watch progress (`{ progress_seconds, duration_seconds }`) is load-bearing: a view is consumed at ≥ 90 %.
 - Producer/admin previews may use their endpoints' `hls_url`, but fetch it fresh each time the preview opens.
 
+### Release, pricing and producer setup
+
+- Films carry a server-computed `release_state` (`released` | `coming_soon` | `unavailable`) and `release_at`. Coming-soon films show their trailer and release moment, never a buy or play action; the API refuses checkout (409 `not_released`) and `/stream/` (403 `code: not_released`). `classifyStreamError()` reads `code` first, text second.
+- Film prices are admin-only (default Frw 1,000, `DEFAULT_FILM_PRICE`); producer forms show the price read-only.
+- **No admin approval for producers.** A producer submits films and uses producer services once setup is done: profile completed once (`/producer/onboarding`, can't be skipped) and an active signed distribution agreement. The API sends `producer_setup: { profile_complete, contract_signed, ready }` on the user; `AuthService.producerReady()` (`onboardingComplete && contractSigned`) feeds `marketplace-access.ts` (`requiresReadyProducer`, `isReadyProducer()`, notice `producerSetup`), the only place that decides. Film upload is behind `readyProducerGuard`; the producer layout banner links to the missing step. Signing is possible before any upload; after signing call `AuthService.refreshProfile()`. Admins only suspend/reactivate producers.
+
 ### Uploads
 
 All uploads use the multipart flow through `MultipartUploadService`. Movie files (admin **and** producer): `MovieUploadService.api(field_name)` (`ProducerService.movieUploadApi()` delegates to it) with `field_name` ∈ `video_file | trailer_file | thumbnail | backdrop | copyright_document` (it decides the storage bucket). `/movies/create/` and `/movies/<id>/update/` accept only `video_key` / `trailer_key` for video — never post the raw video file; images (thumbnail, backdrop) are sent as files. Admin-created films link the producer via `producer_profile` (account id). Actor talent videos: `ActorMarketplaceService.videoUploadApi(videoId)`.
 
 - **Upload errors are typed.** `MultipartUploadService` throws `UploadAbortedError` (user cancel or logout — stay silent) or `UploadError` with `kind: 'session'` (403 from sign-part/complete: the upload belongs to another account/session; ask the user to start again, never auto-retry) or `kind: 'storage'` (part PUT failed; a 403 is re-signed once first). Map errors for the UI with `uploadErrorMessage()` (`shared/utils/upload-error.ts`). Uploads are cancelled automatically when `AuthService.isLoggedIn` turns false.
+- **Talent videos** are MP4/MOV, ≤ 500 MB, ≤ 5 min (`shared/utils/talent-video.ts`, early checks only). After upload the server checks the file (`processing` → `pending_review` or `upload_failed` with `failure_reason`; re-upload to the same paid slot is free). Replacing an approved video is a new paid slot (`replaces`).
 - **Allowed file types live in one place:** `shared/models/upload.constants.ts` (`ALLOWED_VIDEO_EXTENSIONS`, `ALLOWED_DOCUMENT_EXTENSIONS`, `hasAllowedExtension()`), mirroring the backend's `_ALLOWED_VIDEO_EXTS`. Check files before calling the API; `accept` attributes are only a hint.
 - **Never parse or build a `file_key`** — it's opaque (`movies/<folder>/<user_id>/<uuid><ext>` today, may change).
 
@@ -122,6 +136,14 @@ All uploads use the multipart flow through `MultipartUploadService`. Movie files
 
 `PaymentModalComponent` reads `PaymentService.getConfig()` (`/payments/config/`): PawaPay asks for a MoMo number and polls in the modal; DPO (`redirect: true`) shows the price → "Continue to secure payment" → `payment_url`, after `rememberPending()` + `rememberReturn()`. Only open a `payment_url` through `paymentPageTarget()` (DPO hosts or the in-app demo checkout; anything else is refused). The buyer comes back to `/payment/return?deposit=…`, which trusts only the server's status. A 409 on initiate means an open payment for the same item: offer continue/cancel, never a second charge. Demo mode is labelled from the response's `demo` flag; `/payment/demo-checkout` stands in for DPO's page. Never fake a successful payment on the frontend.
 
+### Casting review
+
+Casting calls publish only after payment **and** admin approval: `draft → pending_review → published | rejected`. Rejected calls show `review_note` and are edited and resent with `CastingService.submitCall()` (no second payment). `castingPublicationState()` maps this to `inReview` / `rejected`.
+
+### Receipts and notifications
+
+`PaymentService.getReceipt()` (owner/admin only) backs the receipt dialog in payment history. Notifications come from the API's inboxes; the frontend never fabricates one.
+
 ### Marketplace purchases
 
 Every marketplace fee goes through `PaymentModalComponent` with a `ServicePurchase` (`[service]` input) and shares `PaymentService.pollUntilSettled()`. A `503` means pricing isn't configured yet ("This service isn't available yet").
@@ -137,12 +159,18 @@ Splits are per film. Never hardcode 70/30 or multiply by 0.7 — display API amo
 
 ### i18n
 
-ngx-translate with `src/assets/i18n/en.json` and `rw.json`. Add every new key to **both** files. Many newer keys still hold English text in `rw.json` pending translation.
+ngx-translate with `src/assets/i18n/en.json` and `rw.json` (English fallback). Add every new key to **both** files. `npm run i18n:check` fails on mismatched keys or static keys missing from `en.json` and lists untranslated values; viewer flows are translated (pending native review), staff/producer/marketplace screens still hold English — see `docs/i18n-review.md`.
+
+### Analytics, abuse reports, watermark
+
+- `AnalyticsService` (`core/services`) batches `page_view` / `trailer_play` / `checkout_open` / `casting_view` to `/api/analytics/events/` with keepalive; honours Do Not Track; never sends query strings, tokens or signed URLs. Payments and playback events are recorded by the API, not the browser.
+- `<app-report-button targetType="film|casting_call|actor" [targetId] [label]>` files an abuse report (actor = account id). Reports never hide content; admins resolve them at `/admin/abuse-reports`.
+- `StreamResponse.watermark` (when `PLAYBACK_WATERMARK` is on) is drawn by the player; encrypted films (`HLS_ENCRYPTION`) return `fallback_url: null` — hls.js fetches the key through the proxied playlist, nothing to do in the app.
 
 ### Environment & API
 
 `environment.apiUrl` is the same-origin path `/api`, so the refresh cookie is first-party:
-- Production: `vercel.json` rewrites `/api/*` to `https://ikigembe-backend.onrender.com/api/*` (change the backend there). Keep that rule above the SPA fallback.
+- Vercel: `npm run build:vercel` runs `scripts/vercel-output.mjs`, which writes the Build Output API routes: `/api/*` and `/sitemap.xml` proxy to `BACKEND_ORIGIN` (Vercel env var; production defaults to `https://ikigembe-backend.onrender.com`, previews must set it, e.g. the staging API), crawler routes for `/movie/:id` and `/casting/:id`, then the SPA fallback. `vercel.json` only names the build command. Environments and the release flow: `docs/environments.md`.
 - Development: `ng serve` proxies `/api` to `http://localhost:8000` (`proxy.conf.json`). Point `target` at the Render URL to develop against the hosted API.
 
 Absolute URLs the API returns (HLS `stream_url`, presigned storage URLs) are still fetched directly.

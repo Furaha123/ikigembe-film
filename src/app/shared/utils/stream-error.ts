@@ -7,6 +7,7 @@ export type StreamDenialKind =
   | 'view_used'           // 403, single-device policy: the purchase's one view is consumed
   | 'other_device'        // 403, single-device policy: purchase is bound to another device
   | 'device_id_missing'   // 400, X-Device-Id header absent — a client bug
+  | 'not_released'        // 403, the film is coming soon (no view is used)
   | 'not_found'           // 404
   | 'unknown';
 
@@ -21,23 +22,32 @@ export interface StreamDenial {
 }
 
 /*
- * The backend has no machine-readable error codes for /stream/ yet, so the 403
- * cases are told apart by message text (apps/movies/playback.py). Keep ALL of
- * that matching here: when the backend adds codes, only this function changes.
+ * /stream/ refusals carry a `code` (apps/movies/playback.py PlaybackDenied). Older API builds sent
+ * only the message, so the text matching below stays as a fallback. Keep ALL of it here.
  */
 const VIEW_USED_MSG    = 'your view of this movie has been used';
 const OTHER_DEVICE_MSG = 'already being watched on another device';
+
+function errorCode(err: unknown): string | null {
+  if (!(err instanceof HttpErrorResponse)) return null;
+  const code = (err.error as { code?: unknown } | null)?.code;
+  return typeof code === 'string' ? code : null;
+}
 
 export function classifyStreamError(err: unknown): StreamDenial {
   const status = err instanceof HttpErrorResponse ? err.status : 0;
   const message = apiErrorMessage(err);
   const lower = (message ?? '').toLowerCase();
+  const code = errorCode(err);
 
+  if (code === 'not_released') {
+    return { kind: 'not_released', text: null, key: 'viewer.stream.notReleased', canBuy: false };
+  }
   if (status === 403) {
-    if (lower.includes(VIEW_USED_MSG)) {
+    if (code === 'view_used' || lower.includes(VIEW_USED_MSG)) {
       return { kind: 'view_used', text: message, key: 'viewer.stream.viewUsed', canBuy: true };
     }
-    if (lower.includes(OTHER_DEVICE_MSG)) {
+    if (code === 'other_device' || lower.includes(OTHER_DEVICE_MSG)) {
       return { kind: 'other_device', text: message, key: 'viewer.stream.otherDevice', canBuy: false };
     }
     return { kind: 'purchase_required', text: message, key: 'viewer.stream.purchaseRequired', canBuy: true };

@@ -1,0 +1,77 @@
+<div class="admin-page">
+  <app-admin-section-tabs [tabs]="[
+    { labelKey: 'admin.nav.platformSettings', path: '/admin/platform-settings', exact: true },
+    { labelKey: 'admin.nav.marketplaceSettings', path: '/admin/marketplace-settings', exact: true },
+    { labelKey: 'admin.nav.myAccount', path: '/admin/settings', exact: true }
+  ]" ariaLabel="admin.nav.settings" />
+
+  <div class="page-header">
+    <div>
+      <h1>{{ 'admin.platformSettings.title' | translate }}</h1>
+      <p>{{ 'admin.platformSettings.subtitle' | translate }}</p>
+    </div>
+    @if (meta()?.updated_at) {
+      <p class="muted">{{ 'admin.platformSettings.lastUpdated' | translate: { date: (meta()!.updated_at | date:'medium'), by: meta()!.updated_by ?? '—' } }}</p>
+    }
+  </div>
+
+  @if (loading()) {
+    <p class="muted" role="status">{{ 'admin.payments.loading' | translate }}</p>
+  } @else if (loadError()) {
+    <p class="error" role="alert">{{ loadError()! | translate }} <button type="button" class="link" (click)="load()">{{ 'admin.payments.retry' | translate }}</button></p>
+  } @else {
+    <form [formGroup]="form" (ngSubmit)="save()" novalidate class="refund-form">
+      <h2>{{ 'admin.platformSettings.pricing' | translate }}</h2>
+      <label class="field">
+        <span>{{ 'admin.platformSettings.defaultFilmPrice' | translate }} (RWF)</span>
+        <input type="number" min="1" step="1" formControlName="default_film_price" aria-describedby="ps-price-hint" />
+        <span id="ps-price-hint" class="muted">{{ 'admin.platformSettings.defaultFilmPriceHint' | translate }}</span>
+        @if (invalid('default_film_price')) { <span class="error" role="alert">{{ 'admin.platformSettings.min1' | translate }}</span> }
+      </label>
+
+      <h2>{{ 'admin.platformSettings.playback' | translate }}</h2>
+      <label class="field">
+        <span>{{ 'admin.platformSettings.window' | translate }}</span>
+        <input type="number" min="1" max="720" step="1" formControlName="single_view_window_hours" aria-describedby="ps-window-hint" />
+        <span id="ps-window-hint" class="muted">{{ 'admin.platformSettings.windowHint' | translate }}</span>
+        @if (invalid('single_view_window_hours')) { <span class="error" role="alert">{{ 'admin.platformSettings.windowRange' | translate }}</span> }
+      </label>
+
+      <h2>{{ 'admin.platformSettings.finance' | translate }}</h2>
+      <label class="field">
+        <span>{{ 'admin.platformSettings.taxRate' | translate }} (%)</span>
+        <input type="number" min="0" max="100" step="0.01" formControlName="tax_rate_percent" aria-describedby="ps-tax-hint" />
+        <span id="ps-tax-hint" class="muted">{{ 'admin.platformSettings.taxRateHint' | translate }}</span>
+        @if (invalid('tax_rate_percent')) { <span class="error" role="alert">{{ 'admin.platformSettings.percentRange' | translate }}</span> }
+      </label>
+      @if (env(); as e) {
+        <p class="muted">{{ 'admin.platformSettings.splitInfo' | translate: { p: e.default_producer_percent, platform: 100 - e.default_producer_percent } }}</p>
+      }
+
+      <div aria-live="polite">
+        @if (saveError()) { <p class="error" role="alert">{{ saveError()! | translate }}</p> }
+        @if (saved()) { <p class="success" role="status">{{ 'admin.platformSettings.saved' | translate }}</p> }
+      </div>
+      <div class="drawer-actions">
+        <button type="submit" class="btn" [disabled]="saving() || form.pristine" [attr.aria-busy]="saving()">
+          {{ (saving() ? 'admin.platformSettings.saving' : 'admin.platformSettings.save') | translate }}
+        </button>
+      </div>
+    </form>
+
+    @if (env(); as e) {
+      <section class="refund-form" aria-labelledby="ps-env">
+        <h2 id="ps-env">{{ 'admin.platformSettings.environment' | translate }}</h2>
+        <p class="muted">{{ 'admin.platformSettings.environmentHint' | translate }}</p>
+        <dl class="facts">
+          <dt>{{ 'admin.platformSettings.singleDevice' | translate }}</dt>
+          <dd>{{ (e.enforce_single_device_view ? 'admin.platformSettings.on' : 'admin.platformSettings.off') | translate }}</dd>
+          <dt>{{ 'admin.platformSettings.gateway' | translate }}</dt>
+          <dd>{{ e.payment_gateway }} @if (e.payment_demo_mode) { — {{ 'admin.platformSettings.demo' | translate }} }</dd>
+          <dt>{{ 'admin.platformSettings.defaultSplit' | translate }}</dt>
+          <dd>{{ 'admin.platformSettings.defaultSplitValue' | translate: { p: e.default_producer_percent } }}</dd>
+        </dl>
+      </section>
+    }
+  }
+</div>

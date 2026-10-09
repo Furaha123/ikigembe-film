@@ -59,6 +59,26 @@ export interface ProducerMovie {
   changes_requested_note: string | null;
   created_at: string;
   genres: string[];
+  /** direct = edit and resubmit; locked = under review; request = approved, changes need an admin. */
+  edit_mode?: 'direct' | 'locked' | 'request';
+  /** Kinds of change requests waiting for an admin ('edit' | 'unpublish'). */
+  pending_change_requests?: FilmChangeKind[];
+}
+
+export type FilmChangeKind = 'edit' | 'unpublish';
+
+export interface FilmChangeRequest {
+  id: number;
+  movie_id: number;
+  movie_title: string;
+  kind: FilmChangeKind;
+  changes: Partial<Record<'title' | 'overview' | 'genres' | 'cast' | 'release_date', unknown>>;
+  reason: string;
+  status: 'pending' | 'approved' | 'rejected' | 'cancelled';
+  review_note: string | null;
+  reviewed_at: string | null;
+  created_at: string;
+  producer: string;
 }
 
 export type { MovieUploadField } from '../../shared/models/upload.interface';
@@ -101,8 +121,6 @@ export interface ProducerMovieDetail {
 export interface ProducerWithdrawal {
   id: number;
   amount: number;
-  tax_amount: number;
-  amount_after_tax: number;
   status: string;
   payment_method: string | null;
   bank_name: string | null;
@@ -124,11 +142,11 @@ export interface ProducerWithdrawalPage {
 export interface WithdrawalRequest {
   amount: number;
   payment_method: 'Bank' | 'MoMo';
-  bank_name?: string;
-  account_number?: string;
-  account_holder_name?: string;
-  momo_number?: string;
-  momo_provider?: string;
+  bank_name?: string | null;
+  account_number?: string | null;
+  account_holder_name?: string | null;
+  momo_number?: string | null;
+  momo_provider?: string | null;
 }
 
 // ── Report interfaces ──────────────────────────────────
@@ -263,8 +281,13 @@ export class ProducerService {
     return this.movieUpload.api(fieldName);
   }
 
-  updateFilm(id: number, payload: Partial<Pick<ProducerMovie, 'title' | 'overview' | 'genres' | 'price'>>): Observable<ProducerMovie> {
+  updateFilm(id: number, payload: Partial<Pick<ProducerMovie, 'title' | 'overview' | 'genres'>>): Observable<ProducerMovie> {
     return this.http.patch<ProducerMovie>(`${BASE}/producer/films/${id}/`, payload);
+  }
+
+  /** Approved films: propose metadata changes or ask to unpublish; an admin applies or rejects it. */
+  requestFilmChange(id: number, body: { kind: FilmChangeKind; changes?: Record<string, unknown>; reason?: string }): Observable<FilmChangeRequest> {
+    return this.http.post<FilmChangeRequest>(`${BASE}/producer/films/${id}/change-requests/`, body);
   }
 
   /** Edit metadata/video/trailer of a changes_requested film (multipart PATCH). */

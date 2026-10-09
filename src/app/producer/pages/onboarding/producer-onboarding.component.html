@@ -7,7 +7,6 @@
       <h2>{{ 'onboarding.welcome' | translate }}</h2>
       <p>{{ 'onboarding.subtitle' | translate }}</p>
     </div>
-    <button class="skip-all-btn" (click)="skip()">{{ 'onboarding.skip' | translate }} →</button>
   </div>
 
   <!-- Right form panel -->
@@ -26,7 +25,8 @@
 
         <!-- Avatar -->
         <div class="avatar-row">
-          <div class="avatar-preview" (click)="avatarInput.click()">
+          <!-- Mouse shortcut only: the "choose photo" button below is the accessible control. -->
+          <div class="avatar-preview" aria-hidden="true" (click)="avatarInput.click()">
             @if (avatarPreview()) {
               <img [src]="avatarPreview()!" [alt]="'producerUi.onboarding.photoAlt' | translate" />
             } @else {
