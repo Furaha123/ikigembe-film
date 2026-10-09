@@ -1,0 +1,457 @@
+<?xml version='1.0' encoding='utf-8'?>
+<mxfile host="app.diagrams.net" agent="generated" version="24.7.17" type="device">
+  <diagram id="overview" name="Overview">
+    <mxGraphModel dx="1600" dy="900" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="2400" pageHeight="1460" background="#FFFFFF" math="0" shadow="0">
+      <root>
+        <mxCell id="overview-0" />
+        <mxCell id="overview-1" parent="overview-0" />
+        <mxCell id="overview-title" value="IKIGEMBE — Current High-Level Architecture" style="fontFamily=Helvetica;text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;fontSize=26;fontStyle=1;fontColor=#1F2933;" vertex="1" parent="overview-1">
+          <mxGeometry x="40" y="18" width="1500" height="38" as="geometry" />
+        </mxCell>
+        <mxCell id="overview-subtitle" value="As implemented on branch feat/test-readiness (ikigembe-film + ikigembe_backend), inspected 2026-10-09. Hosting boundaries come from render.yaml and scripts/vercel-output.mjs." style="fontFamily=Helvetica;text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;fontSize=13;fontColor=#52606D;" vertex="1" parent="overview-1">
+          <mxGeometry x="40" y="58" width="1700" height="24" as="geometry" />
+        </mxCell>
+        <mxCell id="overview-users" value="&lt;b&gt;Users&lt;/b&gt; · web browser" style="fontFamily=Helvetica;rounded=1;arcSize=2;whiteSpace=wrap;html=1;container=1;collapsible=0;recursiveResize=0;fillColor=#FFFFFF;strokeColor=#9AA5B1;strokeWidth=2;fontSize=14;fontColor=#1F2933;align=left;verticalAlign=top;spacingLeft=12;spacingTop=6;dashed=1;" vertex="1" parent="overview-1">
+          <mxGeometry x="40" y="150" width="200" height="560" as="geometry" />
+        </mxCell>
+        <mxCell id="overview-viewer" value="&lt;b&gt;Viewer&lt;/b&gt;&lt;br&gt;(actors are viewers&lt;br&gt;with an actor profile)" style="fontFamily=Helvetica;shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;fillColor=#E4E7EB;strokeColor=#52606D;fontSize=12;fontColor=#1F2933;" vertex="1" parent="overview-users">
+          <mxGeometry x="82" y="65" width="36" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="overview-producer" value="&lt;b&gt;Producer&lt;/b&gt;" style="fontFamily=Helvetica;shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;fillColor=#E4E7EB;strokeColor=#52606D;fontSize=12;fontColor=#1F2933;" vertex="1" parent="overview-users">
+          <mxGeometry x="82" y="235" width="36" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="overview-admin" value="&lt;b&gt;Admin&lt;/b&gt; (staff)" style="fontFamily=Helvetica;shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;fillColor=#E4E7EB;strokeColor=#52606D;fontSize=12;fontColor=#1F2933;" vertex="1" parent="overview-users">
+          <mxGeometry x="82" y="380" width="36" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="overview-vercel" value="&lt;b&gt;Vercel&lt;/b&gt;&lt;br&gt;&lt;span style=&quot;font-size:11px&quot;&gt;static hosting + routing&lt;/span&gt;" style="fontFamily=Helvetica;rounded=1;arcSize=2;whiteSpace=wrap;html=1;container=1;collapsible=0;recursiveResize=0;fillColor=#F7F7F8;strokeColor=#1F2933;strokeWidth=2;fontSize=14;fontColor=#1F2933;align=left;verticalAlign=top;spacingLeft=12;spacingTop=6;" vertex="1" parent="overview-1">
+          <mxGeometry x="300" y="150" width="340" height="560" as="geometry" />
+        </mxCell>
+        <mxCell id="overview-spa" value="&lt;b&gt;Angular 19 single-page app&lt;/b&gt;&lt;br&gt;&lt;span style=&quot;font-size:11px;color:#4D4D4D&quot;&gt;standalone components · ngx-translate (EN / RW)&lt;br&gt;client-only build (SSR files present, not enabled)&lt;br&gt;&lt;br&gt;In the browser:&lt;br&gt;• access JWT in memory; refresh token in an httpOnly cookie&lt;br&gt;• hls.js player&lt;br&gt;• per-browser device id, sent on /stream/ only&lt;/span&gt;" style="fontFamily=Helvetica;rounded=1;arcSize=6;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#5F6B7A;fontSize=12;fontColor=#1F2933;align=left;verticalAlign=top;spacing=8;spacingTop=4;" vertex="1" parent="overview-vercel">
+          <mxGeometry x="20" y="60" width="300" height="210" as="geometry" />
+        </mxCell>
+        <mxCell id="overview-routes" value="&lt;b&gt;Edge routes (Build Output API)&lt;/b&gt;&lt;br&gt;&lt;span style=&quot;font-size:11px;color:#4D4D4D&quot;&gt;scripts/vercel-output.mjs&lt;br&gt;• /api/* and /sitemap.xml → backend&lt;br&gt;• crawlers on /movie/:id, /casting/:id → SEO pages&lt;br&gt;• everything else → index.html&lt;br&gt;&lt;br&gt;Production → ikigembe-backend.onrender.com&lt;br&gt;Preview builds must set BACKEND_ORIGIN&lt;/span&gt;" style="fontFamily=Helvetica;rounded=1;arcSize=6;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#5F6B7A;fontSize=12;fontColor=#1F2933;align=left;verticalAlign=top;spacing=8;spacingTop=4;" vertex="1" parent="overview-vercel">
+          <mxGeometry x="20" y="330" width="300" height="205" as="geometry" />
+        </mxCell>
+        <mxCell id="overview-render" value="&lt;b&gt;Render&lt;/b&gt; · render.yaml blueprint (production) — web service, worker, 6 cron jobs, PostgreSQL" style="fontFamily=Helvetica;rounded=1;arcSize=2;whiteSpace=wrap;html=1;container=1;collapsible=0;recursiveResize=0;fillColor=#F5F3FF;strokeColor=#6B4FD8;strokeWidth=2;fontSize=14;fontColor=#1F2933;align=left;verticalAlign=top;spacingLeft=12;spacingTop=6;" vertex="1" parent="overview-1">
+          <mxGeometry x="720" y="150" width="990" height="790" as="geometry" />
+        </mxCell>
+        <mxCell id="overview-django" value="&lt;b&gt;ikigembe-backend — Render web service&lt;/b&gt;&lt;br&gt;&lt;span style=&quot;font-size:11px;color:#4D4D4D&quot;&gt;Django 6 + Django REST Framework on Gunicorn · one deployable (modular monolith, apps/*)&lt;/span&gt;" style="fontFamily=Helvetica;rounded=1;arcSize=2;whiteSpace=wrap;html=1;container=1;collapsible=0;recursiveResize=0;fillColor=#FFFFFF;strokeColor=#6B4FD8;strokeWidth=1.5;fontSize=13;fontColor=#1F2933;align=left;verticalAlign=top;spacingLeft=12;spacingTop=6;" vertex="1" parent="overview-render">
+          <mxGeometry x="25" y="55" width="620" height="610" as="geometry" />
+        </mxCell>
+        <mxCell id="overview-auth" value="&lt;b&gt;Authentication &amp; authorization&lt;/b&gt;&lt;br&gt;&lt;span style=&quot;font-size:11px;color:#4D4D4D&quot;&gt;SimpleJWT: 30-min access + 7-day rotating refresh (blacklist, httpOnly cookie) · Google ID-token sign-in · roles Viewer / Producer / Admin · one active session per account · IP throttles + login lockout&lt;/span&gt;" style="fontFamily=Helvetica;rounded=1;arcSize=6;whiteSpace=wrap;html=1;fillColor=#EEF2FF;strokeColor=#5F6B7A;fontSize=12;fontColor=#1F2933;align=left;verticalAlign=top;spacing=8;spacingTop=4;" vertex="1" parent="overview-django">
+          <mxGeometry x="20" y="58" width="580" height="84" as="geometry" />
+        </mxCell>
+        <mxCell id="overview-cap1" value="&lt;b&gt;Catalog &amp; release&lt;/b&gt;&lt;br&gt;&lt;span style=&quot;font-size:11px;color:#4D4D4D&quot;&gt;listing, search, detail · coming-soon gating · admin-only prices&lt;/span&gt;" style="fontFamily=Helvetica;rounded=1;arcSize=6;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#5F6B7A;fontSize=12;fontColor=#1F2933;align=left;verticalAlign=top;spacing=8;spacingTop=4;" vertex="1" parent="overview-django">
+          <mxGeometry x="20" y="150" width="184" height="115" as="geometry" />
+        </mxCell>
+        <mxCell id="overview-cap2" value="&lt;b&gt;Playback &amp; entitlement&lt;/b&gt;&lt;br&gt;&lt;span style=&quot;font-size:11px;color:#4D4D4D&quot;&gt;/stream/ · HLS playlist proxy (signed token) · entitlement re-checked per playlist · optional device binding, watermark&lt;/span&gt;" style="fontFamily=Helvetica;rounded=1;arcSize=6;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#5F6B7A;fontSize=12;fontColor=#1F2933;align=left;verticalAlign=top;spacing=8;spacingTop=4;" vertex="1" parent="overview-django">
+          <mxGeometry x="218" y="150" width="184" height="115" as="geometry" />
+        </mxCell>
+        <mxCell id="overview-cap3" value="&lt;b&gt;Media uploads&lt;/b&gt;&lt;br&gt;&lt;span style=&quot;font-size:11px;color:#4D4D4D&quot;&gt;S3 multipart: initiate, sign-part, complete · server-minted keys · extension allow-lists&lt;/span&gt;" style="fontFamily=Helvetica;rounded=1;arcSize=6;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#5F6B7A;fontSize=12;fontColor=#1F2933;align=left;verticalAlign=top;spacing=8;spacingTop=4;" vertex="1" parent="overview-django">
+          <mxGeometry x="416" y="150" width="184" height="115" as="geometry" />
+        </mxCell>
+        <mxCell id="overview-cap4" value="&lt;b&gt;Payments &amp; payouts&lt;/b&gt;&lt;br&gt;&lt;span style=&quot;font-size:11px;color:#4D4D4D&quot;&gt;gateway adapter (PawaPay / DPO / demo) · webhooks · status re-check · receipts · withdrawals&lt;/span&gt;" style="fontFamily=Helvetica;rounded=1;arcSize=6;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#5F6B7A;fontSize=12;fontColor=#1F2933;align=left;verticalAlign=top;spacing=8;spacingTop=4;" vertex="1" parent="overview-django">
+          <mxGeometry x="20" y="277" width="184" height="115" as="geometry" />
+        </mxCell>
+        <mxCell id="overview-cap5" value="&lt;b&gt;Contracts &amp; finance&lt;/b&gt;&lt;br&gt;&lt;span style=&quot;font-size:11px;color:#4D4D4D&quot;&gt;e-signed distribution agreement · per-film revenue shares · ledger · monthly reports&lt;/span&gt;" style="fontFamily=Helvetica;rounded=1;arcSize=6;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#5F6B7A;fontSize=12;fontColor=#1F2933;align=left;verticalAlign=top;spacing=8;spacingTop=4;" vertex="1" parent="overview-django">
+          <mxGeometry x="218" y="277" width="184" height="115" as="geometry" />
+        </mxCell>
+        <mxCell id="overview-cap6" value="&lt;b&gt;Actor marketplace&lt;/b&gt;&lt;br&gt;&lt;span style=&quot;font-size:11px;color:#4D4D4D&quot;&gt;actor profiles · paid talent videos (ffprobe checks) · paid casting calls · directory access&lt;/span&gt;" style="fontFamily=Helvetica;rounded=1;arcSize=6;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#5F6B7A;fontSize=12;fontColor=#1F2933;align=left;verticalAlign=top;spacing=8;spacingTop=4;" vertex="1" parent="overview-django">
+          <mxGeometry x="416" y="277" width="184" height="115" as="geometry" />
+        </mxCell>
+        <mxCell id="overview-cap7" value="&lt;b&gt;Admin &amp; moderation&lt;/b&gt;&lt;br&gt;&lt;span style=&quot;font-size:11px;color:#4D4D4D&quot;&gt;dashboard · film approval · video / casting moderation · audit log · abuse reports&lt;/span&gt;" style="fontFamily=Helvetica;rounded=1;arcSize=6;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#5F6B7A;fontSize=12;fontColor=#1F2933;align=left;verticalAlign=top;spacing=8;spacingTop=4;" vertex="1" parent="overview-django">
+          <mxGeometry x="20" y="404" width="184" height="115" as="geometry" />
+        </mxCell>
+        <mxCell id="overview-cap8" value="&lt;b&gt;CMS, ads &amp; analytics&lt;/b&gt;&lt;br&gt;&lt;span style=&quot;font-size:11px;color:#4D4D4D&quot;&gt;pages · ad campaigns · first-party events · crawler SEO pages · sitemap&lt;/span&gt;" style="fontFamily=Helvetica;rounded=1;arcSize=6;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#5F6B7A;fontSize=12;fontColor=#1F2933;align=left;verticalAlign=top;spacing=8;spacingTop=4;" vertex="1" parent="overview-django">
+          <mxGeometry x="218" y="404" width="184" height="115" as="geometry" />
+        </mxCell>
+        <mxCell id="overview-cap9" value="&lt;b&gt;Notifications&lt;/b&gt;&lt;br&gt;&lt;span style=&quot;font-size:11px;color:#4D4D4D&quot;&gt;in-app inboxes · emails queued in EmailOutbox (idempotent), retried by cron&lt;/span&gt;" style="fontFamily=Helvetica;rounded=1;arcSize=6;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#5F6B7A;fontSize=12;fontColor=#1F2933;align=left;verticalAlign=top;spacing=8;spacingTop=4;" vertex="1" parent="overview-django">
+          <mxGeometry x="416" y="404" width="184" height="115" as="geometry" />
+        </mxCell>
+        <mxCell id="overview-threads" value="&lt;b&gt;In-process background threads (no task queue)&lt;/b&gt;&lt;br&gt;&lt;span style=&quot;font-size:11px;color:#4D4D4D&quot;&gt;HLS transcode started after a video upload · email delivery after the DB commit (pool of 2)&lt;/span&gt;" style="fontFamily=Helvetica;rounded=1;dashed=1;arcSize=6;whiteSpace=wrap;html=1;fillColor=#F7F7F8;strokeColor=#5F6B7A;fontSize=12;fontColor=#1F2933;align=left;verticalAlign=top;spacing=8;spacingTop=4;" vertex="1" parent="overview-django">
+          <mxGeometry x="20" y="534" width="580" height="58" as="geometry" />
+        </mxCell>
+        <mxCell id="overview-worker" value="&lt;b&gt;transcode-worker&lt;/b&gt;&lt;br&gt;&lt;span style=&quot;font-size:11px;color:#4D4D4D&quot;&gt;Render background worker&lt;br&gt;polls PostgreSQL every 30 s, claims one film&lt;br&gt;local FFmpeg → multi-rendition HLS (6 s segments)&lt;br&gt;optional AES-128 (HLS_ENCRYPTION)&lt;/span&gt;" style="fontFamily=Helvetica;rounded=1;arcSize=6;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#5F6B7A;fontSize=12;fontColor=#1F2933;align=left;verticalAlign=top;spacing=8;spacingTop=4;" vertex="1" parent="overview-render">
+          <mxGeometry x="685" y="105" width="275" height="150" as="geometry" />
+        </mxCell>
+        <mxCell id="overview-db" value="&lt;b&gt;PostgreSQL&lt;/b&gt;&lt;br&gt;&lt;span style=&quot;font-size:11px;color:#4D4D4D&quot;&gt;Render database ikigembe_db (render.yaml fromDatabase)&lt;br&gt;also the Django cache table (rate limits, refresh-token grace)&lt;/span&gt;" style="fontFamily=Helvetica;shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=12;fillColor=#FFFFFF;strokeColor=#5F6B7A;fontSize=12;fontColor=#1F2933;align=center;verticalAlign=middle;spacing=8;" vertex="1" parent="overview-render">
+          <mxGeometry x="685" y="305" width="275" height="165" as="geometry" />
+        </mxCell>
+        <mxCell id="overview-crons" value="&lt;b&gt;Render cron jobs&lt;/b&gt;&lt;br&gt;&lt;span style=&quot;font-size:11px;color:#4D4D4D&quot;&gt;reconcile_payments · every 10 min&lt;br&gt;send_outbox (→ Resend) · every 5 min&lt;br&gt;marketplace_jobs · every 5 min&lt;br&gt;publish_releases · every 15 min&lt;br&gt;expire_contracts · hourly&lt;br&gt;reset_stale_transcodes · hourly&lt;/span&gt;" style="fontFamily=Helvetica;rounded=1;arcSize=6;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#5F6B7A;fontSize=12;fontColor=#1F2933;align=left;verticalAlign=top;spacing=8;spacingTop=4;" vertex="1" parent="overview-render">
+          <mxGeometry x="685" y="510" width="275" height="175" as="geometry" />
+        </mxCell>
+        <mxCell id="overview-r2" value="&lt;b&gt;Cloudflare R2&lt;/b&gt;&lt;br&gt;&lt;span style=&quot;font-size:11px&quot;&gt;S3-compatible object storage&lt;/span&gt;" style="fontFamily=Helvetica;rounded=1;arcSize=2;whiteSpace=wrap;html=1;container=1;collapsible=0;recursiveResize=0;fillColor=#FFF7ED;strokeColor=#F38020;strokeWidth=2;fontSize=14;fontColor=#1F2933;align=left;verticalAlign=top;spacingLeft=12;spacingTop=6;" vertex="1" parent="overview-1">
+          <mxGeometry x="1760" y="150" width="440" height="560" as="geometry" />
+        </mxCell>
+        <mxCell id="overview-pub" value="&lt;b&gt;Public bucket&lt;/b&gt;&lt;br&gt;&lt;span style=&quot;font-size:11px;color:#4D4D4D&quot;&gt;thumbnails · backdrops · trailers · ad creatives&lt;br&gt;plain URLs on the R2 custom domain&lt;br&gt;(cache rules are not defined in the repos)&lt;/span&gt;" style="fontFamily=Helvetica;rounded=1;arcSize=6;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#5F6B7A;fontSize=12;fontColor=#1F2933;align=left;verticalAlign=top;spacing=8;spacingTop=4;" vertex="1" parent="overview-r2">
+          <mxGeometry x="30" y="65" width="380" height="130" as="geometry" />
+        </mxCell>
+        <mxCell id="overview-priv" value="&lt;b&gt;Private bucket&lt;/b&gt;&lt;br&gt;&lt;span style=&quot;font-size:11px;color:#4D4D4D&quot;&gt;full videos · HLS playlists and segments · subtitles · talent videos · copyright documents · contract signatures&lt;br&gt;&lt;br&gt;No public URL: reachable only through short-lived presigned URLs on the S3 API endpoint, or the HLS proxy&lt;br&gt;&lt;br&gt;Making the bucket private is an operator step (docs/r2-resend.md); if the variable is unset, private media falls back to the public bucket&lt;/span&gt;" style="fontFamily=Helvetica;rounded=1;arcSize=6;whiteSpace=wrap;html=1;fillColor=#FFFDF8;strokeColor=#5F6B7A;fontSize=12;fontColor=#1F2933;align=left;verticalAlign=top;spacing=8;spacingTop=4;" vertex="1" parent="overview-r2">
+          <mxGeometry x="30" y="250" width="380" height="230" as="geometry" />
+        </mxCell>
+        <mxCell id="overview-google" value="&lt;b&gt;Google Identity Services&lt;/b&gt;&lt;br&gt;&lt;span style=&quot;font-size:11px;color:#4D4D4D&quot;&gt;&quot;Sign in with Google&quot; (gsi/client)&lt;br&gt;ID token verified by the API (google-auth)&lt;/span&gt;" style="fontFamily=Helvetica;rounded=1;arcSize=6;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#5F6B7A;fontSize=12;fontColor=#1F2933;align=left;verticalAlign=top;spacing=8;spacingTop=4;" vertex="1" parent="overview-1">
+          <mxGeometry x="745" y="1010" width="190" height="125" as="geometry" />
+        </mxCell>
+        <mxCell id="overview-resend" value="&lt;b&gt;Resend&lt;/b&gt;&lt;br&gt;&lt;span style=&quot;font-size:11px;color:#4D4D4D&quot;&gt;transactional email through django-anymail (HTTPS API)&lt;/span&gt;" style="fontFamily=Helvetica;rounded=1;arcSize=6;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#5F6B7A;fontSize=12;fontColor=#1F2933;align=left;verticalAlign=top;spacing=8;spacingTop=4;" vertex="1" parent="overview-1">
+          <mxGeometry x="965" y="1010" width="190" height="125" as="geometry" />
+        </mxCell>
+        <mxCell id="overview-pay" value="Payment gateway&lt;br&gt;&lt;span style=&quot;font-size:11px&quot;&gt;one active · PAYMENT_GATEWAY&lt;/span&gt;" style="fontFamily=Helvetica;rounded=1;arcSize=2;whiteSpace=wrap;html=1;container=1;collapsible=0;recursiveResize=0;fillColor=#F0FAF4;strokeColor=#2F855A;strokeWidth=2;fontSize=14;fontColor=#1F2933;align=right;verticalAlign=top;spacingRight=12;spacingTop=6;" vertex="1" parent="overview-1">
+          <mxGeometry x="1185" y="990" width="650" height="235" as="geometry" />
+        </mxCell>
+        <mxCell id="overview-pawapay" value="&lt;b&gt;PawaPay&lt;/b&gt;&lt;br&gt;&lt;span style=&quot;font-size:11px;color:#4D4D4D&quot;&gt;mobile-money deposits (prompt on the payer's phone) · producer payouts · refunds&lt;/span&gt;" style="fontFamily=Helvetica;rounded=1;arcSize=6;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#5F6B7A;fontSize=12;fontColor=#1F2933;align=left;verticalAlign=top;spacing=8;spacingTop=4;" vertex="1" parent="overview-pay">
+          <mxGeometry x="20" y="50" width="290" height="115" as="geometry" />
+        </mxCell>
+        <mxCell id="overview-dpo" value="&lt;b&gt;DPO Pay&lt;/b&gt;&lt;br&gt;&lt;span style=&quot;font-size:11px;color:#4D4D4D&quot;&gt;hosted checkout page&lt;br&gt;createToken / verifyToken&lt;/span&gt;" style="fontFamily=Helvetica;rounded=1;arcSize=6;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#5F6B7A;fontSize=12;fontColor=#1F2933;align=left;verticalAlign=top;spacing=8;spacingTop=4;" vertex="1" parent="overview-pay">
+          <mxGeometry x="340" y="50" width="290" height="115" as="geometry" />
+        </mxCell>
+        <mxCell id="overview-paynote" value="Current deployment runs PAYMENT_DEMO_MODE=True: no provider is called (docs/environments.md). Live keys are a launch step." style="fontFamily=Helvetica;text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;fontSize=11;fontColor=#2F855A;fontStyle=2;" vertex="1" parent="overview-pay">
+          <mxGeometry x="20" y="172" width="440" height="58" as="geometry" />
+        </mxCell>
+        <mxCell id="overview-legend" value="&lt;b&gt;Legend&lt;/b&gt;" style="fontFamily=Helvetica;rounded=1;arcSize=2;whiteSpace=wrap;html=1;container=1;collapsible=0;recursiveResize=0;fillColor=#FFFFFF;strokeColor=#CBD2D9;strokeWidth=2;fontSize=12;fontColor=#1F2933;align=left;verticalAlign=top;spacingLeft=12;spacingTop=6;" vertex="1" parent="overview-1">
+          <mxGeometry x="40" y="760" width="200" height="190" as="geometry" />
+        </mxCell>
+        <mxCell id="overview-lg_a0" value="" style="ellipse;fillColor=none;strokeColor=none;html=1;" vertex="1" parent="overview-legend">
+          <mxGeometry x="15" y="45" width="2" height="2" as="geometry" />
+        </mxCell>
+        <mxCell id="overview-lg_b0" value="" style="ellipse;fillColor=none;strokeColor=none;html=1;" vertex="1" parent="overview-legend">
+          <mxGeometry x="65" y="45" width="2" height="2" as="geometry" />
+        </mxCell>
+        <mxCell id="overview-lg_e0" value="" style="fontFamily=Helvetica;edgeStyle=none;rounded=0;html=1;endArrow=block;endFill=1;strokeColor=#2D3748;strokeWidth=1.5;fontSize=11;fontColor=#1F2933;labelBackgroundColor=#FFFFFF;exitX=0.5000;exitY=0.5000;exitDx=0;exitDy=0;entryX=0.5000;entryY=0.5000;entryDx=0;entryDy=0;" edge="1" parent="overview-1" source="overview-lg_a0" target="overview-lg_b0">
+          <mxGeometry relative="1" x="0.0" as="geometry" />
+        </mxCell>
+        <mxCell id="overview-lg_t0" value="Synchronous request / delivery" style="fontFamily=Helvetica;text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;fontSize=11;fontColor=#1F2933;" vertex="1" parent="overview-legend">
+          <mxGeometry x="72" y="25" width="125" height="42" as="geometry" />
+        </mxCell>
+        <mxCell id="overview-lg_a1" value="" style="ellipse;fillColor=none;strokeColor=none;html=1;" vertex="1" parent="overview-legend">
+          <mxGeometry x="15" y="93" width="2" height="2" as="geometry" />
+        </mxCell>
+        <mxCell id="overview-lg_b1" value="" style="ellipse;fillColor=none;strokeColor=none;html=1;" vertex="1" parent="overview-legend">
+          <mxGeometry x="65" y="93" width="2" height="2" as="geometry" />
+        </mxCell>
+        <mxCell id="overview-lg_e1" value="" style="fontFamily=Helvetica;edgeStyle=none;rounded=0;html=1;endArrow=block;endFill=1;strokeColor=#2D3748;strokeWidth=1.5;fontSize=11;fontColor=#1F2933;labelBackgroundColor=#FFFFFF;dashed=1;dashPattern=8 5;exitX=0.5000;exitY=0.5000;exitDx=0;exitDy=0;entryX=0.5000;entryY=0.5000;entryDx=0;entryDy=0;" edge="1" parent="overview-1" source="overview-lg_a1" target="overview-lg_b1">
+          <mxGeometry relative="1" x="0.0" as="geometry" />
+        </mxCell>
+        <mxCell id="overview-lg_t1" value="Asynchronous: webhook, job, queued email" style="fontFamily=Helvetica;text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;fontSize=11;fontColor=#1F2933;" vertex="1" parent="overview-legend">
+          <mxGeometry x="72" y="73" width="125" height="42" as="geometry" />
+        </mxCell>
+        <mxCell id="overview-lg_t2" value="Outlined areas = hosting provider, as declared in deployment files" style="fontFamily=Helvetica;text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;fontSize=11;fontColor=#52606D;" vertex="1" parent="overview-legend">
+          <mxGeometry x="12" y="130" width="185" height="52" as="geometry" />
+        </mxCell>
+        <mxCell id="overview-footer" value="&lt;b&gt;Not found in either repository:&lt;/b&gt; AWS services (S3 / CloudFront: media is on Cloudflare R2) · Supabase (named only in the backend CLAUDE.md; render.yaml points to a Render database) · Celery / Redis · MediaConvert · SES · Sentry / CloudWatch or other monitoring · CI/CD workflows · Dockerfiles · VPCs. A parallel staging stack is defined in render.staging.yaml; whether it exists on Render was not verified. Details: ikigembe-current-architecture-notes.md." style="fontFamily=Helvetica;text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;fontSize=12;fontColor=#52606D;verticalAlign=top;" vertex="1" parent="overview-1">
+          <mxGeometry x="40" y="1310" width="2160" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="overview-e_users_spa" value="HTTPS" style="fontFamily=Helvetica;edgeStyle=none;rounded=0;html=1;endArrow=block;endFill=1;strokeColor=#2D3748;strokeWidth=1.5;fontSize=11;fontColor=#1F2933;labelBackgroundColor=#FFFFFF;exitX=1.0000;exitY=0.2679;exitDx=0;exitDy=0;entryX=0.0000;entryY=0.4286;entryDx=0;entryDy=0;" edge="1" parent="overview-1" source="overview-users" target="overview-spa">
+          <mxGeometry relative="1" x="0" as="geometry" />
+        </mxCell>
+        <mxCell id="overview-e_spa_routes" value="same-origin /api/*" style="fontFamily=Helvetica;edgeStyle=none;rounded=0;html=1;endArrow=block;endFill=1;strokeColor=#2D3748;strokeWidth=1.5;fontSize=11;fontColor=#1F2933;labelBackgroundColor=#FFFFFF;exitX=0.5000;exitY=1.0000;exitDx=0;exitDy=0;entryX=0.5000;entryY=0.0000;entryDx=0;entryDy=0;" edge="1" parent="overview-1" source="overview-spa" target="overview-routes">
+          <mxGeometry relative="1" x="0.0" as="geometry" />
+        </mxCell>
+        <mxCell id="overview-e_routes_api" value="HTTPS / REST&lt;br&gt;Bearer JWT" style="fontFamily=Helvetica;edgeStyle=none;rounded=0;html=1;endArrow=block;endFill=1;strokeColor=#2D3748;strokeWidth=1.5;fontSize=11;fontColor=#1F2933;labelBackgroundColor=#FFFFFF;exitX=1.0000;exitY=0.5122;exitDx=0;exitDy=0;entryX=0.0000;entryY=0.6230;entryDx=0;entryDy=0;" edge="1" parent="overview-1" source="overview-routes" target="overview-django">
+          <mxGeometry relative="1" x="0.0" as="geometry" />
+        </mxCell>
+        <mxCell id="overview-e_spa_pub" value="Public artwork and trailers (plain URLs)" style="fontFamily=Helvetica;edgeStyle=none;rounded=0;html=1;endArrow=block;endFill=1;strokeColor=#2D3748;strokeWidth=1.5;fontSize=11;fontColor=#1F2933;labelBackgroundColor=#FFFFFF;exitX=0.9333;exitY=0.0000;exitDx=0;exitDy=0;entryX=0.8684;entryY=0.0000;entryDx=0;entryDy=0;" edge="1" parent="overview-1" source="overview-spa" target="overview-pub">
+          <mxGeometry relative="1" x="0.35" as="geometry">
+            <Array as="points">
+              <mxPoint x="600" y="122" />
+              <mxPoint x="2120" y="122" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="overview-e_spa_priv" value="Presigned PUT (multipart upload) · presigned GET (HLS segments, MP4 fallback, subtitles)" style="fontFamily=Helvetica;edgeStyle=none;rounded=0;html=1;endArrow=block;endFill=1;strokeColor=#2D3748;strokeWidth=1.5;fontSize=11;fontColor=#1F2933;labelBackgroundColor=#FFFFFF;exitX=0.8000;exitY=0.0000;exitDx=0;exitDy=0;entryX=1.0000;entryY=0.6087;entryDx=0;entryDy=0;" edge="1" parent="overview-1" source="overview-spa" target="overview-priv">
+          <mxGeometry relative="1" x="-0.25" as="geometry">
+            <Array as="points">
+              <mxPoint x="560" y="100" />
+              <mxPoint x="2240" y="100" />
+              <mxPoint x="2240" y="540" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="overview-e_api_r2" value="S3 API (boto3): store files, presign&lt;br&gt;URLs, read HLS playlists" style="fontFamily=Helvetica;edgeStyle=none;rounded=0;html=1;endArrow=block;endFill=1;strokeColor=#2D3748;strokeWidth=1.5;fontSize=11;fontColor=#1F2933;labelBackgroundColor=#FFFFFF;exitX=1.0000;exitY=0.0279;exitDx=0;exitDy=0;entryX=0.0000;entryY=0.1286;entryDx=0;entryDy=0;" edge="1" parent="overview-1" source="overview-django" target="overview-r2">
+          <mxGeometry relative="1" x="0" as="geometry" />
+        </mxCell>
+        <mxCell id="overview-e_api_db" value="SQL" style="fontFamily=Helvetica;edgeStyle=none;rounded=0;html=1;endArrow=block;endFill=1;strokeColor=#2D3748;strokeWidth=1.5;fontSize=11;fontColor=#1F2933;labelBackgroundColor=#FFFFFF;exitX=1.0000;exitY=0.5492;exitDx=0;exitDy=0;entryX=0.0000;entryY=0.5152;entryDx=0;entryDy=0;" edge="1" parent="overview-1" source="overview-django" target="overview-db">
+          <mxGeometry relative="1" x="0.0" as="geometry">
+            <mxPoint x="0" y="-14" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="overview-e_worker_db" value="SQL · claim job" style="fontFamily=Helvetica;edgeStyle=none;rounded=0;html=1;endArrow=block;endFill=1;strokeColor=#2D3748;strokeWidth=1.5;fontSize=11;fontColor=#1F2933;labelBackgroundColor=#FFFFFF;exitX=0.4982;exitY=1.0000;exitDx=0;exitDy=0;entryX=0.4982;entryY=0.0727;entryDx=0;entryDy=0;" edge="1" parent="overview-1" source="overview-worker" target="overview-db">
+          <mxGeometry relative="1" x="0.0" as="geometry">
+            <mxPoint x="52" y="0" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="overview-e_crons_db" value="SQL" style="fontFamily=Helvetica;edgeStyle=none;rounded=0;html=1;endArrow=block;endFill=1;strokeColor=#2D3748;strokeWidth=1.5;fontSize=11;fontColor=#1F2933;labelBackgroundColor=#FFFFFF;exitX=0.4982;exitY=0.0000;exitDx=0;exitDy=0;entryX=0.4982;entryY=1.0000;entryDx=0;entryDy=0;" edge="1" parent="overview-1" source="overview-crons" target="overview-db">
+          <mxGeometry relative="1" x="0.0" as="geometry">
+            <mxPoint x="22" y="0" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="overview-e_worker_r2" value="Download source&lt;br&gt;upload HLS" style="fontFamily=Helvetica;edgeStyle=none;rounded=0;html=1;endArrow=block;endFill=1;strokeColor=#2D3748;strokeWidth=1.5;fontSize=11;fontColor=#1F2933;labelBackgroundColor=#FFFFFF;exitX=1.0000;exitY=0.7000;exitDx=0;exitDy=0;entryX=0.0000;entryY=0.5217;entryDx=0;entryDy=0;" edge="1" parent="overview-1" source="overview-worker" target="overview-priv">
+          <mxGeometry relative="1" x="0.05" as="geometry">
+            <Array as="points">
+              <mxPoint x="1730" y="360" />
+              <mxPoint x="1730" y="520" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="overview-e_api_resend" value="Email (async)" style="fontFamily=Helvetica;edgeStyle=none;rounded=0;html=1;endArrow=block;endFill=1;strokeColor=#2D3748;strokeWidth=1.5;fontSize=11;fontColor=#1F2933;labelBackgroundColor=#FFFFFF;dashed=1;dashPattern=8 5;exitX=0.5081;exitY=1.0000;exitDx=0;exitDy=0;entryX=0.5000;entryY=0.0000;entryDx=0;entryDy=0;" edge="1" parent="overview-1" source="overview-django" target="overview-resend">
+          <mxGeometry relative="1" x="-0.35" as="geometry" />
+        </mxCell>
+        <mxCell id="overview-e_api_pay" value="Payment request · status check" style="fontFamily=Helvetica;edgeStyle=none;rounded=0;html=1;endArrow=block;endFill=1;strokeColor=#2D3748;strokeWidth=1.5;fontSize=11;fontColor=#1F2933;labelBackgroundColor=#FFFFFF;exitX=0.7581;exitY=1.0000;exitDx=0;exitDy=0;entryX=0.0462;entryY=0.0000;entryDx=0;entryDy=0;" edge="1" parent="overview-1" source="overview-django" target="overview-pay">
+          <mxGeometry relative="1" x="-0.5" as="geometry" />
+        </mxCell>
+        <mxCell id="overview-e_pay_api" value="Webhook / callback (trigger)" style="fontFamily=Helvetica;edgeStyle=none;rounded=0;html=1;endArrow=block;endFill=1;strokeColor=#2D3748;strokeWidth=1.5;fontSize=11;fontColor=#1F2933;labelBackgroundColor=#FFFFFF;dashed=1;dashPattern=8 5;exitX=0.2000;exitY=0.0000;exitDx=0;exitDy=0;entryX=0.9194;entryY=1.0000;entryDx=0;entryDy=0;" edge="1" parent="overview-1" source="overview-pay" target="overview-django">
+          <mxGeometry relative="1" x="-0.05" as="geometry" />
+        </mxCell>
+        <mxCell id="overview-e_crons_pay" value="Reconcile pending payments" style="fontFamily=Helvetica;edgeStyle=none;rounded=0;html=1;endArrow=block;endFill=1;strokeColor=#2D3748;strokeWidth=1.5;fontSize=11;fontColor=#1F2933;labelBackgroundColor=#FFFFFF;dashed=1;dashPattern=8 5;exitX=0.4982;exitY=1.0000;exitDx=0;exitDy=0;entryX=0.5492;entryY=0.0000;entryDx=0;entryDy=0;" edge="1" parent="overview-1" source="overview-crons" target="overview-pay">
+          <mxGeometry relative="1" x="0.15" as="geometry" />
+        </mxCell>
+        <mxCell id="overview-e_spa_google" value="Sign in with Google" style="fontFamily=Helvetica;edgeStyle=none;rounded=0;html=1;endArrow=block;endFill=1;strokeColor=#2D3748;strokeWidth=1.5;fontSize=11;fontColor=#1F2933;labelBackgroundColor=#FFFFFF;exitX=0.0000;exitY=0.8810;exitDx=0;exitDy=0;entryX=0.5000;entryY=1.0000;entryDx=0;entryDy=0;" edge="1" parent="overview-1" source="overview-spa" target="overview-google">
+          <mxGeometry relative="1" x="0.45" as="geometry">
+            <Array as="points">
+              <mxPoint x="285" y="395" />
+              <mxPoint x="285" y="1250" />
+              <mxPoint x="840" y="1250" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="overview-e_spa_dpo" value="Redirect to DPO hosted checkout (DPO only)" style="fontFamily=Helvetica;edgeStyle=none;rounded=0;html=1;endArrow=block;endFill=1;strokeColor=#2D3748;strokeWidth=1.5;fontSize=11;fontColor=#1F2933;labelBackgroundColor=#FFFFFF;exitX=0.0000;exitY=0.7619;exitDx=0;exitDy=0;entryX=0.5000;entryY=1.0000;entryDx=0;entryDy=0;" edge="1" parent="overview-1" source="overview-spa" target="overview-dpo">
+          <mxGeometry relative="1" x="0.55" as="geometry">
+            <Array as="points">
+              <mxPoint x="270" y="370" />
+              <mxPoint x="270" y="1278" />
+              <mxPoint x="1670" y="1278" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+  <diagram id="flows" name="Key Runtime Flows">
+    <mxGraphModel dx="1600" dy="900" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="2520" pageHeight="1300" background="#FFFFFF" math="0" shadow="0">
+      <root>
+        <mxCell id="flows-0" />
+        <mxCell id="flows-1" parent="flows-0" />
+        <mxCell id="flows-title" value="IKIGEMBE — Key Runtime Flows (verified in code)" style="fontFamily=Helvetica;text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;fontSize=26;fontStyle=1;fontColor=#1F2933;" vertex="1" parent="flows-1">
+          <mxGeometry x="40" y="18" width="1500" height="38" as="geometry" />
+        </mxCell>
+        <mxCell id="flows-subtitle" value="Simplified sequences. Arrows: solid = request · dotted = response · dashed = asynchronous (webhook, background thread, polling job)." style="fontFamily=Helvetica;text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;fontSize=13;fontColor=#52606D;" vertex="1" parent="flows-1">
+          <mxGeometry x="40" y="58" width="2300" height="24" as="geometry" />
+        </mxCell>
+        <mxCell id="flows-pay_title" value="A. Payment → playback" style="fontFamily=Helvetica;text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;fontSize=17;fontStyle=1;fontColor=#1F2933;" vertex="1" parent="flows-1">
+          <mxGeometry x="40" y="100" width="1200" height="34" as="geometry" />
+        </mxCell>
+        <mxCell id="flows-pay_b" value="&lt;b&gt;Viewer browser&lt;/b&gt;&lt;br&gt;Angular SPA" style="fontFamily=Helvetica;shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;html=1;container=0;collapsible=0;recursiveResize=0;outlineConnect=0;portConstraint=eastwest;size=56;fillColor=#FFFFFF;strokeColor=#5F6B7A;fontSize=12;fontColor=#1F2933;" vertex="1" parent="flows-1">
+          <mxGeometry x="40.0" y="150" width="180" height="980" as="geometry" />
+        </mxCell>
+        <mxCell id="flows-pay_api" value="&lt;b&gt;Django API&lt;/b&gt;&lt;br&gt;(via Vercel /api proxy)" style="fontFamily=Helvetica;shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;html=1;container=0;collapsible=0;recursiveResize=0;outlineConnect=0;portConstraint=eastwest;size=56;fillColor=#FFFFFF;strokeColor=#5F6B7A;fontSize=12;fontColor=#1F2933;" vertex="1" parent="flows-1">
+          <mxGeometry x="255.0" y="150" width="180" height="980" as="geometry" />
+        </mxCell>
+        <mxCell id="flows-pay_gw" value="&lt;b&gt;Payment gateway&lt;/b&gt;&lt;br&gt;PawaPay or DPO" style="fontFamily=Helvetica;shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;html=1;container=0;collapsible=0;recursiveResize=0;outlineConnect=0;portConstraint=eastwest;size=56;fillColor=#FFFFFF;strokeColor=#5F6B7A;fontSize=12;fontColor=#1F2933;" vertex="1" parent="flows-1">
+          <mxGeometry x="470.0" y="150" width="180" height="980" as="geometry" />
+        </mxCell>
+        <mxCell id="flows-pay_db" value="&lt;b&gt;PostgreSQL&lt;/b&gt;" style="fontFamily=Helvetica;shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;html=1;container=0;collapsible=0;recursiveResize=0;outlineConnect=0;portConstraint=eastwest;size=56;fillColor=#FFFFFF;strokeColor=#5F6B7A;fontSize=12;fontColor=#1F2933;" vertex="1" parent="flows-1">
+          <mxGeometry x="685.0" y="150" width="180" height="980" as="geometry" />
+        </mxCell>
+        <mxCell id="flows-pay_r2" value="&lt;b&gt;R2 private bucket&lt;/b&gt;" style="fontFamily=Helvetica;shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;html=1;container=0;collapsible=0;recursiveResize=0;outlineConnect=0;portConstraint=eastwest;size=56;fillColor=#FFFFFF;strokeColor=#5F6B7A;fontSize=12;fontColor=#1F2933;" vertex="1" parent="flows-1">
+          <mxGeometry x="900.0" y="150" width="180" height="980" as="geometry" />
+        </mxCell>
+        <mxCell id="flows-pay_m1" value="&lt;b&gt;1&lt;/b&gt;  Initiate payment" style="fontFamily=Helvetica;edgeStyle=none;rounded=0;html=1;endArrow=block;endFill=1;strokeColor=#2D3748;strokeWidth=1.5;fontSize=11;fontColor=#1F2933;labelBackgroundColor=#FFFFFF;exitX=0.5000;exitY=0.0969;exitDx=0;exitDy=0;entryX=0.5000;entryY=0.0969;entryDx=0;entryDy=0;" edge="1" parent="flows-1" source="flows-pay_b" target="flows-pay_api">
+          <mxGeometry relative="1" x="0" as="geometry">
+            <mxPoint x="0" y="-11" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="flows-pay_m2" value="&lt;b&gt;2&lt;/b&gt;  Payment row: Pending" style="fontFamily=Helvetica;edgeStyle=none;rounded=0;html=1;endArrow=block;endFill=1;strokeColor=#2D3748;strokeWidth=1.5;fontSize=11;fontColor=#1F2933;labelBackgroundColor=#FFFFFF;exitX=0.5000;exitY=0.1449;exitDx=0;exitDy=0;entryX=0.5000;entryY=0.1449;entryDx=0;entryDy=0;" edge="1" parent="flows-1" source="flows-pay_api" target="flows-pay_db">
+          <mxGeometry relative="1" x="0" as="geometry">
+            <mxPoint x="0" y="-11" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="flows-pay_m3" value="&lt;b&gt;3&lt;/b&gt;  Deposit / createToken" style="fontFamily=Helvetica;edgeStyle=none;rounded=0;html=1;endArrow=block;endFill=1;strokeColor=#2D3748;strokeWidth=1.5;fontSize=11;fontColor=#1F2933;labelBackgroundColor=#FFFFFF;exitX=0.5000;exitY=0.1929;exitDx=0;exitDy=0;entryX=0.5000;entryY=0.1929;entryDx=0;entryDy=0;" edge="1" parent="flows-1" source="flows-pay_api" target="flows-pay_gw">
+          <mxGeometry relative="1" x="0" as="geometry">
+            <mxPoint x="0" y="-11" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="flows-pay_m4" value="&lt;b&gt;4&lt;/b&gt;  Pending (+ DPO payment_url)" style="fontFamily=Helvetica;edgeStyle=none;rounded=0;html=1;endArrow=open;endFill=0;strokeColor=#718096;strokeWidth=1.2;fontSize=11;fontColor=#1F2933;labelBackgroundColor=#FFFFFF;dashed=1;dashPattern=2 3;exitX=0.5000;exitY=0.2408;exitDx=0;exitDy=0;entryX=0.5000;entryY=0.2408;entryDx=0;entryDy=0;" edge="1" parent="flows-1" source="flows-pay_api" target="flows-pay_b">
+          <mxGeometry relative="1" x="0" as="geometry">
+            <mxPoint x="0" y="-11" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="flows-pay_m5" value="&lt;b&gt;5&lt;/b&gt;  DPO only: hosted checkout page" style="fontFamily=Helvetica;edgeStyle=none;rounded=0;html=1;endArrow=block;endFill=1;strokeColor=#2D3748;strokeWidth=1.5;fontSize=11;fontColor=#1F2933;labelBackgroundColor=#FFFFFF;exitX=0.5000;exitY=0.2888;exitDx=0;exitDy=0;entryX=0.5000;entryY=0.2888;entryDx=0;entryDy=0;" edge="1" parent="flows-1" source="flows-pay_b" target="flows-pay_gw">
+          <mxGeometry relative="1" x="0" as="geometry">
+            <mxPoint x="0" y="-11" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="flows-pay_m6" value="&lt;b&gt;6&lt;/b&gt;  Webhook / callback (hint only)" style="fontFamily=Helvetica;edgeStyle=none;rounded=0;html=1;endArrow=block;endFill=1;strokeColor=#2D3748;strokeWidth=1.5;fontSize=11;fontColor=#1F2933;labelBackgroundColor=#FFFFFF;dashed=1;dashPattern=8 5;exitX=0.5000;exitY=0.3367;exitDx=0;exitDy=0;entryX=0.5000;entryY=0.3367;entryDx=0;entryDy=0;" edge="1" parent="flows-1" source="flows-pay_gw" target="flows-pay_api">
+          <mxGeometry relative="1" x="0" as="geometry">
+            <mxPoint x="0" y="-11" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="flows-pay_m7" value="&lt;b&gt;7&lt;/b&gt;  Status check: deposit / verifyToken" style="fontFamily=Helvetica;edgeStyle=none;rounded=0;html=1;endArrow=block;endFill=1;strokeColor=#2D3748;strokeWidth=1.5;fontSize=11;fontColor=#1F2933;labelBackgroundColor=#FFFFFF;exitX=0.5000;exitY=0.3847;exitDx=0;exitDy=0;entryX=0.5000;entryY=0.3847;entryDx=0;entryDy=0;" edge="1" parent="flows-1" source="flows-pay_api" target="flows-pay_gw">
+          <mxGeometry relative="1" x="0" as="geometry">
+            <mxPoint x="0" y="-11" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="flows-pay_m8" value="&lt;b&gt;8&lt;/b&gt;  Status, amount, currency" style="fontFamily=Helvetica;edgeStyle=none;rounded=0;html=1;endArrow=open;endFill=0;strokeColor=#718096;strokeWidth=1.2;fontSize=11;fontColor=#1F2933;labelBackgroundColor=#FFFFFF;dashed=1;dashPattern=2 3;exitX=0.5000;exitY=0.4327;exitDx=0;exitDy=0;entryX=0.5000;entryY=0.4327;entryDx=0;entryDy=0;" edge="1" parent="flows-1" source="flows-pay_gw" target="flows-pay_api">
+          <mxGeometry relative="1" x="0" as="geometry">
+            <mxPoint x="0" y="-11" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="flows-pay_m9" value="&lt;b&gt;9&lt;/b&gt;  resolve_deposit → Completed = viewing right" style="fontFamily=Helvetica;edgeStyle=none;rounded=0;html=1;endArrow=block;endFill=1;strokeColor=#2D3748;strokeWidth=1.5;fontSize=11;fontColor=#1F2933;labelBackgroundColor=#FFFFFF;exitX=0.5000;exitY=0.4806;exitDx=0;exitDy=0;entryX=0.5000;entryY=0.4806;entryDx=0;entryDy=0;" edge="1" parent="flows-1" source="flows-pay_api" target="flows-pay_db">
+          <mxGeometry relative="1" x="0" as="geometry">
+            <mxPoint x="0" y="-11" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="flows-pay_m10" value="&lt;b&gt;10&lt;/b&gt;  Poll status (/payment/return for DPO)" style="fontFamily=Helvetica;edgeStyle=none;rounded=0;html=1;endArrow=block;endFill=1;strokeColor=#2D3748;strokeWidth=1.5;fontSize=11;fontColor=#1F2933;labelBackgroundColor=#FFFFFF;exitX=0.5000;exitY=0.5286;exitDx=0;exitDy=0;entryX=0.5000;entryY=0.5286;entryDx=0;entryDy=0;" edge="1" parent="flows-1" source="flows-pay_b" target="flows-pay_api">
+          <mxGeometry relative="1" x="0" as="geometry">
+            <mxPoint x="0" y="-11" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="flows-pay_m11" value="&lt;b&gt;11&lt;/b&gt;  GET /stream/ + X-Device-Id" style="fontFamily=Helvetica;edgeStyle=none;rounded=0;html=1;endArrow=block;endFill=1;strokeColor=#2D3748;strokeWidth=1.5;fontSize=11;fontColor=#1F2933;labelBackgroundColor=#FFFFFF;exitX=0.5000;exitY=0.5765;exitDx=0;exitDy=0;entryX=0.5000;entryY=0.5765;entryDx=0;entryDy=0;" edge="1" parent="flows-1" source="flows-pay_b" target="flows-pay_api">
+          <mxGeometry relative="1" x="0" as="geometry">
+            <mxPoint x="0" y="-11" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="flows-pay_m12" value="&lt;b&gt;12&lt;/b&gt;  Entitlement (+ device binding if on)" style="fontFamily=Helvetica;edgeStyle=none;rounded=0;html=1;endArrow=block;endFill=1;strokeColor=#2D3748;strokeWidth=1.5;fontSize=11;fontColor=#1F2933;labelBackgroundColor=#FFFFFF;exitX=0.5000;exitY=0.6245;exitDx=0;exitDy=0;entryX=0.5000;entryY=0.6245;entryDx=0;entryDy=0;" edge="1" parent="flows-1" source="flows-pay_api" target="flows-pay_db">
+          <mxGeometry relative="1" x="0" as="geometry">
+            <mxPoint x="0" y="-11" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="flows-pay_m13" value="&lt;b&gt;13&lt;/b&gt;  stream_url → HLS proxy, signed token" style="fontFamily=Helvetica;edgeStyle=none;rounded=0;html=1;endArrow=open;endFill=0;strokeColor=#718096;strokeWidth=1.2;fontSize=11;fontColor=#1F2933;labelBackgroundColor=#FFFFFF;dashed=1;dashPattern=2 3;exitX=0.5000;exitY=0.6724;exitDx=0;exitDy=0;entryX=0.5000;entryY=0.6724;entryDx=0;entryDy=0;" edge="1" parent="flows-1" source="flows-pay_api" target="flows-pay_b">
+          <mxGeometry relative="1" x="0" as="geometry">
+            <mxPoint x="0" y="-11" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="flows-pay_m14" value="&lt;b&gt;14&lt;/b&gt;  GET playlist via proxy" style="fontFamily=Helvetica;edgeStyle=none;rounded=0;html=1;endArrow=block;endFill=1;strokeColor=#2D3748;strokeWidth=1.5;fontSize=11;fontColor=#1F2933;labelBackgroundColor=#FFFFFF;exitX=0.5000;exitY=0.7204;exitDx=0;exitDy=0;entryX=0.5000;entryY=0.7204;entryDx=0;entryDy=0;" edge="1" parent="flows-1" source="flows-pay_b" target="flows-pay_api">
+          <mxGeometry relative="1" x="0" as="geometry">
+            <mxPoint x="0" y="-11" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="flows-pay_m15" value="&lt;b&gt;15&lt;/b&gt;  Read playlist (S3 API)" style="fontFamily=Helvetica;edgeStyle=none;rounded=0;html=1;endArrow=block;endFill=1;strokeColor=#2D3748;strokeWidth=1.5;fontSize=11;fontColor=#1F2933;labelBackgroundColor=#FFFFFF;exitX=0.5000;exitY=0.7684;exitDx=0;exitDy=0;entryX=0.5000;entryY=0.7684;entryDx=0;entryDy=0;" edge="1" parent="flows-1" source="flows-pay_api" target="flows-pay_r2">
+          <mxGeometry relative="1" x="0" as="geometry">
+            <mxPoint x="0" y="-11" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="flows-pay_m16" value="&lt;b&gt;16&lt;/b&gt;  Playlist with presigned segment URLs" style="fontFamily=Helvetica;edgeStyle=none;rounded=0;html=1;endArrow=open;endFill=0;strokeColor=#718096;strokeWidth=1.2;fontSize=11;fontColor=#1F2933;labelBackgroundColor=#FFFFFF;dashed=1;dashPattern=2 3;exitX=0.5000;exitY=0.8163;exitDx=0;exitDy=0;entryX=0.5000;entryY=0.8163;entryDx=0;entryDy=0;" edge="1" parent="flows-1" source="flows-pay_api" target="flows-pay_b">
+          <mxGeometry relative="1" x="0" as="geometry">
+            <mxPoint x="0" y="-11" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="flows-pay_m17" value="&lt;b&gt;17&lt;/b&gt;  GET .ts segments (presigned URLs)" style="fontFamily=Helvetica;edgeStyle=none;rounded=0;html=1;endArrow=block;endFill=1;strokeColor=#2D3748;strokeWidth=1.5;fontSize=11;fontColor=#1F2933;labelBackgroundColor=#FFFFFF;exitX=0.5000;exitY=0.8643;exitDx=0;exitDy=0;entryX=0.5000;entryY=0.8643;entryDx=0;entryDy=0;" edge="1" parent="flows-1" source="flows-pay_b" target="flows-pay_r2">
+          <mxGeometry relative="1" x="0" as="geometry">
+            <mxPoint x="0" y="-11" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="flows-pay_m18" value="&lt;b&gt;18&lt;/b&gt;  Watch progress" style="fontFamily=Helvetica;edgeStyle=none;rounded=0;html=1;endArrow=block;endFill=1;strokeColor=#2D3748;strokeWidth=1.5;fontSize=11;fontColor=#1F2933;labelBackgroundColor=#FFFFFF;exitX=0.5000;exitY=0.9122;exitDx=0;exitDy=0;entryX=0.5000;entryY=0.9122;entryDx=0;entryDy=0;" edge="1" parent="flows-1" source="flows-pay_b" target="flows-pay_api">
+          <mxGeometry relative="1" x="0" as="geometry">
+            <mxPoint x="0" y="-11" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="flows-pay_note" value="&lt;b&gt;Access is granted only by the server.&lt;/b&gt; resolve_deposit runs after the API's own status check (amount and currency included); the browser redirect and webhook bodies are never trusted. reconcile_payments (every 10 min) catches missed callbacks. PawaPay prompts the payer's phone, not the browser. With ENFORCE_SINGLE_DEVICE_VIEW on, a view is bound to one device and consumed at ≥ 90 % progress. Demo mode settles payments without calling a provider." style="fontFamily=Helvetica;shape=note;size=14;whiteSpace=wrap;html=1;fillColor=#FFFBEA;strokeColor=#C9A227;fontSize=12;fontColor=#1F2933;align=left;verticalAlign=top;spacing=10;" vertex="1" parent="flows-1">
+          <mxGeometry x="40" y="1145" width="1040" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="flows-up_title" value="B. Film upload → publish" style="fontFamily=Helvetica;text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;fontSize=17;fontStyle=1;fontColor=#1F2933;" vertex="1" parent="flows-1">
+          <mxGeometry x="1250" y="100" width="1200" height="34" as="geometry" />
+        </mxCell>
+        <mxCell id="flows-up_p" value="&lt;b&gt;Producer browser&lt;/b&gt;&lt;br&gt;(ready producer)" style="fontFamily=Helvetica;shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;html=1;container=0;collapsible=0;recursiveResize=0;outlineConnect=0;portConstraint=eastwest;size=56;fillColor=#FFFFFF;strokeColor=#5F6B7A;fontSize=12;fontColor=#1F2933;" vertex="1" parent="flows-1">
+          <mxGeometry x="1250.0" y="150" width="170" height="980" as="geometry" />
+        </mxCell>
+        <mxCell id="flows-up_api" value="&lt;b&gt;Django API&lt;/b&gt;" style="fontFamily=Helvetica;shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;html=1;container=0;collapsible=0;recursiveResize=0;outlineConnect=0;portConstraint=eastwest;size=56;fillColor=#FFFFFF;strokeColor=#5F6B7A;fontSize=12;fontColor=#1F2933;" vertex="1" parent="flows-1">
+          <mxGeometry x="1450.0" y="150" width="170" height="980" as="geometry" />
+        </mxCell>
+        <mxCell id="flows-up_r2" value="&lt;b&gt;R2 private bucket&lt;/b&gt;" style="fontFamily=Helvetica;shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;html=1;container=0;collapsible=0;recursiveResize=0;outlineConnect=0;portConstraint=eastwest;size=56;fillColor=#FFFFFF;strokeColor=#5F6B7A;fontSize=12;fontColor=#1F2933;" vertex="1" parent="flows-1">
+          <mxGeometry x="1650.0" y="150" width="170" height="980" as="geometry" />
+        </mxCell>
+        <mxCell id="flows-up_tc" value="&lt;b&gt;Transcoder&lt;/b&gt;&lt;br&gt;web thread or worker" style="fontFamily=Helvetica;shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;html=1;container=0;collapsible=0;recursiveResize=0;outlineConnect=0;portConstraint=eastwest;size=56;fillColor=#FFFFFF;strokeColor=#5F6B7A;fontSize=12;fontColor=#1F2933;" vertex="1" parent="flows-1">
+          <mxGeometry x="1850.0" y="150" width="170" height="980" as="geometry" />
+        </mxCell>
+        <mxCell id="flows-up_db" value="&lt;b&gt;PostgreSQL&lt;/b&gt;" style="fontFamily=Helvetica;shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;html=1;container=0;collapsible=0;recursiveResize=0;outlineConnect=0;portConstraint=eastwest;size=56;fillColor=#FFFFFF;strokeColor=#5F6B7A;fontSize=12;fontColor=#1F2933;" vertex="1" parent="flows-1">
+          <mxGeometry x="2050.0" y="150" width="170" height="980" as="geometry" />
+        </mxCell>
+        <mxCell id="flows-up_ad" value="&lt;b&gt;Admin browser&lt;/b&gt;" style="fontFamily=Helvetica;shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;html=1;container=0;collapsible=0;recursiveResize=0;outlineConnect=0;portConstraint=eastwest;size=56;fillColor=#FFFFFF;strokeColor=#5F6B7A;fontSize=12;fontColor=#1F2933;" vertex="1" parent="flows-1">
+          <mxGeometry x="2250.0" y="150" width="170" height="980" as="geometry" />
+        </mxCell>
+        <mxCell id="flows-up_m1" value="&lt;b&gt;1&lt;/b&gt;  upload/initiate (field_name)" style="fontFamily=Helvetica;edgeStyle=none;rounded=0;html=1;endArrow=block;endFill=1;strokeColor=#2D3748;strokeWidth=1.5;fontSize=11;fontColor=#1F2933;labelBackgroundColor=#FFFFFF;exitX=0.5000;exitY=0.0969;exitDx=0;exitDy=0;entryX=0.5000;entryY=0.0969;entryDx=0;entryDy=0;" edge="1" parent="flows-1" source="flows-up_p" target="flows-up_api">
+          <mxGeometry relative="1" x="0" as="geometry">
+            <mxPoint x="0" y="-11" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="flows-up_m2" value="&lt;b&gt;2&lt;/b&gt;  CreateMultipartUpload" style="fontFamily=Helvetica;edgeStyle=none;rounded=0;html=1;endArrow=block;endFill=1;strokeColor=#2D3748;strokeWidth=1.5;fontSize=11;fontColor=#1F2933;labelBackgroundColor=#FFFFFF;exitX=0.5000;exitY=0.1449;exitDx=0;exitDy=0;entryX=0.5000;entryY=0.1449;entryDx=0;entryDy=0;" edge="1" parent="flows-1" source="flows-up_api" target="flows-up_r2">
+          <mxGeometry relative="1" x="0" as="geometry">
+            <mxPoint x="0" y="-11" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="flows-up_m3" value="&lt;b&gt;3&lt;/b&gt;  upload_id + server-minted key" style="fontFamily=Helvetica;edgeStyle=none;rounded=0;html=1;endArrow=open;endFill=0;strokeColor=#718096;strokeWidth=1.2;fontSize=11;fontColor=#1F2933;labelBackgroundColor=#FFFFFF;dashed=1;dashPattern=2 3;exitX=0.5000;exitY=0.1929;exitDx=0;exitDy=0;entryX=0.5000;entryY=0.1929;entryDx=0;entryDy=0;" edge="1" parent="flows-1" source="flows-up_api" target="flows-up_p">
+          <mxGeometry relative="1" x="0" as="geometry">
+            <mxPoint x="0" y="-11" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="flows-up_m4" value="&lt;b&gt;4&lt;/b&gt;  sign-part (per chunk)" style="fontFamily=Helvetica;edgeStyle=none;rounded=0;html=1;endArrow=block;endFill=1;strokeColor=#2D3748;strokeWidth=1.5;fontSize=11;fontColor=#1F2933;labelBackgroundColor=#FFFFFF;exitX=0.5000;exitY=0.2408;exitDx=0;exitDy=0;entryX=0.5000;entryY=0.2408;entryDx=0;entryDy=0;" edge="1" parent="flows-1" source="flows-up_p" target="flows-up_api">
+          <mxGeometry relative="1" x="0" as="geometry">
+            <mxPoint x="0" y="-11" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="flows-up_m5" value="&lt;b&gt;5&lt;/b&gt;  PUT part (presigned URL)" style="fontFamily=Helvetica;edgeStyle=none;rounded=0;html=1;endArrow=block;endFill=1;strokeColor=#2D3748;strokeWidth=1.5;fontSize=11;fontColor=#1F2933;labelBackgroundColor=#FFFFFF;exitX=0.5000;exitY=0.2888;exitDx=0;exitDy=0;entryX=0.5000;entryY=0.2888;entryDx=0;entryDy=0;" edge="1" parent="flows-1" source="flows-up_p" target="flows-up_r2">
+          <mxGeometry relative="1" x="0" as="geometry">
+            <mxPoint x="0" y="-11" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="flows-up_m6" value="&lt;b&gt;6&lt;/b&gt;  complete (key owner checked)" style="fontFamily=Helvetica;edgeStyle=none;rounded=0;html=1;endArrow=block;endFill=1;strokeColor=#2D3748;strokeWidth=1.5;fontSize=11;fontColor=#1F2933;labelBackgroundColor=#FFFFFF;exitX=0.5000;exitY=0.3367;exitDx=0;exitDy=0;entryX=0.5000;entryY=0.3367;entryDx=0;entryDy=0;" edge="1" parent="flows-1" source="flows-up_p" target="flows-up_api">
+          <mxGeometry relative="1" x="0" as="geometry">
+            <mxPoint x="0" y="-11" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="flows-up_m7" value="&lt;b&gt;7&lt;/b&gt;  CompleteMultipartUpload" style="fontFamily=Helvetica;edgeStyle=none;rounded=0;html=1;endArrow=block;endFill=1;strokeColor=#2D3748;strokeWidth=1.5;fontSize=11;fontColor=#1F2933;labelBackgroundColor=#FFFFFF;exitX=0.5000;exitY=0.3847;exitDx=0;exitDy=0;entryX=0.5000;entryY=0.3847;entryDx=0;entryDy=0;" edge="1" parent="flows-1" source="flows-up_api" target="flows-up_r2">
+          <mxGeometry relative="1" x="0" as="geometry">
+            <mxPoint x="0" y="-11" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="flows-up_m8" value="&lt;b&gt;8&lt;/b&gt;  Create film with video_key" style="fontFamily=Helvetica;edgeStyle=none;rounded=0;html=1;endArrow=block;endFill=1;strokeColor=#2D3748;strokeWidth=1.5;fontSize=11;fontColor=#1F2933;labelBackgroundColor=#FFFFFF;exitX=0.5000;exitY=0.4327;exitDx=0;exitDy=0;entryX=0.5000;entryY=0.4327;entryDx=0;entryDy=0;" edge="1" parent="flows-1" source="flows-up_p" target="flows-up_api">
+          <mxGeometry relative="1" x="0" as="geometry">
+            <mxPoint x="0" y="-11" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="flows-up_m9" value="&lt;b&gt;9&lt;/b&gt;  Movie: pending_review, HLS not_started" style="fontFamily=Helvetica;edgeStyle=none;rounded=0;html=1;endArrow=block;endFill=1;strokeColor=#2D3748;strokeWidth=1.5;fontSize=11;fontColor=#1F2933;labelBackgroundColor=#FFFFFF;exitX=0.5000;exitY=0.4806;exitDx=0;exitDy=0;entryX=0.5000;entryY=0.4806;entryDx=0;entryDy=0;" edge="1" parent="flows-1" source="flows-up_api" target="flows-up_db">
+          <mxGeometry relative="1" x="0" as="geometry">
+            <mxPoint x="0" y="-11" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="flows-up_m10" value="&lt;b&gt;10&lt;/b&gt;  Start transcode thread" style="fontFamily=Helvetica;edgeStyle=none;rounded=0;html=1;endArrow=block;endFill=1;strokeColor=#2D3748;strokeWidth=1.5;fontSize=11;fontColor=#1F2933;labelBackgroundColor=#FFFFFF;dashed=1;dashPattern=8 5;exitX=0.5000;exitY=0.5286;exitDx=0;exitDy=0;entryX=0.5000;entryY=0.5286;entryDx=0;entryDy=0;" edge="1" parent="flows-1" source="flows-up_api" target="flows-up_tc">
+          <mxGeometry relative="1" x="0" as="geometry">
+            <mxPoint x="0" y="-11" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="flows-up_m11" value="&lt;b&gt;11&lt;/b&gt;  or: worker claims job (30 s poll)" style="fontFamily=Helvetica;edgeStyle=none;rounded=0;html=1;endArrow=block;endFill=1;strokeColor=#2D3748;strokeWidth=1.5;fontSize=11;fontColor=#1F2933;labelBackgroundColor=#FFFFFF;dashed=1;dashPattern=8 5;exitX=0.5000;exitY=0.5765;exitDx=0;exitDy=0;entryX=0.5000;entryY=0.5765;entryDx=0;entryDy=0;" edge="1" parent="flows-1" source="flows-up_tc" target="flows-up_db">
+          <mxGeometry relative="1" x="0" as="geometry">
+            <mxPoint x="0" y="-11" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="flows-up_m12" value="&lt;b&gt;12&lt;/b&gt;  Download source video" style="fontFamily=Helvetica;edgeStyle=none;rounded=0;html=1;endArrow=block;endFill=1;strokeColor=#2D3748;strokeWidth=1.5;fontSize=11;fontColor=#1F2933;labelBackgroundColor=#FFFFFF;exitX=0.5000;exitY=0.6245;exitDx=0;exitDy=0;entryX=0.5000;entryY=0.6245;entryDx=0;entryDy=0;" edge="1" parent="flows-1" source="flows-up_tc" target="flows-up_r2">
+          <mxGeometry relative="1" x="0" as="geometry">
+            <mxPoint x="0" y="-11" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="flows-up_m13" value="&lt;b&gt;13&lt;/b&gt;  Upload HLS (local FFmpeg output)" style="fontFamily=Helvetica;edgeStyle=none;rounded=0;html=1;endArrow=block;endFill=1;strokeColor=#2D3748;strokeWidth=1.5;fontSize=11;fontColor=#1F2933;labelBackgroundColor=#FFFFFF;exitX=0.5000;exitY=0.6724;exitDx=0;exitDy=0;entryX=0.5000;entryY=0.6724;entryDx=0;entryDy=0;" edge="1" parent="flows-1" source="flows-up_tc" target="flows-up_r2">
+          <mxGeometry relative="1" x="0" as="geometry">
+            <mxPoint x="0" y="-11" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="flows-up_m14" value="&lt;b&gt;14&lt;/b&gt;  hls_status = ready" style="fontFamily=Helvetica;edgeStyle=none;rounded=0;html=1;endArrow=block;endFill=1;strokeColor=#2D3748;strokeWidth=1.5;fontSize=11;fontColor=#1F2933;labelBackgroundColor=#FFFFFF;exitX=0.5000;exitY=0.7204;exitDx=0;exitDy=0;entryX=0.5000;entryY=0.7204;entryDx=0;entryDy=0;" edge="1" parent="flows-1" source="flows-up_tc" target="flows-up_db">
+          <mxGeometry relative="1" x="0" as="geometry">
+            <mxPoint x="0" y="-11" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="flows-up_m15" value="&lt;b&gt;15&lt;/b&gt;  Approve film" style="fontFamily=Helvetica;edgeStyle=none;rounded=0;html=1;endArrow=block;endFill=1;strokeColor=#2D3748;strokeWidth=1.5;fontSize=11;fontColor=#1F2933;labelBackgroundColor=#FFFFFF;exitX=0.5000;exitY=0.7684;exitDx=0;exitDy=0;entryX=0.5000;entryY=0.7684;entryDx=0;entryDy=0;" edge="1" parent="flows-1" source="flows-up_ad" target="flows-up_api">
+          <mxGeometry relative="1" x="0" as="geometry">
+            <mxPoint x="0" y="-11" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="flows-up_m16" value="&lt;b&gt;16&lt;/b&gt;  approval_status = approved" style="fontFamily=Helvetica;edgeStyle=none;rounded=0;html=1;endArrow=block;endFill=1;strokeColor=#2D3748;strokeWidth=1.5;fontSize=11;fontColor=#1F2933;labelBackgroundColor=#FFFFFF;exitX=0.5000;exitY=0.8163;exitDx=0;exitDy=0;entryX=0.5000;entryY=0.8163;entryDx=0;entryDy=0;" edge="1" parent="flows-1" source="flows-up_api" target="flows-up_db">
+          <mxGeometry relative="1" x="0" as="geometry">
+            <mxPoint x="0" y="-11" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="flows-up_note" value="&lt;b&gt;Uploads require a ready producer&lt;/b&gt; (profile completed + signed distribution agreement). The browser sends file bytes straight to R2; the API only signs parts and checks that the key belongs to the caller. An approved film is listed; it is buyable and playable once release_at passes (checked on every request). publish_releases only announces releases. reset_stale_transcodes re-queues stuck jobs. Talent videos use the same multipart flow, then an ffprobe check and admin moderation." style="fontFamily=Helvetica;shape=note;size=14;whiteSpace=wrap;html=1;fillColor=#FFFBEA;strokeColor=#C9A227;fontSize=12;fontColor=#1F2933;align=left;verticalAlign=top;spacing=10;" vertex="1" parent="flows-1">
+          <mxGeometry x="1250" y="1145" width="1170" height="80" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
