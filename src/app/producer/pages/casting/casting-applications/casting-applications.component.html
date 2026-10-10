@@ -51,31 +51,54 @@
   </div>
 
   @for (a of visible(); track a.id) {
-    <article class="mk-card">
-      <div class="mk-row" style="justify-content: space-between">
-        <h2>{{ a.stage_name ?? ('marketplace.producerCasting.unnamedActor' | translate) }}</h2>
-        <span [class]="statusClass(a.status)">{{ 'marketplace.applicationStatus.' + a.status | translate }}</span>
-      </div>
-      <p class="mk-muted">{{ 'marketplace.applications.sent' | translate }} {{ a.created_at | date:'medium' }}</p>
-      @if (a.note) { <p style="white-space: pre-line">{{ a.note }}</p> }
-
-      @if (a.videos.length) {
-        <div class="mk-row">
-          @for (v of a.videos; track v.id) {
-            <button type="button" class="mk-btn mk-btn--ghost" (click)="preview.set(v)" [disabled]="!v.video_url">
-              ▶ {{ v.title }}
-            </button>
-          }
+    <article class="mk-card app-card" [attr.aria-labelledby]="'app-name-' + a.id">
+      <!-- Who applied and what they wrote -->
+      <div class="app-card__main">
+        <div class="app-card__head">
+          <span class="app-card__avatar" aria-hidden="true">{{ initials(a.stage_name) }}</span>
+          <div class="app-card__who">
+            <h2 [id]="'app-name-' + a.id">{{ a.stage_name ?? ('marketplace.producerCasting.unnamedActor' | translate) }}</h2>
+            <p>
+              {{ 'marketplace.applications.sent' | translate }}
+              <time [attr.datetime]="a.created_at">{{ a.created_at | date:'medium' }}</time>
+            </p>
+          </div>
+          <span [class]="statusClass(a.status) + ' app-card__badge'">{{ 'marketplace.applicationStatus.' + a.status | translate }}</span>
         </div>
-      }
+        @if (a.note) {
+          <blockquote class="app-card__note">{{ a.note }}</blockquote>
+        }
+      </div>
 
-      <div class="mk-field" style="max-width: 240px; margin-top: .75rem">
-        <label [for]="'app-status-' + a.id">{{ 'marketplace.producerCasting.status' | translate }}</label>
-        <select [id]="'app-status-' + a.id" [value]="a.status" (change)="onStatusChange(a, $event)" [disabled]="updatingId() === a.id">
-          @for (s of statuses; track s) {
-            <option [value]="s" [selected]="s === a.status">{{ 'marketplace.applicationStatus.' + s | translate }}</option>
-          }
-        </select>
+      <!-- Audition videos and the decision -->
+      <div class="app-card__side">
+        <p class="app-card__label">{{ 'marketplace.producerCasting.auditionVideos' | translate }}</p>
+        @if (a.videos.length) {
+          <ul class="app-card__videos">
+            @for (v of a.videos; track v.id) {
+              <li>
+                <button type="button" class="app-card__video" (click)="preview.set(v)" [disabled]="!v.video_url"
+                        [attr.aria-label]="'marketplace.producerCasting.watchVideo' | translate: { title: v.title }">
+                  <span class="app-card__play" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16"><path d="M8 5v14l11-7z"/></svg>
+                  </span>
+                  <span class="app-card__video-title">{{ v.title }}</span>
+                </button>
+              </li>
+            }
+          </ul>
+        } @else {
+          <p class="mk-muted">{{ 'marketplace.producerCasting.noVideos' | translate }}</p>
+        }
+
+        <div class="mk-field app-card__status">
+          <label [for]="'app-status-' + a.id">{{ 'marketplace.producerCasting.status' | translate }}</label>
+          <select [id]="'app-status-' + a.id" [value]="a.status" (change)="onStatusChange(a, $event)" [disabled]="updatingId() === a.id">
+            @for (s of statuses; track s) {
+              <option [value]="s" [selected]="s === a.status">{{ 'marketplace.applicationStatus.' + s | translate }}</option>
+            }
+          </select>
+        </div>
       </div>
     </article>
   }

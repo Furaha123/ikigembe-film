@@ -21,7 +21,7 @@ export type ApplicationFilter = 'all' | ApplicationStatus;
   standalone: true,
   imports: [ModalBackdropDirective, CommonModule, RouterLink, TranslatePipe, VideoPlayerComponent],
   templateUrl: './casting-applications.component.html',
-  styleUrls: ['../../../../shared/styles/marketplace-page.scss'],
+  styleUrls: ['../../../../shared/styles/marketplace-page.scss', './casting-applications.component.scss'],
 })
 export class CastingApplicationsComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);
@@ -73,6 +73,14 @@ export class CastingApplicationsComponent implements OnInit {
       },
     });
     if (fixed) this.loadApplications(fixed);
+  }
+
+  /** Avatar letters from the stage name ("Grace Akimana" → "GA"); "?" for an unnamed actor. */
+  initials(name: string | null): string {
+    const words = (name ?? '').trim().split(/\s+/).filter(Boolean);
+    if (!words.length) return '?';
+    const letters = words.length > 1 ? words[0][0] + words[words.length - 1][0] : words[0].slice(0, 2);
+    return letters.toUpperCase();
   }
 
   count(f: ApplicationFilter): number {
