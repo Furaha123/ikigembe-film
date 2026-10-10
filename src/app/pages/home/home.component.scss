@@ -28,13 +28,6 @@ main { padding-bottom: 3rem; }
 
 @keyframes spin { to { transform: rotate(360deg); } }
 
-.home-actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.75rem;
-  padding: 1.5rem 4%;
-}
-
 .home-btn {
   display: inline-flex;
   align-items: center;
@@ -54,7 +47,179 @@ main { padding-bottom: 3rem; }
 
 .home-empty { padding: 0 4%; color: #aaa; }
 
+.home-btn--lg { padding: 0.9rem 1.6rem; font-size: 1rem; }
+
+// ── Guest hero ───────────────────────────────────────
+.home-hero {
+  position: relative;
+  display: flex;
+  align-items: flex-end;
+  min-height: min(88vh, 760px);
+  padding: 7rem 4% 3.5rem;
+  overflow: hidden;
+  isolation: isolate;
+
+  &__bg {
+    position: absolute;
+    inset: 0;
+    z-index: -2;
+    background-size: cover;
+    background-position: center top;
+  }
+
+  // Keeps the copy readable on any backdrop: dark from the left and the bottom.
+  &__shade {
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background:
+      linear-gradient(to right, rgba(10,10,10,0.92) 0%, rgba(10,10,10,0.6) 45%, rgba(10,10,10,0.15) 100%),
+      linear-gradient(to top, #0a0a0a 0%, rgba(10,10,10,0) 40%);
+  }
+
+  &__body { max-width: 640px; }
+
+  &__eyebrow {
+    margin: 0 0 0.75rem;
+    color: #c9a84c;
+    font-size: 0.8rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+
+  &__title {
+    margin: 0;
+    color: #fff;
+    font-size: clamp(2rem, 5.2vw, 3.6rem);
+    line-height: 1.08;
+    font-weight: 800;
+    text-wrap: balance;
+  }
+
+  &__text {
+    margin: 1rem 0 0;
+    max-width: 520px;
+    color: #d4d4d4;
+    font-size: clamp(1rem, 1.6vw, 1.15rem);
+    line-height: 1.55;
+  }
+
+  &__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    margin-top: 1.75rem;
+  }
+
+  &__fineprint { margin: 0.75rem 0 0; color: #9a9a9a; font-size: 0.85rem; }
+
+  &__featured {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-top: 2rem;
+    padding: 0.5rem 0.9rem;
+    border: 1px solid rgba(255,255,255,0.16);
+    border-radius: 999px;
+    background: rgba(0,0,0,0.45);
+    color: #fff;
+    font-size: 0.85rem;
+    text-decoration: none;
+    max-width: 100%;
+
+    &:hover { border-color: #c9a84c; }
+    &:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
+  }
+
+  &__featured-label { color: #c9a84c; font-weight: 700; white-space: nowrap; }
+  &__featured-title { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+}
+
+.home-rows { padding-top: 0.5rem; }
+
+.home-section-title {
+  margin: 0 0 1rem;
+  color: #fff;
+  font-size: clamp(1.2rem, 2.2vw, 1.5rem);
+}
+
+// ── Genres ───────────────────────────────────────────
+.home-genres {
+  padding: 2rem 4% 1rem;
+
+  ul { display: flex; flex-wrap: wrap; gap: 0.6rem; margin: 0; padding: 0; list-style: none; }
+}
+
+.home-chip {
+  display: inline-flex;
+  align-items: center;
+  min-height: 40px;
+  padding: 0 1.1rem;
+  border: 1px solid rgba(255,255,255,0.16);
+  border-radius: 999px;
+  color: #e5e5e5;
+  font-size: 0.9rem;
+  text-decoration: none;
+  transition: border-color 0.18s, color 0.18s;
+
+  &:hover { border-color: #c9a84c; color: #c9a84c; }
+  &:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
+}
+
+// ── Why Ikigembe ─────────────────────────────────────
+.home-why {
+  padding: 3rem 4% 1rem;
+
+  &__grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 1rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  &__item {
+    padding: 1.25rem;
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 12px;
+    background: #141414;
+
+    h3 { margin: 0 0 0.4rem; color: #c9a84c; font-size: 1rem; }
+    p { margin: 0; color: #b5b5b5; font-size: 0.92rem; line-height: 1.5; }
+  }
+}
+
+// ── Closing call to action ───────────────────────────
+.home-cta {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+  margin: 3rem 4% 0;
+  padding: 3rem 1.5rem;
+  border-radius: 16px;
+  background: linear-gradient(135deg, rgba(201,168,76,0.16), rgba(201,168,76,0.03));
+  text-align: center;
+
+  h2 { margin: 0; color: #fff; font-size: clamp(1.4rem, 3vw, 2rem); }
+  > p:not(.home-cta__creators) { margin: 0 0 0.5rem; max-width: 520px; color: #c4c4c4; }
+
+  &__creators {
+    margin: 1rem 0 0;
+    color: #9a9a9a;
+    font-size: 0.88rem;
+
+    a { color: #c9a84c; }
+    a:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
+  }
+}
+
 @media (max-width: 600px) {
-  .home-actions { padding: 1rem 16px; }
-  .home-btn { flex: 1 1 100%; justify-content: center; }
+  .home-hero { min-height: 78vh; padding: 6rem 16px 2.5rem; }
+  .home-hero__actions .home-btn { flex: 1 1 100%; justify-content: center; }
+  .home-genres, .home-why { padding-left: 16px; padding-right: 16px; }
+  .home-cta { margin: 2.5rem 16px 0; }
+  .home-empty { padding: 0 16px; }
 }

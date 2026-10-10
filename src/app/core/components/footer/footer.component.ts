@@ -1,8 +1,9 @@
-import { Component, OnInit, PLATFORM_ID, inject, signal } from '@angular/core';
+import { Component, OnInit, PLATFORM_ID, computed, inject, signal } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { TranslatePipe } from '@ngx-translate/core';
 import { CmsService } from '../../services/cms.service';
+import { AuthService } from '../../services/auth.service';
 import { CmsPageSummary } from '../../../shared/models/cms.interface';
 
 /** Slugs with a dedicated route; any other published page lives under /pages/<slug>. */
@@ -34,6 +35,7 @@ export function toFooterLinks(pages: CmsPageSummary[]): FooterCmsLink[] {
 export class FooterComponent implements OnInit {
   private readonly cms = inject(CmsService);
   private readonly platformId = inject(PLATFORM_ID);
+  private readonly auth = inject(AuthService);
 
   currentYear = new Date().getFullYear();
 
@@ -49,10 +51,19 @@ export class FooterComponent implements OnInit {
     });
   }
 
-  /** Only pages that exist. (The old Browse/Genres/Support columns and social icons had no links.) */
+  /** Only pages that exist and that guests can open. (The old Browse/Genres/Support columns and social icons had no links.) */
   readonly exploreLinks = [
-    { key: 'footer.explore.films', route: '/browse' },
+    { key: 'footer.explore.films', route: '/films' },
+    { key: 'footer.explore.comingSoon', route: '/films', queryParams: { availability: 'coming_soon' } },
     { key: 'footer.explore.producers', route: '/producers' },
-    { key: 'footer.explore.casting', route: '/casting' },
   ];
+
+  /**
+   * Creator links, kept out of the guest header. Guests sign up first (producers upgrade from their profile;
+   * signed-in viewers have "Become a Producer" in the header).
+   */
+  readonly creatorLinks = computed(() => [
+    ...(this.auth.isLoggedIn() ? [] : [{ key: 'footer.creators.publish', route: '/register' }]),
+    { key: 'footer.creators.casting', route: '/actors-casting' },
+  ]);
 }

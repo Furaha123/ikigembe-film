@@ -792,7 +792,10 @@
       "pickCall": "Casting call",
       "noPublishedCalls": "You don't have any published castings yet.",
       "reviewNote": "Reason",
-      "editResend": "Edit & send again"
+      "editResend": "Edit & send again",
+      "auditionVideos": "Audition videos",
+      "noVideos": "No video attached.",
+      "watchVideo": "Watch audition video: {{title}}"
     },
     "directory": {
       "title": "Actor directory",
@@ -2544,7 +2547,8 @@
       "daysAgo": "{{n}}d ago"
     },
     "signIn": "Sign in",
-    "switchLanguage": "Switch language to {{lang}}"
+    "switchLanguage": "Switch language to {{lang}}",
+    "getStarted": "Get started"
   },
   "footer": {
     "tagline": "Your gateway to African cinema and beyond. Stream the best movies and shows, handpicked for you.",
@@ -2579,7 +2583,12 @@
       "title": "Explore",
       "films": "Films",
       "producers": "Producers",
-      "casting": "Casting calls"
+      "comingSoon": "Coming soon"
+    },
+    "creators": {
+      "title": "For creators",
+      "publish": "Publish your films",
+      "casting": "Actors & casting"
     }
   },
   "browse": {
@@ -3068,14 +3077,47 @@
     "retry": "Try again",
     "introTitle": "Rwandan cinema, one film at a time",
     "introText": "New films are added regularly. Watch trailers for free; pay only for the films you want to see.",
-    "actionsLabel": "Get started",
     "browseAll": "Browse all films",
     "createAccount": "Create a free account",
-    "actorsCasting": "Actors & casting",
     "empty": "No films are available yet. Come back soon.",
     "latest": "New releases",
     "comingSoon": "Coming soon",
-    "popular": "Most watched"
+    "popular": "Most watched",
+    "hero": {
+      "eyebrow": "Rwandan & African cinema",
+      "title": "Stories from home, ready when you are.",
+      "text": "Watch new Rwandan and African films online. Trailers are free, and you pay only for the films you choose. No subscription.",
+      "cta": "Get started",
+      "fineprint": "Creating an account is free. Pay with Mobile Money.",
+      "featured": "Featured"
+    },
+    "genresTitle": "Browse by genre",
+    "why": {
+      "title": "Why Ikigembe",
+      "payPerFilm": {
+        "title": "Pay per film",
+        "text": "No monthly subscription. Pay only for the films you want to watch."
+      },
+      "mobileMoney": {
+        "title": "Pay with Mobile Money",
+        "text": "Pay in seconds from your phone."
+      },
+      "trailers": {
+        "title": "Free trailers",
+        "text": "Watch the trailer before you decide, no account needed."
+      },
+      "filmmakers": {
+        "title": "Support local filmmakers",
+        "text": "Every film you watch pays the producers who made it."
+      }
+    },
+    "cta": {
+      "title": "Ready to watch?",
+      "text": "Create your free account in a minute and pick your first film.",
+      "creators": "Do you make films or act?",
+      "producers": "Publish your films",
+      "actors": "Actors & casting"
+    }
   },
   "films": {
     "seoTitle": "All films",

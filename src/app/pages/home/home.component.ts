@@ -17,8 +17,9 @@ import { CatalogPage } from '../../shared/models/movie-api.interface';
 const EMPTY: CatalogPage = { page: 1, page_size: 0, total_results: 0, total_pages: 0, sort: 'newest', results: [] };
 
 /**
- * Public home page (signed in or not): the featured film, the latest releases, what's coming soon and
- * the most watched films, with clear next steps. Every list comes from the release-aware catalog API.
+ * Public home page (signed in or not). Guests: the pitch over the featured film's backdrop, new and most
+ * watched films, genres, coming soon, why Ikigembe and a closing sign-up. Signed-in viewers get the featured
+ * film banner and the same rows. Every list comes from the release-aware catalog API.
  */
 @Component({
   selector: 'app-home',
@@ -39,6 +40,15 @@ export class HomeComponent implements OnInit {
   latest = signal<IVideoContent[]>([]);
   comingSoon = signal<IVideoContent[]>([]);
   popular = signal<IVideoContent[]>([]);
+  genres = signal<{ name: string; count: number }[]>([]);
+
+  /** Only claims the platform keeps: pay per film, Mobile Money, free trailers, producers paid per view. */
+  readonly whyPoints = [
+    { title: 'home.why.payPerFilm.title', text: 'home.why.payPerFilm.text' },
+    { title: 'home.why.mobileMoney.title', text: 'home.why.mobileMoney.text' },
+    { title: 'home.why.trailers.title', text: 'home.why.trailers.text' },
+    { title: 'home.why.filmmakers.title', text: 'home.why.filmmakers.text' },
+  ];
 
   ngOnInit(): void {
     this.seo.setTranslated({ titleKey: 'home.seoTitle', descriptionKey: 'home.seoDescription' });
@@ -57,11 +67,14 @@ export class HomeComponent implements OnInit {
       latest: page(this.movies.getCatalog({ sort: 'newest', page_size: 12 })),
       soon: page(this.movies.getCatalog({ availability: 'coming_soon', page_size: 12 })),
       popular: page(this.movies.getCatalog({ sort: 'most_watched', page_size: 12 })),
-    }).subscribe(({ featured, latest, soon, popular }) => {
+      // Genres are a shortcut only: a failure just hides the row and doesn't count as an outage.
+      genres: this.movies.getGenres().pipe(catchError(() => of({ results: [], languages: [] }))),
+    }).subscribe(({ featured, latest, soon, popular, genres }) => {
       this.featured.set(featured.result);
       this.latest.set(latest.results);
       this.comingSoon.set(soon.results);
       this.popular.set(popular.results);
+      this.genres.set(genres.results.filter(g => g.count > 0).slice(0, 12));
       // Only a total outage is an error; a partly empty catalog is just shown as it is.
       this.failed.set(errors === 4);
       this.loading.set(false);

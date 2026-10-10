@@ -792,7 +792,10 @@
       "pickCall": "Casting call",
       "noPublishedCalls": "You don't have any published castings yet.",
       "reviewNote": "Reason",
-      "editResend": "Edit & send again"
+      "editResend": "Edit & send again",
+      "auditionVideos": "Amashusho yo kugerageza",
+      "noVideos": "Nta mashusho yometseho.",
+      "watchVideo": "Reba amashusho yo kugerageza: {{title}}"
     },
     "directory": {
       "title": "Actor directory",
@@ -2544,7 +2547,8 @@
       "daysAgo": "hashize iminsi {{n}}"
     },
     "signIn": "Injira",
-    "switchLanguage": "Hindura ururimi ujye kuri {{lang}}"
+    "switchLanguage": "Hindura ururimi ujye kuri {{lang}}",
+    "getStarted": "Tangira"
   },
   "footer": {
     "tagline": "Irembo ryawe rya sinema nyafurika n'ibindi. Reba filime n'ibiganiro byiza kurusha ibindi, byatoranyijwe kubwawe.",
@@ -2579,7 +2583,12 @@
       "title": "Shakisha",
       "films": "Filime",
       "producers": "Ba producer",
-      "casting": "Amatangazo yo gushaka abakinnyi"
+      "comingSoon": "Biri hafi kuza"
+    },
+    "creators": {
+      "title": "Ku bahanzi ba filime",
+      "publish": "Shyira filime zawe hano",
+      "casting": "Abakinnyi no gushaka abakinnyi"
     }
   },
   "browse": {
@@ -3068,14 +3077,47 @@
     "retry": "Ongera ugerageze",
     "introTitle": "Sinema nyarwanda, filime ku yindi",
     "introText": "Filime nshya zongerwaho buri gihe. Reba incamake ku buntu; wishyure gusa filime ushaka kureba.",
-    "actionsLabel": "Tangira",
     "browseAll": "Reba filime zose",
     "createAccount": "Fungura konti ku buntu",
-    "actorsCasting": "Abakinnyi no gushaka abakinnyi",
     "empty": "Nta filime iraboneka. Uzagaruke vuba.",
     "latest": "Izasohotse vuba",
     "comingSoon": "Biri hafi kuza",
-    "popular": "Izarebwe cyane"
+    "popular": "Izarebwe cyane",
+    "hero": {
+      "eyebrow": "Sinema nyarwanda n’iy’Afurika",
+      "title": "Inkuru z’iwacu, igihe cyose ubishakiye.",
+      "text": "Reba filime nshya nyarwanda n’iz’Afurika kuri murandasi. Incamake ni ubuntu, kandi wishyura gusa filime wahisemo. Nta kwiyandikisha buri kwezi.",
+      "cta": "Tangira",
+      "fineprint": "Gufungura konti ni ubuntu. Ishyura ukoresheje Mobile Money.",
+      "featured": "Iyatoranyijwe"
+    },
+    "genresTitle": "Shakisha ukurikije ubwoko",
+    "why": {
+      "title": "Kuki Ikigembe",
+      "payPerFilm": {
+        "title": "Ishyura filime ku yindi",
+        "text": "Nta kwishyura buri kwezi. Wishyura gusa filime ushaka kureba."
+      },
+      "mobileMoney": {
+        "title": "Ishyura na Mobile Money",
+        "text": "Ishyura mu masegonda make ukoresheje telefoni yawe."
+      },
+      "trailers": {
+        "title": "Incamake ku buntu",
+        "text": "Reba incamake mbere yo guhitamo, nta konti ukeneye."
+      },
+      "filmmakers": {
+        "title": "Shyigikira abakora filime b’iwacu",
+        "text": "Buri filime urebye yishyura aba producer bayikoze."
+      }
+    },
+    "cta": {
+      "title": "Witeguye kureba?",
+      "text": "Fungura konti yawe ku buntu mu munota umwe uhitemo filime ya mbere.",
+      "creators": "Ukora filime cyangwa urakina?",
+      "producers": "Shyira filime zawe hano",
+      "actors": "Abakinnyi no gushaka abakinnyi"
+    }
   },
   "films": {
     "seoTitle": "Filime zose",

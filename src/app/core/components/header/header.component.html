@@ -9,7 +9,7 @@
         <line x1="6" y1="6" x2="18" y2="18"/>
       </svg>
     </button>
-    <img src="/assets/ikigembe.log.png" [alt]="'header.logoAlt' | translate">
+    <a class="logo-link" [routerLink]="isLoggedIn() ? '/browse' : '/'"><img src="/assets/ikigembe.log.png" [alt]="'header.logoAlt' | translate"></a>
     <ul class="nav-list">
       @for (item of navList(); track item.label) {
         @if (item.route) {
@@ -18,7 +18,7 @@
           <li>{{ item.labelKey ? (item.labelKey | translate) : item.label }}</li>
         }
       }
-      @if (userRole() === 'Viewer') {
+      @if (isLoggedIn() && userRole() === 'Viewer') {
         <li><a routerLink="/profile" class="producer-cta">{{ 'header.becomeProducer' | translate }}</a></li>
       }
     </ul>
@@ -213,7 +213,13 @@
       }
     </div>
     } @else {
-      <a class="sign-in-btn" routerLink="/login" [queryParams]="signInParams()">{{ 'header.signIn' | translate }}</a>
+      <!-- Guests: language, sign in and one primary action; creator links live in the footer. -->
+      <button class="lang-btn" type="button" (click)="toggleLanguage()"
+              [attr.aria-label]="'header.switchLanguage' | translate: { lang: lang.currentLang() === 'en' ? 'Kinyarwanda' : 'English' }">
+        {{ lang.currentLang() === 'en' ? 'RW' : 'EN' }}
+      </button>
+      <a class="sign-in-link" routerLink="/login" [queryParams]="signInParams()">{{ 'header.signIn' | translate }}</a>
+      <a class="get-started-btn" routerLink="/register">{{ 'header.getStarted' | translate }}</a>
     }
   </div>
 
@@ -227,8 +233,11 @@
             <li><span>{{ item.labelKey ? (item.labelKey | translate) : item.label }}</span></li>
           }
         }
-        @if (userRole() === 'Viewer') {
+        @if (isLoggedIn() && userRole() === 'Viewer') {
           <li><a routerLink="/profile" class="producer-cta" (click)="closeMobileMenu()">{{ 'header.becomeProducer' | translate }}</a></li>
+        }
+        @if (!isLoggedIn()) {
+          <li><a routerLink="/register" class="producer-cta" (click)="closeMobileMenu()">{{ 'header.getStarted' | translate }}</a></li>
         }
       </ul>
     </nav>
