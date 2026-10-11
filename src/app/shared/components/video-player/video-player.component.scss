@@ -171,7 +171,10 @@ $ctrl-bg: rgba(0, 0, 0, 0.72);
   height: 4px;
   accent-color: $accent;
   cursor: pointer;
-  background: rgba(255,255,255,0.25);
+  // `appearance: none` drops the native fill, so paint it: accent up to the level (--vp-vol), grey after.
+  background: linear-gradient(to right,
+    var(--vp-accent, $accent) 0 var(--vp-vol, 100%),
+    rgba(255,255,255,0.25) var(--vp-vol, 100%) 100%);
   border-radius: 4px;
   outline: none;
   appearance: none;
@@ -181,9 +184,23 @@ $ctrl-bg: rgba(0, 0, 0, 0.72);
     width: 12px;
     height: 12px;
     border-radius: 50%;
-    background: $accent;
+    background: var(--vp-accent, $accent);
     cursor: pointer;
   }
+
+  // Firefox draws its own track and fill over the background.
+  &::-moz-range-track { background: transparent; height: 4px; }
+  &::-moz-range-progress { background: var(--vp-accent, $accent); height: 4px; border-radius: 4px; }
+  &::-moz-range-thumb {
+    width: 12px;
+    height: 12px;
+    border: none;
+    border-radius: 50%;
+    background: var(--vp-accent, $accent);
+    cursor: pointer;
+  }
+
+  &:focus-visible { outline: 2px solid #fff; outline-offset: 4px; }
 }
 
 // ── Quality picker ────────────────────────────────────
