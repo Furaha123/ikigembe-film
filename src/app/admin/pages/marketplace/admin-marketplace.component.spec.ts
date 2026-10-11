@@ -65,6 +65,16 @@ describe('AdminMarketplaceComponent (moderation)', () => {
     expect(el().textContent).toContain('Monologue');
   });
 
+  it('names the actor (stage name + email) and falls back to the id', () => {
+    expect(el().querySelector('.actor-name')?.textContent?.trim()).toBe('#1');
+    svc.listActorVideos.and.returnValue(of(pageOf([{ ...VIDEO, actor_name: 'Uwase Aline', actor_email: 'aline@example.com' }])));
+    fixture.componentInstance.setVideoStatus('approved');
+    fixture.detectChanges();
+    expect(el().querySelector('.actor-name')?.textContent?.trim()).toBe('Uwase Aline');
+    expect(el().querySelector('.actor-email')?.textContent?.trim()).toBe('aline@example.com');
+    expect(el().querySelector('.actor-avatar')?.textContent?.trim()).toBe('UA');
+  });
+
   it('approve goes through a confirmation dialog', () => {
     button('admin.marketplace.approve').click();
     fixture.detectChanges();

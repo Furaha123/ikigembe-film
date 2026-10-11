@@ -1,10 +1,11 @@
-import { PLATFORM_ID } from '@angular/core';
+import { PLATFORM_ID, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 import { of } from 'rxjs';
 import { provideTranslateService } from '@ngx-translate/core';
 import { FooterComponent, toFooterLinks } from './footer.component';
 import { CmsService } from '../../services/cms.service';
+import { AuthService } from '../../services/auth.service';
 
 describe('FooterComponent CMS links', () => {
   it('maps known slugs to their routes, others to /pages/<slug>, and hides -rw variants', () => {
@@ -18,12 +19,13 @@ describe('FooterComponent CMS links', () => {
     ]);
   });
 
-  const setup = (platform: 'browser' | 'server') => {
+  const setup = (platform: 'browser' | 'server', loggedIn = false) => {
     const cms = jasmine.createSpyObj<CmsService>('CmsService', ['listPages']);
     cms.listPages.and.returnValue(of([{ slug: 'about', title: 'About us', updated_at: '' }]));
     TestBed.configureTestingModule({
       imports: [FooterComponent],
-      providers: [provideRouter([]), provideTranslateService(), { provide: CmsService, useValue: cms }, { provide: PLATFORM_ID, useValue: platform }],
+      providers: [provideRouter([]), provideTranslateService(), { provide: CmsService, useValue: cms }, { provide: PLATFORM_ID, useValue: platform },
+        { provide: AuthService, useValue: { isLoggedIn: signal(loggedIn) } }],
     });
     const fixture = TestBed.createComponent(FooterComponent);
     fixture.detectChanges();
@@ -41,5 +43,20 @@ describe('FooterComponent CMS links', () => {
     expect(cms.listPages).not.toHaveBeenCalled();
     // No loader in tests, so the pipe renders the fallback link's translation key.
     expect(fixture.nativeElement.textContent).toContain('footer.termsFallback');
+  });
+
+  const hrefs = (fixture: { nativeElement: HTMLElement }) =>
+    [...fixture.nativeElement.querySelectorAll('a')].map(a => a.getAttribute('href'));
+
+  it('lists the creator links for guests, with sign-up as the way to publish films', () => {
+    const { fixture } = setup('server');
+    expect(hrefs(fixture)).toEqual(jasmine.arrayContaining(['/films', '/producers', '/actors-casting', '/register']));
+    expect(hrefs(fixture)).not.toContain('/browse');
+  });
+
+  it('drops the sign-up link for signed-in accounts', () => {
+    const { fixture } = setup('server', true);
+    expect(hrefs(fixture)).toContain('/actors-casting');
+    expect(hrefs(fixture)).not.toContain('/register');
   });
 });

@@ -264,6 +264,16 @@ $muted:   #888;
   font-size: 0.85rem;
 }
 
+.actor-text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  line-height: 1.25;
+}
+
+.actor-name { color: #e5e5e5; font-weight: 600; }
+.actor-email { color: $muted; font-size: 0.75rem; overflow-wrap: anywhere; }
+
 .actor-avatar {
   width: 26px;
   height: 26px;

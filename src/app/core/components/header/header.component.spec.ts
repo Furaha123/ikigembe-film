@@ -29,6 +29,15 @@ describe('HeaderComponent', () => {
     expect(component).toBeTruthy();
   });
 
+  it('shows guests only the catalog, sign in and get started', () => {
+    const nav = fixture.nativeElement.querySelector('.nav-list') as HTMLElement;
+    const navHrefs = [...nav.querySelectorAll('a')].map(a => a.getAttribute('href'));
+    expect(navHrefs).toEqual(['/films']);
+    expect(fixture.nativeElement.querySelector('.get-started-btn').getAttribute('href')).toBe('/register');
+    expect(fixture.nativeElement.querySelector('.sign-in-link')).toBeTruthy();
+    expect(fixture.nativeElement.querySelector('.logo-link').getAttribute('href')).toBe('/');
+  });
+
   it('cancels a pending search when cleared and allows the same query again', fakeAsync(() => {
     const response = new Subject<MovieListResponse>();
     const search = spyOn(TestBed.inject(MovieService), 'search').and.returnValue(response);

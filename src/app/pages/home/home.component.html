@@ -12,46 +12,115 @@
       <button type="button" class="home-btn" (click)="load()">{{ 'home.retry' | translate }}</button>
     </div>
   } @else {
-    @if (featured(); as f) {
-      <app-banner
-        [bannerTitle]="f.title"
-        [bannerOverview]="f.overview"
-        [trailerUrl]="f.trailer_url ?? ''"
-        [bannerBackdropUrl]="f.backdrop_url || f.thumbnail_url"
-        [movieId]="f.id"
-        [releaseDate]="f.release_date"
-        [durationMinutes]="f.duration_minutes"
-        [movieRating]="f.rating"
-      />
-    } @else {
-      <section class="home-intro">
-        <h1>{{ 'home.introTitle' | translate }}</h1>
-        <p>{{ 'home.introText' | translate }}</p>
+    <!-- 1. Hero: guests get the pitch over the featured film's backdrop; signed-in viewers get the film itself. -->
+    @if (!auth.isLoggedIn()) {
+      <section class="home-hero" aria-labelledby="home-hero-title">
+        @if (featured()?.backdrop_url || featured()?.thumbnail_url; as bg) {
+          <div class="home-hero__bg" [style.background-image]="'url(' + bg + ')'" aria-hidden="true"></div>
+        }
+        <div class="home-hero__shade" aria-hidden="true"></div>
+        <div class="home-hero__body">
+          <p class="home-hero__eyebrow">{{ 'home.hero.eyebrow' | translate }}</p>
+          <h1 id="home-hero-title" class="home-hero__title">{{ 'home.hero.title' | translate }}</h1>
+          <p class="home-hero__text">{{ 'home.hero.text' | translate }}</p>
+          <div class="home-hero__actions">
+            <a routerLink="/register" class="home-btn home-btn--lg">{{ 'home.hero.cta' | translate }}</a>
+            <a routerLink="/films" class="home-btn home-btn--lg home-btn--ghost">{{ 'home.browseAll' | translate }}</a>
+          </div>
+          <p class="home-hero__fineprint">{{ 'home.hero.fineprint' | translate }}</p>
+          @if (featured(); as f) {
+            <a class="home-hero__featured" [routerLink]="['/movie', f.id]">
+              <span class="home-hero__featured-label">{{ 'home.hero.featured' | translate }}</span>
+              <span class="home-hero__featured-title">{{ f.title }}</span>
+              <svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16" aria-hidden="true">
+                <path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6z"/>
+              </svg>
+            </a>
+          }
+        </div>
       </section>
-    }
-
-    <nav class="home-actions" [attr.aria-label]="'home.actionsLabel' | translate">
-      <a routerLink="/films" class="home-btn">{{ 'home.browseAll' | translate }}</a>
-      @if (!auth.isLoggedIn()) {
-        <a routerLink="/register" class="home-btn home-btn--ghost">{{ 'home.createAccount' | translate }}</a>
+    } @else {
+      @if (featured(); as f) {
+        <app-banner
+          [bannerTitle]="f.title"
+          [bannerOverview]="f.overview"
+          [trailerUrl]="f.trailer_url ?? ''"
+          [bannerBackdropUrl]="f.backdrop_url || f.thumbnail_url"
+          [movieId]="f.id"
+          [releaseDate]="f.release_date"
+          [durationMinutes]="f.duration_minutes"
+          [movieRating]="f.rating"
+        />
+      } @else {
+        <section class="home-intro">
+          <h1>{{ 'home.introTitle' | translate }}</h1>
+          <p>{{ 'home.introText' | translate }}</p>
+        </section>
       }
-      <a routerLink="/actors-casting" class="home-btn home-btn--ghost">{{ 'home.actorsCasting' | translate }}</a>
-    </nav>
+    }
 
     @if (isEmpty) {
       <p class="home-empty">{{ 'home.empty' | translate }}</p>
     }
 
+    <!-- 2. Content first: what's new and what people watch. -->
+    <div class="home-rows">
+      @if (latest().length) {
+        <app-movie-carousel [title]="'home.latest' | translate" [videoContents]="latest()" />
+      }
+      @if (popular().length) {
+        <app-movie-carousel [title]="'home.popular' | translate" [videoContents]="popular()" />
+      }
+    </div>
+
     <app-ad-slot placement="home_hero" />
-    @if (latest().length) {
-      <app-movie-carousel [title]="'home.latest' | translate" [videoContents]="latest()" />
+
+    <!-- 3. Genres: one tap into the filtered catalog. -->
+    @if (genres().length) {
+      <nav class="home-genres" aria-labelledby="home-genres-title">
+        <h2 id="home-genres-title" class="home-section-title">{{ 'home.genresTitle' | translate }}</h2>
+        <ul>
+          @for (g of genres(); track g.name) {
+            <li><a class="home-chip" routerLink="/films" [queryParams]="{ genre: g.name }">{{ g.name }}</a></li>
+          }
+        </ul>
+      </nav>
     }
+
     @if (comingSoon().length) {
-      <app-movie-carousel [title]="'home.comingSoon' | translate" [videoContents]="comingSoon()" />
+      <div class="home-rows">
+        <app-movie-carousel [title]="'home.comingSoon' | translate" [videoContents]="comingSoon()" />
+      </div>
     }
+
     <app-ad-slot placement="home_banner" />
-    @if (popular().length) {
-      <app-movie-carousel [title]="'home.popular' | translate" [videoContents]="popular()" />
+
+    @if (!auth.isLoggedIn()) {
+      <!-- 4. Why Ikigembe -->
+      <section class="home-why" aria-labelledby="home-why-title">
+        <h2 id="home-why-title" class="home-section-title">{{ 'home.why.title' | translate }}</h2>
+        <ul class="home-why__grid">
+          @for (point of whyPoints; track point.title) {
+            <li class="home-why__item">
+              <h3>{{ point.title | translate }}</h3>
+              <p>{{ point.text | translate }}</p>
+            </li>
+          }
+        </ul>
+      </section>
+
+      <!-- 5. Closing call to action, with the one door for creators. -->
+      <section class="home-cta" aria-labelledby="home-cta-title">
+        <h2 id="home-cta-title">{{ 'home.cta.title' | translate }}</h2>
+        <p>{{ 'home.cta.text' | translate }}</p>
+        <a routerLink="/register" class="home-btn home-btn--lg">{{ 'home.createAccount' | translate }}</a>
+        <p class="home-cta__creators">
+          {{ 'home.cta.creators' | translate }}
+          <a routerLink="/producers">{{ 'home.cta.producers' | translate }}</a>
+          ·
+          <a routerLink="/actors-casting">{{ 'home.cta.actors' | translate }}</a>
+        </p>
+      </section>
     }
   }
 </main>

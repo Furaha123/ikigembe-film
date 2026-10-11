@@ -75,16 +75,22 @@ export class HeaderComponent implements OnInit, OnDestroy {
   private searchSubject = new Subject<string>();
   private searchSub!: Subscription;
 
-  /** Actors Casting is listed for guests and for accounts the marketplace map allows (not admins). */
-  readonly navList = computed<{ label: string; labelKey?: string; route: string | null }[]>(() => [
-    { label: 'Home',               labelKey: 'header.nav.home',             route: this.isLoggedIn() ? '/browse' : '/' },
-    { label: 'Films',              labelKey: 'header.nav.films',            route: '/films' },
-    ...(this.isLoggedIn() ? [{ label: 'My List', labelKey: 'header.nav.myList', route: '/my-list' }] : []),
-    { label: 'Producers',          labelKey: 'header.nav.producers',        route: '/producers' },
-    ...(!this.isLoggedIn() || this.marketplace.can('casting-calls')
-      ? [{ label: 'Actors Casting', labelKey: 'header.nav.actorsCasting', route: '/actors-casting' }]
-      : []),
-  ]);
+  /**
+   * Guests get only the catalog (the logo is home; producer and casting links are in the footer).
+   * Signed-in accounts also get My List, Producers and, where the marketplace map allows (not admins), Actors Casting.
+   */
+  readonly navList = computed<{ label: string; labelKey?: string; route: string | null }[]>(() =>
+    !this.isLoggedIn()
+      ? [{ label: 'Films', labelKey: 'header.nav.films', route: '/films' }]
+      : [
+          { label: 'Home',      labelKey: 'header.nav.home',      route: '/browse' },
+          { label: 'Films',     labelKey: 'header.nav.films',     route: '/films' },
+          { label: 'My List',   labelKey: 'header.nav.myList',    route: '/my-list' },
+          { label: 'Producers', labelKey: 'header.nav.producers', route: '/producers' },
+          ...(this.marketplace.can('casting-calls')
+            ? [{ label: 'Actors Casting', labelKey: 'header.nav.actorsCasting', route: '/actors-casting' }]
+            : []),
+        ]);
 
   ngOnInit() {
     this.router.events.pipe(

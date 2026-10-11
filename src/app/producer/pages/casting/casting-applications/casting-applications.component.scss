@@ -1,0 +1,180 @@
+// Applicant card: who applied (left), audition videos and the decision (right); stacks on phones.
+// Shared classes come from marketplace-page.scss, listed first in styleUrls.
+
+$gold: #c5a253;
+$surface: #18181b;
+$surface-2: #232327;
+$line: rgba(255, 255, 255, 0.08);
+$muted: #a1a1aa;
+
+.app-card {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(240px, 300px);
+  gap: 1.5rem;
+  padding: 1.25rem 1.4rem;
+  background: $surface;
+  border: 1px solid $line;
+  border-radius: 12px;
+  transition: border-color 0.18s;
+
+  &:hover { border-color: rgba($gold, 0.35); }
+
+  &__main { min-width: 0; }
+
+  &__head {
+    display: flex;
+    align-items: center;
+    gap: 0.85rem;
+  }
+
+  &__avatar {
+    flex-shrink: 0;
+    display: grid;
+    place-items: center;
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: rgba($gold, 0.14);
+    border: 1px solid rgba($gold, 0.4);
+    color: $gold;
+    font-weight: 700;
+    font-size: 0.95rem;
+    letter-spacing: 0.03em;
+  }
+
+  &__who {
+    min-width: 0;
+    flex: 1;
+
+    h2 {
+      margin: 0;
+      font-size: 1.08rem;
+      font-weight: 700;
+      color: #fafafa;
+      overflow-wrap: anywhere;
+    }
+    p { margin: 0.15rem 0 0; font-size: 0.8rem; color: $muted; }
+  }
+
+  // Pill with a status dot; the colours come from the shared .mk-badge--* modifiers.
+  &__badge {
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.25rem 0.7rem;
+    border: 1px solid color-mix(in srgb, currentColor 30%, transparent);
+
+    &::before {
+      content: '';
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: currentColor;
+    }
+  }
+
+  &__note {
+    margin: 1rem 0 0;
+    padding: 0.8rem 1rem;
+    border-left: 3px solid rgba($gold, 0.6);
+    border-radius: 0 8px 8px 0;
+    background: $surface-2;
+    color: #d4d4d8;
+    font-size: 0.92rem;
+    line-height: 1.55;
+    white-space: pre-line;
+    overflow-wrap: anywhere;
+  }
+
+  &__side {
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+    padding-left: 1.5rem;
+    border-left: 1px solid $line;
+
+    .mk-muted { margin: 0; }
+  }
+
+  &__label {
+    margin: 0;
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: $muted;
+  }
+
+  &__videos {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  &__video {
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+    width: 100%;
+    min-height: 48px;
+    padding: 0.45rem 0.8rem 0.45rem 0.45rem;
+    border: 1px solid $line;
+    border-radius: 10px;
+    background: $surface-2;
+    color: #f4f4f5;
+    font: inherit;
+    font-size: 0.88rem;
+    font-weight: 600;
+    text-align: left;
+    cursor: pointer;
+    transition: border-color 0.18s, background 0.18s;
+
+    &:hover:not(:disabled) { border-color: rgba($gold, 0.5); background: rgba($gold, 0.06); }
+    &:focus-visible { outline: 2px solid $gold; outline-offset: 2px; }
+    &:disabled { opacity: 0.5; cursor: not-allowed; }
+  }
+
+  &__play {
+    flex-shrink: 0;
+    display: grid;
+    place-items: center;
+    width: 34px;
+    height: 34px;
+    border-radius: 8px;
+    background: $gold;
+    color: #111;
+  }
+
+  &__video-title {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  &__status {
+    margin-top: auto;
+    padding-top: 0.4rem;
+
+    select { width: 100%; min-height: 44px; background: #0f0f11; cursor: pointer; }
+    select:disabled { opacity: 0.6; cursor: progress; }
+  }
+}
+
+@media (max-width: 720px) {
+  .app-card {
+    grid-template-columns: 1fr;
+    gap: 1.1rem;
+    padding: 1rem;
+
+    &__side {
+      padding: 1rem 0 0;
+      border-left: none;
+      border-top: 1px solid $line;
+    }
+  }
+}

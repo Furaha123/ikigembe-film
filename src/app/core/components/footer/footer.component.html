@@ -19,7 +19,15 @@
       <nav class="footer-col" aria-labelledby="footer-explore-title">
         <h4 id="footer-explore-title">{{ 'footer.explore.title' | translate }}</h4>
         <ul>
-          @for (link of exploreLinks; track link.route) {
+          @for (link of exploreLinks; track link.key) {
+            <li><a [routerLink]="link.route" [queryParams]="link.queryParams">{{ link.key | translate }}</a></li>
+          }
+        </ul>
+      </nav>
+      <nav class="footer-col" aria-labelledby="footer-creators-title">
+        <h4 id="footer-creators-title">{{ 'footer.creators.title' | translate }}</h4>
+        <ul>
+          @for (link of creatorLinks(); track link.key) {
             <li><a [routerLink]="link.route">{{ link.key | translate }}</a></li>
           }
         </ul>

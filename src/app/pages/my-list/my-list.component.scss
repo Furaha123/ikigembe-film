@@ -253,13 +253,17 @@
 
 .player-body {
   flex: 1;
+  min-height: 0;
   display: flex;
   align-items: center;
   justify-content: center;
 
+  // The player is a 16:9 box with its controls at the bottom. Cap its width so its height never
+  // exceeds the screen: on a wide window a full-width box overflowed and hid the progress bar.
   app-video-player {
-    width: 100%;
-    height: 100%;
+    display: block;
+    width: min(100%, calc(100vh * 16 / 9));
+    width: min(100%, calc(100dvh * 16 / 9));
   }
 }
 
