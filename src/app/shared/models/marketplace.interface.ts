@@ -108,6 +108,10 @@ export interface ActorVideo {
   duration_seconds?: number | null;
   /** The approved video this paid slot replaces once approved. */
   replaces_id?: number | null;
+  /** Admin moderation queue only: stage name, else account name ('' when neither is set). */
+  actor_name?: string;
+  /** Admin moderation queue only. */
+  actor_email?: string | null;
   /** The paid slot accepts an upload now (first upload, or a free retry). */
   can_upload?: boolean;
   reviewed_at: string | null;

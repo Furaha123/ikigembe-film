@@ -138,8 +138,13 @@
                   </td>
                   <td>
                     <span class="cell-actor">
-                      <span class="actor-avatar" aria-hidden="true">{{ ('' + v.actor_id).slice(0,1) }}</span>
-                      #{{ v.actor_id }}
+                      <span class="actor-avatar" aria-hidden="true">{{ actorInitials(v) }}</span>
+                      <span class="actor-text">
+                        <span class="actor-name">{{ v.actor_name || '#' + v.actor_id }}</span>
+                        @if (v.actor_email) {
+                          <span class="actor-email">{{ v.actor_email }}</span>
+                        }
+                      </span>
                     </span>
                   </td>
                   <td class="muted">{{ v.created_at | date:'d MMM yyyy' }}</td>

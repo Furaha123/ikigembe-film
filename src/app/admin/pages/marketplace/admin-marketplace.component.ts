@@ -64,9 +64,18 @@ export class AdminMarketplaceComponent implements OnInit {
     if (!q) return this.videos();
     return this.videos().filter(v =>
       v.title?.toLowerCase().includes(q) ||
+      v.actor_name?.toLowerCase().includes(q) ||
+      v.actor_email?.toLowerCase().includes(q) ||
       String(v.actor_id).includes(q)
     );
   });
+
+  /** Avatar letters: "Uwase Aline" → "UA"; the id's first digit when the actor has no name. */
+  actorInitials(v: ActorVideo): string {
+    const words = (v.actor_name ?? '').trim().split(/\s+/).filter(Boolean);
+    if (!words.length) return String(v.actor_id).slice(0, 1);
+    return (words.length > 1 ? words[0][0] + words[words.length - 1][0] : words[0].slice(0, 2)).toUpperCase();
+  }
 
   kpiPending  = computed(() => this.videoCounts()['pending_review'] ?? null);
   kpiApproved = computed(() => this.videoCounts()['approved'] ?? null);
