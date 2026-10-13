@@ -54,6 +54,40 @@ describe('ReportButtonComponent', () => {
     expect(cmp.done()).toBe('filed');
   });
 
+  it('opens as a modal, swaps the form for the confirmation, and Done closes and resets it', () => {
+    api.report.and.returnValue(of({ id: 1, target_type: 'film', target_id: 7, target_label: 'Umurage',
+                                    category: 'hate', status: 'open', created_at: '' }));
+    const cmp = fixture.componentInstance;
+    expect(el().querySelector('[role="dialog"]')).toBeNull();
+
+    cmp.open();
+    fixture.detectChanges();
+    expect(el().querySelector('[role="dialog"][aria-modal="true"]')).toBeTruthy();
+    expect(el().querySelectorAll('input[type="radio"]').length).toBeGreaterThan(0);
+
+    cmp.category = 'hate';
+    cmp.submit();
+    fixture.detectChanges();
+    expect(el().querySelector('form')).toBeNull();
+    const doneBtn = el().querySelector<HTMLButtonElement>('.success button')!;
+    expect(doneBtn).toBeTruthy();
+
+    doneBtn.click();
+    fixture.detectChanges();
+    expect(el().querySelector('[role="dialog"]')).toBeNull();
+    expect(cmp.done()).toBeNull();
+    expect(cmp.category).toBeNull();
+  });
+
+  it('closes on Escape', () => {
+    const cmp = fixture.componentInstance;
+    cmp.open();
+    fixture.detectChanges();
+    document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
+    fixture.detectChanges();
+    expect(cmp.isOpen()).toBeFalse();
+  });
+
   it('reports a duplicate as already reported and shows API errors', () => {
     const cmp = fixture.componentInstance;
     cmp.category = 'spam';
