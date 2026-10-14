@@ -11,6 +11,9 @@ export const VIDEO_ACCEPT = '.mp4,.mov,.avi,.mkv,video/mp4,video/quicktime,video
 export const ALLOWED_DOCUMENT_EXTENSIONS: readonly string[] = ['.pdf', '.jpg', '.jpeg', '.png'];
 export const DOCUMENT_ACCEPT = '.pdf,.jpg,.jpeg,.png';
 
+/** National ID / passport copy for signing the agreement (apps/contracts/identity.py MAX_BYTES). */
+export const IDENTITY_DOCUMENT_MAX_BYTES = 10 * 1024 * 1024;
+
 /** Case-insensitive extension check on the file name (the MIME type isn't reliable). */
 export function hasAllowedExtension(fileName: string, allowed: readonly string[]): boolean {
   const dot = fileName.lastIndexOf('.');

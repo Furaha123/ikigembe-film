@@ -1,21 +1,14 @@
-import { expect, Page, test } from '@playwright/test';
+import { expect, test } from '@playwright/test';
 import { ACCOUNTS, signIn } from './support/session';
 
 const SETUP_BANNER = 'Finish setting up your producer account';
 
-/** Draws a signature wide and long enough for the pad to accept it. */
-async function drawSignature(page: Page): Promise<void> {
-  const canvas = page.locator('app-signature-pad canvas');
-  await canvas.scrollIntoViewIfNeeded();
-  const box = (await canvas.boundingBox())!;
-  const y = box.y + box.height / 2;
-  await page.mouse.move(box.x + box.width * 0.1, y);
-  await page.mouse.down();
-  await page.mouse.move(box.x + box.width * 0.5, y - box.height * 0.2, { steps: 15 });
-  await page.mouse.move(box.x + box.width * 0.9, y + box.height * 0.2, { steps: 15 });
-  await page.mouse.up();
-  await expect(page.locator('app-signature-pad .pad')).toHaveClass(/has-ink/);
-}
+/** A minimal PDF: the API identifies the document by its header, not its name. */
+const PASSPORT_PDF = {
+  name: 'passport.pdf',
+  mimeType: 'application/pdf',
+  buffer: Buffer.from('%PDF-1.4\n1 0 obj << /Type /Catalog >> endobj\n%%EOF\n'),
+};
 
 test('a viewer becomes a producer, completes the profile once, signs the agreement and can upload', async ({ page }) => {
   await signIn(page, 'maker');
@@ -42,7 +35,7 @@ test('a viewer becomes a producer, completes the profile once, signs the agreeme
   await page.goto('/producer/upload');
   await expect(page).toHaveURL(/\/producer\/dashboard/);
 
-  // 4. Sign: welcome → language → review (scroll to the end) → accept (signature, name, consent).
+  // 4. Sign: welcome → language → review (scroll to the end) → accept (ID document, name, consent).
   await page.getByRole('link', { name: 'Sign the agreement' }).click();
   await page.getByRole('button', { name: 'Continue' }).click();
   await expect(page).toHaveURL(/\/contracts\/language/);
@@ -55,10 +48,14 @@ test('a viewer becomes a producer, completes the profile once, signs the agreeme
   await page.getByRole('button', { name: /I've Read This/ }).click();
   await expect(page).toHaveURL(/\/contracts\/accept/);
 
-  await drawSignature(page);
   const accept = page.getByRole('button', { name: /Accept & Continue/ });
-  await page.locator('#signed-name').fill('Someone Else');
+  await page.getByRole('radio', { name: 'Passport' }).check();
+  await page.locator('#signed-name').fill(ACCOUNTS.maker.name);
   await page.locator('label.checkbox-row input[type=checkbox]').check();
+  await expect(accept).toBeDisabled();                 // the ID document is required
+  await page.locator('#id-document').setInputFiles(PASSPORT_PDF);
+  await expect(page.locator('.file-card')).toContainText('passport.pdf');
+  await page.locator('#signed-name').fill('Someone Else');
   await expect(accept).toBeDisabled();                 // the name must match the account
   await page.locator('#signed-name').fill(ACCOUNTS.maker.name);
   await expect(accept).toBeEnabled();

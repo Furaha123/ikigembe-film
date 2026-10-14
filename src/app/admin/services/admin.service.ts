@@ -18,6 +18,7 @@ import {
   FilmHlsStatusResponse,
   ProducerDocuments,
   ProducerContractItem,
+  ContractIdentityDocument,
   RevenueTrendItem,
   TopMovieItem,
   UserGrowthItem,
@@ -123,6 +124,11 @@ export class AdminService {
     return this.http
       .get<{ count: number; contracts: ProducerContractItem[] }>(`${BASE}/admin/dashboard/contracts/`)
       .pipe(map(r => r.contracts));
+  }
+
+  /** Fresh 5-minute link to the ID a producer signed with; the API logs every call. */
+  getContractIdentityDocument(contractId: number): Observable<ContractIdentityDocument> {
+    return this.http.get<ContractIdentityDocument>(`${BASE}/admin/dashboard/contracts/${contractId}/identity-document/`);
   }
 
   rejectFilm(id: number, reason: string): Observable<unknown> {

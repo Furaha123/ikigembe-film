@@ -499,21 +499,30 @@
     },
     "acceptance": {
       "title": "Sinyaho Amasezerano",
-      "subtitle": "Draw your signature and type your full legal name. Together they are your legal signature on this agreement.",
-      "fieldLabel": "Your signature *",
+      "subtitle": "Upload a copy of your National ID or Passport to legally verify and sign this agreement.",
       "agreeText": "Nasomye kandi nemeye rwose",
       "agreeName": "Amasezerano y'Uwohereza Filime",
       "agreeEnd": "n'amabwiriza yazo yose.",
       "back": "Subira",
       "acceptBtn": "Emeza & Komeza",
-      "padLabel": "Signature pad",
-      "padHint": "Sign here with your mouse, finger or stylus",
-      "clear": "Clear",
       "nameLabel": "Full legal name *",
       "nameHint": "Type the name on your account: {{name}}",
       "nameMismatch": "This must match the name on your account.",
       "nameMissing": "Your account has no full name yet. Add your first and last name before signing.",
-      "goToSettings": "Go to Settings"
+      "goToSettings": "Go to Settings",
+      "documentTypeLabel": "Document type *",
+      "typeNationalId": "National ID",
+      "typePassport": "Passport",
+      "documentLabel": "National ID or Passport *",
+      "dropTitle": "Choose a file or drag it here",
+      "dropHint": "PDF, JPG or PNG · up to {{size}}",
+      "previewAlt": "Preview of your identity document",
+      "replace": "Replace",
+      "remove": "Remove",
+      "errorType": "Upload a PDF, JPG or PNG file.",
+      "errorSize": "The file is larger than {{size}}.",
+      "errorEmpty": "This file is empty.",
+      "privacyNote": "Your document is stored privately. Only Ikigembe administrators can see it, to verify your signature."
     },
     "verifying": {
       "submitting": "Ohereza Amasezerano…",
@@ -1557,7 +1566,10 @@
       "profileDone": "Profile complete",
       "profileMissing": "Profile missing",
       "agreementDone": "Agreement signed",
-      "agreementMissing": "Agreement not signed"
+      "agreementMissing": "Agreement not signed",
+      "identityDocument": "Identity document (agreement)",
+      "noIdentity": "No identity document on file yet.",
+      "identitySigned": "{{type}} · signed by {{name}} on {{date}}"
     },
     "withdrawalsPage": {
       "title": "Withdrawals",
@@ -1641,7 +1653,13 @@
       "signatureAlt": "Signature of {{name}}",
       "methodDrawn": "Drawn",
       "methodPhoto": "Photo",
-      "termsVersion": "Terms v{{version}}"
+      "termsVersion": "Terms v{{version}}",
+      "colIdentity": "Identity document",
+      "typeNationalId": "National ID",
+      "typePassport": "Passport",
+      "viewDocument": "View ID",
+      "noIdentity": "No ID on file",
+      "methodIdDocument": "ID document"
     },
     "movies": {
       "title": "Films",
@@ -2350,6 +2368,24 @@
       "sendAgain": "Send again",
       "markPaid": "Record transfer",
       "checkNow": "Check now"
+    },
+    "identityDocument": {
+      "title": "Identity document — {{name}}",
+      "signedName": "Legal name signed",
+      "account": "Account",
+      "signedOn": "Signed on",
+      "contract": "Contract",
+      "contractVersion": "v{{version}}",
+      "documentType": "Document",
+      "previewAlt": "Identity document of {{name}}",
+      "openPdf": "Open PDF in a new tab",
+      "openImage": "Open full size",
+      "pdfNote": "PDF documents open in a new tab.",
+      "expiresNote": "This link expires in {{minutes}} minutes. Each view is recorded in the audit log.",
+      "loading": "Loading document…",
+      "loadFailed": "Couldn't load the identity document.",
+      "retry": "Get a new link",
+      "close": "Close"
     }
   },
   "cms": {

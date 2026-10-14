@@ -96,6 +96,23 @@ export interface FilmHlsStatusResponse {
   hls_error_message: string | null;
 }
 
+export type IdentityDocumentType = 'national_id' | 'passport';
+
+/** GET /admin/dashboard/contracts/<id>/identity-document/ — one audited view of the ID a producer signed with. */
+export interface ContractIdentityDocument {
+  contract_id: number;
+  contract_version: number;
+  producer_id: number;
+  producer_email: string;
+  signed_name: string;
+  signed_at: string;
+  document_type: IdentityDocumentType;
+  format: 'pdf' | 'image';
+  /** Short-lived private link (a credential: keep in component memory only). */
+  url: string;
+  expires_in: number;
+}
+
 export interface ProducerContractItem {
   id: number;
   producer_id: number;
@@ -106,8 +123,13 @@ export interface ProducerContractItem {
   status: 'active' | 'expired';
   signed_at: string;
   expires_at: string;
+  /** Older contracts only (drawn on screen or an uploaded photo). */
   signature_photo_url: string | null;
-  signature_method: 'drawn' | 'photo';
+  signature_method: 'id_document' | 'drawn' | 'photo';
+  /** The ID itself is fetched per view: AdminService.getContractIdentityDocument(). */
+  has_identity_document: boolean;
+  identity_document_type: IdentityDocumentType | '';
+  identity_document_format: 'pdf' | 'image' | null;
   signed_name: string;
   language: 'en' | 'rw' | '';
   terms_version: number | null;
@@ -121,6 +143,16 @@ export type ProducerListStatus = 'ready' | 'incomplete' | 'suspended';
 
 /** GET /admin/dashboard/producers/<id>/documents/ — onboarding details and per-film copyright proofs. */
 export interface ProducerDocuments {
+  /** The ID on the producer's latest contract (no link — fetch it per view), or null. */
+  identity_document: {
+    contract_id: number;
+    contract_version: number;
+    contract_status: 'active' | 'expired';
+    signed_name: string;
+    signed_at: string;
+    document_type: IdentityDocumentType;
+    format: 'pdf' | 'image';
+  } | null;
   profile: {
     studio_name: string; country: string; bio: string; experience: string; address: string; copyright_code: string;
   };

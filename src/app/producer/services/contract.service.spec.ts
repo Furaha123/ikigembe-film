@@ -29,19 +29,22 @@ describe('ContractService', () => {
     req.flush({ terms_version: 1, language: 'rw', title: 't', sections: [], sha256: 'x' });
   });
 
-  it('signs with the drawn signature, typed name and the exact terms shown', () => {
-    const signature = new Blob(['png'], { type: 'image/png' });
-    service.sign({ signature, signedName: 'Aline Uwase', language: 'en', termsVersion: 3 }).subscribe();
+  it('signs with the identity document, typed name and the exact terms shown', () => {
+    const identityDocument = new File(['%PDF-1.4'], 'passport.pdf', { type: 'application/pdf' });
+    service.sign({
+      identityDocument, identityDocumentType: 'passport', signedName: 'Aline Uwase', language: 'en', termsVersion: 3,
+    }).subscribe();
 
     const req = http.expectOne(`${BASE}/contracts/sign/`);
     expect(req.request.method).toBe('POST');
     const body = req.request.body as FormData;
-    expect((body.get('signature') as File).name).toBe('signature.png');
+    expect((body.get('identity_document') as File).name).toBe('passport.pdf');
+    expect(body.get('identity_document_type')).toBe('passport');
     expect(body.get('signed_name')).toBe('Aline Uwase');
     expect(body.get('language')).toBe('en');
     expect(body.get('terms_version')).toBe('3');
     expect(body.get('agreed')).toBe('true');
-    expect(body.has('signature_photo')).toBeFalse();
+    expect(body.has('signature')).toBeFalse();
     req.flush({});
   });
 });

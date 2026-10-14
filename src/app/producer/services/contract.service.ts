@@ -6,6 +6,7 @@ import { environment } from '../../../environments/environment';
 const BASE = environment.apiUrl;
 
 export type ContractLanguage = 'en' | 'rw';
+export type IdentityDocumentType = 'national_id' | 'passport';
 
 export interface ContractStatus {
   has_active_contract: boolean;
@@ -32,8 +33,12 @@ export interface ProducerContract {
   status: 'active' | 'expired';
   signed_at: string;
   expires_at: string;
+  /** Older contracts only (drawn on screen or an uploaded photo). */
   signature_photo_url: string | null;
-  signature_method: 'drawn' | 'photo';
+  signature_method: 'id_document' | 'drawn' | 'photo';
+  has_identity_document: boolean;
+  identity_document_type: IdentityDocumentType | '';
+  identity_document_format: 'pdf' | 'image' | null;
   signed_name: string;
   language: ContractLanguage | '';
   terms_version: number | null;
@@ -41,8 +46,9 @@ export interface ProducerContract {
 }
 
 export interface ContractSignRequest {
-  /** PNG drawn on the signature pad. */
-  signature: Blob;
+  /** Copy of the National ID or passport: PDF, JPG or PNG, up to 10 MB. */
+  identityDocument: File;
+  identityDocumentType: IdentityDocumentType;
   /** Full legal name; the API requires it to match the account's name. */
   signedName: string;
   language: ContractLanguage;
@@ -61,10 +67,11 @@ export class ContractService {
     return this.http.get<Agreement>(`${BASE}/contracts/agreement/`, { params: { language } });
   }
 
-  /** Errors are `{ error, field }`; `field` names the step to fix (signature, signed_name, terms_version…). */
+  /** Errors are `{ error, field }`; `field` names the step to fix (identity_document, signed_name, terms_version…). */
   sign(req: ContractSignRequest): Observable<ProducerContract> {
     const formData = new FormData();
-    formData.append('signature', req.signature, 'signature.png');
+    formData.append('identity_document', req.identityDocument, req.identityDocument.name);
+    formData.append('identity_document_type', req.identityDocumentType);
     formData.append('signed_name', req.signedName);
     formData.append('language', req.language);
     formData.append('terms_version', String(req.termsVersion));
