@@ -44,6 +44,19 @@
         <span id="ps-tax-hint" class="muted">{{ 'admin.platformSettings.taxRateHint' | translate }}</span>
         @if (invalid('tax_rate_percent')) { <span class="error" role="alert">{{ 'admin.platformSettings.percentRange' | translate }}</span> }
       </label>
+      <h2>{{ 'admin.platformSettings.payouts' | translate }}</h2>
+      <label class="field">
+        <span>{{ 'admin.platformSettings.payoutMinimum' | translate }} (RWF)</span>
+        <input type="number" min="0" step="1" formControlName="payout_minimum" aria-describedby="ps-min-hint" />
+        <span id="ps-min-hint" class="muted">{{ 'admin.platformSettings.payoutMinimumHint' | translate }}</span>
+        @if (invalid('payout_minimum')) { <span class="error" role="alert">{{ 'admin.platformSettings.min0' | translate }}</span> }
+      </label>
+      <label class="field">
+        <span>{{ 'admin.platformSettings.payoutDay' | translate }}</span>
+        <input type="number" min="1" max="28" step="1" formControlName="payout_day" aria-describedby="ps-day-hint" />
+        <span id="ps-day-hint" class="muted">{{ 'admin.platformSettings.payoutDayHint' | translate }}</span>
+        @if (invalid('payout_day')) { <span class="error" role="alert">{{ 'admin.platformSettings.dayRange' | translate }}</span> }
+      </label>
       @if (env(); as e) {
         <p class="muted">{{ 'admin.platformSettings.splitInfo' | translate: { p: e.default_producer_percent, platform: 100 - e.default_producer_percent } }}</p>
       }
@@ -68,6 +81,8 @@
           <dd>{{ (e.enforce_single_device_view ? 'admin.platformSettings.on' : 'admin.platformSettings.off') | translate }}</dd>
           <dt>{{ 'admin.platformSettings.gateway' | translate }}</dt>
           <dd>{{ e.payment_gateway }} @if (e.payment_demo_mode) { — {{ 'admin.platformSettings.demo' | translate }} }</dd>
+          <dt>{{ 'admin.platformSettings.payoutProvider' | translate }}</dt>
+          <dd>{{ e.payout_provider }}</dd>
           <dt>{{ 'admin.platformSettings.defaultSplit' | translate }}</dt>
           <dd>{{ 'admin.platformSettings.defaultSplitValue' | translate: { p: e.default_producer_percent } }}</dd>
         </dl>

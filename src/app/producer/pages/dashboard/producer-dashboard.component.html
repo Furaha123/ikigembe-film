@@ -168,147 +168,47 @@
       </div>
     </div>
 
-    <!-- Withdraw panel -->
+    <!-- Monthly payout panel -->
     <div class="withdraw-panel">
       <h2 class="wp-title">
-        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M11.8 10.9c-2.27-.59-3-1.2-3-2.15 0-1.09 1.01-1.85 2.7-1.85 1.78 0 2.44.85 2.5 2.1h2.21c-.07-1.72-1.12-3.3-3.21-3.81V3h-3v2.16c-1.94.42-3.5 1.68-3.5 3.61 0 2.31 1.91 3.46 4.7 4.13 2.5.6 3 1.48 3 2.41 0 .69-.49 1.79-2.7 1.79-2.06 0-2.87-.92-2.98-2.1h-2.2c.12 2.19 1.76 3.42 3.68 3.83V21h3v-2.15c1.95-.37 3.5-1.5 3.5-3.55 0-2.84-2.43-3.81-4.7-4.4z"/></svg>
-        {{ 'dashboard.withdraw.title' | translate }}
+        <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M11.8 10.9c-2.27-.59-3-1.2-3-2.15 0-1.09 1.01-1.85 2.7-1.85 1.78 0 2.44.85 2.5 2.1h2.21c-.07-1.72-1.12-3.3-3.21-3.81V3h-3v2.16c-1.94.42-3.5 1.68-3.5 3.61 0 2.31 1.91 3.46 4.7 4.13 2.5.6 3 1.48 3 2.41 0 .69-.49 1.79-2.7 1.79-2.06 0-2.87-.92-2.98-2.1h-2.2c.12 2.19 1.76 3.42 3.68 3.83V21h3v-2.15c1.95-.37 3.5-1.5 3.5-3.55 0-2.84-2.43-3.81-4.7-4.4z"/></svg>
+        {{ 'dashboard.payout.title' | translate }}
       </h2>
 
       <div class="balance-card">
-        <div class="balance-label">{{ 'dashboard.withdraw.balance' | translate }}</div>
+        <div class="balance-label">{{ 'wallet.notPaidYet' | translate }}</div>
         <div class="balance-value">{{ fmt(wallet()?.wallet_balance ?? 0) }}</div>
-        <div class="balance-sub">{{ 'dashboard.withdraw.balanceSubtitle' | translate }}</div>
+        @if (payouts(); as p) {
+          <div class="balance-sub">{{ 'dashboard.payout.next' | translate: { date: (p.schedule.next_date | date:'mediumDate') } }}</div>
+        }
       </div>
 
-      @if (successMsg()) {
-        <div class="wd-success">{{ successMsg() }}</div>
+      @if (payouts(); as p) {
+        <p class="wp-hint">{{ 'wallet.payouts.scheduleText' | translate: { day: p.schedule.day, minimum: (p.schedule.minimum | number) } }}</p>
+        @if (!p.account) {
+          <a class="wp-submit" routerLink="/producer/wallet">{{ 'dashboard.payout.addAccount' | translate }}</a>
+        } @else {
+          <a class="see-more-btn" routerLink="/producer/wallet">{{ 'dashboard.payout.manage' | translate }} →</a>
+        }
+
+        @if (p.results.length) {
+          <div class="recent-wd">
+            <div class="rwd-title">
+              <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11zM7 10h5v5H7z"/></svg>
+              {{ 'dashboard.payout.recent' | translate }}
+            </div>
+            @for (row of p.results.slice(0, 3); track row.id) {
+              <div class="rwd-item">
+                <span class="rwd-date">{{ row.period }}</span>
+                <div class="rwd-right">
+                  <span class="rwd-amount">{{ fmt(row.amount) }}</span>
+                  <span class="rwd-status">{{ 'wallet.payouts.status.' + row.status | translate }}</span>
+                </div>
+              </div>
+            }
+          </div>
+        }
       }
-
-      <form [formGroup]="withdrawForm" (ngSubmit)="submitWithdrawal()">
-
-        <!-- Amount -->
-        <div class="wp-field-label">{{ 'dashboard.withdraw.amount' | translate }}</div>
-        <div class="wp-input-wrap">
-          <span class="currency-sym">RWF</span>
-          <input type="number" formControlName="amount" placeholder="0.00" min="5000" />
-        </div>
-        <div class="wp-hint">{{ 'dashboard.withdraw.amountHint' | translate }}</div>
-
-        <!-- Payout invoice preview -->
-        @if (taxBreakdown()) {
-          <div class="wd-invoice">
-            <div class="wdi-header">
-              <svg viewBox="0 0 24 24" fill="currentColor"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6zm-1 7V3.5L18.5 9H13z"/></svg>
-              {{ 'dashboard.withdraw.summary' | translate }}
-            </div>
-            <div class="wdi-row">
-              <span class="wdi-label">{{ 'dashboard.withdraw.summaryAmount' | translate }}</span>
-              <span class="wdi-val">RWF {{ taxBreakdown()!.amount | number }}</span>
-            </div>
-            <div class="wdi-divider"></div>
-            <div class="wdi-row">
-              <span class="wdi-label-total">{{ 'dashboard.withdraw.summaryTotal' | translate }}</span>
-              <span class="wdi-val-total">RWF {{ taxBreakdown()!.totalDeducted | number }}</span>
-            </div>
-            <p class="wdi-label">{{ 'wallet.form.taxNote' | translate }}</p>
-          </div>
-        }
-
-        <!-- Payment method toggle -->
-        <div class="wp-field-label" style="margin-top:0.5rem">{{ 'dashboard.withdraw.method' | translate }}</div>
-        <div class="pm-toggle">
-          <button type="button" class="pm-btn" [class.active]="paymentMethod() === 'MoMo'"
-                  (click)="selectMethod('MoMo')">
-            <svg viewBox="0 0 24 24" fill="currentColor">
-              <path d="M17 1.01L7 1c-1.1 0-2 .9-2 2v18c0 1.1.9 2 2 2h10c1.1 0 2-.9 2-2V3c0-1.1-.9-1.99-2-1.99zM17 19H7V5h10v14zm-4.2-5.78v1.75l3.2-2.99L12.8 9v1.7c-3.11.43-4.35 2.56-4.8 4.7 1.11-1.47 2.59-2.14 4.8-2.18z"/>
-            </svg>
-            {{ 'dashboard.withdraw.mobileMoney' | translate }}
-          </button>
-          <button type="button" class="pm-btn" [class.active]="paymentMethod() === 'Bank'"
-                  (click)="selectMethod('Bank')">
-            <svg viewBox="0 0 24 24" fill="currentColor">
-              <path d="M4 10v7h3v-7H4zm6 0v7h3v-7h-3zm-8 12h19v-3H2v3zm14-12v7h3v-7h-3zM11.5 1L2 6v2h19V6l-9.5-5z"/>
-            </svg>
-            {{ 'dashboard.withdraw.bankTransfer' | translate }}
-          </button>
-        </div>
-
-        <!-- Mobile Money fields -->
-        @if (paymentMethod() === 'MoMo') {
-          <div class="wp-fields-group">
-            <div class="wp-field">
-              <label class="wp-field-label" for="wd-momo-provider">{{ 'dashboard.withdraw.provider' | translate }}</label>
-              <div class="wp-select-wrap">
-                <select id="wd-momo-provider" formControlName="momo_provider">
-                  <option value="MTN">MTN MoMo</option>
-                  <option value="Airtel">Airtel Money</option>
-                </select>
-              </div>
-            </div>
-            <div class="wp-field">
-              <div class="wp-field-label">{{ 'dashboard.withdraw.phone' | translate }}</div>
-              <div class="wp-input-wrap">
-                <span class="currency-sym">+250</span>
-                <input type="tel" formControlName="momo_number"
-                       placeholder="07X XXX XXXX" maxlength="10" />
-              </div>
-            </div>
-          </div>
-        }
-
-        <!-- Bank Transfer fields -->
-        @if (paymentMethod() === 'Bank') {
-          <div class="wp-fields-group">
-            <div class="wp-field">
-              <div class="wp-field-label">{{ 'dashboard.withdraw.bankName' | translate }}</div>
-              <div class="wp-input-wrap">
-                <input type="text" formControlName="bank_name"
-                       [placeholder]="'producerUi.dashboard.bankPlaceholder' | translate" />
-              </div>
-            </div>
-            <div class="wp-field">
-              <div class="wp-field-label">{{ 'dashboard.withdraw.accountNumber' | translate }}</div>
-              <div class="wp-input-wrap">
-                <input type="text" formControlName="account_number"
-                       [placeholder]="'producerUi.dashboard.accountPlaceholder' | translate" />
-              </div>
-            </div>
-            <div class="wp-field">
-              <div class="wp-field-label">{{ 'dashboard.withdraw.accountHolder' | translate }}</div>
-              <div class="wp-input-wrap">
-                <input type="text" formControlName="account_holder_name"
-                       [placeholder]="'producerUi.dashboard.holderPlaceholder' | translate" />
-              </div>
-            </div>
-          </div>
-        }
-
-        <button type="submit" class="wp-submit" [disabled]="withdrawForm.invalid || isSaving()">
-          @if (isSaving()) {
-            <span class="w-spin"></span>{{ 'dashboard.withdraw.submitting' | translate }}
-          } @else {
-            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M21 3L3 10.53v.98l6.84 2.65L12.48 21h.98L21 3z"/></svg>
-            {{ 'dashboard.withdraw.btn' | translate }}
-          }
-        </button>
-      </form>
-
-      <div class="recent-wd">
-        <div class="rwd-title">
-          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11zM7 10h5v5H7z"/></svg>
-          {{ 'dashboard.recentWithdrawals' | translate }}
-        </div>
-        @for (w of recentWithdrawals(); track w.id) {
-          <div class="rwd-item">
-            <span class="rwd-date">{{ formatDate(w.created_at) }}</span>
-            <div class="rwd-right">
-              <span class="rwd-amount">{{ fmt(w.amount) }}</span>
-              <span class="rwd-status">✓ {{ w.status }}</span>
-            </div>
-          </div>
-        }
-      </div>
     </div>
 
   </div>

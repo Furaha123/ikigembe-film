@@ -1,0 +1,153 @@
+<div class="admin-page">
+  <app-admin-section-tabs [tabs]="[
+    { labelKey: 'admin.nav.payments',    path: '/admin/payments',    exact: true },
+    { labelKey: 'admin.nav.finance',     path: '/admin/finance',     exact: true },
+    { labelKey: 'admin.nav.payouts',     path: '/admin/payouts',     exact: true },
+    { labelKey: 'admin.nav.withdrawals', path: '/admin/withdrawals', exact: true },
+    { labelKey: 'admin.nav.contracts',   path: '/admin/contracts',   exact: true }
+  ]" ariaLabel="admin.nav.financials" />
+
+  <div class="page-header">
+    <div>
+      <h1>{{ 'admin.payouts.title' | translate }}</h1>
+      <p>{{ 'admin.payouts.subtitle' | translate }}</p>
+    </div>
+  </div>
+
+  @if (data(); as d) {
+    <div class="provider-note" [class.demo]="d.provider.name === 'demo'" role="note">
+      <strong>{{ 'admin.payouts.provider.' + d.provider.name + '.title' | translate }}</strong>
+      <span>{{ 'admin.payouts.provider.' + d.provider.name + (d.provider.name === 'dpo' && !d.provider.ready ? '.notReady' : '.text') | translate }}</span>
+    </div>
+
+    <dl class="facts schedule">
+      <dt>{{ 'admin.payouts.schedule.day' | translate }}</dt>
+      <dd>{{ 'admin.payouts.schedule.dayValue' | translate: { day: d.schedule.day } }}</dd>
+      <dt>{{ 'admin.payouts.schedule.minimum' | translate }}</dt>
+      <dd>RWF {{ d.schedule.minimum | number }}</dd>
+      <dt>{{ 'admin.payouts.schedule.next' | translate }}</dt>
+      <dd>{{ d.schedule.next_date | date:'mediumDate' }}</dd>
+    </dl>
+  }
+
+  <form class="filters" (ngSubmit)="applyFilters()">
+    <label class="field">
+      <span>{{ 'admin.finance.month' | translate }}</span>
+      <select name="period" [(ngModel)]="period" (ngModelChange)="applyFilters()">
+        <option value="">{{ 'admin.payouts.allMonths' | translate }}</option>
+        @for (m of data()?.periods ?? []; track m) { <option [value]="m">{{ m }}</option> }
+      </select>
+    </label>
+    <div class="status-filter" role="group" [attr.aria-label]="'admin.payouts.statusFilter' | translate">
+      <button type="button" class="btn small" [class.ghost]="status !== ''" [attr.aria-pressed]="status === ''" (click)="setStatus('')">
+        {{ 'admin.payouts.all' | translate }}
+      </button>
+      @for (s of statuses; track s) {
+        <button type="button" class="btn small" [class.ghost]="status !== s" [attr.aria-pressed]="status === s" (click)="setStatus(s)">
+          {{ 'admin.payouts.status.' + s | translate }}
+          @if (data()?.summary?.[s]?.count) { ({{ data()!.summary[s].count }}) }
+        </button>
+      }
+    </div>
+  </form>
+
+  <div aria-live="polite">
+    @if (notice()) { <p class="success" role="status">{{ notice() }}</p> }
+    @if (error()) { <p class="error" role="alert">{{ error() }}</p> }
+  </div>
+
+  @if (data(); as d) {
+    @if (canSend() && period && pendingCount() > 0) {
+      <div class="send-all">
+        @if (confirmAll()) {
+          <span class="warn">{{ 'admin.payouts.confirmAll' | translate: { count: pendingCount(), amount: (d.summary.pending.amount | number), month: period } }}</span>
+          <button type="button" class="btn ghost" (click)="confirmAll.set(false)">{{ 'admin.payments.cancel' | translate }}</button>
+          <button type="button" class="btn" (click)="sendAll()" [disabled]="sendingAll()" [attr.aria-busy]="sendingAll()">{{ 'admin.payouts.sendAll' | translate }}</button>
+        } @else {
+          <button type="button" class="btn" (click)="confirmAll.set(true)">
+            {{ 'admin.payouts.sendAllCount' | translate: { count: pendingCount(), month: period } }}
+          </button>
+        }
+      </div>
+    }
+  }
+
+  @if (loading()) {
+    <p class="muted" role="status">{{ 'admin.payments.loading' | translate }}</p>
+  } @else if (!data()?.results?.length) {
+    <div class="empty-state">{{ 'admin.payouts.empty' | translate }}</div>
+  } @else {
+    <div class="table-wrap">
+      <table class="ledger">
+        <thead><tr>
+          <th scope="col">{{ 'admin.payouts.producer' | translate }}</th>
+          <th scope="col">{{ 'admin.payouts.months' | translate }}</th>
+          <th scope="col" class="num">{{ 'admin.payments.amount' | translate }}</th>
+          <th scope="col">{{ 'admin.payouts.destination' | translate }}</th>
+          <th scope="col">{{ 'admin.payments.status' | translate }}</th>
+          <th scope="col"><span class="sr-only">{{ 'admin.payouts.actions' | translate }}</span></th>
+        </tr></thead>
+        <tbody>
+          @for (p of data()!.results; track p.id) {
+            <tr>
+              <td>
+                <span class="cell-title">{{ p.producer }}</span>
+                <span class="muted block">{{ p.producer_email }}</span>
+              </td>
+              <td>{{ p.months.join(', ') || p.period }}</td>
+              <td class="num">
+                <strong>RWF {{ p.amount | number }}</strong>
+                @if (p.withdrawal_offset > 0) {
+                  <span class="muted block">{{ 'admin.payouts.offset' | translate: { earned: (p.earned | number), offset: (p.withdrawal_offset | number) } }}</span>
+                }
+              </td>
+              <td>
+                @if (p.destination; as dest) {
+                  <span>{{ (dest.method === 'bank' ? 'wallet.form.bankTransfer' : 'wallet.form.mobileMoney') | translate }} · {{ dest.country }}</span>
+                  <span class="mono block">{{ destinationLine(dest) }}</span>
+                  <span class="muted block">{{ dest.account_holder_name }}</span>
+                } @else {
+                  <span class="warn">{{ 'admin.payouts.noDetails' | translate }}</span>
+                }
+              </td>
+              <td>
+                <span class="status-badge" [ngClass]="statusClass(p.status)">{{ 'admin.payouts.status.' + p.status | translate }}</span>
+                @if (p.reference) { <span class="mono block">{{ p.reference }}</span> }
+                @if (p.status === 'failed' && p.failure_reason) { <span class="error block">{{ p.failure_reason }}</span> }
+                @if (p.paid_at) { <span class="muted block">{{ p.paid_at | date:'medium' }}</span> }
+                @if (p.provider && p.status !== 'pending') { <span class="muted block">{{ 'admin.payouts.via' | translate: { provider: p.provider } }}</span> }
+              </td>
+              <td>
+                @if (p.status === 'pending' || p.status === 'failed') {
+                  @if (markFor() === p.id) {
+                    <form class="mark-paid" (ngSubmit)="markPaid(p)">
+                      <label class="field">
+                        <span>{{ 'admin.payments.transferRef' | translate }}</span>
+                        <input type="text" name="ref-{{ p.id }}" [(ngModel)]="reference" required />
+                      </label>
+                      <div class="drawer-actions">
+                        <button type="button" class="btn ghost small" (click)="markFor.set(null)">{{ 'admin.payments.cancel' | translate }}</button>
+                        <button type="submit" class="btn small" [disabled]="busyId() === p.id">{{ 'admin.payments.confirm' | translate }}</button>
+                      </div>
+                    </form>
+                  } @else {
+                    <div class="drawer-actions">
+                      @if (canSend() && p.destination) {
+                        <button type="button" class="btn small" (click)="send(p)" [disabled]="busyId() !== null" [attr.aria-busy]="busyId() === p.id">
+                          {{ (p.status === 'failed' ? 'admin.payouts.sendAgain' : 'admin.payouts.send') | translate }}
+                        </button>
+                      }
+                      <button type="button" class="btn ghost small" (click)="startMarkPaid(p)">{{ 'admin.payouts.markPaid' | translate }}</button>
+                    </div>
+                  }
+                } @else if (p.status === 'processing') {
+                  <button type="button" class="btn ghost small" (click)="refresh(p)">{{ 'admin.payouts.checkNow' | translate }}</button>
+                }
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+</div>

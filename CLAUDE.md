@@ -46,7 +46,7 @@ Three user roles (Viewer, Producer, Admin) each have separate lazy-loaded route 
 | Viewer | `/browse`, `/movie/:id`, `/profile`, `/my-list` | Core `header`/`footer` | `authGuard` + `viewerGuard` |
 | Viewer (actor marketplace) | `/actor/profile`, `/actor/videos`, `/actor/talent/new` (wizard), `/actor/applications`, `/casting`, `/casting/:id` (apply wizard; casting also for producers) | Core `header`/`footer` + `MarketplaceNavComponent` | `authGuard` + `marketplaceGuard` |
 | Producer | `/producer/*` incl. `/producer/casting`, `/producer/casting/:id`, `/producer/actors`, `/producer/actors/:id`, `/producer/shortlist`, `/producer/casting/new`, `/producer/casting/:id/edit` (wizard), `/producer/applications`, `/producer/access` | `ProducerLayoutComponent` | `producerGuard` (role = Producer); marketplace pages also `marketplaceGuard` |
-| Admin | `/admin/*` incl. `/admin/marketplace`, `/admin/cms/pages`, `/admin/cms/ads` | `AdminLayoutComponent` | `adminGuard` (is_staff = true) |
+| Admin | `/admin/*` incl. `/admin/payouts`, `/admin/marketplace`, `/admin/marketplace/members`, `/admin/cms/pages`, `/admin/cms/ads` | `AdminLayoutComponent` | `adminGuard` (is_staff = true) |
 | Public | `/actors-casting` (hub, no requests), `/terms`, `/about`, `/privacy`, `/contact`, `/pages/:slug` (CMS), `/preview/:id`, `/producers` | none | — |
 
 Guest routes (`/login`, `/register`, `/forgot-password`) use `guestGuard` which redirects already-authenticated users to their role's home.
@@ -114,7 +114,7 @@ Actors are **Viewer** accounts with an actor profile — there is no Actor role.
 All uploads use the multipart flow through `MultipartUploadService`. Movie files (admin **and** producer): `MovieUploadService.api(field_name)` (`ProducerService.movieUploadApi()` delegates to it) with `field_name` ∈ `video_file | trailer_file | thumbnail | backdrop | copyright_document` (it decides the storage bucket). `/movies/create/` and `/movies/<id>/update/` accept only `video_key` / `trailer_key` for video — never post the raw video file; images (thumbnail, backdrop) are sent as files. Admin-created films link the producer via `producer_profile` (account id). Actor talent videos: `ActorMarketplaceService.videoUploadApi(videoId)`.
 
 - **Upload errors are typed.** `MultipartUploadService` throws `UploadAbortedError` (user cancel or logout — stay silent) or `UploadError` with `kind: 'session'` (403 from sign-part/complete: the upload belongs to another account/session; ask the user to start again, never auto-retry) or `kind: 'storage'` (part PUT failed; a 403 is re-signed once first). Map errors for the UI with `uploadErrorMessage()` (`shared/utils/upload-error.ts`). Uploads are cancelled automatically when `AuthService.isLoggedIn` turns false.
-- **Talent videos** are MP4/MOV, ≤ 500 MB, ≤ 5 min (`shared/utils/talent-video.ts`, early checks only). After upload the server checks the file (`processing` → `pending_review` or `upload_failed` with `failure_reason`; re-upload to the same paid slot is free). Replacing an approved video is a new paid slot (`replaces`).
+- **Talent videos** are MP4/MOV, ≤ 500 MB, ≤ 5 min (`shared/utils/talent-video.ts`, early checks only). After upload the server checks the file (`processing` → `approved` (live, **no admin approval**) or `upload_failed` with `failure_reason`; re-upload to the same slot). Creating a slot (`ActorMarketplaceService.createVideo`) and uploading need the yearly actor membership — no per-video fee; replacing a live video is a new slot (`replaces`); the old one stays live until the new one passes. Admins can only remove videos afterwards.
 - **Allowed file types live in one place:** `shared/models/upload.constants.ts` (`ALLOWED_VIDEO_EXTENSIONS`, `ALLOWED_DOCUMENT_EXTENSIONS`, `hasAllowedExtension()`), mirroring the backend's `_ALLOWED_VIDEO_EXTS`. Check files before calling the API; `accept` attributes are only a hint.
 - **Never parse or build a `file_key`** — it's opaque (`movies/<folder>/<user_id>/<uuid><ext>` today, may change).
 
@@ -136,17 +136,30 @@ All uploads use the multipart flow through `MultipartUploadService`. Movie files
 
 `PaymentModalComponent` reads `PaymentService.getConfig()` (`/payments/config/`): PawaPay asks for a MoMo number and polls in the modal; DPO (`redirect: true`) shows the price → "Continue to secure payment" → `payment_url`, after `rememberPending()` + `rememberReturn()`. Only open a `payment_url` through `paymentPageTarget()` (DPO hosts or the in-app demo checkout; anything else is refused). The buyer comes back to `/payment/return?deposit=…`, which trusts only the server's status. A 409 on initiate means an open payment for the same item: offer continue/cancel, never a second charge. Demo mode is labelled from the response's `demo` flag; `/payment/demo-checkout` stands in for DPO's page. Never fake a successful payment on the frontend.
 
-### Casting review
+### Casting publication
 
-Casting calls publish only after payment **and** admin approval: `draft → pending_review → published | rejected`. Rejected calls show `review_note` and are edited and resent with `CastingService.submitCall()` (no second payment). `castingPublicationState()` maps this to `inReview` / `rejected`.
+**No admin approval for casting calls.** The server publishes a call as soon as its fee is confirmed: `draft → published → closed` (deadline), `removed` by an admin afterwards. A paid call still in `draft` missed its deadline when the payment landed: the producer moves the deadline and publishes with `CastingService.submitCall()` (no second payment). `castingPublicationState()` calls that state `paid`. `pending_review` / `rejected` (with `review_note`) exist only on rows from the old review flow; rejected calls are edited and published the same way. The admin marketplace page has no approve/reject — only remove. A published call is editable by its producer while open (wizard `editingLive()`; live on save, no fee): its deadline only moves later, **once** (`deadline_extended_at`; the field locks after that), and an unchanged deadline is not sent. Closed/removed calls are final.
 
 ### Receipts and notifications
 
 `PaymentService.getReceipt()` (owner/admin only) backs the receipt dialog in payment history. Notifications come from the API's inboxes; the frontend never fabricates one.
 
-### Marketplace purchases
+### Marketplace purchases (yearly plans)
 
-Every marketplace fee goes through `PaymentModalComponent` with a `ServicePurchase` (`[service]` input) and shares `PaymentService.pollUntilSettled()`. A `503` means pricing isn't configured yet ("This service isn't available yet").
+Prices are admin-set (`/admin/marketplace-settings`); plans last one year and renewals stack after the current year:
+- **Actor membership** (default Frw 5,000/yr, `/actor/membership`): talent video uploads (no per-video fee), a place in the producer directory, applying to casting calls.
+- **Producer Full plan** (Frw 15,000/yr): actor directory + unlimited casting calls (the wizard and My Castings publish via `CastingService.publishWithPlan()` when the casting quote says `included`).
+- **Producer View-only plan** (Frw 10,000/yr): actor directory; each casting call pays the per-call fee (Frw 5,000), as do producers with no plan. Both plans are bought on `/producer/access` ("My plan").
+
+Admins see who holds a plan at `/admin/marketplace/members` (`AdminMarketplaceService.listMembers()` / `exportMembers()`): one row per person and plan with renewals folded in, status `active | upcoming | expired`, filters in the URL, CSV of the same filters.
+
+`GET /marketplace/membership/` (`MembershipStatus`) says what the account has (incl. an old directory pass still running, `legacy_search_until`). Missing entitlements come back as 403 `{ code: 'membership_required' | 'plan_required' }`: `entitlementCode()` (`shared/utils/entitlement.ts`) recognises them (not logged as access-map bugs) and `marketplaceErrorMessage()` maps them to a message. The old `actor_video` / `actor_search` purchases are history only (payment purposes kept for receipts and refunds).
+
+Every fee goes through `PaymentModalComponent` with a `ServicePurchase` (`[service]` input) and shares `PaymentService.pollUntilSettled()`. A `503` means pricing isn't configured yet ("This service isn't available yet").
+
+### Monthly producer payouts
+
+Producers are paid **once a month**, never on demand: there is no withdrawal form (the API answers 410 `monthly_payouts`); `/producer/withdrawals` only lists older requests. On the payout day (admin platform setting) the API closes the previous month and prepares one payout per producer owed at least the minimum; smaller amounts carry over. `/producer/wallet` shows the schedule, the producer's payout details (`ProducerService.getPayouts()` / `savePayoutAccount()`: mobile money or bank, any country, SWIFT outside Rwanda) and their payouts; the dashboard panel summarises it. Admins approve at `/admin/payouts` (`AdminFinanceService.payouts()`): **Approve and send** only when `provider.automatic && provider.ready` (demo now, DPO once connected), otherwise **Record transfer** with a reference; rows being sent are re-polled. Payout status and amounts always come from the API.
 
 ### Revenue splits
 

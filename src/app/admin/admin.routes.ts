@@ -43,6 +43,10 @@ export const adminRoutes: Routes = [
         loadComponent: () => import('./pages/finance/admin-finance.component').then(m => m.AdminFinanceComponent),
       },
       {
+        path: 'payouts',
+        loadComponent: () => import('./pages/payouts/admin-payouts.component').then(m => m.AdminPayoutsComponent),
+      },
+      {
         path: 'audit-log',
         loadComponent: () => import('./pages/audit-log/admin-audit-log.component').then(m => m.AdminAuditLogComponent),
       },
@@ -84,6 +88,12 @@ export const adminRoutes: Routes = [
         canActivate: [marketplaceGuard],
         data: marketplaceRoute('moderation'),
         loadComponent: () => import('./pages/marketplace/admin-marketplace.component').then(m => m.AdminMarketplaceComponent),
+      },
+      {
+        path: 'marketplace/members',
+        canActivate: [marketplaceGuard],
+        data: marketplaceRoute('moderation'),
+        loadComponent: () => import('./pages/marketplace-members/admin-marketplace-members.component').then(m => m.AdminMarketplaceMembersComponent),
       },
       {
         path: 'marketplace-settings',

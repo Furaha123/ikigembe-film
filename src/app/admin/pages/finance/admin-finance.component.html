@@ -2,6 +2,7 @@
   <app-admin-section-tabs [tabs]="[
     { labelKey: 'admin.nav.payments',    path: '/admin/payments',    exact: true },
     { labelKey: 'admin.nav.finance',     path: '/admin/finance',     exact: true },
+    { labelKey: 'admin.nav.payouts',     path: '/admin/payouts',     exact: true },
     { labelKey: 'admin.nav.withdrawals', path: '/admin/withdrawals', exact: true },
     { labelKey: 'admin.nav.contracts',   path: '/admin/contracts',   exact: true }
   ]" ariaLabel="admin.nav.financials" />
@@ -111,7 +112,10 @@
       </section>
 
       @if (statements().length) {
-        <h2>{{ 'admin.finance.statements' | translate }}</h2>
+        <div class="row-between">
+          <h2>{{ 'admin.finance.statements' | translate }}</h2>
+          <a class="btn small" routerLink="/admin/payouts" [queryParams]="{ period: p.label }">{{ 'admin.finance.openPayouts' | translate }}</a>
+        </div>
         <ul class="refund-list">
           @for (s of statements(); track s.id) {
             <li>
@@ -121,17 +125,10 @@
               </div>
               @if (s.payout_status === 'paid') {
                 <p class="success">{{ 'admin.finance.paidOut' | translate: { ref: s.payout_reference, date: (s.paid_at | date:'mediumDate') } }}</p>
-              } @else if (payoutFor() === s.id) {
-                <label class="field">
-                  <span>{{ 'admin.payments.transferRef' | translate }}</span>
-                  <input type="text" [(ngModel)]="payoutRef" name="ref-{{ s.id }}" />
-                </label>
-                <div class="drawer-actions">
-                  <button type="button" class="btn ghost" (click)="payoutFor.set(null)">{{ 'admin.payments.cancel' | translate }}</button>
-                  <button type="button" class="btn" (click)="recordPayout(s)">{{ 'admin.payments.confirm' | translate }}</button>
-                </div>
+              } @else if (s.payout_id) {
+                <p class="muted">{{ 'admin.finance.inPayout' | translate: { id: s.payout_id } }}</p>
               } @else {
-                <button type="button" class="btn small" (click)="payoutRef = ''; payoutFor.set(s.id)">{{ 'admin.finance.recordPayout' | translate }}</button>
+                <p class="muted">{{ 'admin.finance.carriedOver' | translate }}</p>
               }
             </li>
           }

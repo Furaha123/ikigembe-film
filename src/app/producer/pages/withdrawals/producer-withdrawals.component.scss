@@ -14,6 +14,17 @@ $muted: #888;
 }
 
 /* ── Tabs ── */
+.retired-note {
+  margin: 0 0 1.25rem;
+  padding: 0.75rem 1rem;
+  border-radius: 8px;
+  background: rgba(197,162,83,0.08);
+  border: 1px solid rgba(197,162,83,0.25);
+  color: #e8d6a8;
+  font-size: 0.875rem;
+  a { color: #C5A253; font-weight: 600; }
+}
+
 .filter-tabs {
   display: flex;
   gap: 0.5rem;

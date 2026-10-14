@@ -12,6 +12,10 @@ export interface PlatformSettings {
   single_view_window_hours: number;
   /** null until an admin sets it explicitly — finance allocation refuses to run without it. */
   tax_rate_percent: string | null;
+  /** Smallest monthly producer payout (RWF); smaller amounts carry over. */
+  payout_minimum: number;
+  /** Day of the month (1–28) on which the previous month is closed and its payouts prepared. */
+  payout_day: number;
   updated_at: string | null;
   updated_by: string | null;
 }
@@ -22,6 +26,8 @@ export interface PlatformEnvironment {
   payment_gateway: string;
   payment_demo_mode: boolean;
   default_producer_percent: number;
+  /** manual | demo | dpo */
+  payout_provider: string;
 }
 
 const URL = `${environment.apiUrl}/admin/dashboard/platform-settings/`;
@@ -50,6 +56,8 @@ export class AdminPlatformSettingsComponent implements OnInit {
     default_film_price: [null as number | null, [Validators.required, Validators.min(1)]],
     single_view_window_hours: [null as number | null, [Validators.required, Validators.min(1), Validators.max(720)]],
     tax_rate_percent: [null as number | null, [Validators.min(0), Validators.max(100)]],
+    payout_minimum: [null as number | null, [Validators.required, Validators.min(0)]],
+    payout_day: [null as number | null, [Validators.required, Validators.min(1), Validators.max(28)]],
   });
 
   ngOnInit(): void {
@@ -105,6 +113,8 @@ export class AdminPlatformSettingsComponent implements OnInit {
       default_film_price: s.default_film_price,
       single_view_window_hours: s.single_view_window_hours,
       tax_rate_percent: s.tax_rate_percent === null ? null : Number(s.tax_rate_percent),
+      payout_minimum: s.payout_minimum,
+      payout_day: s.payout_day,
     });
     this.meta.set({ updated_at: s.updated_at, updated_by: s.updated_by });
   }

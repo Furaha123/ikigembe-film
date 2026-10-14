@@ -438,55 +438,6 @@ $muted:   #666;
   .balance-sub   { font-size: 0.75rem; color: rgba(45,212,191,0.6); margin-top: 0.2rem; }
 }
 
-.wd-success {
-  background: #0d2b18;
-  border: 1px solid #1a4a2a;
-  border-radius: 8px;
-  color: #bbf7d0;
-  font-size: 0.82rem;
-  padding: 0.7rem 0.9rem;
-}
-
-.wp-field-label {
-  display: block;
-  font-size: 0.78rem;
-  font-weight: 600;
-  color: rgba(255,255,255,0.5);
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  margin-bottom: 0.35rem;
-}
-
-.wp-input-wrap {
-  display: flex;
-  align-items: center;
-  background: #1a1a1a;
-  border: 1px solid $border;
-  border-radius: 8px;
-  overflow: hidden;
-  transition: border-color 0.15s;
-  &:focus-within { border-color: $gold; }
-
-  .currency-sym {
-    padding: 0 0.85rem;
-    font-size: 0.9rem;
-    color: $muted;
-    border-right: 1px solid $border;
-    white-space: nowrap;
-  }
-
-  input {
-    flex: 1;
-    background: transparent;
-    border: none;
-    color: #fff;
-    font-size: 1rem;
-    padding: 0.75rem 0.9rem;
-    outline: none;
-    &::placeholder { color: #444; }
-  }
-}
-
 .wp-hint {
   font-size: 0.75rem;
   color: $muted;
@@ -508,90 +459,12 @@ $muted:   #666;
   justify-content: center;
   gap: 0.45rem;
   transition: opacity 0.15s;
+  margin: 0.75rem 0 1rem;
+  text-decoration: none;
+  box-sizing: border-box;
   svg { width: 16px; height: 16px; }
   &:hover:not(:disabled) { opacity: 0.88; }
   &:disabled { opacity: 0.5; cursor: not-allowed; }
-}
-
-.w-spin {
-  width: 14px; height: 14px;
-  border: 2px solid rgba(0,0,0,0.25);
-  border-top-color: #000;
-  border-radius: 50%;
-  animation: spin 0.7s linear infinite;
-}
-
-.pm-toggle {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 0.5rem;
-}
-
-.pm-btn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.4rem;
-  background: #1a1a1a;
-  border: 1px solid $border;
-  border-radius: 8px;
-  color: $muted;
-  font-size: 0.82rem;
-  font-weight: 600;
-  padding: 0.7rem 0.5rem;
-  cursor: pointer;
-  transition: background 0.15s, border-color 0.15s, color 0.15s;
-  svg { width: 15px; height: 15px; flex-shrink: 0; }
-
-  &:hover:not(.active) { border-color: #444; color: #ccc; }
-  &.active { background: rgba(200,168,75,0.1); border-color: $gold; color: $gold; }
-}
-
-.wp-fields-group {
-  display: flex;
-  flex-direction: column;
-  gap: 0.65rem;
-}
-
-.wp-field {
-  display: flex;
-  flex-direction: column;
-  gap: 0.35rem;
-}
-
-.wp-select-wrap {
-  position: relative;
-  background: #1a1a1a;
-  border: 1px solid $border;
-  border-radius: 8px;
-  overflow: hidden;
-  transition: border-color 0.15s;
-  &:focus-within { border-color: $gold; }
-
-  select {
-    width: 100%;
-    background: transparent;
-    border: none;
-    color: #fff;
-    font-size: 0.9rem;
-    padding: 0.75rem 2.5rem 0.75rem 0.9rem;
-    outline: none;
-    cursor: pointer;
-    appearance: none;
-    -webkit-appearance: none;
-    option { background: #1a1a1a; color: #fff; }
-  }
-
-  &::after {
-    content: '';
-    position: absolute;
-    right: 0.9rem;
-    top: 50%;
-    transform: translateY(-50%);
-    border: 5px solid transparent;
-    border-top-color: $muted;
-    pointer-events: none;
-  }
 }
 
 .recent-wd { display: flex; flex-direction: column; gap: 0.5rem; }
@@ -871,68 +744,4 @@ $muted:   #666;
 
 @media (max-width: 380px) {
   .page-header h1 { font-size: 1.2rem; }
-}
-
-/* ── Payout invoice preview (withdraw panel) ── */
-.wd-invoice {
-  background: rgba(200,168,75,0.05);
-  border: 1px solid rgba(200,168,75,0.22);
-  border-radius: 10px;
-  padding: 0.9rem 1.1rem;
-  margin: 0.75rem 0 1rem;
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-}
-
-.wdi-header {
-  display: flex;
-  align-items: center;
-  gap: 0.35rem;
-  font-size: 0.7rem;
-  font-weight: 700;
-  color: $gold;
-  text-transform: uppercase;
-  letter-spacing: 0.07em;
-  margin-bottom: 0.1rem;
-  svg { width: 12px; height: 12px; flex-shrink: 0; }
-}
-
-.wdi-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.wdi-label {
-  font-size: 0.8rem;
-  color: $muted;
-  display: flex;
-  align-items: center;
-  gap: 0.35rem;
-}
-
-.wdi-val {
-  font-size: 0.85rem;
-  color: #e5e5e5;
-  font-weight: 600;
-  &.wdi-deduct { color: #f87171; }
-}
-
-.wdi-divider {
-  height: 1px;
-  background: rgba(255,255,255,0.07);
-  margin: 0.05rem 0;
-}
-
-.wdi-label-total {
-  font-size: 0.875rem;
-  font-weight: 700;
-  color: #e5e5e5;
-}
-
-.wdi-val-total {
-  font-size: 1rem;
-  font-weight: 800;
-  color: $gold;
 }

@@ -74,7 +74,7 @@ export class AdminLayoutComponent implements OnInit, OnDestroy {
       labelKey: 'admin.nav.financials',
       path: '/admin/payments',
       icon: 'withdrawals',
-      activePaths: ['/admin/payments', '/admin/finance', '/admin/withdrawals', '/admin/contracts'],
+      activePaths: ['/admin/payments', '/admin/finance', '/admin/payouts', '/admin/withdrawals', '/admin/contracts'],
     },
     {
       labelKey: 'admin.nav.marketplace',
