@@ -18,32 +18,28 @@ describe('AdminMarketplaceService', () => {
   });
   afterEach(() => http.verify());
 
-  it('lists the moderation queue (default pending_review)', () => {
+  it('lists talent videos (default: live ones)', () => {
     service.listActorVideos().subscribe();
     const req = http.expectOne(r => r.url === `${BASE}/actor-videos/`);
-    expect(req.request.params.get('status')).toBe('pending_review');
+    expect(req.request.params.get('status')).toBe('approved');
     expect(req.request.params.get('page')).toBe('1');
     req.flush({ page: 1, results: [], total_results: 0, total_pages: 0 });
   });
 
-  it('approves, rejects (with reason) and removes videos', () => {
-    service.approveVideo(4).subscribe();
-    service.rejectVideo(4, 'Poor audio').subscribe();
+  it('removes videos, with an optional reason', () => {
     service.removeVideo(4).subscribe();
     service.removeVideo(5, 'Copyright').subscribe();
 
-    expect(http.expectOne(`${BASE}/actor-videos/4/approve/`).request.body).toEqual({});
-    expect(http.expectOne(`${BASE}/actor-videos/4/reject/`).request.body).toEqual({ reason: 'Poor audio' });
     expect(http.expectOne(`${BASE}/actor-videos/4/remove/`).request.body).toEqual({});
     expect(http.expectOne(`${BASE}/actor-videos/5/remove/`).request.body).toEqual({ reason: 'Copyright' });
   });
 
-  it('surfaces 400 { reason } when a reject reason is missing', () => {
+  it('surfaces 400 { reason } when a removal reason is missing', () => {
     let err: HttpErrorResponse | undefined;
-    service.rejectVideo(4, '').subscribe({ error: e => (err = e) });
-    http.expectOne(`${BASE}/actor-videos/4/reject/`).flush({ reason: 'A rejection reason is required.' }, { status: 400, statusText: 'Bad Request' });
+    service.removeCastingCall(7, '').subscribe({ error: e => (err = e) });
+    http.expectOne(`${BASE}/casting-calls/7/remove/`).flush({ reason: 'A removal reason is required.' }, { status: 400, statusText: 'Bad Request' });
     expect(err?.status).toBe(400);
-    expect(err?.error).toEqual({ reason: 'A rejection reason is required.' });
+    expect(err?.error).toEqual({ reason: 'A removal reason is required.' });
   });
 
   it('lists casting calls, omitting an empty status filter', () => {
@@ -60,5 +56,18 @@ describe('AdminMarketplaceService', () => {
   it('removes a casting call with a reason', () => {
     service.removeCastingCall(7, 'Spam').subscribe();
     expect(http.expectOne(`${BASE}/casting-calls/7/remove/`).request.body).toEqual({ reason: 'Spam' });
+  });
+
+  it('lists members with only the filters that are set, and exports them without paging', () => {
+    service.listMembers({ q: 'aline', plan: 'actor', status: '', page: 2 }).subscribe();
+    const req = http.expectOne(r => r.url === `${BASE}/members/`);
+    expect(req.request.params.keys().sort()).toEqual(['page', 'plan', 'q']);
+    req.flush({ page: 2, page_size: 25, total_results: 0, total_pages: 0, active: {}, results: [] });
+
+    service.exportMembers({ plan: 'producer_full', page: 3 }).subscribe();
+    const csv = http.expectOne(r => r.url === `${BASE}/members/export/`);
+    expect(csv.request.params.keys()).toEqual(['plan']);
+    expect(csv.request.responseType).toBe('blob');
+    csv.flush(new Blob(['x']));
   });
 });

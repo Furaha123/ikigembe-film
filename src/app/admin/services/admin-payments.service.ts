@@ -6,7 +6,7 @@ import { environment } from '../../../environments/environment';
 const BASE = `${environment.apiUrl}/admin/dashboard`;
 
 export type LedgerStatus = 'Pending' | 'Completed' | 'Failed' | 'Refunded';
-export type LedgerPurpose = 'movie' | 'actor_video' | 'casting_announcement' | 'actor_search';
+export type LedgerPurpose = 'movie' | 'actor_membership' | 'producer_plan' | 'casting_announcement' | 'actor_video' | 'actor_search';
 export type RefundState = 'none' | 'in_progress' | 'partial' | 'refunded';
 export type RefundMethod = 'provider' | 'manual';
 export type RefundStatus = 'requested' | 'processing' | 'completed' | 'failed';

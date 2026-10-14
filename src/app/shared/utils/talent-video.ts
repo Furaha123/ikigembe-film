@@ -3,17 +3,12 @@ import { hasAllowedExtension } from '../models/upload.constants';
 /**
  * Talent-video rules, mirroring the backend defaults (MarketplaceSettings talent_video_max_*,
  * apps/marketplace/media.py). Early checks only: the server measures the stored file again after
- * upload and is the final judge (a failed check can be retried on the same paid slot).
+ * upload and is the final judge (a failed check can be retried on the same slot).
  */
 export const TALENT_VIDEO_EXTENSIONS: readonly string[] = ['.mp4', '.mov'];
 export const TALENT_VIDEO_ACCEPT = '.mp4,.mov,video/mp4,video/quicktime';
 export const TALENT_VIDEO_MAX_SECONDS = 300;
 export const TALENT_VIDEO_MAX_BYTES = 500 * 1024 * 1024;
-
-/** The backend's age threshold for the talent-video fee (apps/marketplace/services.py). */
-export const TALENT_FEE_AGE_THRESHOLD = 30;
-
-export type TalentFeeTier = 'under30' | 'from30';
 
 /** Whole years on `today` for a YYYY-MM-DD birth date, as the backend counts them; null if unreadable. */
 export function ageOn(dateOfBirth: string | null | undefined, today: Date = new Date()): number | null {
@@ -25,19 +20,9 @@ export function ageOn(dateOfBirth: string | null | undefined, today: Date = new 
   return age >= 0 ? age : null;
 }
 
-/**
- * Which fee tier the profile's birth date falls in. Display only: the amount
- * always comes from the server quote, which applies the same rule.
- */
-export function talentFeeTier(dateOfBirth: string | null | undefined, today: Date = new Date()): TalentFeeTier | null {
-  const age = ageOn(dateOfBirth, today);
-  if (age === null) return null;
-  return age < TALENT_FEE_AGE_THRESHOLD ? 'under30' : 'from30';
-}
-
 export type TalentVideoProblem = 'type' | 'tooLong' | 'tooLarge';
 
-/** Early checks before paying. The backend stays the final validator. */
+/** Early checks before uploading. The backend stays the final validator. */
 export function talentVideoProblem(fileName: string, durationSeconds: number | null, sizeBytes = 0): TalentVideoProblem | null {
   if (!hasAllowedExtension(fileName, TALENT_VIDEO_EXTENSIONS)) return 'type';
   if (sizeBytes > TALENT_VIDEO_MAX_BYTES) return 'tooLarge';

@@ -1,0 +1,80 @@
+<app-header [userImg]="''" />
+
+<main class="mk-page">
+  <div class="mk-header">
+    <div>
+      <h1>{{ 'marketplace.membership.title' | translate }}</h1>
+      <p>{{ 'marketplace.membership.subtitle' | translate }}</p>
+    </div>
+  </div>
+
+  <app-marketplace-nav />
+
+  <div class="mk-wizard">
+    <section class="mk-card" aria-labelledby="am-status" aria-live="polite">
+      <h2 id="am-status">{{ 'marketplace.membership.statusTitle' | translate }}</h2>
+      @if (loading()) {
+        <p class="mk-muted">{{ 'marketplace.common.loading' | translate }}</p>
+      } @else if (error()) {
+        <p class="mk-error" role="alert">{{ error()! | translate }}</p>
+        <button type="button" class="mk-btn mk-btn--ghost" (click)="load()">{{ 'marketplace.common.retry' | translate }}</button>
+      } @else {
+        @if (granted()) {
+          <p class="mk-success" role="status">{{ 'marketplace.membership.granted' | translate }}</p>
+        } @else if (awaitingGrant()) {
+          <p>{{ 'marketplace.membership.awaitingGrant' | translate }}</p>
+          <button type="button" class="mk-btn mk-btn--ghost" (click)="recheck()">{{ 'marketplace.common.refresh' | translate }}</button>
+        }
+
+        @if (active()) {
+          <p><span class="mk-badge mk-badge--ok">{{ 'marketplace.membership.active' | translate }}</span></p>
+          <dl class="mk-summary">
+            <dt>{{ 'marketplace.access.expires' | translate }}</dt>
+            <dd>{{ expiresAt() | date:'mediumDate' }}</dd>
+            @if (timeLeft(); as t) {
+              <dt>{{ 'marketplace.access.remaining' | translate }}</dt>
+              <dd>{{ 'marketplace.access.timeLeft' | translate: t }}</dd>
+            }
+          </dl>
+        } @else {
+          <p><span class="mk-badge mk-badge--warn">{{ 'marketplace.membership.inactive' | translate }}</span></p>
+          <p class="mk-muted">{{ 'marketplace.membership.inactiveText' | translate }}</p>
+        }
+      }
+    </section>
+
+    <section class="mk-card" aria-labelledby="am-benefits">
+      <h2 id="am-benefits">{{ 'marketplace.membership.benefitsTitle' | translate }}</h2>
+      <ul class="mk-list">
+        <li>{{ 'marketplace.membership.benefitVideos' | translate }}</li>
+        <li>{{ 'marketplace.membership.benefitDirectory' | translate }}</li>
+        <li>{{ 'marketplace.membership.benefitApply' | translate }}</li>
+      </ul>
+      <div aria-live="polite">
+        @if (quote(); as q) {
+          <p class="mk-price">{{ q.amount | number }} {{ q.currency }} <span class="mk-muted">{{ 'marketplace.access.perYear' | translate }}</span></p>
+          @if (active()) {
+            <p class="mk-muted">{{ 'marketplace.membership.renewTerms' | translate: { date: (expiresAt() | date:'mediumDate') } }}</p>
+          }
+        } @else if (quoteError()) {
+          <p class="mk-error" role="alert">{{ quoteError()! | translate }}</p>
+          <button type="button" class="mk-btn mk-btn--ghost" (click)="loadQuote()">{{ 'marketplace.common.retry' | translate }}</button>
+        } @else {
+          <p class="mk-muted">{{ 'marketplace.common.loading' | translate }}</p>
+        }
+      </div>
+      <div class="mk-actions">
+        <a routerLink="/actor/videos" class="mk-btn mk-btn--ghost">{{ 'marketplace.nav.videos' | translate }}</a>
+        <button type="button" class="mk-btn" (click)="buy()" [disabled]="!quote() || !!purchase() || loading()">
+          {{ (active() ? 'marketplace.access.renew' : 'marketplace.membership.become') | translate }}
+        </button>
+      </div>
+    </section>
+  </div>
+</main>
+
+<app-footer />
+
+@if (purchase(); as p) {
+  <app-payment-modal [service]="p" (paid)="onPaid()" (closed)="closePurchase()" />
+}

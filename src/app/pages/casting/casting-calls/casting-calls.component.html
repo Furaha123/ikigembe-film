@@ -118,39 +118,20 @@
           <!-- Producer -->
           <p class="cc-card__producer">{{ c.studio_name || c.producer_name }}</p>
 
-          <!-- Location + age chips -->
-          <div class="cc-card__meta">
-            @if (c.shooting_location) {
+          <!-- Location -->
+          @if (c.shooting_location) {
+            <div class="cc-card__meta">
               <span class="cc-meta-chip">
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
                   <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5S10.62 6.5 12 6.5s2.5 1.12 2.5 2.5S13.38 11.5 12 11.5z"/>
                 </svg>
                 {{ c.shooting_location }}
               </span>
-            }
-            @if ((c.min_age ?? null) !== null || (c.max_age ?? null) !== null) {
-              <span class="cc-meta-chip">
-                @if ((c.min_age ?? null) !== null && (c.max_age ?? null) !== null) { {{ c.min_age }}–{{ c.max_age }} yrs }
-                @else if ((c.min_age ?? null) !== null) { {{ c.min_age }}+ yrs }
-                @else { ≤ {{ c.max_age }} yrs }
-              </span>
-            }
-            @if (c.gender_preference) {
-              <span class="cc-meta-chip">{{ 'marketplace.gender.' + c.gender_preference | translate }}</span>
-            }
-          </div>
-
-          <!-- Roles (capped at 3) -->
-          @if (c.roles.length) {
-            <div class="cc-card__roles" [attr.aria-label]="'marketplace.casting.roles' | translate">
-              @for (r of c.roles.slice(0, 3); track $index) {
-                <span>{{ r }}</span>
-              }
-              @if (c.roles.length > 3) {
-                <span>+{{ c.roles.length - 3 }}</span>
-              }
             </div>
           }
+
+          <!-- Open roles (3 shown) and what every role needs -->
+          <app-casting-roles [call]="c" [max]="3" />
 
           <!-- Deadline -->
           <p class="cc-card__deadline">

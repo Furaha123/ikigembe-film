@@ -4,7 +4,8 @@ import { isPlatformBrowser } from '@angular/common';
 import { EMPTY, Observable, concatMap, catchError, from, of, shareReplay, switchMap, takeWhile, throwError, timer } from 'rxjs';
 import { environment } from '../../../environments/environment';
 
-export type PaymentPurpose = 'movie' | 'actor_video' | 'casting_announcement' | 'actor_search';
+/** `actor_video` and `actor_search` are history only (before the yearly plans). */
+export type PaymentPurpose = 'movie' | 'actor_membership' | 'producer_plan' | 'casting_announcement' | 'actor_video' | 'actor_search';
 export type PaymentStatus = 'Pending' | 'Completed' | 'Failed';
 
 /**

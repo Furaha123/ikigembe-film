@@ -212,28 +212,6 @@
       </div>
     </a>
 
-    <!-- Pending talent videos -->
-    <a routerLink="/admin/marketplace" class="scard" [class.scard--urgent]="(overview()?.pending_talent_videos ?? 0) > 0">
-      <div class="scard__head">
-        <span class="scard__label">{{ 'admin.dashboard.stats.pendingTalentVideos' | translate }}</span>
-        <div class="scard__icon" [class.scard__icon--gold]="(overview()?.pending_talent_videos ?? 0) > 0" [class.scard__icon--blue]="!(overview()?.pending_talent_videos)">
-          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M17 10.5V7c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h12c.55 0 1-.45 1-1v-3.5l4 4v-11l-4 4z"/></svg>
-        </div>
-      </div>
-      <div class="scard__value">
-        @if (loadingOverview()) { <span class="skel skel-lg"></span> }
-        @else { {{ overview()?.pending_talent_videos ?? 0 }} }
-      </div>
-      <div class="scard__footer">
-        @if ((overview()?.pending_talent_videos ?? 0) > 0) {
-          <span class="scard__badge scard__badge--urgent">{{ 'admin.dashboard.stats.actionNeeded' | translate }}</span>
-        } @else {
-          <span class="scard__sub">{{ 'admin.dashboard.stats.reviewQueue' | translate }}</span>
-        }
-        <svg class="scard__arrow" viewBox="0 0 24 24" fill="currentColor"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6z"/></svg>
-      </div>
-    </a>
-
     <!-- Actors with approved videos -->
     <a routerLink="/admin/marketplace" class="scard">
       <div class="scard__head">

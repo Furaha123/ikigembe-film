@@ -9,7 +9,7 @@ import { FooterComponent } from '../../../core/components/footer/footer.componen
 import { VideoPlayerComponent } from '../../../shared/components/video-player/video-player.component';
 import { ActorMarketplaceService } from '../../../shared/services/actor-marketplace.service';
 import { MultipartUploadService, UploadError } from '../../../shared/services/multipart-upload.service';
-import { ActorVideo } from '../../../shared/models/marketplace.interface';
+import { ActorVideo, MembershipStatus } from '../../../shared/models/marketplace.interface';
 import { MultipartUploadApi } from '../../../shared/models/upload.interface';
 import { marketplaceUser, provideMarketplaceUser } from '../../../shared/testing/marketplace-session';
 
@@ -24,6 +24,11 @@ const video = (over: Partial<ActorVideo> = {}): ActorVideo => ({
   id: 9, actor_id: 1, title: 'Monologue', description: '', status: 'pending_upload', reject_reason: null,
   payment_status: 'Completed', amount: 5000, video_url: null, reviewed_at: null, created_at: '', updated_at: '',
   ...over,
+});
+
+const membership = (active: boolean): MembershipStatus => ({
+  actor: { active, expires_at: active ? '2030-01-01T00:00:00Z' : null },
+  producer: { plan: null, expires_at: null, can_view_directory: false, casting_included: false, legacy_search_until: null },
 });
 
 describe('ActorVideosComponent', () => {
@@ -41,8 +46,9 @@ describe('ActorVideosComponent', () => {
   };
 
   beforeEach(() => {
-    marketplace = jasmine.createSpyObj<ActorMarketplaceService>('ActorMarketplaceService', ['getMyVideos', 'purchaseVideo', 'videoUploadApi']);
+    marketplace = jasmine.createSpyObj<ActorMarketplaceService>('ActorMarketplaceService', ['getMyVideos', 'getMembership', 'videoUploadApi']);
     marketplace.getMyVideos.and.returnValue(of([]));
+    marketplace.getMembership.and.returnValue(of(membership(true)));
     marketplace.videoUploadApi.and.returnValue(api);
     uploader = jasmine.createSpyObj<MultipartUploadService>('MultipartUploadService', ['upload']);
 
@@ -111,7 +117,7 @@ describe('ActorVideosComponent', () => {
     expect(el().querySelector('[role="alert"]')?.textContent).toContain('marketplace.videos.uploadFailed');
   });
 
-  it('shows the reject reason and hides upload until the fee is paid', () => {
+  it('shows the reject reason and hides upload while an old fee payment is pending', () => {
     marketplace.getMyVideos.and.returnValue(of([
       video({ id: 1, status: 'rejected', reject_reason: 'Too dark' }),
       video({ id: 2, payment_status: 'Pending' }),
@@ -141,5 +147,11 @@ describe('ActorVideosComponent', () => {
     selectFile(new File(['x'], 'REEL.MOV'));
     await settle();
     expect(uploader.upload).toHaveBeenCalledTimes(1);
+  });
+  it('asks a non-member to get the membership', () => {
+    marketplace.getMembership.and.returnValue(of(membership(false)));
+    fixture = TestBed.createComponent(ActorVideosComponent);
+    fixture.detectChanges();
+    expect((fixture.nativeElement as HTMLElement).querySelector('a[href="/actor/membership"]')).not.toBeNull();
   });
 });

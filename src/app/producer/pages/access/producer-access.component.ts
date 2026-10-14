@@ -9,19 +9,23 @@ import { CastingService } from '../../services/casting.service';
 import { AuthService, UserProfile } from '../../../core/services/auth.service';
 import { PaymentModalComponent } from '../../../shared/components/payment-modal/payment-modal.component';
 import { WizardStepsComponent } from '../../../shared/components/wizard-steps/wizard-steps.component';
-import { ActorSearchAccess, ServicePurchase, ServiceQuote } from '../../../shared/models/marketplace.interface';
+import {
+  MembershipStatus, ProducerPlan, ServicePurchase, ServiceQuote,
+} from '../../../shared/models/marketplace.interface';
 import { marketplaceErrorMessage } from '../../../shared/utils/marketplace-error';
 import { accessTimeLeft } from '../../../shared/utils/marketplace-status';
 
 export type AccessStep = 'status' | 'welcome' | 'info' | 'summary' | 'confirmed';
 const WIZARD: readonly AccessStep[] = ['welcome', 'info', 'summary', 'confirmed'];
 
+export const PRODUCER_PLANS: readonly ProducerPlan[] = ['producer_full', 'producer_view'];
+const QUOTE_SERVICE = { producer_full: 'producer_full_plan', producer_view: 'producer_view_plan' } as const;
+
 /**
- * My Access: the actor-directory pass. Shows the current window (from
- * `actor-search/access/`), and walks through buying or renewing it. Access is
- * only reported as granted once the server says so after payment; the
- * countdown is display only. Directory access and casting-post fees are
- * separate purchases.
+ * My plan: the yearly producer plans. Full = actor directory + unlimited casting calls;
+ * View-only = actor directory (each casting call pays the per-call fee). Shows the current plan
+ * (from `membership/`) and walks through buying or renewing one. A plan is only reported as
+ * granted once the server says so after payment; the countdown is display only.
  */
 @Component({
   selector: 'app-producer-access',
@@ -36,31 +40,41 @@ export class ProducerAccessComponent implements OnInit, OnDestroy {
   private readonly platformId = inject(PLATFORM_ID);
   private readonly stepHeading = viewChild<ElementRef<HTMLElement>>('stepHeading');
 
+  readonly plans = PRODUCER_PLANS;
   readonly stepLabels = [
     'marketplace.access.stepWelcome', 'marketplace.access.stepInfo', 'marketplace.access.stepSummary', 'marketplace.access.stepDone',
   ];
 
   step = signal<AccessStep>('status');
-  access = signal<ActorSearchAccess | null>(null);
+  membership = signal<MembershipStatus | null>(null);
   accessLoading = signal(true);
   accessError = signal<string | null>(null);
   me = signal<UserProfile | null>(null);
   meError = signal(false);
-  quote = signal<ServiceQuote | null>(null);
+  chosen = signal<ProducerPlan>('producer_full');
+  quotes = signal<Partial<Record<ProducerPlan, ServiceQuote>>>({});
   quoteError = signal<string | null>(null);
   purchase = signal<ServicePurchase | null>(null);
-  /** Paid, but the server hasn't reported the new window yet. */
+  /** Paid, but the server hasn't reported the new plan yet. */
   awaitingGrant = signal(false);
   now = signal(Date.now());
 
   private ticker?: ReturnType<typeof setInterval>;
 
   readonly stepIndex = computed(() => Math.max(0, WIZARD.indexOf(this.step())));
+  readonly producer = computed(() => this.membership()?.producer ?? null);
   readonly active = computed(() => {
-    const a = this.access();
-    return !!a?.active && !!a.expires_at && new Date(a.expires_at).getTime() > this.now();
+    const p = this.producer();
+    return !!p?.plan && !!p.expires_at && new Date(p.expires_at).getTime() > this.now();
   });
-  readonly timeLeft = computed(() => accessTimeLeft(this.access()?.expires_at ?? null, this.now()));
+  readonly currentPlan = computed(() => (this.active() ? this.producer()!.plan : null));
+  readonly timeLeft = computed(() => accessTimeLeft(this.producer()?.expires_at ?? null, this.now()));
+  /** An old directory pass (bought before the plans) that still runs. */
+  readonly legacyUntil = computed(() => {
+    const until = this.producer()?.legacy_search_until ?? null;
+    return until && new Date(until).getTime() > this.now() ? until : null;
+  });
+  readonly quote = computed(() => this.quotes()[this.chosen()] ?? null);
 
   ngOnInit(): void {
     this.loadAccess();
@@ -73,15 +87,15 @@ export class ProducerAccessComponent implements OnInit, OnDestroy {
     clearInterval(this.ticker);
   }
 
-  loadAccess(after?: (a: ActorSearchAccess) => void): void {
+  loadAccess(after?: (m: MembershipStatus) => void): void {
     this.accessLoading.set(true);
     this.accessError.set(null);
-    this.casting.getSearchAccess().subscribe({
-      next: (a) => {
-        this.access.set(a);
+    this.casting.getMembership().subscribe({
+      next: (m) => {
+        this.membership.set(m);
         this.accessLoading.set(false);
         this.now.set(Date.now());
-        after?.(a);
+        after?.(m);
       },
       error: (err: unknown) => {
         this.accessLoading.set(false);
@@ -90,10 +104,20 @@ export class ProducerAccessComponent implements OnInit, OnDestroy {
     });
   }
 
-  /** Start buying (or renewing): the welcome step explains what the pass gives. */
-  begin(): void {
+  /** Start buying (or renewing): the first step compares the two plans. */
+  begin(plan?: ProducerPlan): void {
+    this.chosen.set(plan ?? this.currentPlan() ?? 'producer_full');
     this.goTo('welcome');
-    this.loadQuote();
+    this.loadQuotes();
+  }
+
+  /** The Full plan already covers what View-only gives, so View-only isn't sold on top of it. */
+  canChoose(plan: ProducerPlan): boolean {
+    return !(plan === 'producer_view' && this.currentPlan() === 'producer_full');
+  }
+
+  choose(plan: ProducerPlan): void {
+    if (this.canChoose(plan)) this.chosen.set(plan);
   }
 
   toInfo(): void {
@@ -109,7 +133,7 @@ export class ProducerAccessComponent implements OnInit, OnDestroy {
 
   toSummary(): void {
     this.goTo('summary');
-    if (!this.quote()) this.loadQuote();
+    if (!this.quote()) this.loadQuotes();
   }
 
   back(): void {
@@ -121,37 +145,41 @@ export class ProducerAccessComponent implements OnInit, OnDestroy {
     this.goTo('status');
   }
 
-  loadQuote(): void {
+  loadQuotes(): void {
     this.quoteError.set(null);
-    this.casting.getQuote('actor_search').subscribe({
-      next: (q) => this.quote.set(q),
-      error: (err: HttpErrorResponse) => this.quoteError.set(
-        err.status === 503 ? 'marketplace.purchase.unavailable' : (marketplaceErrorMessage(err) ?? 'marketplace.purchase.quoteFailed'),
-      ),
-    });
+    for (const plan of PRODUCER_PLANS) {
+      this.casting.getQuote(QUOTE_SERVICE[plan]).subscribe({
+        next: (q) => this.quotes.update(all => ({ ...all, [plan]: q })),
+        error: (err: HttpErrorResponse) => this.quoteError.set(
+          err.status === 503 ? 'marketplace.purchase.unavailable' : (marketplaceErrorMessage(err) ?? 'marketplace.purchase.quoteFailed'),
+        ),
+      });
+    }
   }
 
-  /** When the new window would start: now, or at the end of the current one (the server extends it). */
-  readonly startsAt = computed(() => (this.active() ? this.access()!.expires_at! : null));
+  /** When the new year starts: after the current one for a renewal of the same plan (the server stacks it), else now. */
+  readonly startsAt = computed(() =>
+    this.currentPlan() === this.chosen() ? this.producer()!.expires_at : null);
 
   pay(): void {
     if (this.purchase() || !this.quote()) return;
+    const plan = this.chosen();
     this.purchase.set({
-      titleKey: 'marketplace.directory.purchaseTitle',
-      descriptionKey: 'marketplace.directory.purchaseDesc',
-      quote: () => this.casting.getQuote('actor_search'),
-      pendingKey: 'service:actor_search',
+      titleKey: `marketplace.access.plan.${plan}`,
+      descriptionKey: `marketplace.access.planDesc.${plan}`,
+      quote: () => this.casting.getQuote(QUOTE_SERVICE[plan]),
+      pendingKey: `service:plan:${plan}`,
       returnTo: '/producer/access',
-      initiate: (phone) => this.casting.purchaseSearch(phone),
+      initiate: (phone) => this.casting.purchasePlan(plan, phone),
     });
   }
 
-  /** Payment confirmed by the server; access is shown only once the server reports it. */
+  /** Payment confirmed by the server; the plan is shown only once the server reports it. */
   onPaid(): void {
     this.purchase.set(null);
-    const before = this.access()?.expires_at ?? null;
-    this.loadAccess((a) => {
-      this.awaitingGrant.set(!a.active || a.expires_at === before);
+    const before = this.grantMarker(this.membership());
+    this.loadAccess((m) => {
+      this.awaitingGrant.set(this.grantMarker(m) === before || m.producer.plan === null);
       this.goTo('confirmed');
     });
   }
@@ -162,15 +190,21 @@ export class ProducerAccessComponent implements OnInit, OnDestroy {
 
   /** "Check again" while the grant hasn't shown up yet. */
   recheck(): void {
-    const before = this.access()?.expires_at ?? null;
-    this.loadAccess((a) => this.awaitingGrant.set(!a.active || (a.expires_at === before && this.awaitingGrant())));
+    const before = this.grantMarker(this.membership());
+    this.loadAccess((m) => this.awaitingGrant.set(
+      m.producer.plan === null || (this.grantMarker(m) === before && this.awaitingGrant())));
+  }
+
+  /** Changes when a purchase lands: a new plan, or a later end date. */
+  private grantMarker(m: MembershipStatus | null): string {
+    return `${m?.producer.plan ?? ''}|${m?.producer.expires_at ?? ''}`;
   }
 
   private tick(): void {
     this.now.set(Date.now());
-    const a = this.access();
-    // The window just ended: ask the server instead of assuming.
-    if (a?.active && a.expires_at && new Date(a.expires_at).getTime() <= this.now()) this.loadAccess();
+    const p = this.producer();
+    // The plan just ended: ask the server instead of assuming.
+    if (p?.plan && p.expires_at && new Date(p.expires_at).getTime() <= this.now()) this.loadAccess();
   }
 
   private goTo(step: AccessStep): void {

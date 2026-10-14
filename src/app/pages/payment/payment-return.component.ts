@@ -15,6 +15,8 @@ export const DEPOSIT_ID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9
 
 /** Where a settled marketplace payment takes the buyer (by the server's `purpose`). */
 const SERVICE_PAGES: Record<string, string> = {
+  actor_membership: '/actor/membership',
+  producer_plan: '/producer/access',
   actor_video: '/actor/videos',
   actor_search: '/producer/actors',
   casting_announcement: '/producer/casting',

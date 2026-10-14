@@ -8,7 +8,7 @@ journeys:
 | `access.spec.ts` | Signed-out redirect. A viewer is kept out of the admin and producer areas, and the API refuses them too. |
 | `film-purchase.spec.ts` | A coming-soon film can't be bought: no button, and the API returns 409. A viewer buys a released film with demo Mobile Money, playback is authorised, and the receipt appears in payment history. |
 | `producer-setup.spec.ts` | Viewer → producer with no admin approval. The profile can't be skipped. Upload stays closed until the agreement is signed: review, signature, name check, consent. Then upload opens. |
-| `casting-call.spec.ts` | A producer writes and pays for a casting call. It stays *In review* and hidden from viewers until an admin approves it. Then it is published. |
+| `casting-call.spec.ts` | A producer writes and pays for a casting call. It is published at once and viewers see it; admins can only remove it (no approve/reject). |
 | `refund.spec.ts` | An admin refunds a demo purchase, and a reason is required. The refund completes and the buyer sees *Refunded*. |
 
 ## Running

@@ -88,6 +88,11 @@ export const routes: Routes = [
         loadComponent: () => import('./pages/actor/talent-submit/talent-submit.component').then(a => a.TalentSubmitComponent)
       },
       {
+        path: 'membership',
+        data: marketplaceRoute('actor-membership'),
+        loadComponent: () => import('./pages/actor/actor-membership/actor-membership.component').then(a => a.ActorMembershipComponent)
+      },
+      {
         path: 'applications',
         data: marketplaceRoute('my-applications'),
         loadComponent: () => import('./pages/actor/my-applications/my-applications.component').then(a => a.MyApplicationsComponent)

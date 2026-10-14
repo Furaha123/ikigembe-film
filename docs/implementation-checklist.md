@@ -17,7 +17,9 @@ Update this file at the end of every work session: status, changed files, checks
 | Film price | Frw 1,000 default per film; only admins override; producers can't change a published price; server computes checkout amount. |
 | Tax | **Platform pays it** (2026-10-09): producers get their agreement % of the full sale price; tax comes out of the platform share. The rate itself still needs an accountant's confirmation. The 70/30 split is the agreement's (no free setting); change it per film (revenue share) or with a new agreement version. |
 | Producer setup | **Changed 2026-10-08: no admin approval.** A producer completes the profile once and signs the distribution agreement; then they can submit films, buy producer services, publish casting calls and search actors. Before that they can sign in and use their dashboard. An expired agreement locks services until renewal. Admins only suspend/reactivate. |
-| Casting calls | Published only after payment **and** admin approval. Draft → paid/pending review → published or rejected. No publication after the deadline. Refund eligibility is separate from moderation. |
+| Casting calls | **Changed 2026-10-13: no admin approval.** Published as soon as the fee is paid. Draft → paid → published → closed; admins only remove. A call paid after its deadline stays a paid draft until the producer moves the deadline and publishes (no new fee). No publication after the deadline. |
+| Yearly plans | **Changed 2026-10-13.** Actor membership Frw 5,000/yr (uploads, directory, applying; no per-video fee). Producer Full Frw 15,000/yr (directory + unlimited casting calls) or View-only Frw 10,000/yr (directory; Frw 5,000 per casting call, same as with no plan). All admin-set. Old directory passes and paid videos honoured until they lapse. Backend migrations `marketplace/0010`, `payments/0009`. |
+| Talent videos | **Changed 2026-10-13: no admin approval.** Live as soon as the server's upload checks pass; admins only remove. Backend migration `marketplace/0008` publishes/approves rows left in review. |
 
 ## Phase 0 — security, green tests, admin dashboard
 

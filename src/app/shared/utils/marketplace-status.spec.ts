@@ -9,11 +9,11 @@ const call = (status: CastingCall['status'], payment: ServicePaymentStatus | nul
 describe('castingPublicationState', () => {
   it('is published only when the server says published', () => {
     expect(castingPublicationState(call('published', 'Completed'), NOW)).toBe('published');
-    expect(castingPublicationState(call('draft', 'Completed'), NOW)).toBe('processing');
+    expect(castingPublicationState(call('draft', 'Completed'), NOW)).toBe('paid');
   });
 
-  it('a paid call waits for review; payment alone is never "published"', () => {
-    expect(castingPublicationState(call('pending_review', 'Completed'), NOW)).toBe('inReview');
+  it('a paid call the server left unpublished (or a legacy one in review) is "paid", ready to publish', () => {
+    expect(castingPublicationState(call('pending_review', 'Completed'), NOW)).toBe('paid');
     expect(castingPublicationState(call('rejected', 'Completed'), NOW)).toBe('rejected');
   });
 

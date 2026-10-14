@@ -13,7 +13,7 @@ import { ActorMarketplaceService } from '../../../shared/services/actor-marketpl
 import { DraftStoreService } from '../../../shared/services/draft-store.service';
 import { MarketplaceAccessService } from '../../../core/access/marketplace-access.service';
 import { ActorProfile, ActorVideo, CastingApplication, CastingCall } from '../../../shared/models/marketplace.interface';
-import { marketplaceErrorMessage } from '../../../shared/utils/marketplace-error';
+import { entitlementCode, marketplaceErrorMessage } from '../../../shared/utils/marketplace-error';
 import {
   applicationStatusClass, castingCallStatusClass, castingDisplayStatus, castingIsOpen,
 } from '../../../shared/utils/marketplace-status';
@@ -80,6 +80,8 @@ export class CastingCallDetailComponent implements OnInit, OnDestroy {
   note        = signal('');
   applying    = signal(false);
   applyError  = signal<string | null>(null);
+  /** Applying needs the yearly actor membership. */
+  notMember   = signal(false);
   unavailable = signal(false);
   now = signal(Date.now());
   private clock?: ReturnType<typeof setTimeout>;
@@ -110,11 +112,15 @@ export class CastingCallDetailComponent implements OnInit, OnDestroy {
     if (this.canApply()) this.loadActorData();
   }
 
-  /** Profile, approved videos and an earlier application to this call. */
+  /** Membership, profile, approved videos and an earlier application to this call. */
   private loadActorData(): void {
     this.actorDataLoading.set(true);
-    let pending = 3;
+    let pending = 4;
     const done = () => { if (--pending === 0) this.actorDataLoading.set(false); };
+    this.marketplace.getMembership().subscribe({
+      next: (m) => { this.notMember.set(!m.actor.active); done(); },
+      error: () => done(), // unknown: the server still decides when applying
+    });
     this.marketplace.getProfile().subscribe({
       next: (p) => { this.profile.set(p); done(); },
       error: (err: HttpErrorResponse) => { if (err.status === 404) this.profileMissing.set(true); done(); },
@@ -138,7 +144,7 @@ export class CastingCallDetailComponent implements OnInit, OnDestroy {
   // ── Steps ──────────────────────────────────────────────────────────────
 
   startApplication(): void {
-    if (!this.canApply() || !this.isOpen() || this.existing() || this.profileMissing()) return;
+    if (!this.canApply() || !this.isOpen() || this.existing() || this.profileMissing() || this.notMember()) return;
     this.goTo('form');
   }
 
@@ -205,6 +211,7 @@ export class CastingCallDetailComponent implements OnInit, OnDestroy {
           this.goTo('details');
           return;
         }
+        if (entitlementCode(err) === 'membership_required') this.notMember.set(true);
         this.applyError.set(marketplaceErrorMessage(err) ?? 'marketplace.casting.applyFailed');
       },
     });

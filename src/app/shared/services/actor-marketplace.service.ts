@@ -3,8 +3,8 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import {
-  ActorProfile, ActorProfilePayload, ActorVideo, ActorVideoPurchasePayload, ApplyPayload,
-  CastingApplication, CastingCall, Paginated, ServicePurchaseAccepted, ServiceQuote,
+  ActorProfile, ActorProfilePayload, ActorVideo, ActorVideoCreatePayload, ApplyPayload,
+  CastingApplication, CastingCall, MembershipStatus, Paginated, ServicePurchaseAccepted, ServiceQuote,
 } from '../models/marketplace.interface';
 import { MultipartUploadApi } from '../models/upload.interface';
 import { MarketplaceAccessService } from '../../core/access/marketplace-access.service';
@@ -21,8 +21,20 @@ export class ActorMarketplaceService {
   private readonly http = inject(HttpClient);
   private readonly access = inject(MarketplaceAccessService);
 
-  getVideoQuote(): Observable<ServiceQuote> {
-    return this.access.request('talent-videos', () => this.http.get<ServiceQuote>(`${BASE}/pricing/actor_video/`));
+  // ── Yearly actor membership (uploads, directory listing and applying need it) ──
+
+  getMembershipQuote(): Observable<ServiceQuote> {
+    return this.access.request('actor-membership', () => this.http.get<ServiceQuote>(`${BASE}/pricing/actor_membership/`));
+  }
+
+  getMembership(): Observable<MembershipStatus> {
+    return this.access.request('actor-membership', () => this.http.get<MembershipStatus>(`${BASE}/membership/`));
+  }
+
+  /** Buying while a membership is active adds a year after it; 409 while a payment is pending. */
+  purchaseMembership(phoneNumber: string | null): Observable<ServicePurchaseAccepted> {
+    return this.access.request('actor-membership', () => this.http.post<ServicePurchaseAccepted>(
+      `${BASE}/membership/purchase/`, phoneNumber ? { plan: 'actor', phone_number: phoneNumber } : { plan: 'actor' }));
   }
 
   /** 404 when the viewer has no actor profile yet. */
@@ -39,17 +51,17 @@ export class ActorMarketplaceService {
     return this.access.request('talent-videos', () => this.http.get<ActorVideo[]>(`${BASE}/actor-videos/`));
   }
 
-  /** 400 no profile / no DOB, 409 fee payment already pending, 503 pricing not configured. */
-  purchaseVideo(payload: ActorVideoPurchasePayload): Observable<ServicePurchaseAccepted> {
-    return this.access.request('talent-videos', () => this.http.post<ServicePurchaseAccepted>(`${BASE}/actor-videos/purchase/`, payload));
+  /** New talent video slot, no fee (201). 403 `membership_required` without an active membership, 400 no profile. */
+  createVideo(payload: ActorVideoCreatePayload): Observable<ActorVideo> {
+    return this.access.request('talent-videos', () => this.http.post<ActorVideo>(`${BASE}/actor-videos/`, payload));
   }
 
-  /** Takes the video out of the directory (status removed). The payment stays; no refund. 409 while processing. */
+  /** Takes the video out of the directory (status removed). 409 while processing. */
   deleteVideo(id: number): Observable<void> {
     return this.access.request('talent-videos', () => this.http.delete<void>(`${BASE}/actor-videos/${id}/`));
   }
 
-  /** Multipart endpoints for one paid video slot (402 fee unpaid, 409 slot already holds an upload). */
+  /** Multipart endpoints for one video slot (403 `membership_required`, 409 slot already holds an upload). */
   videoUploadApi(videoId: number): MultipartUploadApi {
     const url = `${BASE}/actor-videos/${videoId}/upload`;
     const post = <T>(step: string, body: object) =>

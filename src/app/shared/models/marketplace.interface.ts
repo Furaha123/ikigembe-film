@@ -19,8 +19,8 @@ export interface ServicePurchaseAccepted {
   demo?: boolean;
   /** Hosted payment page (DPO, or the demo checkout). */
   payment_url?: string;
-  actor_video_id?: number;
   casting_call_id?: number;
+  membership_id?: number;
 }
 
 export interface PhonePayload {
@@ -47,7 +47,31 @@ export interface ServicePurchase {
 export interface ServiceQuote {
   amount: number;
   currency: string;
+  /** Plan length (365 for the yearly plans); null for a one-off fee. */
   access_days: number | null;
+  /** Casting fee only: true while the producer's Full plan covers casting calls. */
+  included?: boolean;
+}
+
+// ── Yearly memberships ──────────────────────────────────────────────────
+
+/** Actor membership, or one of the two producer plans (Full: directory + free casting calls; View: directory). */
+export type MarketplacePlan = 'actor' | 'producer_full' | 'producer_view';
+export type ProducerPlan = Exclude<MarketplacePlan, 'actor'>;
+
+/** GET /marketplace/membership/ — what the signed-in account's yearly plans give it right now. */
+export interface MembershipStatus {
+  actor: { active: boolean; expires_at: string | null };
+  producer: {
+    /** Best active producer plan (Full first), null without one. */
+    plan: ProducerPlan | null;
+    /** End of that plan, renewals included. */
+    expires_at: string | null;
+    can_view_directory: boolean;
+    casting_included: boolean;
+    /** An old directory pass still running (bought before the yearly plans). */
+    legacy_search_until: string | null;
+  };
 }
 
 // ── Actor (Viewer with an actor profile) ────────────────────────────────
@@ -68,7 +92,7 @@ export interface ActorProfile {
   contact_email: string;
   contact_phone: string;
   is_listed: boolean;
-  /** YYYY-MM-DD; drives the talent-video fee (under 30 vs 30+). */
+  /** YYYY-MM-DD; producers filter the directory by age. */
   date_of_birth: string;
   created_at: string;
   updated_at: string;
@@ -77,9 +101,10 @@ export interface ActorProfile {
 export type ActorProfilePayload = Omit<ActorProfile, 'created_at' | 'updated_at'>;
 
 /**
- * Server lifecycle (apps/marketplace/media.py): pending_upload → processing → pending_review → approved/rejected;
- * a failed server check is upload_failed (re-upload on the same paid slot, free); replaced = superseded by an
- * approved replacement; removed = deleted by the actor or taken down by an admin.
+ * Server lifecycle (apps/marketplace/media.py): pending_upload → processing → approved (live) once the upload
+ * checks pass — no admin approval; a failed check is upload_failed (re-upload on the same paid slot, free);
+ * replaced = superseded by a live replacement; removed = deleted by the actor or taken down by an admin.
+ * pending_review / rejected only appear on rows from the old review flow.
  */
 export type ActorVideoStatus =
   | 'pending_upload' | 'processing' | 'upload_failed' | 'pending_review' | 'approved' | 'rejected' | 'replaced' | 'removed';
@@ -95,10 +120,9 @@ export interface ActorVideo {
   reject_reason: string | null;
   /** Why the server's upload check failed (upload_failed); the actor can upload again for free. */
   failure_reason?: string;
+  /** Videos bought one by one before the yearly membership; null for membership videos. */
   payment_status: ServicePaymentStatus | null;
   amount: number | null;
-  /** Age band the fee was computed from at purchase. */
-  fee_band?: 'under_30' | '30_plus' | '';
   /** Signed, expiring URL — never persist it. */
   video_url: string | null;
   /** Signed, expiring poster frame — never persist it. */
@@ -112,23 +136,24 @@ export interface ActorVideo {
   actor_name?: string;
   /** Admin moderation queue only. */
   actor_email?: string | null;
-  /** The paid slot accepts an upload now (first upload, or a free retry). */
+  /** The slot accepts an upload now (first upload, or a retry); needs an active membership. */
   can_upload?: boolean;
   reviewed_at: string | null;
   created_at: string;
   updated_at: string;
 }
 
-export interface ActorVideoPurchasePayload extends PhonePayload {
+/** A new talent video slot (members only; no per-video fee). */
+export interface ActorVideoCreatePayload {
   title: string;
   description?: string;
-  /** Approved video to replace (it stays live until the new one is approved). */
+  /** Live video to replace (it stays live until the new one passes the upload checks). */
   replaces?: number;
 }
 
 // ── Casting ─────────────────────────────────────────────────────────────
 
-/** draft → (paid) pending_review → (admin) published | rejected; closed at the deadline; removed by moderation. */
+/** draft → (paid) published → closed at the deadline; removed by moderation. pending_review / rejected are legacy. */
 export type CastingCallStatus = 'draft' | 'pending_review' | 'published' | 'rejected' | 'closed' | 'removed';
 
 export interface CastingCall {
@@ -148,6 +173,8 @@ export interface CastingCall {
   removal_reason?: string | null;
   reviewed_at?: string | null;
   closed_at?: string | null;
+  /** Set once a published call's deadline has been extended (allowed once). */
+  deadline_extended_at?: string | null;
   created_at: string;
   updated_at: string;
   // Extended fields — stored by the backend when provided; absent on older records.
@@ -238,11 +265,6 @@ export interface ApplyPayload {
 }
 
 // ── Producer actor directory ────────────────────────────────────────────
-
-export interface ActorSearchAccess {
-  active: boolean;
-  expires_at: string | null;
-}
 
 export interface DirectoryActor {
   id: number;

@@ -70,28 +70,35 @@ describe('CastingService', () => {
       expect(http.expectOne(`${BASE}/casting-calls/3/close/`).request.method).toBe('POST');
     });
 
-    it('lists applications and updates a status', () => {
+    it('lists applications', () => {
       service.getApplications(3).subscribe();
       http.expectOne(`${BASE}/casting-calls/3/applications/`).flush([]);
-      service.setApplicationStatus(8, 'shortlisted').subscribe();
-      const req = http.expectOne(`${BASE}/applications/8/`);
-      expect(req.request.method).toBe('PATCH');
-      expect(req.request.body).toEqual({ status: 'shortlisted' });
-      req.flush({});
     });
   });
 
   describe('actor directory', () => {
-    it('purchases a search pass; 409 pending, 503 unpriced', () => {
-      service.purchaseSearch('0788123456').subscribe();
-      expect(http.expectOne(`${BASE}/actor-search/purchase/`).request.body).toEqual({ phone_number: '0788123456' });
-      errorFor(409, `${BASE}/actor-search/purchase/`, onErr => service.purchaseSearch('07').subscribe({ error: onErr }));
-      errorFor(503, `${BASE}/actor-search/purchase/`, onErr => service.purchaseSearch('07').subscribe({ error: onErr }));
+    it('buys a yearly plan; 409 pending, 503 unpriced', () => {
+      service.purchasePlan('producer_full', '0788123456').subscribe();
+      expect(http.expectOne(`${BASE}/membership/purchase/`).request.body).toEqual({ plan: 'producer_full', phone_number: '0788123456' });
+      service.purchasePlan('producer_view', null).subscribe();
+      expect(http.expectOne(`${BASE}/membership/purchase/`).request.body).toEqual({ plan: 'producer_view' });
+      errorFor(409, `${BASE}/membership/purchase/`, onErr => service.purchasePlan('producer_full', '07').subscribe({ error: onErr }));
+      errorFor(503, `${BASE}/membership/purchase/`, onErr => service.purchasePlan('producer_full', '07').subscribe({ error: onErr }));
     });
 
-    it('reads access', () => {
-      service.getSearchAccess().subscribe(a => expect(a).toEqual({ active: true, expires_at: '2030-01-01T00:00:00Z' }));
-      http.expectOne(`${BASE}/actor-search/access/`).flush({ active: true, expires_at: '2030-01-01T00:00:00Z' });
+    it('reads the membership status and the plan prices', () => {
+      service.getMembership().subscribe();
+      http.expectOne(`${BASE}/membership/`).flush({});
+      service.getQuote('producer_view_plan').subscribe();
+      http.expectOne(`${BASE}/pricing/producer_view_plan/`).flush({ amount: 10000, currency: 'RWF', access_days: 365 });
+    });
+
+    it('publishes a call covered by the Full plan through the purchase endpoint (no phone)', () => {
+      service.publishWithPlan(7).subscribe();
+      const req = http.expectOne(`${BASE}/casting-calls/7/purchase/`);
+      expect(req.request.method).toBe('POST');
+      expect(req.request.body).toEqual({});
+      req.flush({ id: 7, status: 'published' });
     });
 
     it('sends only the filters that are set', () => {
@@ -102,7 +109,7 @@ describe('CastingService', () => {
       req.flush({ page: 2, results: [], total_results: 0, total_pages: 0 });
     });
 
-    it('403 without an active pass', () => {
+    it('403 without a plan', () => {
       errorFor(403, `${BASE}/actors/`, onErr => service.searchActors().subscribe({ error: onErr }));
       errorFor(403, `${BASE}/actors/5/`, onErr => service.getActor(5).subscribe({ error: onErr }));
       errorFor(403, `${BASE}/shortlist/`, onErr => service.getShortlist().subscribe({ error: onErr }));
@@ -130,7 +137,7 @@ describe('CastingService', () => {
           const errors: unknown[] = [];
           const onErr = { error: (e: unknown) => errors.push(e) };
           service.getMyCalls().subscribe(onErr);
-          service.getSearchAccess().subscribe(onErr);
+          service.getMembership().subscribe(onErr);
           service.searchActors().subscribe(onErr);
           service.getShortlist().subscribe(onErr);
           http.expectNone(() => true);

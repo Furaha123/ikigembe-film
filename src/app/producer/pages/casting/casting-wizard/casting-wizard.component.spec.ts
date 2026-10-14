@@ -55,7 +55,7 @@ describe('CastingWizardComponent (post casting)', () => {
   beforeEach(() => {
     sessionStorage.clear();
     routeId = null;
-    casting = jasmine.createSpyObj<CastingService>('CastingService', ['getCall', 'createCall', 'updateCall', 'purchaseCall', 'getQuote']);
+    casting = jasmine.createSpyObj<CastingService>('CastingService', ['getCall', 'createCall', 'updateCall', 'purchaseCall', 'getQuote', 'publishWithPlan']);
     casting.getQuote.and.returnValue(of({ amount: 20000, currency: 'RWF', access_days: null }));
     casting.createCall.and.returnValue(of(saved()));
     casting.updateCall.and.returnValue(of(saved()));
@@ -184,7 +184,7 @@ describe('CastingWizardComponent (post casting)', () => {
     casting.getCall.and.returnValue(of(saved({ payment_status: 'Completed' })));
     modal()!.paid.emit();
     fixture.detectChanges();
-    expect(el().textContent).toContain('marketplace.publication.processing');
+    expect(el().textContent).toContain('marketplace.publication.paid');
     expect(el().textContent).not.toContain('marketplace.publication.published');
 
     casting.getCall.and.returnValue(of(saved({ status: 'published', payment_status: 'Completed', published_at: '2030-01-01T00:00:00Z' })));
@@ -192,11 +192,97 @@ describe('CastingWizardComponent (post casting)', () => {
     expect(el().textContent).toContain('marketplace.publication.published');
   });
 
-  it('opens a non-draft call on its status instead of the editor', () => {
+  it('publishes with no payment when the Full plan covers casting calls', () => {
+    casting.getQuote.and.returnValue(of({ amount: 5000, currency: 'RWF', access_days: null, included: true }));
+    casting.publishWithPlan.and.returnValue(of(saved({ status: 'published', published_at: '2030-01-01T00:00:00Z' })));
+    create();
+    fillToReview();
+    expect(el().textContent).toContain('marketplace.postCasting.includedInPlan');
+    expect(el().querySelector('.mk-price')).toBeNull();
+    click('marketplace.postCasting.publishIncluded');
+    expect(casting.publishWithPlan).toHaveBeenCalledOnceWith(42);
+    expect(modal()).toBeUndefined();
+    expect(el().textContent).toContain('marketplace.publication.published');
+  });
+
+  it('shows the per-call fee and the Full plan hint without a Full plan', () => {
+    create();
+    fillToReview();
+    expect(el().querySelector('.mk-price')?.textContent).toContain('20,000');
+    expect(el().querySelector('a[href="/producer/access"]')).not.toBeNull();
+  });
+
+  it('opens a closed call on its status instead of the editor', () => {
     routeId = '42';
-    casting.getCall.and.returnValue(of(saved({ status: 'published', payment_status: 'Completed' })));
+    casting.getCall.and.returnValue(of(saved({ status: 'closed', payment_status: 'Completed' })));
     create();
     expect(cmp().step()).toBe('result');
     expect(el().querySelector('#cw-title')).toBeNull();
+  });
+  describe('editing a published call', () => {
+    const live = (over: Partial<CastingCall> = {}) =>
+      saved({ status: 'published', payment_status: 'Completed', published_at: '2026-10-01T00:00:00Z', ...over });
+    const toReview = () => {
+      click('marketplace.wizard.next'); // type
+      click('marketplace.wizard.next'); // details
+      click('marketplace.wizard.next'); // roles
+      click('marketplace.wizard.next'); // poster → review
+    };
+
+    it('opens the editor and saves live with no fee and no unchanged deadline', () => {
+      routeId = '42';
+      casting.getCall.and.returnValue(of(live()));
+      casting.updateCall.and.returnValue(of(live({ title: 'Inzira II' })));
+      create();
+      expect(el().querySelector('#cw-title')).toBeNull();   // type step first
+      click('marketplace.wizard.next');
+      type('#cw-title', 'Inzira II');
+      click('marketplace.wizard.next');
+      click('marketplace.wizard.next');
+      click('marketplace.wizard.next');
+      expect(casting.getQuote).not.toHaveBeenCalled();
+      expect(el().textContent).toContain('marketplace.postCasting.liveEditNote');
+      expect(el().textContent).not.toContain('marketplace.postCasting.payPublish');
+
+      click('marketplace.postCasting.saveChanges');
+      const [id, payload] = casting.updateCall.calls.mostRecent().args;
+      expect(id).toBe(42);
+      expect(payload.title).toBe('Inzira II');
+      expect('deadline_at' in payload).toBeFalse();
+      expect(cmp().step()).toBe('result');
+      expect(el().textContent).toContain('marketplace.postCasting.changesLive');
+    });
+
+    it('lets the deadline move later once, never earlier', () => {
+      routeId = '42';
+      casting.getCall.and.returnValue(of(live()));
+      create();
+      const deadline = cmp().details.controls.deadline_at;
+      deadline.setValue(toLocalInput(new Date(Date.now() + 2 * 86400000).toISOString()));
+      expect(deadline.hasError('earlier')).toBeTrue();
+      const later = toLocalInput(new Date(Date.now() + 14 * 86400000).toISOString());
+      deadline.setValue(later);
+      expect(deadline.valid).toBeTrue();
+
+      toReview();
+      click('marketplace.postCasting.saveChanges');
+      expect(casting.updateCall.calls.mostRecent().args[1].deadline_at).toBe(new Date(later).toISOString());
+    });
+
+    it('locks the deadline once it has been extended', () => {
+      routeId = '42';
+      casting.getCall.and.returnValue(of(live({ deadline_extended_at: '2026-10-05T00:00:00Z' })));
+      create();
+      click('marketplace.wizard.next');
+      expect(el().querySelector<HTMLInputElement>('#cw-deadline')!.disabled).toBeTrue();
+      expect(el().textContent).toContain('marketplace.postCasting.deadlineLocked');
+    });
+
+    it('shows a closed call on its status instead of the editor', () => {
+      routeId = '42';
+      casting.getCall.and.returnValue(of(live({ deadline_at: new Date(Date.now() - 60000).toISOString() })));
+      create();
+      expect(cmp().step()).toBe('result');
+    });
   });
 });

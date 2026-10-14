@@ -6,23 +6,21 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { RouterLink, ActivatedRoute } from '@angular/router';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
-import { tap } from 'rxjs';
 import { HeaderComponent } from '../../../core/components/header/header.component';
 import { FooterComponent } from '../../../core/components/footer/footer.component';
 import { HasUnsavedChanges } from '../../../core/guards/unsaved-changes.guard';
 import { MarketplaceNavComponent } from '../../../shared/components/marketplace-nav/marketplace-nav.component';
-import { PaymentModalComponent } from '../../../shared/components/payment-modal/payment-modal.component';
 import { WizardStepsComponent } from '../../../shared/components/wizard-steps/wizard-steps.component';
 import { ActorMarketplaceService } from '../../../shared/services/actor-marketplace.service';
 import { DraftStoreService } from '../../../shared/services/draft-store.service';
 import { MultipartUploadService, UploadAbortedError } from '../../../shared/services/multipart-upload.service';
 import { extensionList } from '../../../shared/models/upload.constants';
-import { ActorProfile, ActorVideo, ServicePurchase, ServiceQuote } from '../../../shared/models/marketplace.interface';
-import { marketplaceErrorMessage } from '../../../shared/utils/marketplace-error';
+import { ActorProfile, ActorVideo } from '../../../shared/models/marketplace.interface';
+import { entitlementCode, marketplaceErrorMessage } from '../../../shared/utils/marketplace-error';
 import { actorVideoStatusClass } from '../../../shared/utils/marketplace-status';
 import { uploadErrorMessage } from '../../../shared/utils/upload-error';
 import {
-  TALENT_VIDEO_ACCEPT, TALENT_VIDEO_EXTENSIONS, TALENT_VIDEO_MAX_SECONDS, ageOn, formatDuration, formatFileSize, readVideoDuration, talentFeeTier, talentVideoProblem,
+  TALENT_VIDEO_ACCEPT, TALENT_VIDEO_EXTENSIONS, TALENT_VIDEO_MAX_SECONDS, ageOn, formatDuration, formatFileSize, readVideoDuration, talentVideoProblem,
 } from '../../../shared/utils/talent-video';
 import { ActorProfileFormComponent } from '../actor-profile/actor-profile-form.component';
 
@@ -46,17 +44,16 @@ interface ChosenVideo {
 
 /**
  * Show your talent: welcome → personal details (actor profile) → choose the
- * video → review & pay → upload → submitted. The backend only accepts the
- * upload after the fee is confirmed, so the chosen file waits in memory while
- * the actor pays, then uploads. Paid is not approved: every video is moderated.
+ * video → review → upload → submitted. Uploading needs the yearly actor membership
+ * (no per-video fee): the server creates the video slot only for members (403
+ * `membership_required` otherwise). The video goes live once the server's upload checks pass.
  */
 @Component({
   selector: 'app-talent-submit',
   standalone: true,
   imports: [
     CommonModule, ReactiveFormsModule, RouterLink, TranslatePipe,
-    HeaderComponent, FooterComponent, MarketplaceNavComponent, WizardStepsComponent,
-    PaymentModalComponent, ActorProfileFormComponent,
+    HeaderComponent, FooterComponent, MarketplaceNavComponent, WizardStepsComponent, ActorProfileFormComponent,
   ],
   templateUrl: './talent-submit.component.html',
   styleUrls: ['../../../shared/styles/marketplace-page.scss'],
@@ -69,7 +66,7 @@ export class TalentSubmitComponent implements OnInit, OnDestroy, HasUnsavedChang
   private readonly translate = inject(TranslateService);
   private readonly platformId = inject(PLATFORM_ID);
   private readonly route = inject(ActivatedRoute);
-  /** Approved video this submission replaces (from My talent videos → Replace); it stays live until approval. */
+  /** Live video this submission replaces (from My talent videos → Replace); it stays live until the new one passes. */
   readonly replaces = signal<number | null>(null);
   private readonly stepHeading = viewChild<ElementRef<HTMLElement>>('stepHeading');
   private readonly profileForm = viewChild(ActorProfileFormComponent);
@@ -90,8 +87,9 @@ export class TalentSubmitComponent implements OnInit, OnDestroy, HasUnsavedChang
   profileError = signal<string | null>(null);
   profile = signal<ActorProfile | null>(null);
 
-  quote = signal<ServiceQuote | null>(null);
-  quoteError = signal<string | null>(null);
+  /** The yearly actor membership is active (null while unknown). Uploading needs it. */
+  member = signal<boolean | null>(null);
+  memberUntil = signal<string | null>(null);
 
   chosen = signal<ChosenVideo | null>(null);
   checkingFile = signal(false);
@@ -99,9 +97,9 @@ export class TalentSubmitComponent implements OnInit, OnDestroy, HasUnsavedChang
   /** The draft says a file was chosen before a reload: it must be picked again. */
   fileLost = signal(false);
 
-  purchase = signal<ServicePurchase | null>(null);
-  /** Paid video record that receives the upload. */
+  /** Video slot that receives the upload. */
   videoId = signal<number | null>(null);
+  creating = signal(false);
   uploading = signal(false);
   uploadPct = signal(0);
   uploadError = signal<string | null>(null);
@@ -119,13 +117,20 @@ export class TalentSubmitComponent implements OnInit, OnDestroy, HasUnsavedChang
     return STEPS.indexOf(s === 'upload' ? 'review' : s);
   });
   readonly age = computed(() => ageOn(this.profile()?.date_of_birth));
-  readonly tier = computed(() => talentFeeTier(this.profile()?.date_of_birth));
 
   ngOnInit(): void {
     const replaces = Number(this.route.snapshot.queryParamMap.get('replaces'));
     if (Number.isInteger(replaces) && replaces > 0) this.replaces.set(replaces);
     this.restoreDraft();
     this.loadProfile();
+    this.loadMembership();
+  }
+
+  loadMembership(): void {
+    this.marketplace.getMembership().subscribe({
+      next: (m) => { this.member.set(m.actor.active); this.memberUntil.set(m.actor.expires_at); },
+      error: () => this.member.set(null), // unknown: the server still decides when the slot is created
+    });
   }
 
   loadProfile(): void {
@@ -135,7 +140,6 @@ export class TalentSubmitComponent implements OnInit, OnDestroy, HasUnsavedChang
       next: (p) => {
         this.profile.set(p);
         this.profileLoading.set(false);
-        this.loadQuote();
       },
       error: (err: HttpErrorResponse) => {
         this.profileLoading.set(false);
@@ -143,18 +147,6 @@ export class TalentSubmitComponent implements OnInit, OnDestroy, HasUnsavedChang
         // No profile yet: the details step creates it.
         if (this.stepIndex() > 1) this.goTo('details');
       },
-    });
-  }
-
-  /** The server price for this actor (it needs the birth date). */
-  loadQuote(): void {
-    if (!this.profile()?.date_of_birth) return;
-    this.quoteError.set(null);
-    this.marketplace.getVideoQuote().subscribe({
-      next: (q) => this.quote.set(q),
-      error: (err: HttpErrorResponse) => this.quoteError.set(
-        err.status === 503 ? 'marketplace.purchase.unavailable' : (marketplaceErrorMessage(err) ?? 'marketplace.purchase.quoteFailed'),
-      ),
     });
   }
 
@@ -167,8 +159,6 @@ export class TalentSubmitComponent implements OnInit, OnDestroy, HasUnsavedChang
   /** Details step: save the profile (new or edited), then continue. */
   onProfileSaved(p: ActorProfile): void {
     this.profile.set(p);
-    this.quote.set(null);
-    this.loadQuote();
     this.goTo('video');
   }
 
@@ -233,52 +223,36 @@ export class TalentSubmitComponent implements OnInit, OnDestroy, HasUnsavedChang
     this.saveDraft();
   }
 
-  // ── Payment, then upload ───────────────────────────────────────────────
+  // ── Create the slot, then upload ───────────────────────────────────────
 
-  pay(): void {
-    if (this.purchase() || this.uploading() || !this.chosen() || this.form.invalid) return;
-    const { title, description } = this.form.getRawValue();
-    this.purchase.set({
-      titleKey: 'marketplace.videos.purchaseTitle',
-      descriptionKey: 'marketplace.talent.purchaseDesc',
-      quote: () => this.marketplace.getVideoQuote(),
-      pendingKey: 'service:actor_video',
-      // A hosted-page payment leaves this page (and the chosen file): finish the upload from My talent videos.
-      returnTo: '/actor/videos',
-      initiate: (phone) => this.marketplace.purchaseVideo({
-        title: title.trim(),
-        description: description.trim() || undefined,
-        phone_number: phone ?? undefined,
-        ...(this.replaces() ? { replaces: this.replaces()! } : {}),
-      }).pipe(tap(res => { if (res.actor_video_id) this.videoId.set(res.actor_video_id); })),
-    });
-  }
-
-  /** The server confirmed the fee: the video record now accepts the upload. */
-  onPaid(): void {
-    this.purchase.set(null);
-    this.goTo('upload');
+  /** Members only: the server creates the video slot (no fee), then the chosen file uploads into it. */
+  submit(): void {
+    if (this.creating() || this.uploading() || !this.chosen() || this.form.invalid) return;
     if (this.videoId()) {
+      this.goTo('upload');
       this.upload();
       return;
     }
-    // Resumed payment (started earlier): find the paid record still waiting for its file.
-    this.marketplace.getMyVideos().subscribe({
-      next: (list) => {
-        const waiting = list.find(v => v.status === 'pending_upload' && v.payment_status === 'Completed');
-        if (waiting) {
-          this.videoId.set(waiting.id);
-          this.upload();
-        } else {
-          this.uploadError.set('marketplace.talent.noPaidVideo');
-        }
+    const { title, description } = this.form.getRawValue();
+    this.creating.set(true);
+    this.uploadError.set(null);
+    this.marketplace.createVideo({
+      title: title.trim(),
+      description: description.trim() || undefined,
+      ...(this.replaces() ? { replaces: this.replaces()! } : {}),
+    }).subscribe({
+      next: (v) => {
+        this.creating.set(false);
+        this.videoId.set(v.id);
+        this.goTo('upload');
+        this.upload();
       },
-      error: (err: unknown) => this.uploadError.set(marketplaceErrorMessage(err) ?? 'marketplace.errors.loadFailed'),
+      error: (err: unknown) => {
+        this.creating.set(false);
+        if (entitlementCode(err) === 'membership_required') this.member.set(false);
+        this.uploadError.set(marketplaceErrorMessage(err) ?? 'marketplace.errors.saveFailed');
+      },
     });
-  }
-
-  closePurchase(): void {
-    this.purchase.set(null);
   }
 
   /** Upload step after a reload or a lost file: pick the same video again. */
@@ -319,7 +293,7 @@ export class TalentSubmitComponent implements OnInit, OnDestroy, HasUnsavedChang
     this.controller?.abort();
   }
 
-  /** Show the server's status (pending review), never an assumed one. */
+  /** Show the server's status (being checked), never an assumed one. */
   private loadResult(id: number): void {
     this.goTo('done');
     this.marketplace.getMyVideos().subscribe({
@@ -328,7 +302,7 @@ export class TalentSubmitComponent implements OnInit, OnDestroy, HasUnsavedChang
     });
   }
 
-  /** Start again for another video (a new fee applies, as the server decides). */
+  /** Start again for another video (no fee while the membership is active). */
   submitAnother(): void {
     this.releasePreview();
     this.chosen.set(null);
@@ -337,8 +311,6 @@ export class TalentSubmitComponent implements OnInit, OnDestroy, HasUnsavedChang
     this.uploadPct.set(0);
     this.uploadError.set(null);
     this.form.reset();
-    this.quote.set(null);
-    this.loadQuote();
     this.goTo('video');
   }
 

@@ -8,6 +8,8 @@ export const ACCOUNTS = {
   refund:   { email: 'e2e-refund@ikigembe.test', name: 'Rita Refund' },
   producer: { email: 'e2e-producer@ikigembe.test', name: 'Paul Producer' },
   maker:    { email: 'e2e-maker@ikigembe.test', name: 'Mara Maker' },
+  /** Ready producer with an active Full plan (casting calls publish with no fee). */
+  studio:   { email: 'e2e-studio@ikigembe.test', name: 'Stella Studio' },
 } as const;
 export type AccountKey = keyof typeof ACCOUNTS;
 

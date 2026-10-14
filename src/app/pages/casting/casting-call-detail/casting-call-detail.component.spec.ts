@@ -25,6 +25,11 @@ const PROFILE = { stage_name: 'Aline', date_of_birth: '2000-01-01', gender: 'fem
 const VIDEO = { id: 7, title: 'Monologue', status: 'approved' } as ActorVideo;
 const APPLICATION = { id: 3, casting_call_id: 1, status: 'submitted', created_at: '2030-01-01T00:00:00Z' } as CastingApplication;
 
+const memberStatus = (active: boolean) => ({
+  actor: { active, expires_at: active ? '2030-01-01T00:00:00Z' : null },
+  producer: { plan: null, expires_at: null, can_view_directory: false, casting_included: false, legacy_search_until: null },
+});
+
 describe('CastingCallDetailComponent', () => {
   let api: jasmine.SpyObj<ActorMarketplaceService>;
   let fixture: ComponentFixture<CastingCallDetailComponent>;
@@ -35,7 +40,8 @@ describe('CastingCallDetailComponent', () => {
 
   beforeEach(() => {
     sessionStorage.clear();
-    api = jasmine.createSpyObj('ActorMarketplaceService', ['getCastingCall', 'getMyVideos', 'getProfile', 'getMyApplications', 'apply']);
+    api = jasmine.createSpyObj('ActorMarketplaceService', ['getCastingCall', 'getMyVideos', 'getProfile', 'getMyApplications', 'apply', 'getMembership']);
+    api.getMembership.and.returnValue(of(memberStatus(true)));
     api.getMyVideos.and.returnValue(of([VIDEO]));
     api.getProfile.and.returnValue(of(PROFILE));
     api.getMyApplications.and.returnValue(of([]));
@@ -166,6 +172,14 @@ describe('CastingCallDetailComponent', () => {
     api.getProfile.and.returnValue(throwError(() => new HttpErrorResponse({ status: 404 })));
     open('published');
     expect(el().textContent).toContain('marketplace.apply.profileNeeded');
+    expect(button('marketplace.casting.apply')).toBeUndefined();
+  });
+
+  it('sends a non-member to the membership page instead of the application', () => {
+    api.getMembership.and.returnValue(of(memberStatus(false)));
+    open('published');
+    expect(el().textContent).toContain('marketplace.apply.membershipNeeded');
+    expect(el().querySelector('a[href="/actor/membership"]')).not.toBeNull();
     expect(button('marketplace.casting.apply')).toBeUndefined();
   });
 

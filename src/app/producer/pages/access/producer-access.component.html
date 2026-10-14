@@ -16,10 +16,11 @@
           <p class="mk-error" role="alert">{{ accessError()! | translate }}</p>
           <button type="button" class="mk-btn mk-btn--ghost" (click)="loadAccess()">{{ 'marketplace.common.retry' | translate }}</button>
         } @else if (active()) {
-          <p><span class="mk-badge mk-badge--ok">{{ 'marketplace.access.active' | translate }}</span></p>
+          <p><span class="mk-badge mk-badge--ok">{{ 'marketplace.access.plan.' + currentPlan() | translate }}</span></p>
+          <p class="mk-muted">{{ 'marketplace.access.planDesc.' + currentPlan() | translate }}</p>
           <dl class="mk-summary">
             <dt>{{ 'marketplace.access.expires' | translate }}</dt>
-            <dd>{{ access()!.expires_at | date:'full' }} {{ access()!.expires_at | date:'shortTime' }}</dd>
+            <dd>{{ producer()!.expires_at | date:'full' }} {{ producer()!.expires_at | date:'shortTime' }}</dd>
             @if (timeLeft(); as t) {
               <dt>{{ 'marketplace.access.remaining' | translate }}</dt>
               <dd>{{ 'marketplace.access.timeLeft' | translate: t }}</dd>
@@ -28,18 +29,24 @@
           <p class="mk-muted">{{ 'marketplace.access.countdownNote' | translate }}</p>
           <div class="mk-actions">
             <button type="button" class="mk-btn mk-btn--ghost" (click)="begin()">{{ 'marketplace.access.renew' | translate }}</button>
+            @if (currentPlan() === 'producer_view') {
+              <button type="button" class="mk-btn mk-btn--ghost" (click)="begin('producer_full')">{{ 'marketplace.access.upgrade' | translate }}</button>
+            }
             <a routerLink="/producer/actors" class="mk-btn">{{ 'marketplace.nav.findActors' | translate }}</a>
           </div>
         } @else {
           <p><span class="mk-badge mk-badge--warn">{{ 'marketplace.access.inactive' | translate }}</span></p>
           <p class="mk-muted">{{ 'marketplace.access.inactiveText' | translate }}</p>
+          @if (legacyUntil(); as until) {
+            <p class="mk-muted">{{ 'marketplace.access.legacyPass' | translate: { date: (until | date:'medium') } }}</p>
+          }
           <div class="mk-actions">
             <span></span>
             <button type="button" class="mk-btn" (click)="begin()">{{ 'marketplace.access.getAccess' | translate }}</button>
           </div>
         }
       </section>
-      <p class="mk-muted">{{ 'marketplace.access.separateProducts' | translate }}</p>
+      <p class="mk-muted">{{ 'marketplace.access.noPlanCasting' | translate }}</p>
     } @else {
       <app-wizard-steps [steps]="stepLabels" [current]="stepIndex()" />
 
@@ -48,6 +55,25 @@
           <section class="mk-card" aria-labelledby="acc-welcome">
             <h2 id="acc-welcome" #stepHeading tabindex="-1">{{ 'marketplace.access.welcomeTitle' | translate }}</h2>
             <p>{{ 'marketplace.access.welcomeText' | translate }}</p>
+            <div class="mk-choices" role="radiogroup" aria-labelledby="acc-welcome">
+              @for (plan of plans; track plan) {
+                <button type="button" class="mk-choice" role="radio" [attr.aria-checked]="chosen() === plan"
+                        [class.selected]="chosen() === plan" [disabled]="!canChoose(plan)" (click)="choose(plan)">
+                  <h3>{{ 'marketplace.access.plan.' + plan | translate }}</h3>
+                  @if (quotes()[plan]; as q) {
+                    <p class="mk-price">{{ q.amount | number }} {{ q.currency }} <span class="mk-muted">{{ 'marketplace.access.perYear' | translate }}</span></p>
+                  }
+                  <p>{{ 'marketplace.access.planDesc.' + plan | translate }}</p>
+                  @if (!canChoose(plan)) {
+                    <p class="mk-muted">{{ 'marketplace.access.includedInFull' | translate }}</p>
+                  }
+                </button>
+              }
+            </div>
+            @if (quoteError()) {
+              <p class="mk-error" role="alert">{{ quoteError()! | translate }}</p>
+            }
+            <h3>{{ 'marketplace.access.bothPlansTitle' | translate }}</h3>
             <ul class="mk-list">
               <li>{{ 'marketplace.access.benefitBrowse' | translate }}</li>
               <li>{{ 'marketplace.access.benefitVideos' | translate }}</li>
@@ -101,6 +127,8 @@
               @if (quote(); as q) {
                 <p class="mk-price">{{ q.amount | number }} {{ q.currency }}</p>
                 <dl class="mk-summary">
+                  <dt>{{ 'marketplace.access.planLabel' | translate }}</dt>
+                  <dd>{{ 'marketplace.access.plan.' + chosen() | translate }}</dd>
                   <dt>{{ 'marketplace.access.duration' | translate }}</dt>
                   <dd>{{ 'marketplace.access.days' | translate: { n: q.access_days } }}</dd>
                   <dt>{{ 'marketplace.access.starts' | translate }}</dt>
@@ -112,7 +140,7 @@
                 <p class="mk-muted">{{ 'marketplace.access.renewalTerms' | translate }}</p>
               } @else if (quoteError()) {
                 <p class="mk-error" role="alert">{{ quoteError()! | translate }}</p>
-                <button type="button" class="mk-btn mk-btn--ghost" (click)="loadQuote()">{{ 'marketplace.common.retry' | translate }}</button>
+                <button type="button" class="mk-btn mk-btn--ghost" (click)="loadQuotes()">{{ 'marketplace.common.retry' | translate }}</button>
               } @else {
                 <p class="mk-muted">{{ 'marketplace.common.loading' | translate }}</p>
               }
@@ -133,8 +161,10 @@
             } @else {
               <p class="mk-success" role="status">{{ 'marketplace.access.granted' | translate }}</p>
               <dl class="mk-summary">
+                <dt>{{ 'marketplace.access.planLabel' | translate }}</dt>
+                <dd>{{ 'marketplace.access.plan.' + (producer()?.plan ?? chosen()) | translate }}</dd>
                 <dt>{{ 'marketplace.access.expires' | translate }}</dt>
-                <dd>{{ access()?.expires_at | date:'medium' }}</dd>
+                <dd>{{ producer()?.expires_at | date:'medium' }}</dd>
               </dl>
             }
             <div class="mk-actions">

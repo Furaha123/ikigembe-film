@@ -54,17 +54,24 @@ profiles so you have two devices.
 
 ## 5. Marketplace
 
-1. Viewer A creates an actor profile with a date of birth. The talent video fee is Frw 5,000 under 30 and
-   Frw 10,000 at 30 or over.
-2. Pay, then upload:
-   - a 6-minute file fails the check, and A can retry for free on the same slot;
-   - an MP4 under 5 minutes goes processing → pending review.
-3. Admin approves the video in `/admin/marketplace`, and A appears in the directory.
-4. Producer B buys actor search (Frw 20,000 / 30 days) and opens A's profile, which shows contact details.
+0. Admin sets the fees in `/admin/marketplace-settings` (defaults: actor membership Frw 5,000/yr, Full plan
+   Frw 15,000/yr, View-only plan Frw 10,000/yr, casting call Frw 5,000) and the quotes on the pages follow.
+1. Viewer A creates an actor profile. Without a membership, *Show your talent* and applying to a casting call point
+   to `/actor/membership`; A buys the Frw 5,000 yearly membership there.
+2. Upload (no further fee):
+   - a 6-minute file fails the check, and A can retry on the same video;
+   - an MP4 under 5 minutes goes processing → live (no admin approval), and A appears in the directory;
+   - a second video uploads with no charge.
+3. In `/admin/marketplace` the video is listed as *Live* with only a **Remove** action.
+4. Producer B without a plan gets the directory gate. B buys the View-only plan (Frw 10,000 / 1 year) on My plan and
+   opens A's profile, which shows contact details.
 5. B posts a casting call:
-   - after paying the Frw 20,000 fee, its status is *pending review* (not published);
-   - admin rejects it with a reason, B edits and re-sends without paying again;
-   - admin approves it, and it is published.
+   - after paying the Frw 5,000 per-call fee it is published straight away (no admin approval) and viewers see it;
+   - producer C with the Full plan (Frw 15,000 / 1 year) publishes a call with no payment;
+   - a call paid after its deadline stays a paid draft: B moves the deadline and publishes without paying again;
+   - B edits the published call (adds a role): the change shows at once, no fee; B extends the deadline once, a second
+     extension and an earlier deadline are refused;
+   - admin can only remove it (with a reason) in `/admin/marketplace`.
 6. Set a casting deadline in the past (or wait for it). `marketplace-jobs` closes the call and applications stop.
 
 ## 6. Admin operations

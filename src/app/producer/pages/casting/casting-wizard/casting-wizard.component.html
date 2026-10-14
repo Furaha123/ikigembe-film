@@ -2,7 +2,7 @@
   <div class="mk-header">
     <div>
       <a routerLink="/producer/casting" class="mk-muted">← {{ 'marketplace.nav.myCastingCalls' | translate }}</a>
-      <h1>{{ (callId() ? 'marketplace.postCasting.editTitle' : 'marketplace.postCasting.title') | translate }}</h1>
+      <h1>{{ (editingLive() ? 'marketplace.postCasting.editLiveTitle' : callId() ? 'marketplace.postCasting.editTitle' : 'marketplace.postCasting.title') | translate }}</h1>
       <p>{{ 'marketplace.postCasting.subtitle' | translate }}</p>
     </div>
   </div>
@@ -107,14 +107,17 @@
                 <!-- Application deadline -->
                 <div class="mk-field">
                   <label for="cw-deadline">{{ 'marketplace.postCasting.deadline' | translate }} *</label>
-                  <input id="cw-deadline" type="datetime-local" formControlName="deadline_at" [min]="minDeadline" (input)="persist()"
+                  <input id="cw-deadline" type="datetime-local" formControlName="deadline_at" [min]="editingLive() ? originalDeadline : minDeadline" (input)="persist()"
                          [attr.aria-invalid]="details.controls.deadline_at.invalid && details.controls.deadline_at.touched"
                          aria-describedby="cw-deadline-hint cw-deadline-err" />
-                  <span id="cw-deadline-hint" class="mk-hint">{{ 'marketplace.postCasting.deadlineHint' | translate }}</span>
+                  <span id="cw-deadline-hint" class="mk-hint">{{ (!editingLive() ? 'marketplace.postCasting.deadlineHint'
+                    : deadlineExtended() ? 'marketplace.postCasting.deadlineLocked' : 'marketplace.postCasting.deadlineExtendOnce') | translate }}</span>
                   @if (details.controls.deadline_at.touched && details.controls.deadline_at.hasError('required')) {
                     <p id="cw-deadline-err" class="mk-error">{{ 'marketplace.errors.required' | translate }}</p>
                   } @else if (details.controls.deadline_at.touched && details.controls.deadline_at.hasError('past')) {
                     <p id="cw-deadline-err" class="mk-error">{{ 'marketplace.producerCasting.deadlineFuture' | translate }}</p>
+                  } @else if (details.controls.deadline_at.touched && details.controls.deadline_at.hasError('earlier')) {
+                    <p id="cw-deadline-err" class="mk-error">{{ 'marketplace.postCasting.deadlineOnlyLater' | translate }}</p>
                   }
                 </div>
 
@@ -421,15 +424,28 @@
               <p style="white-space: pre-line; margin: 0">{{ details.controls.availability_notes.value }}</p>
             }
 
-            <div class="mk-banner">
-              @if (quote(); as q) {
-                <p class="mk-muted" style="margin: 0">{{ 'marketplace.postCasting.fee' | translate }}</p>
-                <p class="mk-price">{{ q.amount | number }} {{ q.currency }}</p>
-              } @else if (quoteError()) {
-                <p class="mk-error" role="alert">{{ quoteError()! | translate }}</p>
-              }
-              <p class="mk-muted" style="margin: .25rem 0 0">{{ 'marketplace.postCasting.publishRules' | translate }}</p>
-            </div>
+            @if (editingLive()) {
+              <div class="mk-banner">
+                <p class="mk-muted" style="margin: 0">{{ 'marketplace.postCasting.liveEditNote' | translate }}</p>
+              </div>
+            } @else {
+              <div class="mk-banner">
+                @if (quote(); as q) {
+                  @if (q.included) {
+                    <p class="mk-success" style="margin: 0">{{ 'marketplace.postCasting.includedInPlan' | translate }}</p>
+                  } @else {
+                    <p class="mk-muted" style="margin: 0">{{ 'marketplace.postCasting.fee' | translate }}</p>
+                    <p class="mk-price">{{ q.amount | number }} {{ q.currency }}</p>
+                    <p class="mk-muted" style="margin: .25rem 0 0">
+                      <a routerLink="/producer/access">{{ 'marketplace.postCasting.fullPlanHint' | translate }}</a>
+                    </p>
+                  }
+                } @else if (quoteError()) {
+                  <p class="mk-error" role="alert">{{ quoteError()! | translate }}</p>
+                }
+                <p class="mk-muted" style="margin: .25rem 0 0">{{ 'marketplace.postCasting.publishRules' | translate }}</p>
+              </div>
+            }
 
             <div aria-live="polite">
               @if (saveError()) { <p class="mk-error" role="alert">{{ saveError()! | translate }}</p> }
@@ -439,12 +455,18 @@
             <div class="mk-actions">
               <button type="button" class="mk-btn mk-btn--ghost" (click)="back()">{{ 'marketplace.wizard.back' | translate }}</button>
               <div class="mk-actions__end">
-                <button type="button" class="mk-btn mk-btn--ghost" (click)="saveDraft()" [disabled]="saving()">
-                  {{ (saving() ? 'marketplace.common.saving' : 'marketplace.postCasting.saveDraft') | translate }}
-                </button>
-                <button type="button" class="mk-btn" (click)="payAndPublish()" [disabled]="saving() || !!purchase()">
-                  {{ (alreadyPaid() ? 'marketplace.postCasting.sendForReview' : 'marketplace.postCasting.payPublish') | translate }}
-                </button>
+                @if (editingLive()) {
+                  <button type="button" class="mk-btn" (click)="saveLiveChanges()" [disabled]="saving()">
+                    {{ (saving() ? 'marketplace.common.saving' : 'marketplace.postCasting.saveChanges') | translate }}
+                  </button>
+                } @else {
+                  <button type="button" class="mk-btn mk-btn--ghost" (click)="saveDraft()" [disabled]="saving()">
+                    {{ (saving() ? 'marketplace.common.saving' : 'marketplace.postCasting.saveDraft') | translate }}
+                  </button>
+                  <button type="button" class="mk-btn" (click)="payAndPublish()" [disabled]="saving() || !!purchase()">
+                    {{ (alreadyPaid() ? 'marketplace.postCasting.publishPaid' : includedInPlan() ? 'marketplace.postCasting.publishIncluded' : 'marketplace.postCasting.payPublish') | translate }}
+                  </button>
+                }
               </div>
             </div>
           </section>
@@ -453,6 +475,9 @@
         @case ('result') {
           <section class="mk-card" aria-labelledby="cw-result" aria-live="polite">
             <h2 id="cw-result" #stepHeading tabindex="-1">{{ call()?.title ?? ('marketplace.postCasting.title' | translate) }}</h2>
+            @if (savedNotice()) {
+              <p class="mk-success" role="status">{{ 'marketplace.postCasting.changesLive' | translate }}</p>
+            }
             @if (state(); as s) {
               <p><span [class]="publicationClass(s)">{{ 'marketplace.publication.' + s | translate }}</span></p>
               <p class="mk-muted">{{ 'marketplace.publication.' + s + 'Text' | translate }}</p>
@@ -460,7 +485,7 @@
               <p class="mk-muted">{{ 'marketplace.common.loading' | translate }}</p>
             }
             <div class="mk-actions">
-              @if (state() === 'processing' || state() === 'paymentPending' || state() === 'inReview') {
+              @if (state() === 'paymentPending' || state() === 'paid') {
                 <button type="button" class="mk-btn mk-btn--ghost" (click)="refreshState()" [disabled]="checking()">{{ 'marketplace.common.refresh' | translate }}</button>
               } @else { <span></span> }
               <div class="mk-actions__end">

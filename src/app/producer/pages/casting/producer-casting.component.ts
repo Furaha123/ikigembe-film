@@ -2,8 +2,10 @@ import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { TranslatePipe } from '@ngx-translate/core';
+import { Observable } from 'rxjs';
 import { CastingService } from '../../services/casting.service';
 import { PaymentModalComponent } from '../../../shared/components/payment-modal/payment-modal.component';
+import { CastingRolesComponent } from '../../../shared/components/casting-roles/casting-roles.component';
 import { CastingCall, ServicePurchase } from '../../../shared/models/marketplace.interface';
 import {
   CastingPublicationState, castingDisplayStatus, castingPublicationClass, castingPublicationState,
@@ -28,9 +30,9 @@ export function castingFilterOf(state: CastingPublicationState): Exclude<Casting
 @Component({
   selector: 'app-producer-casting',
   standalone: true,
-  imports: [CommonModule, RouterLink, TranslatePipe, PaymentModalComponent],
+  imports: [CommonModule, RouterLink, TranslatePipe, PaymentModalComponent, CastingRolesComponent],
   templateUrl: './producer-casting.component.html',
-  styleUrls: ['../../../shared/styles/marketplace-page.scss'],
+  styleUrls: ['../../../shared/styles/marketplace-page.scss', './producer-casting.component.scss'],
 })
 export class ProducerCastingComponent implements OnInit {
   private readonly casting = inject(CastingService);
@@ -55,12 +57,26 @@ export class ProducerCastingComponent implements OnInit {
     return f === 'all' ? this.calls() : this.calls().filter(c => castingFilterOf(castingPublicationState(c)) === f);
   });
 
+  /** Callout under a card: red for a rejection or removal, neutral for other explained states, none otherwise. */
+  calloutTone(state: CastingPublicationState): 'danger' | 'neutral' | null {
+    if (state === 'rejected' || state === 'removed' || state === 'paymentFailed') return 'danger';
+    if (state !== 'published' && state !== 'draft') return 'neutral';
+    return null;
+  }
+
   count(f: CastingFilter): number {
     return f === 'all' ? this.calls().length : this.calls().filter(c => castingFilterOf(castingPublicationState(c)) === f).length;
   }
 
+  /** The Full plan covers casting calls (from the fee quote): Publish needs no payment. */
+  castingIncluded = signal(false);
+
   ngOnInit(): void {
     this.load();
+    this.casting.getQuote('casting_announcement').subscribe({
+      next: (q) => this.castingIncluded.set(!!q.included),
+      error: () => { /* the fee path stays; the server decides at publish time */ },
+    });
   }
 
   load(): void {
@@ -75,7 +91,7 @@ export class ProducerCastingComponent implements OnInit {
     });
   }
 
-  /** Pay the announcement fee — the call publishes itself once the payment completes. */
+  /** Publish: free with the Full plan, else pay the per-call fee (the call publishes itself once paid). */
   publish(c: CastingCall): void {
     if (c.status !== 'draft' || c.payment_status === 'Pending') return;
     if (new Date(c.deadline_at).getTime() <= Date.now()) {
@@ -83,6 +99,14 @@ export class ProducerCastingComponent implements OnInit {
       return;
     }
     this.actionError.set(null);
+    if (c.payment_status === 'Completed') {
+      this.publishPaid(c);
+      return;
+    }
+    if (this.castingIncluded()) {
+      this.publishWith(c, this.casting.publishWithPlan(c.id));
+      return;
+    }
     this.purchase.set({
       titleKey: 'marketplace.producerCasting.publishTitle',
       descriptionKey: 'marketplace.producerCasting.publishDesc',
@@ -90,6 +114,22 @@ export class ProducerCastingComponent implements OnInit {
       pendingKey: `service:casting:${c.id}`,
       returnTo: '/producer/casting',
       initiate: (phone) => this.casting.purchaseCall(c.id, phone),
+    });
+  }
+
+  /** The fee is already paid (the deadline had passed when it was confirmed): publish without paying again. */
+  private publishPaid(c: CastingCall): void {
+    this.publishWith(c, this.casting.submitCall(c.id));
+  }
+
+  private publishWith(c: CastingCall, request: Observable<CastingCall>): void {
+    this.closingId.set(c.id);
+    request.subscribe({
+      next: () => { this.closingId.set(null); this.load(); },
+      error: (err: unknown) => {
+        this.closingId.set(null);
+        this.actionError.set(marketplaceErrorMessage(err) ?? 'marketplace.errors.actionFailed');
+      },
     });
   }
 

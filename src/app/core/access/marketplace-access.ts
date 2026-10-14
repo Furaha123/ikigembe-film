@@ -10,6 +10,8 @@
  *   no admin approval; until setup is done producers only get their dashboard and profile
  * - published casting calls: any signed-in account
  * - moderation (`/api/marketplace/admin/...`): admins
+ * Paid entitlements (actor membership, producer plans) are not decided here: the server answers
+ * 403 `{ code: 'membership_required' | 'plan_required' }` and pages show how to get one.
  * Actors are Viewer accounts; there is no Actor role. Admins only moderate:
  * the actor/producer endpoints check the role alone, so admins can't use them.
  */
@@ -41,6 +43,7 @@ export type MarketplaceFeatureKey =
   | 'casting-applications'
   | 'find-actors'
   | 'shortlist'
+  | 'actor-membership'
   | 'my-access'
   | 'moderation';
 
@@ -72,6 +75,7 @@ export const MARKETPLACE_FEATURES: readonly MarketplaceFeature[] = [
   { key: 'my-applications',      labelKey: 'marketplace.nav.applications',   route: '/actor/applications',     icon: 'applications', roles: ['Viewer'],   requiresActive: true, tab: true },
   { key: 'actor-profile',        labelKey: 'marketplace.nav.profile',        route: '/actor/profile',          icon: 'profile',      roles: ['Viewer'],   requiresActive: true, tab: true },
   { key: 'talent-videos',        labelKey: 'marketplace.nav.videos',         route: '/actor/videos',           icon: 'videos',       roles: ['Viewer'],   requiresActive: true, tab: true },
+  { key: 'actor-membership',     labelKey: 'marketplace.nav.membership',     route: '/actor/membership',       icon: 'access',       roles: ['Viewer'],   requiresActive: true, tab: true },
   { key: 'submit-talent',        labelKey: 'marketplace.nav.submitTalent',   route: '/actor/talent/new',                             roles: ['Viewer'],   requiresActive: true },
   { key: 'apply-casting',        labelKey: 'marketplace.casting.apply',                                                                roles: ['Viewer'],   requiresActive: true },
   { key: 'find-actors',          labelKey: 'marketplace.nav.findActors',     route: '/producer/actors',        icon: 'actors',       roles: ['Producer'], requiresActive: true, requiresReadyProducer: true, tab: true },

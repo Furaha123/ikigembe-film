@@ -157,6 +157,9 @@
             } @else if (!isOpen()) {
               <p class="mk-muted" role="status">{{ 'marketplace.casting.closed' | translate }}</p>
               <a routerLink="/casting" class="mk-btn mk-btn--ghost">{{ 'marketplace.casting.backToList' | translate }}</a>
+            } @else if (notMember()) {
+              <p class="mk-muted">{{ 'marketplace.apply.membershipNeeded' | translate }}</p>
+              <a routerLink="/actor/membership" class="mk-btn">{{ 'marketplace.membership.become' | translate }}</a>
             } @else if (profileMissing()) {
               <p class="mk-muted">{{ 'marketplace.apply.profileNeeded' | translate }}</p>
               <a routerLink="/actor/profile" [queryParams]="{ returnUrl: '/casting/' + c.id }" class="mk-btn">{{ 'marketplace.profile.create' | translate }}</a>

@@ -13,7 +13,7 @@ const app = (over: Partial<CastingApplication>): CastingApplication => ({
 
 describe('CastingApplicationsComponent applicant cards', () => {
   const render = (apps: CastingApplication[]) => {
-    const casting = jasmine.createSpyObj<CastingService>('CastingService', ['getMyCalls', 'getApplications', 'setApplicationStatus']);
+    const casting = jasmine.createSpyObj<CastingService>('CastingService', ['getMyCalls', 'getApplications']);
     casting.getMyCalls.and.returnValue(of([]));
     casting.getApplications.and.returnValue(of(apps));
     TestBed.configureTestingModule({
@@ -29,13 +29,16 @@ describe('CastingApplicationsComponent applicant cards', () => {
     return fixture.nativeElement as HTMLElement;
   };
 
-  it('shows initials, a tinted status pill, the note as a quote and one play button per video', () => {
+  it('shows initials, the note as a quote and one play button per video — no status pill, select or filters', () => {
     const el = render([app({
       status: 'shortlisted',
       videos: [{ id: 3, title: 'testing', description: '', video_url: 'https://cdn.example/v.mp4', created_at: '' }],
     })]);
     expect(el.querySelector('.app-card__avatar')?.textContent?.trim()).toBe('GA');
-    expect(el.querySelector('.app-card__badge')?.classList).toContain('mk-badge--ok');
+    expect(el.querySelector('.app-card__badge')).toBeNull();
+    expect(el.querySelector('.app-card select')).toBeNull();
+    expect(el.querySelector('.mk-tabs')).toBeNull();
+    expect(el.textContent).not.toContain('marketplace.applicationStatus');
     expect(el.querySelector('blockquote.app-card__note')?.textContent).toContain('I can sing.');
     const play = el.querySelectorAll<HTMLButtonElement>('.app-card__video');
     expect(play.length).toBe(1);

@@ -10,6 +10,7 @@ import { Subject, debounceTime, distinctUntilChanged, switchMap, of } from 'rxjs
 import { HeaderComponent } from '../../../core/components/header/header.component';
 import { FooterComponent } from '../../../core/components/footer/footer.component';
 import { MarketplaceNavComponent } from '../../../shared/components/marketplace-nav/marketplace-nav.component';
+import { CastingRolesComponent } from '../../../shared/components/casting-roles/casting-roles.component';
 import { ActorMarketplaceService } from '../../../shared/services/actor-marketplace.service';
 import { ActorGender, CastingCall } from '../../../shared/models/marketplace.interface';
 import { RWANDA_PROVINCES } from '../../../shared/models/rwanda-locations';
@@ -21,7 +22,7 @@ const GENDERS: readonly ActorGender[] = ['female', 'male', 'other'];
 @Component({
   selector: 'app-casting-calls',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterLink, TranslatePipe, HeaderComponent, FooterComponent, MarketplaceNavComponent],
+  imports: [CommonModule, ReactiveFormsModule, RouterLink, TranslatePipe, HeaderComponent, FooterComponent, MarketplaceNavComponent, CastingRolesComponent],
   templateUrl: './casting-calls.component.html',
   styleUrls: ['../../../shared/styles/marketplace-page.scss', './casting-calls.component.scss'],
 })

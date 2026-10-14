@@ -1,0 +1,116 @@
+<div class="admin-page">
+  <app-admin-section-tabs [tabs]="[
+    { labelKey: 'admin.nav.marketplaceModeration', path: '/admin/marketplace', exact: true },
+    { labelKey: 'admin.nav.marketplaceMembers',    path: '/admin/marketplace/members', exact: true }
+  ]" ariaLabel="admin.nav.marketplace" />
+
+  <div class="page-header">
+    <div>
+      <h1>{{ 'admin.members.title' | translate }}</h1>
+      <p>{{ 'admin.members.subtitle' | translate }}</p>
+    </div>
+    <div class="header-actions">
+      <button type="button" class="btn" (click)="export()" [disabled]="exporting()" [attr.aria-busy]="exporting()">
+        {{ (exporting() ? 'admin.payments.exporting' : 'admin.payments.export') | translate }}
+      </button>
+    </div>
+  </div>
+
+  @if (data(); as d) {
+    <ul class="member-kpis" [attr.aria-label]="'admin.members.activeNow' | translate">
+      @for (p of plans; track p) {
+        <li>
+          <button type="button" class="member-kpi" [class.member-kpi--on]="filters.plan === p && filters.status === 'active'"
+                  (click)="showActive(p)">
+            <span class="member-kpi__value">{{ d.active[p] | number }}</span>
+            <span class="member-kpi__label">{{ 'admin.members.activePlan.' + p | translate }}</span>
+          </button>
+        </li>
+      }
+    </ul>
+  }
+
+  <form class="filters" role="search" (ngSubmit)="search()">
+    <label class="field grow">
+      <span>{{ 'admin.payments.search' | translate }}</span>
+      <input type="search" name="q" [(ngModel)]="filters.q" [placeholder]="'admin.members.searchPlaceholder' | translate" />
+    </label>
+    <label class="field">
+      <span>{{ 'admin.members.plan' | translate }}</span>
+      <select name="plan" [(ngModel)]="filters.plan">
+        <option value="">{{ 'admin.members.allPlans' | translate }}</option>
+        @for (p of plans; track p) { <option [value]="p">{{ 'admin.members.planLabel.' + p | translate }}</option> }
+      </select>
+    </label>
+    <label class="field">
+      <span>{{ 'admin.payments.status' | translate }}</span>
+      <select name="status" [(ngModel)]="filters.status">
+        <option value="">{{ 'admin.members.allStatuses' | translate }}</option>
+        @for (s of statuses; track s) { <option [value]="s">{{ 'admin.members.status.' + s | translate }}</option> }
+      </select>
+    </label>
+    <div class="filter-actions">
+      <button type="submit" class="btn">{{ 'admin.payments.apply' | translate }}</button>
+      <button type="button" class="btn ghost" (click)="reset()">{{ 'admin.payments.reset' | translate }}</button>
+    </div>
+  </form>
+
+  <div aria-live="polite">
+    @if (error()) {
+      <p class="error" role="alert">{{ error()! | translate }} <button type="button" class="link" (click)="load()">{{ 'admin.payments.retry' | translate }}</button></p>
+    }
+  </div>
+
+  @if (loading() && !data()) {
+    <div class="table-skeleton" aria-hidden="true">@for (i of [1,2,3,4,5]; track i) { <div class="row-skeleton"></div> }</div>
+    <p class="sr-only" role="status">{{ 'admin.members.loading' | translate }}</p>
+  } @else if (data()) {
+    @let d = data()!;
+    <p class="totals" aria-live="polite">{{ 'admin.payments.totalResults' | translate: { n: d.total_results } }}</p>
+    @if (d.results.length === 0) {
+      <div class="empty-state">{{ 'admin.members.empty' | translate }}</div>
+    } @else {
+      <div class="table-wrap" [class.is-loading]="loading()">
+        <table class="ledger">
+          <thead>
+            <tr>
+              <th scope="col">{{ 'admin.members.member' | translate }}</th>
+              <th scope="col">{{ 'admin.members.plan' | translate }}</th>
+              <th scope="col">{{ 'admin.members.start' | translate }}</th>
+              <th scope="col">{{ 'admin.members.end' | translate }}</th>
+              <th scope="col">{{ 'admin.payments.status' | translate }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (r of d.results; track r.user.id + r.plan) {
+              <tr>
+                <td>
+                  <span class="cell-title">{{ r.user.name || r.user.email || r.user.phone_number }}</span>
+                  @if (r.user.email && r.user.name) { <span class="muted block">{{ r.user.email }}</span> }
+                  @if (r.user.phone_number) { <span class="muted block">{{ r.user.phone_number }}</span> }
+                </td>
+                <td>
+                  <span [class]="'plan-tag plan-' + r.plan">{{ 'admin.members.planLabel.' + r.plan | translate }}</span>
+                  @if (r.years_bought > 1) {
+                    <span class="muted block">{{ 'admin.members.yearsBought' | translate: { n: r.years_bought, since: (r.member_since | date:'MMM y') } }}</span>
+                  }
+                </td>
+                <td class="muted nowrap">{{ r.starts_at | date:'d MMM y' }}</td>
+                <td class="nowrap">{{ r.expires_at | date:'d MMM y' }}</td>
+                <td><span [class]="'status-badge member-' + r.status">{{ 'admin.members.status.' + r.status | translate }}</span></td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+
+      @if (d.total_pages > 1) {
+        <nav class="pager" [attr.aria-label]="'admin.payments.pagination' | translate">
+          <button type="button" class="btn ghost" [disabled]="d.page <= 1" (click)="search(d.page - 1)">{{ 'admin.payments.prev' | translate }}</button>
+          <span>{{ d.page }} / {{ d.total_pages }}</span>
+          <button type="button" class="btn ghost" [disabled]="d.page >= d.total_pages" (click)="search(d.page + 1)">{{ 'admin.payments.next' | translate }}</button>
+        </nav>
+      }
+    }
+  }
+</div>
