@@ -30,6 +30,12 @@ export interface FinancePeriod {
   totals: Partial<Record<AllocationParty | 'gross' | 'entries', number>>;
   closed_at: string | null;
   closed_by: string | null;
+  /** The period's money includes demo-mode payments (no money moved). */
+  simulated?: boolean;
+  /** Provider fees booked in the period (closed: snapshot). Unknown fees are counted, never zero. */
+  provider_fees?: { actual: number; estimated: number; known_total: number; unknown_payments: number };
+  /** When this month's payouts were prepared (on close). */
+  payouts_prepared_at?: string | null;
   allocations?: AllocationRow[];
   /** Why the period can't be allocated yet (missing tax rate or agreement). */
   issues?: string[];
@@ -48,6 +54,64 @@ export interface Statement {
   payout_status: 'unpaid' | 'paid';
   payout_reference: string | null;
   paid_at: string | null;
+  /** The monthly payout that settles it (null while carried over). */
+  payout_id: number | null;
+}
+
+export type PayoutStatus = 'pending' | 'processing' | 'paid' | 'failed';
+
+/** Where a payout goes (the producer's details; frozen once it is sent). */
+export interface PayoutDestination {
+  method: 'mobile_money' | 'bank';
+  account_holder_name: string;
+  country: string;
+  mobile_number: string;
+  mobile_network: string;
+  bank_name: string;
+  account_number: string;
+  swift_code: string;
+}
+
+export interface AdminPayout {
+  id: number;
+  period: string;
+  months: string[];
+  producer_id: number;
+  producer: string;
+  producer_email: string;
+  earned: number;
+  withdrawal_offset: number;
+  amount: number;
+  status: PayoutStatus;
+  /** manual | demo | dpo */
+  provider: string | null;
+  provider_reference: string | null;
+  reference: string | null;
+  failure_reason: string | null;
+  attempts: number;
+  approved_by: string | null;
+  /** null when the producer has not added payout details yet. */
+  destination: PayoutDestination | null;
+  sent_at: string | null;
+  paid_at: string | null;
+  created_at: string;
+}
+
+export interface PayoutProviderInfo {
+  name: 'manual' | 'demo' | 'dpo';
+  /** True when payouts are sent by the provider (demo, DPO); manual means "record the transfer". */
+  automatic: boolean;
+  /** False while DPO payouts are not connected. */
+  ready: boolean;
+}
+
+export interface AdminPayouts {
+  results: AdminPayout[];
+  summary: Record<PayoutStatus, { count: number; amount: number }>;
+  provider: PayoutProviderInfo;
+  schedule: { day: number; minimum: number; next_date: string };
+  /** Months that have payouts, newest first. */
+  periods: string[];
 }
 
 export interface MonthlyRevenueRow {
@@ -72,12 +136,23 @@ export interface MonthlyReportData {
   finance_period: { status: 'open' | 'closed'; closed_at: string | null } | null;
   revenue: MonthlyRevenueRow[];
   revenue_totals: Omit<MonthlyRevenueRow, 'category' | 'label'>;
-  top_films: { movie_id: number; title: string; purchases: number; net: number; plays: number }[];
+  top_films: { movie_id: number; title: string; purchases: number; net: number; plays: number;
+               /** Schema 3+: distinct accounts that started it, and completed views (>= 90 %). */
+               unique_viewers?: number; completions?: number }[];
+  /** Schema 3+: any amount here is demo money (no money moved). */
+  simulated?: boolean;
+  /** Schema 4+: provider fees and net after known fees (platform bears fees). */
+  provider_fees?: { actual: number; estimated: number; known_total: number; unknown_payments: number;
+                    net_sales: number; net_after_known_fees: number;
+                    simulated: { known_total: number; unknown_payments: number } };
+  revenue_by_source?: Record<'real' | 'simulated', { gross: number; refunded: number; net: number }>;
   views: { playback_starts: number; playback_completions: number; trailer_plays: number; page_views: number;
            checkouts_opened: number; tracking_since: string | null };
   users: { new_by_role: Record<string, number>; total_by_role: Record<string, number>; new_total: number; total: number };
   films: { submitted: number; released: number; listed_at_generation: number };
   actor_uploads: { slots_paid: number; by_fee_band: Record<string, number>; approved: number; rejected: number };
+  /** Report schema 2 onwards (yearly plans): bought this month / active at generation. */
+  memberships?: Record<'actor' | 'producer_full' | 'producer_view', { paid: number; active: number }>;
   producer_services: {
     casting_announcements: { payments: number; gross: number };
     actor_search_access: { payments: number; gross: number };
@@ -130,8 +205,29 @@ export class AdminFinanceService {
     return this.http.get<{ results: Statement[] }>(`${BASE}/statements/`, { params });
   }
 
-  recordPayout(id: number, reference: string): Observable<Statement> {
-    return this.http.post<Statement>(`${BASE}/statements/${id}/payout/`, { reference });
+  payouts(period?: string, status?: PayoutStatus): Observable<AdminPayouts> {
+    let params = new HttpParams();
+    if (period) params = params.set('period', period);
+    if (status) params = params.set('status', status);
+    return this.http.get<AdminPayouts>(`${BASE}/payouts/`, { params });
+  }
+
+  /** Approve and send through the payout provider (demo or DPO). */
+  sendPayout(id: number): Observable<AdminPayout> {
+    return this.http.post<AdminPayout>(`${BASE}/payouts/${id}/send/`, {});
+  }
+
+  sendAllPayouts(period: string): Observable<{ sent: number; skipped: { id: number; error: string }[] }> {
+    return this.http.post<{ sent: number; skipped: { id: number; error: string }[] }>(`${BASE}/payouts/send-all/`, { period });
+  }
+
+  /** Record a transfer made outside the platform (no money is moved by this call). */
+  markPayoutPaid(id: number, reference: string): Observable<AdminPayout> {
+    return this.http.post<AdminPayout>(`${BASE}/payouts/${id}/mark-paid/`, { reference });
+  }
+
+  refreshPayout(id: number): Observable<AdminPayout> {
+    return this.http.post<AdminPayout>(`${BASE}/payouts/${id}/refresh/`, {});
   }
 
   reports(month?: string): Observable<{ results: MonthlyReportSummary[] }> {

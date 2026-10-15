@@ -6,7 +6,7 @@ import { environment } from '../../../environments/environment';
 const BASE = `${environment.apiUrl}/admin/dashboard`;
 
 export type LedgerStatus = 'Pending' | 'Completed' | 'Failed' | 'Refunded';
-export type LedgerPurpose = 'movie' | 'actor_video' | 'casting_announcement' | 'actor_search';
+export type LedgerPurpose = 'movie' | 'actor_membership' | 'producer_plan' | 'casting_announcement' | 'actor_video' | 'actor_search';
 export type RefundState = 'none' | 'in_progress' | 'partial' | 'refunded';
 export type RefundMethod = 'provider' | 'manual';
 export type RefundStatus = 'requested' | 'processing' | 'completed' | 'failed';
@@ -23,6 +23,16 @@ export interface LedgerFilters {
   date_to?: string;
   page?: number;
   page_size?: number;
+}
+
+/** Provider fee: actual (reported/statement; demo = simulated), estimated (fee rule) or unknown (never 0). */
+export type FeeBasis = 'actual' | 'estimated' | 'unknown';
+export interface FeeSummary { basis: FeeBasis | null; amount: number | null; returned: number }
+export interface FeeTotals { actual: number; estimated: number; known_total: number; unknown_payments: number }
+export interface FeeEntry {
+  id: number; kind: 'charge' | 'adjustment' | 'returned'; basis: FeeBasis; amount: number | null; currency: string;
+  source: string; reference: string | null; assumptions: Record<string, unknown>; simulated: boolean;
+  refund_id: number | null; occurred_at: string; booked_at: string; created_by: string | null;
 }
 
 export interface LedgerRow {
@@ -44,6 +54,8 @@ export interface LedgerRow {
   completed_at: string | null;
   /** Pending for more than 30 minutes. */
   unresolved: boolean;
+  simulated?: boolean;
+  provider_fee?: FeeSummary;
 }
 
 export interface LedgerPage {
@@ -51,7 +63,13 @@ export interface LedgerPage {
   page_size: number;
   total_results: number;
   total_pages: number;
-  totals: { paid: number; refunded: number; net: number; currency: string };
+  totals: {
+    paid: number; refunded: number; net: number; currency: string;
+    /** Same totals split by source: real money vs simulated (demo) payments. */
+    real?: { paid: number; refunded: number; net: number };
+    simulated?: { paid: number; refunded: number; net: number };
+    provider_fees?: FeeTotals;
+  };
   results: LedgerRow[];
 }
 
@@ -75,6 +93,7 @@ export interface PaymentDetail extends LedgerRow {
   refundable_amount: number;
   provider_refunds_supported: boolean;
   gateway_ref: string | null;
+  provider_fee_entries?: FeeEntry[];
 }
 
 export interface AuditFilters {
@@ -143,6 +162,11 @@ export class AdminPaymentsService {
 
   recheck(id: number): Observable<{ status: LedgerStatus; failure_reason: string | null }> {
     return this.http.post<{ status: LedgerStatus; failure_reason: string | null }>(`${BASE}/payments/${id}/recheck/`, {});
+  }
+
+  /** The provider's actual fee from its statement (or, with refund_id, a fee it returned on that refund). */
+  recordFee(id: number, body: { amount: number; reference?: string; refund_id?: number }): Observable<{ provider_fee: FeeSummary; provider_fee_entries: FeeEntry[] }> {
+    return this.http.post<{ provider_fee: FeeSummary; provider_fee_entries: FeeEntry[] }>(`${BASE}/payments/${id}/fee/`, body);
   }
 
   requestRefund(id: number, body: { amount: number; reason: string; method: RefundMethod }): Observable<RefundRow> {

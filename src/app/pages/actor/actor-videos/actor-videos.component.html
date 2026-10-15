@@ -10,6 +10,13 @@
 
   <app-marketplace-nav />
 
+  @if (member() === false) {
+    <div class="mk-banner" role="status">
+      <p style="margin: 0">{{ 'marketplace.videos.membershipNeeded' | translate }}</p>
+      <a routerLink="/actor/membership" class="mk-btn" style="margin-top: .5rem">{{ 'marketplace.membership.become' | translate }}</a>
+    </div>
+  }
+
   <section class="mk-card mk-row" style="justify-content: space-between">
     <div>
       <h2>{{ 'marketplace.videos.newTitle' | translate }}</h2>
@@ -59,9 +66,6 @@
             <p class="mk-error" role="alert">{{ 'marketplace.videos.checkFailed' | translate }}: {{ v.failure_reason }}</p>
             <p class="mk-muted">{{ 'marketplace.videos.retryFree' | translate }}</p>
           }
-          @if (v.status === 'pending_review') {
-            <p class="mk-muted">{{ 'marketplace.videos.inReview' | translate }}</p>
-          }
           @if (v.replaces_id && v.status !== 'approved') {
             <p class="mk-muted">{{ 'marketplace.videos.replacementNote' | translate }}</p>
           }
@@ -104,7 +108,7 @@
           }
 
           <div class="mk-actions">
-            @if (v.video_url && (v.status === 'approved' || v.status === 'pending_review')) {
+            @if (v.video_url && v.status === 'approved') {
               <button type="button" class="mk-btn mk-btn--ghost" (click)="preview(v)">{{ 'marketplace.common.watch' | translate }}</button>
             }
             @if (v.status === 'approved') {

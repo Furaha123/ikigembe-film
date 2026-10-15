@@ -1,6 +1,8 @@
+import { ProviderFeeRulesComponent } from './provider-fee-rules.component';
 import { Component, OnInit, PLATFORM_ID, computed, inject, signal } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { RouterLink } from '@angular/router';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { AdminSectionTabsComponent } from '../../shared/components/admin-section-tabs.component';
 import { AdminFinanceService, AllocationParty, FinancePeriod, Statement } from '../../services/admin-finance.service';
@@ -10,12 +12,12 @@ const PARTIES: AllocationParty[] = ['tax', 'operations', 'producer', 'partner', 
 
 /**
  * Monthly revenue periods: preview the allocation while open, close once (then it never changes),
- * export allocations, and record producer payouts (no money is moved from here).
+ * export allocations. Closing prepares the month's producer payouts (paid from /admin/payouts).
  */
 @Component({
   selector: 'app-admin-finance',
   standalone: true,
-  imports: [CommonModule, FormsModule, TranslatePipe, AdminSectionTabsComponent],
+  imports: [CommonModule, FormsModule, RouterLink, TranslatePipe, AdminSectionTabsComponent, ProviderFeeRulesComponent],
   templateUrl: './admin-finance.component.html',
   styleUrl: '../payments/admin-payments.component.scss',
 })
@@ -35,8 +37,6 @@ export class AdminFinanceComponent implements OnInit {
   busy = signal(false);
   confirmClose = signal(false);
   month = this.defaultMonth();
-  payoutFor = signal<number | null>(null);
-  payoutRef = '';
 
   /** Totals per party for the selected period (from its allocations or preview). */
   readonly partyTotals = computed(() => {
@@ -111,18 +111,6 @@ export class AdminFinanceComponent implements OnInit {
         a.download = `allocations-${p.label}.csv`;
         a.click();
         URL.revokeObjectURL(url);
-      },
-      error: (err: unknown) => this.fail(err),
-    });
-  }
-
-  recordPayout(s: Statement): void {
-    if (!this.payoutRef.trim()) { this.error.set(this.translate.instant('admin.payments.referenceRequired')); return; }
-    this.api.recordPayout(s.id, this.payoutRef.trim()).subscribe({
-      next: (updated) => {
-        this.statements.update(list => list.map(x => x.id === updated.id ? updated : x));
-        this.payoutFor.set(null);
-        this.payoutRef = '';
       },
       error: (err: unknown) => this.fail(err),
     });

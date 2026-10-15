@@ -46,7 +46,7 @@ Three user roles (Viewer, Producer, Admin) each have separate lazy-loaded route 
 | Viewer | `/browse`, `/movie/:id`, `/profile`, `/my-list` | Core `header`/`footer` | `authGuard` + `viewerGuard` |
 | Viewer (actor marketplace) | `/actor/profile`, `/actor/videos`, `/actor/talent/new` (wizard), `/actor/applications`, `/casting`, `/casting/:id` (apply wizard; casting also for producers) | Core `header`/`footer` + `MarketplaceNavComponent` | `authGuard` + `marketplaceGuard` |
 | Producer | `/producer/*` incl. `/producer/casting`, `/producer/casting/:id`, `/producer/actors`, `/producer/actors/:id`, `/producer/shortlist`, `/producer/casting/new`, `/producer/casting/:id/edit` (wizard), `/producer/applications`, `/producer/access` | `ProducerLayoutComponent` | `producerGuard` (role = Producer); marketplace pages also `marketplaceGuard` |
-| Admin | `/admin/*` incl. `/admin/marketplace`, `/admin/cms/pages`, `/admin/cms/ads` | `AdminLayoutComponent` | `adminGuard` (is_staff = true) |
+| Admin | `/admin/*` incl. `/admin/payouts`, `/admin/marketplace`, `/admin/marketplace/members`, `/admin/cms/pages`, `/admin/cms/ads`, `/admin/homepage`, `/admin/email-outbox` (demo: emails captured, not delivered; HTML previewed in a sandboxed iframe) | `AdminLayoutComponent` | `adminGuard` (is_staff = true) |
 | Public | `/actors-casting` (hub, no requests), `/terms`, `/about`, `/privacy`, `/contact`, `/pages/:slug` (CMS), `/preview/:id`, `/producers` | none | — |
 
 Guest routes (`/login`, `/register`, `/forgot-password`) use `guestGuard` which redirects already-authenticated users to their role's home.
@@ -63,7 +63,8 @@ Actors are **Viewer** accounts with an actor profile — there is no Actor role.
 - After a reload, the first API request triggers `refreshAccessToken()` (`ensureAccessToken()` in the interceptor). Concurrent callers share one request, and tabs take turns through `navigator.locks` because refresh tokens rotate.
 - `auth.interceptor.ts` adds `Authorization: Bearer` to requests under `environment.apiUrl` only, refreshes once on a 401 and retries. A refused refresh (400/401) ends the session and navigates to `/login`; a network error doesn't.
 - Signing out in one tab signs out the others (`storage` event on `ikigembe_session`).
-- Key signals: `isLoggedIn`, `isAdmin`, `userRole`, `accountStatus`
+- **Email verification:** an account whose email isn't verified (after an email change; email sign-ups can't sign in until verified, phone-only accounts have nothing to verify) gets 403 `{ code: 'email_unverified' }` from every endpoint except `auth/me/` (read + PATCH email), logout, change-password, verify/resend/forgot/reset and public reads. The interceptor calls `AuthService.markEmailUnverified()` (signal `emailUnverified`, memory only, also set from `email_verification_required` on the user): the first time it opens `/verify-email-required` (resend, change email via `changeEmail()`, "I've verified" → `refreshProfile()` → back to `returnUrl`, sign out); `EmailVerificationBannerComponent` (app root) shows on other pages. Token refresh keeps working while unverified. `/verify-email` sends the Bearer token when this browser is signed in, so the API keeps the same session (other tabs keep working); otherwise the link signs in with a new session.
+- Key signals: `isLoggedIn`, `isAdmin`, `userRole`, `accountStatus`, `emailUnverified`
 - `getAccessToken()` is for requests HttpClient can't make (e.g. `fetch(..., { keepalive: true })` on page unload)
 
 ### Feature areas
@@ -81,7 +82,7 @@ Actors are **Viewer** accounts with an actor profile — there is no Actor role.
 | `AuthService` | `core/services/auth.service.ts` | JWT lifecycle, user state signals |
 | `MovieService` | `shared/services/movie.service.ts` | Catalog, detail, `getStream()` (the only viewer playback source), My List, `saveProgress()` |
 | `WatchProgressService` | `shared/services/watch-progress.service.ts` | Posts watch progress (interval/pause/end/close; keepalive fetch on unload) |
-| `DeviceIdService` | `core/services/device-id.service.ts` | Per-browser `ikigembe_device_id` for the single-device view policy |
+| `DeviceIdService` | `core/services/device-id.service.ts` | Server-issued signed device id (`POST /movies/device/`, per user) for the single-device view policy |
 | `PaymentService` | `core/services/payment.service.ts` | Movie payment initiation, `pollUntilSettled()` (shared by all purchases), history with `purpose` |
 | `MovieUploadService` | `shared/services/movie-upload.service.ts` | `/movies/upload/*` endpoints, bound to a `field_name` (admin + producer) |
 | `MultipartUploadService` | `shared/services/multipart-upload.service.ts` | initiate → sign-part → complete (abort on error/cancel) for any `MultipartUploadApi` |
@@ -98,14 +99,17 @@ Actors are **Viewer** accounts with an actor profile — there is no Actor role.
 - Each `/stream/` call increments the view counter — call it once per playback session. The player re-requests it **once** on a fatal 403 (expired token) via its `refreshSource` input, then shows its error state.
 - Signed URLs (stream/fallback/subtitle/actor-video URLs) are credentials: keep them in component memory only — never `localStorage`, router state, logs or analytics.
 - hls.js must not send credentials or an Authorization header (the playlist proxy uses a `token` query param; segments are cross-origin presigned URLs).
-- `X-Device-Id` (from `DeviceIdService`) is sent on `/stream/` **only**. `/stream/` refusals are classified in one place: `shared/utils/stream-error.ts` (`purchase_required`, `view_used` → Buy again, `other_device`, …).
-- `has_purchased` can flip back to `false` (single-device policy); re-read it after playback or a refused stream.
+- `X-Device-Id` is sent on `/stream/` **only**. It is **server-issued**: `DeviceIdService.getId()` (async) calls `POST /movies/device/` once per user (sending the old browser UUID `ikigembe_device_id` as `legacy_id` so existing bindings keep working; that key is never deleted) and keeps the signed id in localStorage `ikigembe_device` (`{ user, id }`). It only binds a purchase to a device — not a credential, not DRM; copying it to another browser is the accepted residual risk. A 403 `device_invalid` makes `MovieService.getStream()` reset the id, fetch a new one and retry **once**. `/stream/` refusals are classified in one place: `shared/utils/stream-error.ts` (`purchase_required`, `view_used` → Buy again, `other_device`, `device_invalid`, `stream_unavailable` (503, encrypted film whose HLS isn't ready — try later), …).
+- One playback session per purchase: a newer `/stream/` session of the same purchase takes over (latest wins); the proxy answers the older one 403 (`session_replaced`, also `token_invalid` / `device_mismatch`), and the player's single refresh / Retry button handles it. The player shows a buffering spinner, distinct network / expired-denied / media errors with Retry, a refused autoplay leaves the play button (not an error), a CC menu when the response has subtitles, and keys space/k, ←/→, ↑/↓, m, f, c (Escape closes its menus with `preventDefault()`).
+- Movie detail resumes from `GET /movies/<id>/progress/` (`[startAt]`; not when completed, < 10 s or in the last 30 s).
+- `has_purchased` can flip back to `false` (single-device policy); re-read it after playback or a refused stream. Payment history items carry `view_status` (`available | in_progress | used | expired | refunded`, `window_ends_at`) — the profile shows it via `purchaseViewLabel()` (`shared/utils/purchase-view-status.ts`); history is paged (`?page=`, 100 per page).
 - Watch progress (`{ progress_seconds, duration_seconds }`) is load-bearing: a view is consumed at ≥ 90 %.
 - Producer/admin previews may use their endpoints' `hls_url`, but fetch it fresh each time the preview opens.
 
 ### Release, pricing and producer setup
 
 - Films carry a server-computed `release_state` (`released` | `coming_soon` | `unavailable`) and `release_at`. Coming-soon films show their trailer and release moment, never a buy or play action; the API refuses checkout (409 `not_released`) and `/stream/` (403 `code: not_released`). `classifyStreamError()` reads `code` first, text second.
+- Admin and producer lists show `lifecycle_status` (`draft | in_review | awaiting_contract | changes_requested | rejected | unpublished | scheduled | published`) with `<app-film-status-badge>` (`shared/utils/film-status.ts`; release times always in Kigali time, UTC+2). Admins publish from the Submissions tab of `/admin/movies`: Publish now / Schedule (`datetime-local` read as Kigali time, sent with `+02:00`) / Unpublish (`AdminService.publishFilm|scheduleFilm|unpublishFilm`). The API decides what is allowed (approval, poster/video/synopsis, already released) — show its error.
 - Film prices are admin-only (default Frw 1,000, `DEFAULT_FILM_PRICE`); producer forms show the price read-only.
 - **No admin approval for producers.** A producer submits films and uses producer services once setup is done: profile completed once (`/producer/onboarding`, can't be skipped) and an active signed distribution agreement. The API sends `producer_setup: { profile_complete, contract_signed, ready }` on the user; `AuthService.producerReady()` (`onboardingComplete && contractSigned`) feeds `marketplace-access.ts` (`requiresReadyProducer`, `isReadyProducer()`, notice `producerSetup`), the only place that decides. Film upload is behind `readyProducerGuard`; the producer layout banner links to the missing step. Signing is possible before any upload; after signing call `AuthService.refreshProfile()`. Admins only suspend/reactivate producers.
 
@@ -114,13 +118,13 @@ Actors are **Viewer** accounts with an actor profile — there is no Actor role.
 All uploads use the multipart flow through `MultipartUploadService`. Movie files (admin **and** producer): `MovieUploadService.api(field_name)` (`ProducerService.movieUploadApi()` delegates to it) with `field_name` ∈ `video_file | trailer_file | thumbnail | backdrop | copyright_document` (it decides the storage bucket). `/movies/create/` and `/movies/<id>/update/` accept only `video_key` / `trailer_key` for video — never post the raw video file; images (thumbnail, backdrop) are sent as files. Admin-created films link the producer via `producer_profile` (account id). Actor talent videos: `ActorMarketplaceService.videoUploadApi(videoId)`.
 
 - **Upload errors are typed.** `MultipartUploadService` throws `UploadAbortedError` (user cancel or logout — stay silent) or `UploadError` with `kind: 'session'` (403 from sign-part/complete: the upload belongs to another account/session; ask the user to start again, never auto-retry) or `kind: 'storage'` (part PUT failed; a 403 is re-signed once first). Map errors for the UI with `uploadErrorMessage()` (`shared/utils/upload-error.ts`). Uploads are cancelled automatically when `AuthService.isLoggedIn` turns false.
-- **Talent videos** are MP4/MOV, ≤ 500 MB, ≤ 5 min (`shared/utils/talent-video.ts`, early checks only). After upload the server checks the file (`processing` → `pending_review` or `upload_failed` with `failure_reason`; re-upload to the same paid slot is free). Replacing an approved video is a new paid slot (`replaces`).
+- **Talent videos** are MP4/MOV, ≤ 500 MB, ≤ 5 min (`shared/utils/talent-video.ts`, early checks only). After upload the server checks the file (`processing` → `approved` (live, **no admin approval**) or `upload_failed` with `failure_reason`; re-upload to the same slot). Creating a slot (`ActorMarketplaceService.createVideo`) and uploading need the yearly actor membership — no per-video fee; replacing a live video is a new slot (`replaces`); the old one stays live until the new one passes. Admins can only remove videos afterwards.
 - **Allowed file types live in one place:** `shared/models/upload.constants.ts` (`ALLOWED_VIDEO_EXTENSIONS`, `ALLOWED_DOCUMENT_EXTENSIONS`, `hasAllowedExtension()`), mirroring the backend's `_ALLOWED_VIDEO_EXTS`. Check files before calling the API; `accept` attributes are only a hint.
 - **Never parse or build a `file_key`** — it's opaque (`movies/<folder>/<user_id>/<uuid><ext>` today, may change).
 
 ### Distribution agreement (contract signing)
 
-`/producer/contracts/start → language → review → warning → accept → verifying → success`, state in `ContractFlowService` (memory only). The agreement text comes from `ContractService.getAgreement(language)` — never hardcode it; the `terms_version` shown is what gets signed. The warning step shows the API's `sign_deadline` (78 h after approval, enforced server-side) and is skipped when it's null (renewals). Signing sends a PNG from `SignaturePadComponent` plus the typed full name (must match the account) — no photo uploads. Sign errors are `{ error, field }`; `field: 'terms_version'` sends the producer back to review.
+`/producer/contracts/start → language → review → warning → accept → verifying → success`, state in `ContractFlowService` (memory only). The agreement text comes from `ContractService.getAgreement(language)` — never hardcode it; the `terms_version` shown is what gets signed. The warning step shows the API's `sign_deadline` (78 h after approval, enforced server-side) and is skipped when it's null (renewals). Signing sends a copy of the producer's **National ID or passport** (`identity_document`, PDF/JPG/PNG ≤ 10 MB — `ALLOWED_DOCUMENT_EXTENSIONS`, `IDENTITY_DOCUMENT_MAX_BYTES`; the API checks the content) with `identity_document_type` (`national_id | passport`) plus the typed full name (must match the account); there is no drawn signature any more (older contracts keep theirs). The file stays in `ContractFlowService` memory only. Sign errors are `{ error, field }`; `field: 'terms_version'` sends the producer back to review. Admins see the ID through `IdentityDocumentDialogComponent` (`admin/shared/components/identity-document/`, used on `/admin/contracts` and the producer documents modal): each open calls `AdminService.getContractIdentityDocument()` for a fresh 5-minute link the API audit-logs — list responses never carry it.
 
 ### Marketplace access (role-aware)
 
@@ -134,19 +138,32 @@ All uploads use the multipart flow through `MultipartUploadService`. Movie files
 
 ### Payment flow
 
-`PaymentModalComponent` reads `PaymentService.getConfig()` (`/payments/config/`): PawaPay asks for a MoMo number and polls in the modal; DPO (`redirect: true`) shows the price → "Continue to secure payment" → `payment_url`, after `rememberPending()` + `rememberReturn()`. Only open a `payment_url` through `paymentPageTarget()` (DPO hosts or the in-app demo checkout; anything else is refused). The buyer comes back to `/payment/return?deposit=…`, which trusts only the server's status. A 409 on initiate means an open payment for the same item: offer continue/cancel, never a second charge. Demo mode is labelled from the response's `demo` flag; `/payment/demo-checkout` stands in for DPO's page. Never fake a successful payment on the frontend.
+`PaymentModalComponent` reads `PaymentService.getConfig()` (`/payments/config/`): PawaPay asks for a MoMo number and polls in the modal; DPO (`redirect: true`) shows the price → "Continue to secure payment" → `payment_url`, after `rememberPending()` + `rememberReturn()`. Only open a `payment_url` through `paymentPageTarget()` (DPO hosts or the in-app demo checkout; anything else is refused). The buyer comes back to `/payment/return?deposit=…`, which trusts only the server's status. A 409 on initiate means an open payment for the same item: offer continue/cancel, never a second charge. Demo mode is labelled from the response's `demo` flag; `/payment/demo-checkout` stands in for DPO's page. Never fake a successful payment on the frontend. While the server is in demo mode, `DemoBannerComponent` (in `AppComponent`) shows "Demo — payments simulated" on every page. Demo scenarios (`DEMO_OUTCOMES`: paid, declined, cancelled, expired, pending, delayed, duplicate) are chosen on the demo checkout page or, for MoMo-style demos, in the modal's "Demo outcome" select; the server applies them (`PaymentService.demoCheckout()`). Money from demo payments is labelled SIMULATED wherever it appears (receipt `simulated`, admin overview `financials.by_source`, payments ledger `totals.real/simulated`, wallet `simulated_gross_revenue`, period/statement/report `simulated`).
 
-### Casting review
+### Casting publication
 
-Casting calls publish only after payment **and** admin approval: `draft → pending_review → published | rejected`. Rejected calls show `review_note` and are edited and resent with `CastingService.submitCall()` (no second payment). `castingPublicationState()` maps this to `inReview` / `rejected`.
+**No admin approval for casting calls.** The server publishes a call as soon as its fee is confirmed: `draft → published → closed` (deadline), `removed` by an admin afterwards. A paid call still in `draft` missed its deadline when the payment landed: the producer moves the deadline and publishes with `CastingService.submitCall()` (no second payment). `castingPublicationState()` calls that state `paid`. `pending_review` / `rejected` (with `review_note`) exist only on rows from the old review flow; rejected calls are edited and published the same way. The admin marketplace page has no approve/reject — only remove. A published call is editable by its producer while open (wizard `editingLive()`; live on save, no fee): its deadline only moves later, **once** (`deadline_extended_at`; the field locks after that), and an unchanged deadline is not sent. Closed/removed calls are final.
 
 ### Receipts and notifications
 
 `PaymentService.getReceipt()` (owner/admin only) backs the receipt dialog in payment history. Notifications come from the API's inboxes; the frontend never fabricates one.
 
-### Marketplace purchases
+### Marketplace purchases (yearly plans)
 
-Every marketplace fee goes through `PaymentModalComponent` with a `ServicePurchase` (`[service]` input) and shares `PaymentService.pollUntilSettled()`. A `503` means pricing isn't configured yet ("This service isn't available yet").
+Prices are admin-set (`/admin/marketplace-settings`); plans last one year and renewals stack after the current year:
+- **Actor membership** (default Frw 5,000/yr, `/actor/membership`): talent video uploads (no per-video fee), a place in the producer directory, applying to casting calls.
+- **Producer Full plan** (Frw 15,000/yr): actor directory + unlimited casting calls (the wizard and My Castings publish via `CastingService.publishWithPlan()` when the casting quote says `included`).
+- **Producer View-only plan** (Frw 10,000/yr): actor directory; each casting call pays the per-call fee (Frw 5,000), as do producers with no plan. Both plans are bought on `/producer/access` ("My plan").
+
+Admins see who holds a plan at `/admin/marketplace/members` (`AdminMarketplaceService.listMembers()` / `exportMembers()`): one row per person and plan with renewals folded in, status `active | upcoming | expired`, filters in the URL, CSV of the same filters.
+
+`GET /marketplace/membership/` (`MembershipStatus`) says what the account has (incl. an old directory pass still running, `legacy_search_until`). Missing entitlements come back as 403 `{ code: 'membership_required' | 'plan_required' }`: `entitlementCode()` (`shared/utils/entitlement.ts`) recognises them (not logged as access-map bugs) and `marketplaceErrorMessage()` maps them to a message. The old `actor_video` / `actor_search` purchases are history only (payment purposes kept for receipts and refunds).
+
+Every fee goes through `PaymentModalComponent` with a `ServicePurchase` (`[service]` input) and shares `PaymentService.pollUntilSettled()`. A `503` means pricing isn't configured yet ("This service isn't available yet").
+
+### Monthly producer payouts
+
+Producers are paid **once a month**, never on demand: there is no withdrawal form (the API answers 410 `monthly_payouts`); `/producer/withdrawals` only lists older requests. On the payout day (admin platform setting) the API closes the previous month and prepares one payout per producer owed at least the minimum; smaller amounts carry over. `/producer/wallet` shows the schedule, the producer's payout details (`ProducerService.getPayouts()` / `savePayoutAccount()`: mobile money or bank, any country, SWIFT outside Rwanda) and their payouts; the dashboard panel summarises it. Admins approve at `/admin/payouts` (`AdminFinanceService.payouts()`): **Approve and send** only when `provider.automatic && provider.ready` (demo now, DPO once connected), otherwise **Record transfer** with a reference; rows being sent are re-polled. Payout status and amounts always come from the API.
 
 ### Revenue splits
 
@@ -155,6 +172,7 @@ Splits are per film. Never hardcode 70/30 or multiply by 0.7 — display API amo
 ### CMS pages & ads
 
 - `CmsPageComponent` renders `/terms`, `/about`, `/privacy`, `/contact` and `/pages/:slug`. Body HTML is bound with `[innerHTML]` (Angular sanitizes it) — never use `bypassSecurityTrust*`. Kinyarwanda looks up `<slug>-rw`, then `<slug>`. `/terms` falls back to the built-in `TermsComponent` text if the page is missing.
+- **Home page** is configured, not coded: `HomeComponent` reads `HomepageService.getPublished()` (`/api/homepage/`, never fails — errors give `defaultHomepageView()`, today's layout) and renders hero texts (empty = built-in translations), the configured featured film (else `/movies/featured/`; coming soon = trailer only, no play), the CTA (only if `isSafeHomeLink()`), and `sections` in order/visibility (`shared/models/homepage.interface.ts`; `why`/`join_cta` guests only; `ad_*` toggle the ad slots). `/admin/homepage` edits the server-side draft (save, publish, discard, hero image upload) and previews it with `<app-home [preview]="draft">` (no header/footer/SEO, inert, ad placeholders).
 - `<app-ad-slot placement="…">` (placements: `home_hero`, `home_banner`, `browse_inline`, `movie_detail`, `sidebar`) renders nothing without a live ad, with data saver on, or on the server. Impressions: once per ad per page view at ≥ 50 % visible for ≥ 1 s. Tracking failures are ignored.
 
 ### i18n
@@ -175,7 +193,7 @@ ngx-translate with `src/assets/i18n/en.json` and `rw.json` (English fallback). A
 
 Absolute URLs the API returns (HLS `stream_url`, presigned storage URLs) are still fetched directly.
 
-Backend errors are `{ "error": "<message>" }` (DRF validation: `{ "<field>": ["..."] }`); use `apiErrorMessage()` from `shared/utils/api-error.ts`.
+Backend errors are `{ "error": "<message>" }` (DRF validation: `{ "<field>": ["..."] }`); use `apiErrorMessage()` from `shared/utils/api-error.ts`. Error bodies also carry `code` and `request_id` (every response has an `X-Request-ID` header): show `<app-error-reference [error]="err">` (or `[reference]` from `apiErrorReference()`) next to unexpected errors so users can quote it. `GlobalErrorHandler` logs uncaught errors to the console in dev only. Admin `/admin/diagnostics` (`AdminOpsService`) shows background jobs (Run now), queue counts and config flags.
 
 ### SSR
 

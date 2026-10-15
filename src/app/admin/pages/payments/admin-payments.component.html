@@ -2,6 +2,7 @@
   <app-admin-section-tabs [tabs]="[
     { labelKey: 'admin.nav.payments',    path: '/admin/payments',    exact: true },
     { labelKey: 'admin.nav.finance',     path: '/admin/finance',     exact: true },
+    { labelKey: 'admin.nav.payouts',     path: '/admin/payouts',     exact: true },
     { labelKey: 'admin.nav.withdrawals', path: '/admin/withdrawals', exact: true },
     { labelKey: 'admin.nav.contracts',   path: '/admin/contracts',   exact: true }
   ]" ariaLabel="admin.nav.financials" />
@@ -87,6 +88,14 @@
       <span>{{ 'admin.payments.paid' | translate }}: <strong>RWF {{ d.totals.paid | number }}</strong></span>
       <span>{{ 'admin.payments.refunded' | translate }}: <strong>RWF {{ d.totals.refunded | number }}</strong></span>
       <span>{{ 'admin.payments.net' | translate }}: <strong>RWF {{ d.totals.net | number }}</strong></span>
+      @if (d.totals.provider_fees; as pf) {
+        <span class="totals-source">{{ 'admin.fees.totalsLine' | translate: { actual: (pf.actual | number), estimated: (pf.estimated | number), unknown: pf.unknown_payments } }}</span>
+      }
+      @if (d.totals.simulated?.paid) {
+        <span class="totals-source">{{ 'admin.payments.totals.real' | translate: { paid: (d.totals.real?.paid ?? 0 | number), refunded: (d.totals.real?.refunded ?? 0 | number), net: (d.totals.real?.net ?? 0 | number) } }}</span>
+        <span class="totals-source totals-source--sim"><strong>{{ 'payment.simulated' | translate }}</strong>
+          {{ 'admin.payments.totals.simulated' | translate: { paid: (d.totals.simulated?.paid ?? 0 | number), refunded: (d.totals.simulated?.refunded ?? 0 | number), net: (d.totals.simulated?.net ?? 0 | number) } }}</span>
+      }
     </div>
   }
 

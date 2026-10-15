@@ -64,7 +64,7 @@ export class SeoService {
     // Canonical URLs drop query strings and fragments (e.g. ?returnUrl=…).
     const path       = routeUrl.split(/[?#]/)[0];
     const url        = `${BASE_URL}${path}`;
-    const privatePage = /^\/(browse|profile|my-list|actor|casting|producer|admin|login|register|forgot-password|reset-password|verify-email)(\/|$)/.test(path);
+    const privatePage = /^\/(browse|profile|my-list|actor|casting|producer|admin|login|register|forgot-password|reset-password|verify-email|verify-email-required)(\/|$)/.test(path);
 
     this.title.setTitle(fullTitle);
 

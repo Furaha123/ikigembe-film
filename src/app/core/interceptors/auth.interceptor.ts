@@ -9,10 +9,17 @@ function withBearer(req: HttpRequest<unknown>, token: string) {
   return req.clone({ setHeaders: { Authorization: `Bearer ${token}` } });
 }
 
+/** The API's answer for an account whose email address isn't verified yet. */
+function isEmailUnverified(error: unknown): boolean {
+  return error instanceof HttpErrorResponse && error.status === 403
+    && (error.error as { code?: unknown } | null)?.code === 'email_unverified';
+}
+
 /**
  * Adds the in-memory access token to API requests. On a 401 it refreshes the
  * token once (from the httpOnly cookie) and retries; if the refresh is refused,
- * AuthService ends the session.
+ * AuthService ends the session. A 403 `email_unverified` shows the verification
+ * prompt (the error still reaches the caller).
  */
 export const authInterceptor: HttpInterceptorFn = (req, next) => {
   if (req.context.get(SKIP_AUTH) || !req.url.startsWith(environment.apiUrl)) return next(req);
@@ -21,6 +28,7 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
   return auth.ensureAccessToken().pipe(
     switchMap((token) => next(token ? withBearer(req, token) : req).pipe(
       catchError((error: unknown) => {
+        if (token && isEmailUnverified(error)) auth.markEmailUnverified();
         if (!token || !(error instanceof HttpErrorResponse) || error.status !== 401) {
           return throwError(() => error);
         }

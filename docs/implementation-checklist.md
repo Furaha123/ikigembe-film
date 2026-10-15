@@ -17,7 +17,9 @@ Update this file at the end of every work session: status, changed files, checks
 | Film price | Frw 1,000 default per film; only admins override; producers can't change a published price; server computes checkout amount. |
 | Tax | **Platform pays it** (2026-10-09): producers get their agreement % of the full sale price; tax comes out of the platform share. The rate itself still needs an accountant's confirmation. The 70/30 split is the agreement's (no free setting); change it per film (revenue share) or with a new agreement version. |
 | Producer setup | **Changed 2026-10-08: no admin approval.** A producer completes the profile once and signs the distribution agreement; then they can submit films, buy producer services, publish casting calls and search actors. Before that they can sign in and use their dashboard. An expired agreement locks services until renewal. Admins only suspend/reactivate. |
-| Casting calls | Published only after payment **and** admin approval. Draft → paid/pending review → published or rejected. No publication after the deadline. Refund eligibility is separate from moderation. |
+| Casting calls | **Changed 2026-10-13: no admin approval.** Published as soon as the fee is paid. Draft → paid → published → closed; admins only remove. A call paid after its deadline stays a paid draft until the producer moves the deadline and publishes (no new fee). No publication after the deadline. |
+| Yearly plans | **Changed 2026-10-13.** Actor membership Frw 5,000/yr (uploads, directory, applying; no per-video fee). Producer Full Frw 15,000/yr (directory + unlimited casting calls) or View-only Frw 10,000/yr (directory; Frw 5,000 per casting call, same as with no plan). All admin-set. Old directory passes and paid videos honoured until they lapse. Backend migrations `marketplace/0010`, `payments/0009`. |
+| Talent videos | **Changed 2026-10-13: no admin approval.** Live as soon as the server's upload checks pass; admins only remove. Backend migration `marketplace/0008` publishes/approves rows left in review. |
 
 ## Phase 0 — security, green tests, admin dashboard
 
@@ -80,6 +82,24 @@ Audit references (from the gap audit in the session that created this file):
 ## Session log
 
 _Newest first. Each entry: date, phase, changed files, checks and results, next task._
+
+### 2026-10-15 — Genres, drafts, film lifecycle (resumed after an interrupted session)
+- Backend (done, uncommitted): admin genres (`apps/movies/admin_genres.py`, `genres.py`), save as draft, lifecycle `lifecycle_status` + admin schedule/publish/unpublish (`admin_lifecycle.py`, `lifecycle.py`), migration movies 0026.
+- Frontend: `/admin/genres`, genre picker + "Save as draft" on the admin film form, `FilmStatusBadgeComponent` + `shared/utils/film-status.ts`. Fixed on resume: spec syntax error, `TranslateModule` in two specs, 15 missing i18n keys (`filmStatus.*`, `admin.nav.genres`, film-form genre/draft keys).
+- Then built the publication UI: `/admin/movies` Submissions tab has a lifecycle filter (`?lifecycle=`), `FilmStatusBadgeComponent` in rows and the detail panel, and Publish now / Schedule… (Kigali `datetime-local`) / Unpublish… (optional reason) dialogs showing the API's refusal (`AdminService.publishFilm|scheduleFilm|unpublishFilm`). Producer film list shows the badge too. Specs: `admin-movies.component.spec.ts` (new), service + `film-status` helpers; E2E `film-publication.spec.ts`: filter, badge, refused publish (no poster), and schedule → publish → unpublish on a new seed film `E2E Unpublished Film` (backend `seed_e2e`: approved, not live, placeholder poster/video keys — nothing is fetched; E2E never uses real R2).
+- Checks: BE 751 OK, migrations clean; FE lint 0, 675 unit OK, build clean, i18n OK, e2e typecheck OK, E2E 12/12.
+- Next: deploy to the free stack and run the hosted checks in `docs/demo-readiness.md` §2; transcode demo media locally and upload.
+
+### 2026-10-14 — Demo readiness (free infrastructure)
+- Full write-up: `docs/demo-readiness.md` (checklist, commands, walkthrough, runbook, simulated list, production checklist).
+- Payments: demo scenarios (`apps/payments/demo.py`), one open charge per item, atomic grant + ledger, demo payments fail once demo mode is off; `LedgerEntry.simulated` + real/simulated split everywhere money shows; SIMULATED receipts/reports; producer statement CSV; Kigali day boundaries on the admin overview.
+- Email: DB outbox with types and `captured` status (`EMAIL_DELIVERY`), admin preview `/admin/email-outbox` (audited for account emails).
+- Ops: request ids, JSON logs with redaction, error `code`/`request_id`, `/api/health/`, `/api/ready/`, `apps/ops` jobs (JobRun/JobLock, `run_jobs`, tick endpoint, Run now), `/admin/diagnostics`, start-up config checks.
+- Playback: URLs only from `/stream/`, server-signed device id, device+session-bound HLS token, atomic binding, server-side duration, history `view_status`; player buffering/retry/captions/keyboard/resume.
+- Demo data: `seed_demo`, `make_demo_media`; unsafe seeds guarded. Admin film create/update/delete audit-logged; sold films can't be deleted.
+- Migrations: payments 0010, finance 0004, users 0039–0040, movies 0025, ops 0001.
+- Checks: BE 645 OK, migrations clean; FE lint 0, 604 unit OK, build clean, i18n OK, E2E 10/10.
+- Next: deploy to the free stack and run the hosted checks in `docs/demo-readiness.md` §2; transcode demo media locally and upload.
 
 ### 2026-10-09 — Platform pays the tax; one source for the split
 - Allocation: partners share the gross; tax comes out of the platform share; close blocked if tax > platform share (names the film). Statement == wallet at any tax rate.

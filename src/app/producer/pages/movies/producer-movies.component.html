@@ -139,9 +139,13 @@
 
               <!-- Status column -->
               <td class="td-status">
-                <span class="status-chip" [class]="statusClass(movie)">
-                  {{ statusLabel(movie) | translate }}
-                </span>
+                @if (movie.lifecycle_status) {
+                  <app-film-status-badge [status]="movie.lifecycle_status" [releaseAt]="movie.release_at" />
+                } @else {
+                  <span class="status-chip" [class]="statusClass(movie)">
+                    {{ statusLabel(movie) | translate }}
+                  </span>
+                }
                 @if (movie.approval_status === 'rejected' && movie.rejection_reason) {
                   <button class="view-reason-btn"
                           (click)="toggleReason(movie.id, $event)">

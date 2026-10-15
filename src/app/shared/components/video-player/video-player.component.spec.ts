@@ -149,6 +149,220 @@ describe('VideoPlayerComponent', () => {
     expect(video().getAttribute('crossorigin')).toBeNull();
   });
 
+  describe('loading, errors and retry', () => {
+    const q = (sel: string) => fixture.nativeElement.querySelector(sel) as HTMLElement | null;
+
+    it('shows a spinner until the video can play, and again while buffering', () => {
+      load({ src: 'https://r2.test/film.mp4?sig', type: 'mp4', fallbackSrc: null, subtitles: [] });
+      expect(component.loading()).toBeTrue();
+      expect(q('.vp-spinner')).not.toBeNull();
+      expect(q('.vp-center-play')).toBeNull();
+
+      video().dispatchEvent(new Event('canplay'));
+      fixture.detectChanges();
+      expect(q('.vp-spinner')).toBeNull();
+      expect(q('.vp-center-play')).not.toBeNull();
+
+      video().dispatchEvent(new Event('waiting'));
+      fixture.detectChanges();
+      expect(q('.vp-spinner')).not.toBeNull();
+      video().dispatchEvent(new Event('playing'));
+      fixture.detectChanges();
+      expect(q('.vp-spinner')).toBeNull();
+    });
+
+    it('names the cause: expired/denied (403), network, or the file itself', () => {
+      load({ ...hlsSource, fallbackSrc: null });
+      emitHlsError(fatal403);
+      expect(component.errorKind()).toBe('denied');
+      expect(component.errorKey()).toBe('playerUi.errors.denied');
+
+      load({ ...hlsSource, src: 'https://api.test/b.m3u8', fallbackSrc: null });
+      emitHlsError({ fatal: true, type: Hls.ErrorTypes.NETWORK_ERROR, details: Hls.ErrorDetails.FRAG_LOAD_ERROR, response: { code: 0 } });
+      expect(component.errorKind()).toBe('network');
+
+      load({ ...hlsSource, src: 'https://api.test/c.m3u8', fallbackSrc: null });
+      emitHlsError(fatalOther);
+      expect(component.errorKind()).toBe('media');
+      fixture.detectChanges();
+      expect(q('.vp-error p')?.textContent).toContain('playerUi.errors.media');
+    });
+
+    it('Retry re-requests the source through refreshSource and resumes', () => {
+      const fresh: PlaybackSource = { ...hlsSource, src: 'https://api.test/master.m3u8?token=retry', fallbackSrc: null };
+      const refresh = jasmine.createSpy('refresh').and.returnValues(throwError(() => new Error('x')), of(fresh));
+      const retried = jasmine.createSpy('retried');
+      component.retried.subscribe(retried);
+      load(hlsSource, refresh);
+      emitHlsError(fatal403); // automatic refresh fails → error state
+      fixture.detectChanges();
+
+      const button = q('.vp-error .vp-retry') as HTMLButtonElement;
+      expect(button).not.toBeNull();
+      button.click();
+      fixture.detectChanges();
+
+      expect(refresh).toHaveBeenCalledTimes(2);
+      expect(retried).toHaveBeenCalledTimes(1);
+      expect(loadSource.calls.mostRecent().args[0]).toBe(fresh.src);
+      expect(component.srcError()).toBeFalse();
+    });
+
+    it('Retry without a refresher reloads the same source', () => {
+      load({ ...hlsSource, fallbackSrc: null });
+      emitHlsError(fatalOther);
+      fixture.detectChanges();
+      loadSource.calls.reset();
+
+      (q('.vp-retry') as HTMLButtonElement).click();
+
+      expect(loadSource).toHaveBeenCalledOnceWith(hlsSource.src);
+      expect(component.srcError()).toBeFalse();
+    });
+
+    it('a refused autoplay (NotAllowedError) is not an error: the play button stays', async () => {
+      const refused = Promise.reject(new DOMException('no gesture', 'NotAllowedError'));
+      refused.catch(() => undefined);
+      spyOn(HTMLMediaElement.prototype, 'play').and.returnValue(refused);
+      load({ src: 'https://r2.test/film.mp4?sig', type: 'mp4', fallbackSrc: null, subtitles: [] });
+
+      component.togglePlay();
+      await refused.catch(() => undefined);
+      await Promise.resolve();
+      fixture.detectChanges();
+
+      expect(component.srcError()).toBeFalse();
+      expect(component.loading()).toBeFalse();
+      expect(q('.vp-center-play')).not.toBeNull();
+    });
+
+    it('any other play() failure shows the error state', async () => {
+      const failed = Promise.reject(new DOMException('bad', 'NotSupportedError'));
+      failed.catch(() => undefined);
+      spyOn(HTMLMediaElement.prototype, 'play').and.returnValue(failed);
+      load({ src: 'https://r2.test/film.mp4?sig', type: 'mp4', fallbackSrc: null, subtitles: [] });
+
+      component.togglePlay();
+      await failed.catch(() => undefined);
+      await Promise.resolve();
+
+      expect(component.srcError()).toBeTrue();
+      expect(component.errorKind()).toBe('media');
+    });
+  });
+
+  describe('captions', () => {
+    const subs: PlaybackSource['subtitles'] = [
+      { id: 1, language_code: 'en', language_name: 'English', url: 'data:text/vtt,WEBVTT', is_default: true, ordering: 0 },
+      { id: 2, language_code: 'fr', language_name: 'Français', url: 'data:text/vtt,WEBVTT', is_default: false, ordering: 1 },
+    ];
+    const modes = () => Array.from(video().textTracks).map(t => t.mode);
+
+    beforeEach(() => load({ ...hlsSource, subtitles: subs }));
+
+    it('starts on the default track and switches <track> modes from the menu, incl. Off', () => {
+      expect(component.activeTrack()).toBe(0);
+      component.toggleCaptionsMenu();
+      fixture.detectChanges();
+      const items = fixture.nativeElement.querySelectorAll('.vp-captions-menu button') as NodeListOf<HTMLButtonElement>;
+      expect(items.length).toBe(3); // Off + 2 languages
+
+      items[2].click();
+      expect(component.activeTrack()).toBe(1);
+      expect(modes()).toEqual(['disabled', 'showing']);
+
+      component.toggleCaptionsMenu();
+      fixture.detectChanges();
+      (fixture.nativeElement.querySelector('.vp-captions-menu button') as HTMLButtonElement).click();
+      expect(component.activeTrack()).toBe(-1);
+      expect(modes()).toEqual(['disabled', 'disabled']);
+    });
+
+    it('the C key toggles captions off and back to the last language', () => {
+      component.setCaption(1);
+      const wrapper = fixture.nativeElement.querySelector('.vp-wrapper') as HTMLElement;
+      wrapper.dispatchEvent(new KeyboardEvent('keydown', { key: 'c', bubbles: true }));
+      expect(component.activeTrack()).toBe(-1);
+      wrapper.dispatchEvent(new KeyboardEvent('keydown', { key: 'c', bubbles: true }));
+      expect(component.activeTrack()).toBe(1);
+      expect(modes()).toEqual(['disabled', 'showing']);
+    });
+  });
+
+  describe('keyboard', () => {
+    let wrapper: HTMLElement;
+    const press = (key: string, target: HTMLElement = wrapper) => {
+      const e = new KeyboardEvent('keydown', { key, bubbles: true, cancelable: true });
+      target.dispatchEvent(e);
+      return e;
+    };
+
+    beforeEach(() => {
+      load({ src: 'https://r2.test/film.mp4?sig', type: 'mp4', fallbackSrc: null, subtitles: [] });
+      wrapper = fixture.nativeElement.querySelector('.vp-wrapper');
+    });
+
+    it('space and k toggle playback', () => {
+      const toggle = spyOn(component, 'togglePlay');
+      expect(press(' ').defaultPrevented).toBeTrue();
+      press('k');
+      expect(toggle).toHaveBeenCalledTimes(2);
+    });
+
+    it('arrows seek and change the volume; m mutes', () => {
+      const rewind = spyOn(component, 'rewind');
+      const forward = spyOn(component, 'forward');
+      press('ArrowLeft');
+      press('ArrowRight');
+      expect(rewind).toHaveBeenCalledTimes(1);
+      expect(forward).toHaveBeenCalledTimes(1);
+
+      video().volume = 0.5;
+      press('ArrowUp');
+      expect(video().volume).toBeCloseTo(0.6, 5);
+      press('ArrowDown');
+      press('ArrowDown');
+      expect(video().volume).toBeCloseTo(0.4, 5);
+
+      press('m');
+      expect(video().muted).toBeTrue();
+    });
+
+    it('f toggles fullscreen', () => {
+      const fs = spyOn(component, 'toggleFullscreen');
+      press('f');
+      expect(fs).toHaveBeenCalled();
+    });
+
+    it('Escape closes an open menu (preventDefault keeps the dialog open) and is left alone otherwise', () => {
+      component.qualityLevels.set([{ index: -1, label: 'playerUi.auto', bitrate: 0 }, { index: 0, label: '720p', bitrate: 1 }]);
+      fixture.detectChanges();
+      component.toggleQualityMenu();
+      fixture.detectChanges();
+      const item = fixture.nativeElement.querySelector('.vp-quality-menu button') as HTMLElement;
+
+      const e = press('Escape', item);
+      expect(e.defaultPrevented).toBeTrue();
+      expect(component.showQualityMenu()).toBeFalse();
+
+      expect(press('Escape').defaultPrevented).toBeFalse();
+    });
+
+    it('arrow keys move between quality menu items without seeking', () => {
+      const forward = spyOn(component, 'forward');
+      component.qualityLevels.set([{ index: -1, label: 'playerUi.auto', bitrate: 0 }, { index: 0, label: '720p', bitrate: 1 }]);
+      fixture.detectChanges();
+      component.toggleQualityMenu();
+      fixture.detectChanges();
+      const items = fixture.nativeElement.querySelectorAll('.vp-quality-menu button') as NodeListOf<HTMLElement>;
+      items[0].focus();
+      press('ArrowDown', items[0]);
+      expect(document.activeElement).toBe(items[1]);
+      press('ArrowRight', items[1]);
+      expect(forward).not.toHaveBeenCalled();
+    });
+  });
+
   describe('progress reporting', () => {
     let events: PlaybackProgress[];
     const reasons = () => events.map(e => e.reason);

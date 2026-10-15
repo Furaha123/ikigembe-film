@@ -9,7 +9,7 @@ import { Router } from '@angular/router';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { Observable, Subject, Subscription, takeUntil } from 'rxjs';
 import {
-  PaymentConfig, PaymentPendingConflict, PaymentReturnContext, PaymentService,
+  DEMO_OUTCOMES, DemoOutcome, PaymentConfig, PaymentPendingConflict, PaymentReturnContext, PaymentService,
 } from '../../../core/services/payment.service';
 import { ServicePurchase, ServiceQuote } from '../../models/marketplace.interface';
 import { apiErrorMessage } from '../../utils/api-error';
@@ -80,6 +80,9 @@ export class PaymentModalComponent implements OnInit, AfterViewInit, OnDestroy {
 
   /** The server is in demo mode: label everything so nobody mistakes it for a real charge. */
   demo            = signal(false);
+  /** Demo (MoMo style) only: the outcome to simulate; 'auto' lets the demo settle by itself. */
+  readonly demoOutcomes: DemoOutcome[] = [...DEMO_OUTCOMES];
+  demoOutcome     = signal<DemoOutcome | 'auto'>('auto');
 
   private depositId: string | null = null;
   private poll?: Subscription;
@@ -261,6 +264,15 @@ export class PaymentModalComponent implements OnInit, AfterViewInit, OnDestroy {
           return;
         }
         this.loadingMessage.set(res.demo ? 'paymentModal.demo.simulating' : 'paymentModal.approveOnPhone');
+        const outcome = this.demoOutcome();
+        if (res.demo && outcome !== 'auto') {
+          // Apply the chosen scenario first; polling then shows what the server decided.
+          this.paymentService.demoCheckout(res.deposit_id, outcome).pipe(takeUntil(this.destroy$)).subscribe({
+            next: () => this.pollStatus(res.deposit_id),
+            error: () => this.pollStatus(res.deposit_id),
+          });
+          return;
+        }
         this.pollStatus(res.deposit_id);
       },
       error: (err: HttpErrorResponse) => {
@@ -285,6 +297,11 @@ export class PaymentModalComponent implements OnInit, AfterViewInit, OnDestroy {
         );
       }
     });
+  }
+
+  onDemoOutcome(event: Event) {
+    const value = (event.target as HTMLSelectElement).value;
+    this.demoOutcome.set(value === 'auto' || (DEMO_OUTCOMES as readonly string[]).includes(value) ? value as DemoOutcome | 'auto' : 'auto');
   }
 
   /** Continue the open hosted-page payment. */

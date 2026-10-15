@@ -8,6 +8,8 @@ export const ACCOUNTS = {
   refund:   { email: 'e2e-refund@ikigembe.test', name: 'Rita Refund' },
   producer: { email: 'e2e-producer@ikigembe.test', name: 'Paul Producer' },
   maker:    { email: 'e2e-maker@ikigembe.test', name: 'Mara Maker' },
+  /** Ready producer with an active Full plan (casting calls publish with no fee). */
+  studio:   { email: 'e2e-studio@ikigembe.test', name: 'Stella Studio' },
 } as const;
 export type AccountKey = keyof typeof ACCOUNTS;
 
@@ -15,6 +17,8 @@ export const FILMS = {
   released: 'E2E Released Film',
   comingSoon: 'E2E Coming Soon Film',
   refunded: 'E2E Refund Film',
+  // Approved, not live, with a poster: only film-publication.spec.ts changes it.
+  unpublished: 'E2E Unpublished Film',
 } as const;
 
 /** Signs in through the real form and waits until the app has left /login. */

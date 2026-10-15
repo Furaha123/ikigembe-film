@@ -57,21 +57,22 @@ export function accessTimeLeft(expiresAt: string | null, now = Date.now()): Time
 }
 
 /**
- * Where a producer's casting call stands, from the server's fields only:
- * "published" only when the server says published (paid AND approved by an admin). A paid call waits
- * for review ("inReview"); a completed fee on a draft is "processing" until the confirmation lands.
+ * Where a producer's casting call stands, from the server's fields only. There is no admin approval:
+ * the server publishes a call when its fee is confirmed. A paid call still in draft ("paid") missed its
+ * deadline at that moment — the producer sets a later one and publishes without paying again. A legacy
+ * call left in review counts as paid too; "rejected" is from the old review flow and is edited the same way.
  */
 export type CastingPublicationState =
-  | 'draft' | 'paymentPending' | 'paymentFailed' | 'processing' | 'inReview' | 'rejected' | 'published' | 'closed' | 'removed';
+  | 'draft' | 'paymentPending' | 'paymentFailed' | 'paid' | 'rejected' | 'published' | 'closed' | 'removed';
 
 export function castingPublicationState(call: CastingCall, now = Date.now()): CastingPublicationState {
   const status = castingDisplayStatus(call, now);
   if (status === 'published' || status === 'closed' || status === 'removed' || status === 'rejected') return status;
-  if (status === 'pending_review') return 'inReview';
+  if (status === 'pending_review') return 'paid';
   switch (call.payment_status) {
     case 'Pending': return 'paymentPending';
     case 'Failed': return 'paymentFailed';
-    case 'Completed': return 'processing';
+    case 'Completed': return 'paid';
     default: return 'draft';
   }
 }
@@ -83,8 +84,7 @@ export function castingPublicationClass(state: CastingPublicationState): string 
     case 'rejected':
     case 'paymentFailed': return 'mk-badge mk-badge--danger';
     case 'paymentPending':
-    case 'processing':
-    case 'inReview': return 'mk-badge mk-badge--info';
+    case 'paid': return 'mk-badge mk-badge--info';
     case 'closed': return 'mk-badge';
     default: return 'mk-badge mk-badge--warn';
   }

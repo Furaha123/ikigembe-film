@@ -14,9 +14,10 @@ import {
 import { AdminSectionTabsComponent } from '../../shared/components/admin-section-tabs.component';
 
 import { ModalBackdropDirective } from '../../../shared/directives/modal-backdrop.directive';
+import { IdentityDocumentDialogComponent } from '../../shared/components/identity-document/identity-document-dialog.component';
 @Component({
   selector: 'app-admin-producers',
-  imports: [ModalBackdropDirective, CommonModule, TranslatePipe, AdminSectionTabsComponent],
+  imports: [ModalBackdropDirective, CommonModule, TranslatePipe, AdminSectionTabsComponent, IdentityDocumentDialogComponent],
   templateUrl: './admin-producers.component.html',
   styleUrl: './admin-producers.component.scss'
 })
@@ -136,6 +137,9 @@ export class AdminProducersComponent implements OnInit {
   }
 
   closeDocsModal() { this.docsModal.set(null); this.producerDocs.set(null); }
+
+  /** Contract whose identity document is open (on top of the documents modal). */
+  identityContract = signal<{ id: number; name: string } | null>(null);
 
   producerStatus(p: ProducerItem): ProducerListStatus {
     if (p.status) return p.status;

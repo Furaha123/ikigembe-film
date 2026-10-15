@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { TranslatePipe } from '@ngx-translate/core';
 import { AdminService } from '../../services/admin.service';
 import { AdminSectionTabsComponent } from '../../shared/components/admin-section-tabs.component';
+import { IdentityDocumentDialogComponent } from '../../shared/components/identity-document/identity-document-dialog.component';
 import { ProducerContractItem } from '../../models/admin.interface';
 
 type ContractFilter = 'all' | 'active' | 'expiring' | 'expired' | 'none';
@@ -10,7 +11,7 @@ type ContractFilter = 'all' | 'active' | 'expiring' | 'expired' | 'none';
 @Component({
   selector: 'app-admin-contracts',
   standalone: true,
-  imports: [CommonModule, TranslatePipe, AdminSectionTabsComponent],
+  imports: [CommonModule, TranslatePipe, AdminSectionTabsComponent, IdentityDocumentDialogComponent],
   templateUrl: './admin-contracts.component.html',
   styleUrl: './admin-contracts.component.scss',
 })
@@ -21,6 +22,8 @@ export class AdminContractsComponent implements OnInit {
   loading   = signal(true);
   error     = signal<string | null>(null);
   filter    = signal<ContractFilter>('all');
+  /** Contract whose identity document is open. */
+  viewing   = signal<ProducerContractItem | null>(null);
 
   filtered = computed(() => {
     const f = this.filter();
@@ -64,6 +67,15 @@ export class AdminContractsComponent implements OnInit {
     if (state === 'expiring') return 'badge-expiring';
     if (state === 'expired')  return 'badge-expired';
     return 'badge-none';
+  }
+
+  typeLabel(type: ProducerContractItem['identity_document_type']): string {
+    return type === 'passport' ? 'admin.contractsPage.typePassport' : 'admin.contractsPage.typeNationalId';
+  }
+
+  methodLabel(method: ProducerContractItem['signature_method']): string {
+    if (method === 'id_document') return 'admin.contractsPage.methodIdDocument';
+    return method === 'drawn' ? 'admin.contractsPage.methodDrawn' : 'admin.contractsPage.methodPhoto';
   }
 
   formatDate(iso: string | null): string {

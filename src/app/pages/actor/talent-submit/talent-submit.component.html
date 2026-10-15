@@ -32,10 +32,17 @@
           </ul>
 
           <h3>{{ 'marketplace.talent.feeTitle' | translate }}</h3>
+          <div aria-live="polite">
+            @if (member() === true) {
+              <p class="mk-success">{{ 'marketplace.talent.memberUntil' | translate: { date: (memberUntil() | date:'mediumDate') } }}</p>
+            } @else if (member() === false) {
+              <div class="mk-banner" role="status">
+                <p style="margin: 0">{{ 'marketplace.talent.membershipNeeded' | translate }}</p>
+                <a routerLink="/actor/membership" class="mk-btn" style="margin-top: .5rem">{{ 'marketplace.membership.become' | translate }}</a>
+              </div>
+            }
+          </div>
           <p class="mk-muted">{{ 'marketplace.talent.feeText' | translate }}</p>
-          @if (quote(); as q) {
-            <p>{{ 'marketplace.talent.yourFee' | translate }} <strong>{{ q.amount | number }} {{ q.currency }}</strong></p>
-          }
           <p class="mk-muted">{{ 'marketplace.talent.moderationText' | translate }}</p>
           <p class="mk-muted">{{ 'marketplace.talent.visibilityText' | translate }}</p>
 
@@ -140,27 +147,24 @@
             }
             <dt>{{ 'marketplace.talent.file' | translate }}</dt>
             <dd>{{ chosen()?.file?.name }} · {{ formatSize(chosen()?.file?.size ?? 0) }}</dd>
-            @if (tier(); as t) {
-              <dt>{{ 'marketplace.talent.tier' | translate }}</dt><dd>{{ 'marketplace.talent.tier_' + t | translate }}</dd>
-            }
           </dl>
 
-          <div class="mk-banner">
-            @if (quote(); as q) {
-              <p class="mk-muted" style="margin: 0">{{ 'marketplace.talent.total' | translate }}</p>
-              <p class="mk-price">{{ q.amount | number }} {{ q.currency }}</p>
-            } @else if (quoteError()) {
-              <p class="mk-error" role="alert">{{ quoteError()! | translate }}</p>
-              <button type="button" class="mk-btn mk-btn--ghost" (click)="loadQuote()">{{ 'marketplace.common.retry' | translate }}</button>
-            } @else {
-              <p class="mk-muted">{{ 'marketplace.common.loading' | translate }}</p>
+          <div aria-live="polite">
+            @if (member() === false) {
+              <div class="mk-banner" role="alert">
+                <p style="margin: 0">{{ 'marketplace.talent.membershipNeeded' | translate }}</p>
+                <a routerLink="/actor/membership" class="mk-btn" style="margin-top: .5rem">{{ 'marketplace.membership.become' | translate }}</a>
+              </div>
+            } @else if (uploadError()) {
+              <p class="mk-error" role="alert">{{ uploadError()! | translate }}</p>
             }
-            <p class="mk-muted" style="margin: .25rem 0 0">{{ 'marketplace.talent.payHint' | translate }}</p>
           </div>
 
           <div class="mk-actions">
             <button type="button" class="mk-btn mk-btn--ghost" (click)="back()">{{ 'marketplace.wizard.edit' | translate }}</button>
-            <button type="button" class="mk-btn" (click)="pay()" [disabled]="!quote() || !!purchase()">{{ 'marketplace.talent.pay' | translate }}</button>
+            <button type="button" class="mk-btn" (click)="submit()" [disabled]="creating() || member() === false" [attr.aria-busy]="creating()">
+              {{ (creating() ? 'marketplace.common.saving' : 'marketplace.talent.upload') | translate }}
+            </button>
           </div>
         </section>
       }
@@ -168,7 +172,6 @@
       @case ('upload') {
         <section class="mk-card" aria-labelledby="tw-upload">
           <h2 id="tw-upload" #stepHeading tabindex="-1">{{ 'marketplace.talent.uploadTitle' | translate }}</h2>
-          <p class="mk-success" role="status">{{ 'marketplace.talent.paid' | translate }}</p>
           <div aria-live="polite">
             @if (uploading()) {
               <div class="mk-progress" role="progressbar" [attr.aria-valuenow]="uploadPct()" aria-valuemin="0" aria-valuemax="100"
@@ -222,6 +225,3 @@
 
 <app-footer />
 
-@if (purchase(); as p) {
-  <app-payment-modal [service]="p" (paid)="onPaid()" (closed)="closePurchase()" />
-}

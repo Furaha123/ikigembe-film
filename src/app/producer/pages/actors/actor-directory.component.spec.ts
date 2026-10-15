@@ -3,16 +3,24 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { convertToParamMap, provideRouter } from '@angular/router';
 import { provideTranslateService } from '@ngx-translate/core';
 import { of, throwError } from 'rxjs';
-import { ActorDirectoryComponent, filtersFromParams, filtersToParams, visibleRange } from './actor-directory.component';
+import { ActorDirectoryComponent, directoryAccessOf, filtersFromParams, filtersToParams, visibleRange } from './actor-directory.component';
 import { CastingService } from '../../services/casting.service';
-import { DirectoryActor } from '../../../shared/models/marketplace.interface';
+import { DirectoryActor, MembershipStatus } from '../../../shared/models/marketplace.interface';
 
 const ACTOR: DirectoryActor = {
   id: 5, stage_name: 'Aline', bio: '', gender: 'female', age: 24, location: 'Kigali',
   languages: ['rw'], skills: ['drama'], contact_email: 'aline@example.rw', contact_phone: '0788000000',
 };
 const page = (results: DirectoryActor[]) => ({ page: 1, results, total_results: results.length, total_pages: 1 });
-const forbidden = () => throwError(() => new HttpErrorResponse({ status: 403, error: { error: 'Active actor search access required.' } }));
+/** Membership status with directory access open (a plan until `expires`) or closed. */
+const dir = (active: boolean, expires: string | null): MembershipStatus => ({
+  actor: { active: false, expires_at: null },
+  producer: {
+    plan: active ? 'producer_view' : null, expires_at: active ? expires : null,
+    can_view_directory: active, casting_included: false, legacy_search_until: null,
+  },
+});
+const forbidden = () => throwError(() => new HttpErrorResponse({ status: 403, error: { error: 'A producer plan is required.', code: 'plan_required' } }));
 
 describe('ActorDirectoryComponent (gated directory)', () => {
   let fixture: ComponentFixture<ActorDirectoryComponent>;
@@ -22,7 +30,7 @@ describe('ActorDirectoryComponent (gated directory)', () => {
 
   beforeEach(() => {
     casting = jasmine.createSpyObj<CastingService>('CastingService', [
-      'getSearchAccess', 'purchaseSearch', 'searchActors', 'getShortlist', 'addToShortlist', 'removeFromShortlist',
+      'getMembership', 'searchActors', 'getShortlist', 'addToShortlist', 'removeFromShortlist',
     ]);
     casting.searchActors.and.returnValue(of(page([ACTOR])));
     casting.getShortlist.and.returnValue(of([]));
@@ -39,29 +47,29 @@ describe('ActorDirectoryComponent (gated directory)', () => {
   };
 
   it('without a pass shows the purchase gate and never queries the directory', () => {
-    casting.getSearchAccess.and.returnValue(of({ active: false, expires_at: null }));
+    casting.getMembership.and.returnValue(of(dir(false, null)));
     create();
     expect(el().textContent).toContain('marketplace.directory.gateTitle');
     expect(casting.searchActors).not.toHaveBeenCalled();
     expect(el().textContent).not.toContain('aline@example.rw');
   });
 
-  it('without a pass points to My Access (no purchase here)', () => {
-    casting.getSearchAccess.and.returnValue(of({ active: false, expires_at: null }));
+  it('without a plan points to My plan (no purchase here)', () => {
+    casting.getMembership.and.returnValue(of(dir(false, null)));
     create();
     expect(el().querySelector('a[href="/producer/access"]')).not.toBeNull();
-    expect(casting.purchaseSearch).not.toHaveBeenCalled();
+    expect(casting.searchActors).not.toHaveBeenCalled();
   });
 
   it('shows the visible range of the server page', () => {
-    casting.getSearchAccess.and.returnValue(of({ active: true, expires_at: '2030-01-01T00:00:00Z' }));
+    casting.getMembership.and.returnValue(of(dir(true, '2030-01-01T00:00:00Z')));
     casting.searchActors.and.returnValue(of({ page: 2, results: [ACTOR], total_results: 21, total_pages: 2 }));
     create();
     expect(el().textContent).toContain('marketplace.directory.range');
   });
 
   it('drops actor data when the pass expires while browsing', fakeAsync(() => {
-    casting.getSearchAccess.and.returnValue(of({ active: true, expires_at: new Date(Date.now() + 5000).toISOString() }));
+    casting.getMembership.and.returnValue(of(dir(true, new Date(Date.now() + 5000).toISOString())));
     create();
     expect(el().textContent).toContain('aline@example.rw');
     tick(5001);
@@ -72,14 +80,14 @@ describe('ActorDirectoryComponent (gated directory)', () => {
   }));
 
   it('with a pass shows the expiry prominently and lists actors with contact details', () => {
-    casting.getSearchAccess.and.returnValue(of({ active: true, expires_at: '2030-01-01T00:00:00Z' }));
+    casting.getMembership.and.returnValue(of(dir(true, '2030-01-01T00:00:00Z')));
     create();
     expect(el().querySelector('.dir-banner[role="status"]')?.textContent).toContain('2030');
     expect(el().textContent).toContain('aline@example.rw');
   });
 
   it('sends the filters when searching', () => {
-    casting.getSearchAccess.and.returnValue(of({ active: true, expires_at: '2030-01-01T00:00:00Z' }));
+    casting.getMembership.and.returnValue(of(dir(true, '2030-01-01T00:00:00Z')));
     create();
     const q = el().querySelector<HTMLInputElement>('#df-q')!;
     q.value = 'ali';
@@ -89,7 +97,7 @@ describe('ActorDirectoryComponent (gated directory)', () => {
   });
 
   it('a 403 mid-session (pass expired) returns to the purchase screen', () => {
-    casting.getSearchAccess.and.returnValue(of({ active: true, expires_at: '2030-01-01T00:00:00Z' }));
+    casting.getMembership.and.returnValue(of(dir(true, '2030-01-01T00:00:00Z')));
     create();
     casting.searchActors.and.returnValue(forbidden());
     el().querySelector<HTMLFormElement>('form[role="search"]')!.dispatchEvent(new Event('submit'));
@@ -101,7 +109,7 @@ describe('ActorDirectoryComponent (gated directory)', () => {
   });
 
   it('shortlists an actor (409 duplicate is treated as already shortlisted)', () => {
-    casting.getSearchAccess.and.returnValue(of({ active: true, expires_at: '2030-01-01T00:00:00Z' }));
+    casting.getMembership.and.returnValue(of(dir(true, '2030-01-01T00:00:00Z')));
     casting.addToShortlist.and.returnValue(throwError(() => new HttpErrorResponse({ status: 409 })));
     create();
     const btn = el().querySelector<HTMLButtonElement>('button[aria-label="marketplace.directory.shortlist"]')!;
@@ -133,3 +141,16 @@ describe('directory URL filters and range', () => {
   });
 });
 
+describe('directoryAccessOf', () => {
+  const m = (plan: 'producer_full' | 'producer_view' | null, expires: string | null, legacy: string | null): MembershipStatus => ({
+    actor: { active: false, expires_at: null },
+    producer: { plan, expires_at: expires, can_view_directory: !!plan || !!legacy, casting_included: plan === 'producer_full', legacy_search_until: legacy },
+  });
+
+  it('opens with a plan or an old pass, until the later of the two', () => {
+    expect(directoryAccessOf(m(null, null, null))).toEqual({ active: false, expires_at: null });
+    expect(directoryAccessOf(m('producer_view', '2030-01-01T00:00:00Z', null))).toEqual({ active: true, expires_at: '2030-01-01T00:00:00Z' });
+    expect(directoryAccessOf(m(null, null, '2027-01-01T00:00:00Z'))).toEqual({ active: true, expires_at: '2027-01-01T00:00:00Z' });
+    expect(directoryAccessOf(m('producer_full', '2027-01-01T00:00:00Z', '2028-01-01T00:00:00Z')).expires_at).toBe('2028-01-01T00:00:00Z');
+  });
+});

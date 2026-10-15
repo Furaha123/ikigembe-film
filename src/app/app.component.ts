@@ -5,10 +5,12 @@ import { LanguageService } from './core/services/language.service';
 import { SeoService } from './core/services/seo.service';
 import { DOCUMENT } from '@angular/common';
 import { TranslatePipe } from '@ngx-translate/core';
+import { DemoBannerComponent } from './core/components/demo-banner/demo-banner.component';
+import { EmailVerificationBannerComponent } from './core/components/email-verification-banner/email-verification-banner.component';
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet, TranslatePipe],
+  imports: [RouterOutlet, TranslatePipe, DemoBannerComponent, EmailVerificationBannerComponent],
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss'
 })

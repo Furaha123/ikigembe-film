@@ -10,7 +10,7 @@ import {
 import { apiErrorMessage } from '../../../shared/utils/api-error';
 import { PaymentDetailDrawerComponent } from './payment-detail-drawer.component';
 
-const PURPOSES: LedgerPurpose[] = ['movie', 'actor_video', 'casting_announcement', 'actor_search'];
+const PURPOSES: LedgerPurpose[] = ['movie', 'actor_membership', 'producer_plan', 'casting_announcement', 'actor_video', 'actor_search'];
 const STATUSES: LedgerStatus[] = ['Pending', 'Completed', 'Failed', 'Refunded'];
 
 /** Reads the ledger filters from the URL (unknown values are ignored). */

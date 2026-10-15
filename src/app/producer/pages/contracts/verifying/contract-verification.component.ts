@@ -30,15 +30,16 @@ export class ContractVerificationComponent implements OnInit {
   ngOnInit() {
     if (!isPlatformBrowser(this.platformId)) return;
 
-    const signature = this.flow.signature();
+    const identityDocument = this.flow.identityDocument();
     const agreement = this.flow.agreement();
-    if (!signature || !agreement) {
+    if (!identityDocument || !agreement) {
       this.router.navigate(['/producer/contracts/accept'], { replaceUrl: true });
       return;
     }
 
     this.contractService.sign({
-      signature,
+      identityDocument,
+      identityDocumentType: this.flow.identityDocumentType(),
       signedName: this.flow.signedName(),
       language: agreement.language,
       termsVersion: agreement.terms_version,
@@ -58,7 +59,6 @@ export class ContractVerificationComponent implements OnInit {
 
   retry() {
     this.errorMessage.set(null);
-    this.flow.signature.set(null);
     if (this.termsOutdated) {
       this.flow.agreement.set(null);
       this.router.navigate(['/producer/contracts/review']);

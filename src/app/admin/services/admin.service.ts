@@ -1,5 +1,5 @@
 import { Injectable, inject } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import {
@@ -14,10 +14,11 @@ import {
   WithdrawalItem,
   AdminMovie,
   FilmSubmissionItem,
-
+  FilmLifecycleResult,
   FilmHlsStatusResponse,
   ProducerDocuments,
   ProducerContractItem,
+  ContractIdentityDocument,
   RevenueTrendItem,
   TopMovieItem,
   UserGrowthItem,
@@ -27,6 +28,7 @@ import {
   FilmRevenueShare,
   FilmRevenueSharePayload,
 } from '../models/admin.interface';
+import { LifecycleStatus } from '../../shared/utils/film-status';
 
 import { environment } from '../../../environments/environment';
 
@@ -102,15 +104,33 @@ export class AdminService {
   }
 
   // Film submissions (from producers)
-  getFilmSubmissions(page = 1): Observable<{ submissions: FilmSubmissionItem[]; total_results: number; total_pages: number }> {
+  /** `lifecycle` filters by `lifecycle_status` (draft, in_review, …, scheduled, published). */
+  getFilmSubmissions(page = 1, lifecycle: LifecycleStatus | '' = ''): Observable<{ submissions: FilmSubmissionItem[]; total_results: number; total_pages: number }> {
+    let params = new HttpParams().set('page', page);
+    if (lifecycle) params = params.set('lifecycle', lifecycle);
     return this.http.get<{ page: number; total_results: number; total_pages: number; submissions: FilmSubmissionItem[] } | FilmSubmissionItem[]>(
-      `${BASE}/admin/dashboard/films/submissions/?page=${page}`
+      `${BASE}/admin/dashboard/films/submissions/`, { params }
     ).pipe(
       map(r => Array.isArray(r)
         ? { submissions: r, total_results: r.length, total_pages: 1 }
         : { submissions: r.submissions ?? [], total_results: r.total_results ?? 0, total_pages: r.total_pages ?? 1 }
       )
     );
+  }
+
+  /** Put an approved film live from a future moment; `releaseAt` is ISO 8601 with an offset (Kigali +02:00). */
+  scheduleFilm(id: number, releaseAt: string): Observable<FilmLifecycleResult> {
+    return this.http.post<FilmLifecycleResult>(`${BASE}/admin/dashboard/movies/${id}/schedule/`, { release_at: releaseAt });
+  }
+
+  /** Release an approved film now, or put an unpublished one back. */
+  publishFilm(id: number): Observable<FilmLifecycleResult> {
+    return this.http.post<FilmLifecycleResult>(`${BASE}/admin/dashboard/movies/${id}/publish/`, {});
+  }
+
+  /** Take a scheduled or published film off the platform (it stays approved). */
+  unpublishFilm(id: number, reason: string): Observable<FilmLifecycleResult> {
+    return this.http.post<FilmLifecycleResult>(`${BASE}/admin/dashboard/movies/${id}/unpublish/`, { reason });
   }
 
   approveFilm(id: number): Observable<{ detail: string; approval_status: FilmSubmissionItem['status'] }> {
@@ -123,6 +143,11 @@ export class AdminService {
     return this.http
       .get<{ count: number; contracts: ProducerContractItem[] }>(`${BASE}/admin/dashboard/contracts/`)
       .pipe(map(r => r.contracts));
+  }
+
+  /** Fresh 5-minute link to the ID a producer signed with; the API logs every call. */
+  getContractIdentityDocument(contractId: number): Observable<ContractIdentityDocument> {
+    return this.http.get<ContractIdentityDocument>(`${BASE}/admin/dashboard/contracts/${contractId}/identity-document/`);
   }
 
   rejectFilm(id: number, reason: string): Observable<unknown> {

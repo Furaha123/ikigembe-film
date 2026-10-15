@@ -33,52 +33,95 @@
     @if (actionNotice()) { <p class="mk-success" role="status">{{ actionNotice()! | translate }}</p> }
   </div>
 
+  <div class="cc-list">
   @for (c of visible(); track c.id) {
     @let state = publicationState(c);
-    <article class="mk-card mk-casting-card">
-      @if (c.poster_url) {
-        <img [src]="c.poster_url" alt="" class="mk-casting-card__poster" loading="lazy" />
-      }
-      <div class="mk-casting-card__body">
-      <div class="mk-row" style="justify-content: space-between">
-        <h2>{{ c.title }}</h2>
-        <span [class]="publicationClass(state)">{{ 'marketplace.publication.' + state | translate }}</span>
+    @let tone = calloutTone(state);
+    <article class="cc-card" [class.cc-card--callout]="!!tone" [attr.aria-labelledby]="'cc-title-' + c.id">
+      <!-- Uniform 2:3 poster box; a film icon stands in when there is no poster -->
+      <div class="cc-card__poster">
+        @if (c.poster_url) {
+          <img [src]="c.poster_url" alt="" loading="lazy" />
+        } @else {
+          <svg viewBox="0 0 24 24" width="28" height="28" fill="currentColor" aria-hidden="true">
+            <path d="M18 4l2 4h-3l-2-4h-2l2 4h-3l-2-4H8l2 4H7L5 4H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V4h-4z"/>
+          </svg>
+        }
       </div>
-      <p class="mk-muted">
-        {{ 'marketplace.casting.deadline' | translate }}: {{ c.deadline_at | date:'medium' }}
-        @if (c.published_at) { · {{ 'marketplace.casting.published' | translate }}: {{ c.published_at | date:'mediumDate' }} }
-      </p>
-      @if (c.shooting_location) {
-        <p class="mk-muted">📍 {{ c.shooting_location }}</p>
-      }
-      @if (c.project_start_date || c.project_end_date) {
-        <p class="mk-muted">
-          🎬
-          @if (c.project_start_date) { {{ c.project_start_date | date:'mediumDate' }} }
-          @if (c.project_start_date && c.project_end_date) { – }
-          @if (c.project_end_date) { {{ c.project_end_date | date:'mediumDate' }} }
-        </p>
-      }
-      <div class="mk-chips">
-        @for (r of c.roles; track $index) { <span>{{ r }}</span> }
+
+      <div class="cc-card__body">
+        <div class="cc-card__top">
+          <h2 [id]="'cc-title-' + c.id">{{ c.title }}</h2>
+          <span [class]="publicationClass(state) + ' cc-card__badge'">{{ 'marketplace.publication.' + state | translate }}</span>
+        </div>
+
+        <ul class="cc-card__meta">
+          <li>
+            <svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor" aria-hidden="true">
+              <path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm1 10.4V7h-2v6.4l4.3 2.6 1-1.7-3.3-1.9z"/>
+            </svg>
+            <span>{{ 'marketplace.casting.deadline' | translate }}: <time [attr.datetime]="c.deadline_at">{{ c.deadline_at | date:'medium' }}</time></span>
+          </li>
+          @if (c.published_at) {
+            <li>
+              <svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor" aria-hidden="true">
+                <path d="M19 4h-1V2h-2v2H8V2H6v2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2zm0 16H5V9h14v11z"/>
+              </svg>
+              <span>{{ 'marketplace.casting.published' | translate }}: <time [attr.datetime]="c.published_at">{{ c.published_at | date:'mediumDate' }}</time></span>
+            </li>
+          }
+          @if (c.shooting_location) {
+            <li>
+              <svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor" aria-hidden="true">
+                <path d="M12 2a7 7 0 0 0-7 7c0 5.2 7 13 7 13s7-7.8 7-13a7 7 0 0 0-7-7zm0 9.5a2.5 2.5 0 1 1 0-5 2.5 2.5 0 0 1 0 5z"/>
+              </svg>
+              <span>{{ c.shooting_location }}</span>
+            </li>
+          }
+          @if (c.project_start_date || c.project_end_date) {
+            <li>
+              <svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor" aria-hidden="true">
+                <path d="M18 4l2 4h-3l-2-4h-2l2 4h-3l-2-4H8l2 4H7L5 4H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V4h-4z"/>
+              </svg>
+              <span>
+                @if (c.project_start_date) { {{ c.project_start_date | date:'mediumDate' }} }
+                @if (c.project_start_date && c.project_end_date) { – }
+                @if (c.project_end_date) { {{ c.project_end_date | date:'mediumDate' }} }
+              </span>
+            </li>
+          }
+        </ul>
+
+        <app-casting-roles class="cc-card__roles" [call]="c" />
       </div>
-      @if (state !== 'published' && state !== 'draft') {
-        <p class="mk-muted">{{ 'marketplace.publication.' + state + 'Text' | translate }}</p>
+
+      <!-- What the state means, and the moderator's reason -->
+      @if (tone) {
+        <div class="cc-card__callout" [class.cc-card__callout--danger]="tone === 'danger'">
+          @if (state !== 'published' && state !== 'draft') {
+            <p>{{ 'marketplace.publication.' + state + 'Text' | translate }}</p>
+          }
+          @if (c.status === 'rejected' && c.review_note) {
+            <p><strong>{{ 'marketplace.producerCasting.reviewNote' | translate }}:</strong> {{ c.review_note }}</p>
+          }
+          @if (c.status === 'removed' && c.removal_reason) {
+            <p><strong>{{ 'marketplace.producerCasting.reviewNote' | translate }}:</strong> {{ c.removal_reason }}</p>
+          }
+        </div>
       }
-      @if (c.status === 'rejected' && c.review_note) {
-        <p class="mk-error">{{ 'marketplace.producerCasting.reviewNote' | translate }}: {{ c.review_note }}</p>
-      }
-      @if (c.status === 'removed' && c.removal_reason) {
-        <p class="mk-error">{{ 'marketplace.producerCasting.reviewNote' | translate }}: {{ c.removal_reason }}</p>
-      }
-      <div class="mk-row" style="margin-top: .75rem">
+
+      <div class="cc-card__actions">
         @if (c.status === 'rejected') {
           <a class="mk-btn" [routerLink]="['/producer/casting', c.id, 'edit']">{{ 'marketplace.producerCasting.editResend' | translate }}</a>
         }
         @if (c.status === 'draft') {
           <a class="mk-btn mk-btn--ghost" [routerLink]="['/producer/casting', c.id, 'edit']">{{ 'marketplace.common.edit' | translate }}</a>
           @if (state === 'draft' || state === 'paymentFailed') {
-            <button type="button" class="mk-btn" (click)="publish(c)">{{ 'marketplace.producerCasting.publish' | translate }}</button>
+            <button type="button" class="mk-btn" (click)="publish(c)" [disabled]="closingId() === c.id">
+              {{ (castingIncluded() ? 'marketplace.postCasting.publishIncluded' : 'marketplace.producerCasting.publish') | translate }}
+            </button>
+          } @else if (state === 'paid') {
+            <button type="button" class="mk-btn" (click)="publish(c)" [disabled]="closingId() === c.id">{{ 'marketplace.postCasting.publishPaid' | translate }}</button>
           } @else if (state === 'paymentPending') {
             <button type="button" class="mk-btn mk-btn--ghost" (click)="load()">{{ 'marketplace.common.refresh' | translate }}</button>
           }
@@ -87,18 +130,21 @@
           <a class="mk-btn mk-btn--ghost" [routerLink]="['/producer/casting', c.id]">{{ 'marketplace.producerCasting.viewApplications' | translate }}</a>
         }
         @if (displayStatus(c) === 'published') {
+          @if (confirmCloseId() !== c.id) {
+            <a class="mk-btn mk-btn--ghost" [routerLink]="['/producer/casting', c.id, 'edit']">{{ 'marketplace.common.edit' | translate }}</a>
+          }
           @if (confirmCloseId() === c.id) {
-            <span class="mk-muted">{{ 'marketplace.producerCasting.confirmClose' | translate }}</span>
-            <button type="button" class="mk-btn mk-btn--danger" (click)="closeCall(c)" [disabled]="closingId() === c.id">{{ 'marketplace.producerCasting.close' | translate }}</button>
+            <span class="cc-card__confirm" role="status">{{ 'marketplace.producerCasting.confirmClose' | translate }}</span>
             <button type="button" class="mk-btn mk-btn--ghost" (click)="confirmCloseId.set(null)">{{ 'marketplace.common.cancel' | translate }}</button>
+            <button type="button" class="mk-btn mk-btn--danger" (click)="closeCall(c)" [disabled]="closingId() === c.id">{{ 'marketplace.producerCasting.close' | translate }}</button>
           } @else {
             <button type="button" class="mk-btn mk-btn--danger" (click)="confirmCloseId.set(c.id)">{{ 'marketplace.producerCasting.close' | translate }}</button>
           }
         }
       </div>
-      </div>
     </article>
   }
+  </div>
 </div>
 
 @if (purchase(); as p) {

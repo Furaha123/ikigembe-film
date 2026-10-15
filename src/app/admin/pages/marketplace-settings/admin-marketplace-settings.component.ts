@@ -31,11 +31,10 @@ export class AdminMarketplaceSettingsComponent implements OnInit, OnDestroy {
   updatedAt: string | null = null;
 
   form = this.fb.group({
-    actor_video_fee_under_30: [null as number | null, [Validators.required, Validators.min(1)]],
-    actor_video_fee_30_plus:  [null as number | null, [Validators.required, Validators.min(1)]],
+    actor_membership_fee:     [null as number | null, [Validators.required, Validators.min(1)]],
+    producer_full_plan_fee:   [null as number | null, [Validators.required, Validators.min(1)]],
+    producer_view_plan_fee:   [null as number | null, [Validators.required, Validators.min(1)]],
     casting_announcement_fee: [null as number | null, [Validators.required, Validators.min(1)]],
-    actor_search_fee:         [null as number | null, [Validators.required, Validators.min(1)]],
-    actor_search_access_days: [null as number | null, [Validators.required, Validators.min(1)]],
     talent_video_max_mb:      [null as number | null, [Validators.required, Validators.min(1), Validators.max(4096)]],
     talent_video_max_seconds: [null as number | null, [Validators.required, Validators.min(10), Validators.max(3600)]],
   });
@@ -50,11 +49,10 @@ export class AdminMarketplaceSettingsComponent implements OnInit, OnDestroy {
     this.svc.getSettings().subscribe({
       next: (s: MarketplaceSettings) => {
         this.form.reset({
-          actor_video_fee_under_30: s.actor_video_fee_under_30,
-          actor_video_fee_30_plus:  s.actor_video_fee_30_plus,
+          actor_membership_fee:     s.actor_membership_fee,
+          producer_full_plan_fee:   s.producer_full_plan_fee,
+          producer_view_plan_fee:   s.producer_view_plan_fee,
           casting_announcement_fee: s.casting_announcement_fee,
-          actor_search_fee:         s.actor_search_fee,
-          actor_search_access_days: s.actor_search_access_days,
           talent_video_max_mb:      s.talent_video_max_mb,
           talent_video_max_seconds: s.talent_video_max_seconds,
         });

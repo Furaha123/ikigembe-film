@@ -46,6 +46,8 @@ export interface LoginUser {
   date_joined?: string;
   onboarding_completed?: boolean;
   account_status?: string;
+  /** True while the account's email address is unverified: the API answers 403 `email_unverified` almost everywhere. */
+  email_verification_required?: boolean;
   /** Producers only (null otherwise). */
   producer_setup?: ProducerSetup | null;
 }

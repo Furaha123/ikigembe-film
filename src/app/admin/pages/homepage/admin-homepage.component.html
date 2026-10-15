@@ -1,0 +1,208 @@
+<div class="admin-page">
+  <app-admin-section-tabs [tabs]="[
+    { labelKey: 'admin.nav.movies', path: '/admin/movies', exact: true },
+    { labelKey: 'admin.nav.filmRequests', path: '/admin/film-requests', exact: true },
+    { labelKey: 'admin.nav.transcodes', path: '/admin/transcodes', exact: true },
+    { labelKey: 'admin.nav.cms', path: '/admin/cms/pages' }
+  ]" ariaLabel="'admin.nav.content'" />
+  <div class="page-header">
+    <div>
+      <h1>{{ 'admin.cms.title' | translate }}</h1>
+      <p>{{ 'admin.homepage.subtitle' | translate }}</p>
+    </div>
+  </div>
+
+  <app-cms-tabs />
+
+  @if (loading()) {
+    <p role="status">{{ 'admin.homepage.loading' | translate }}</p>
+  } @else if (loadError()) {
+    <div role="alert">
+      <p class="watch-error">{{ loadError()! | translate }}</p>
+      <button type="button" class="action-btn neutral" (click)="load()">{{ 'home.retry' | translate }}</button>
+    </div>
+  } @else { @if (state(); as st) {
+    <p class="hp-status">
+      @if (st.published; as pub) {
+        {{ 'admin.homepage.liveSince' | translate: { date: (pub.published_at | date: 'medium'), by: pub.published_by ?? '—' } }}
+      } @else {
+        {{ 'admin.homepage.neverPublished' | translate }}
+      }
+      @if (dirty()) { <span class="hp-badge">{{ 'admin.homepage.unsaved' | translate }}</span> }
+    </p>
+
+    <div class="hp-layout">
+      <form class="cms-editor hp-form" [formGroup]="form" (ngSubmit)="save()" novalidate>
+        <!-- Hero texts -->
+        <h2>{{ 'admin.homepage.hero' | translate }}</h2>
+        <div class="field">
+          <label for="hp-title">{{ 'admin.homepage.heroTitle' | translate }}</label>
+          <input id="hp-title" formControlName="hero_title" [attr.maxlength]="limits.heroTitle"
+                 aria-describedby="hp-title-hint" [attr.aria-invalid]="invalid('hero_title') || !!fieldErrs()['hero_title']" />
+          <span id="hp-title-hint" class="cms-hint">
+            {{ 'admin.homepage.defaultHint' | translate }} · {{ form.controls.hero_title.value.length }}/{{ limits.heroTitle }}
+          </span>
+          @if (fieldErrs()['hero_title']) { <span class="cms-field-error">{{ fieldErrs()['hero_title'] }}</span> }
+        </div>
+        <div class="field">
+          <label for="hp-desc">{{ 'admin.homepage.heroDescription' | translate }}</label>
+          <textarea id="hp-desc" class="dialog-textarea" rows="3" formControlName="hero_description"
+                    [attr.maxlength]="limits.heroDescription" aria-describedby="hp-desc-hint"
+                    [attr.aria-invalid]="invalid('hero_description') || !!fieldErrs()['hero_description']"></textarea>
+          <span id="hp-desc-hint" class="cms-hint">
+            {{ 'admin.homepage.defaultHint' | translate }} · {{ form.controls.hero_description.value.length }}/{{ limits.heroDescription }}
+          </span>
+          @if (fieldErrs()['hero_description']) { <span class="cms-field-error">{{ fieldErrs()['hero_description'] }}</span> }
+        </div>
+
+        <!-- Button -->
+        <div class="cms-grid">
+          <div class="field">
+            <label for="hp-cta-label">{{ 'admin.homepage.ctaLabel' | translate }}</label>
+            <input id="hp-cta-label" formControlName="cta_label" [attr.maxlength]="limits.ctaLabel"
+                   [attr.aria-invalid]="invalid('cta_label') || !!fieldErrs()['cta_label']" />
+            @if (fieldErrs()['cta_label']) { <span class="cms-field-error">{{ fieldErrs()['cta_label'] }}</span> }
+          </div>
+          <div class="field">
+            <label for="hp-cta-link">{{ 'admin.homepage.ctaLink' | translate }}</label>
+            <input id="hp-cta-link" formControlName="cta_link" [attr.maxlength]="limits.ctaLink" placeholder="/films"
+                   aria-describedby="hp-cta-hint" [attr.aria-invalid]="invalid('cta_link') || !!fieldErrs()['cta_link']" />
+            <span id="hp-cta-hint" class="cms-hint">{{ 'admin.homepage.ctaHint' | translate }}</span>
+            @if (invalid('cta_link')) { <span class="cms-field-error">{{ 'admin.homepage.ctaLinkInvalid' | translate }}</span> }
+            @if (fieldErrs()['cta_link']) { <span class="cms-field-error">{{ fieldErrs()['cta_link'] }}</span> }
+          </div>
+        </div>
+        @if (ctaIncomplete()) { <p class="cms-field-error">{{ 'admin.homepage.ctaBoth' | translate }}</p> }
+
+        <!-- Featured film -->
+        <h2>{{ 'admin.homepage.featured' | translate }}</h2>
+        @if (featured(); as f) {
+          <div class="hp-film">
+            @if (f.thumbnail_url) { <img class="cms-thumb" [src]="f.thumbnail_url" alt="" /> }
+            <div>
+              <strong>{{ f.title }}</strong>
+              @if (f.release_state === 'coming_soon') { <span class="hp-badge">{{ 'home.hero.comingSoon' | translate }}</span> }
+            </div>
+            <button type="button" class="action-btn neutral" (click)="clearFilm()">{{ 'admin.homepage.useAutomatic' | translate }}</button>
+          </div>
+          @if (featuredUnlisted()) { <p class="cms-field-error" role="alert">{{ 'admin.homepage.filmUnlisted' | translate }}</p> }
+        } @else {
+          <p class="cms-hint">{{ 'admin.homepage.featuredAutomatic' | translate }}</p>
+        }
+        @if (fieldErrs()['featured_movie_id']) { <p class="cms-field-error">{{ fieldErrs()['featured_movie_id'] }}</p> }
+        <div class="field">
+          <label for="hp-film-search">{{ 'admin.homepage.searchFilm' | translate }}</label>
+          <input id="hp-film-search" type="search" [value]="query()" (input)="onQuery($any($event.target).value)"
+                 autocomplete="off" aria-describedby="hp-film-hint" />
+          <span id="hp-film-hint" class="cms-hint">{{ 'admin.homepage.searchHint' | translate }}</span>
+        </div>
+        <div aria-live="polite">
+          @if (searching()) { <p class="cms-hint">{{ 'admin.homepage.searching' | translate }}</p> }
+          @if (results().length) {
+            <ul class="hp-results">
+              @for (r of results(); track r.id) {
+                <li>
+                  <button type="button" class="hp-result" (click)="chooseFilm(r)">
+                    <span>{{ r.title }}</span>
+                    @if (r.release_state === 'coming_soon') { <span class="hp-badge">{{ 'home.hero.comingSoon' | translate }}</span> }
+                  </button>
+                </li>
+              }
+            </ul>
+          } @else if (query().trim().length >= 2 && !searching()) {
+            <p class="cms-hint">{{ 'admin.homepage.noFilms' | translate }}</p>
+          }
+        </div>
+
+        <!-- Hero image -->
+        <h2>{{ 'admin.homepage.image' | translate }}</h2>
+        @if (st.draft.hero_image_url; as img) {
+          <div class="hp-film">
+            <img class="hp-image" [src]="img" alt="" />
+            <button type="button" class="action-btn neutral" [disabled]="busy() === 'image'" (click)="removeImage()">
+              {{ 'admin.homepage.removeImage' | translate }}
+            </button>
+          </div>
+        } @else {
+          <p class="cms-hint">{{ 'admin.homepage.imageFromFilm' | translate }}</p>
+        }
+        <div class="field">
+          <label for="hp-image">{{ 'admin.homepage.uploadImage' | translate }}</label>
+          <input id="hp-image" type="file" [accept]="imageAccept" [disabled]="busy() === 'image'" (change)="onImage($event)"
+                 aria-describedby="hp-image-hint" />
+          <span id="hp-image-hint" class="cms-hint">{{ 'admin.homepage.imageHint' | translate }}</span>
+          @if (busy() === 'image') { <span class="cms-hint" role="status">{{ 'admin.homepage.uploading' | translate }}</span> }
+          @if (imageError()) { <span class="cms-field-error" role="alert">{{ imageError()! | translate }}</span> }
+        </div>
+
+        <!-- Sections -->
+        <h2 id="hp-sections-title">{{ 'admin.homepage.sectionsTitle' | translate }}</h2>
+        <p class="cms-hint">{{ 'admin.homepage.sectionsHint' | translate }}</p>
+        @if (fieldErrs()['sections']) { <p class="cms-field-error">{{ fieldErrs()['sections'] }}</p> }
+        <ol class="hp-sections" aria-labelledby="hp-sections-title">
+          @for (s of sections(); track s.key; let i = $index, first = $first, last = $last) {
+            <li class="hp-section" [class.hp-section--hidden]="!s.visible">
+              <div class="hp-section__head">
+                <label class="cms-check hp-section__check">
+                  <input type="checkbox" [checked]="s.visible" (change)="toggleSection(i, $any($event.target).checked)" />
+                  {{ labels[s.key] | translate }}
+                </label>
+                @if (isGuestOnly(s)) { <span class="hp-badge">{{ 'admin.homepage.guestsOnly' | translate }}</span> }
+                <span class="hp-section__moves">
+                  <button type="button" class="action-btn neutral" [disabled]="first" (click)="move(i, -1)"
+                          [attr.aria-label]="'admin.homepage.moveUp' | translate: { name: (labels[s.key] | translate) }">↑</button>
+                  <button type="button" class="action-btn neutral" [disabled]="last" (click)="move(i, 1)"
+                          [attr.aria-label]="'admin.homepage.moveDown' | translate: { name: (labels[s.key] | translate) }">↓</button>
+                </span>
+              </div>
+              @if (!isAdSection(s)) {
+                <label class="hp-section__title" [for]="'hp-sec-' + s.key">{{ 'admin.homepage.customTitle' | translate }}</label>
+                <input [id]="'hp-sec-' + s.key" [value]="s.title" [attr.maxlength]="limits.sectionTitle"
+                       [placeholder]="labels[s.key] | translate" (input)="setSectionTitle(i, $any($event.target).value)" />
+              } @else {
+                <span class="cms-hint">{{ 'admin.homepage.adHint' | translate }}</span>
+              }
+            </li>
+          }
+        </ol>
+
+        <div aria-live="polite">
+          @if (saveError()) { <p class="watch-error" role="alert">{{ saveError()! | translate }}</p> }
+          @if (message()) { <p class="hp-ok" role="status">{{ message()! | translate }}</p> }
+        </div>
+
+        <div class="dialog-actions">
+          @if (confirmDiscard()) {
+            <span class="cms-hint">{{ 'admin.homepage.discardConfirm' | translate }}</span>
+            <button type="button" class="action-btn neutral" (click)="confirmDiscard.set(false)">{{ 'marketplace.common.cancel' | translate }}</button>
+            <button type="button" class="action-btn reject" [disabled]="!!busy()" (click)="discard()">{{ 'admin.homepage.discard' | translate }}</button>
+          } @else {
+            <button type="button" class="action-btn neutral" [disabled]="!!busy()" (click)="confirmDiscard.set(true)">{{ 'admin.homepage.discard' | translate }}</button>
+            <button type="submit" class="action-btn neutral" [disabled]="!!busy()">
+              {{ (busy() === 'save' ? 'marketplace.common.saving' : 'admin.homepage.saveDraft') | translate }}
+            </button>
+            <button type="button" class="action-btn approve" [disabled]="!!busy() || featuredUnlisted()" (click)="publish()">
+              {{ (busy() === 'publish' ? 'admin.homepage.publishing' : 'admin.homepage.publish') | translate }}
+            </button>
+          }
+        </div>
+      </form>
+
+      <!-- Live preview of the draft, rendered by the real home page component. -->
+      <section class="hp-preview" aria-labelledby="hp-preview-title">
+        <div class="hp-preview__bar">
+          <h2 id="hp-preview-title">{{ 'admin.homepage.preview' | translate }}</h2>
+          <div class="cms-toolbar" role="group" [attr.aria-label]="'admin.homepage.previewAs' | translate">
+            <button type="button" class="tab" [class.active]="previewAsGuest()" [attr.aria-pressed]="previewAsGuest()"
+                    (click)="previewAsGuest.set(true)">{{ 'admin.homepage.asGuest' | translate }}</button>
+            <button type="button" class="tab" [class.active]="!previewAsGuest()" [attr.aria-pressed]="!previewAsGuest()"
+                    (click)="previewAsGuest.set(false)">{{ 'admin.homepage.asViewer' | translate }}</button>
+          </div>
+        </div>
+        <div class="hp-preview__frame">
+          <app-home [preview]="previewView()" [previewAsGuest]="previewAsGuest()" />
+        </div>
+      </section>
+    </div>
+  } }
+</div>

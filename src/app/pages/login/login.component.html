@@ -66,6 +66,7 @@
         @if (serverErrors().non_field_errors || serverErrors().detail) {
           <div class="form-error" role="alert">
             {{ serverErrors().non_field_errors?.[0] ?? serverErrors().detail }}
+            <app-error-reference [reference]="errorRef()" />
           </div>
         }
 

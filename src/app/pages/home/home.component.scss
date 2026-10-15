@@ -137,6 +137,7 @@ main { padding-bottom: 3rem; }
 }
 
 .home-rows { padding-top: 0.5rem; }
+.home-rows + .home-rows { padding-top: 0; }
 
 .home-section-title {
   margin: 0 0 1rem;
@@ -222,4 +223,33 @@ main { padding-bottom: 3rem; }
   .home-genres, .home-why { padding-left: 16px; padding-right: 16px; }
   .home-cta { margin: 2.5rem 16px 0; }
   .home-empty { padding: 0 16px; }
+}
+
+// ── Actors & casting promo (optional section) ────────
+.home-casting {
+  margin: 2rem 4% 0;
+  padding: 1.75rem 1.5rem;
+  border: 1px solid rgba(201, 168, 76, 0.3);
+  border-radius: 16px;
+
+  p { margin: 0 0 1rem; max-width: 560px; color: #c4c4c4; }
+}
+
+// ── Admin preview (home page editor) ─────────────────
+.home-preview {
+  .home-hero { min-height: 420px; padding-top: 3rem; }
+}
+
+.home-ad-placeholder {
+  margin: 1.5rem 4%;
+  padding: 1rem;
+  border: 1px dashed #444;
+  border-radius: 8px;
+  color: #888;
+  font-size: 0.85rem;
+  text-align: center;
+}
+
+@media (max-width: 600px) {
+  .home-casting { margin: 2rem 16px 0; }
 }

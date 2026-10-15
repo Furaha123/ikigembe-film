@@ -360,6 +360,12 @@ $muted:  #888;
   background: rgba(0, 0, 0, 0.7);
 }
 
+.receipt-simulated {
+  margin: 0 0 0.75rem; padding: 0.5rem 0.75rem; border-radius: 6px; font-size: 0.85rem;
+  background: rgba(245, 197, 24, 0.15); border: 1px solid #f5c518; color: #f5e3a0;
+  strong { color: #f5c518; margin-right: 0.25rem; }
+}
+
 .receipt-dialog {
   width: 100%;
   max-width: 460px;
@@ -390,3 +396,14 @@ $muted:  #888;
   .receipt-dialog .edit-actions { display: none; }
 }
 .ph-badge.status-refunded { background: rgba(120, 140, 255, 0.15); color: #9aa8ff; }
+
+// What is left of a film purchase (pay-per-view policy): under the payment status.
+.ph-view {
+  display: block;
+  margin-top: 0.3rem;
+  font-size: 0.72rem;
+
+  &--ok    { color: #bbf7d0; }
+  &--live  { color: #fef08a; }
+  &--muted { color: rgba(255, 255, 255, 0.55); }
+}

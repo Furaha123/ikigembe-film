@@ -62,20 +62,33 @@ describe('ActorMarketplaceService', () => {
       req.flush([]);
     });
 
-    it('purchases a video slot', () => {
-      service.purchaseVideo({ title: 'Monologue', phone_number: '0788123456' }).subscribe(res => expect(res.actor_video_id).toBe(9));
-      const req = http.expectOne(`${BASE}/actor-videos/purchase/`);
+    it('creates a video slot (no fee)', () => {
+      service.createVideo({ title: 'Monologue', replaces: 4 }).subscribe(v => expect(v.id).toBe(9));
+      const req = http.expectOne(`${BASE}/actor-videos/`);
       expect(req.request.method).toBe('POST');
-      expect(req.request.body).toEqual({ title: 'Monologue', phone_number: '0788123456' });
-      req.flush({ deposit_id: 'd', status: 'Pending', message: '', amount: 5000, currency: 'RWF', actor_video_id: 9 }, { status: 202, statusText: 'Accepted' });
+      expect(req.request.body).toEqual({ title: 'Monologue', replaces: 4 });
+      req.flush({ id: 9, status: 'pending_upload' }, { status: 201, statusText: 'Created' });
     });
 
-    for (const status of [400, 409, 503]) {
-      it(`purchase surfaces ${status}`, () => {
-        expectError(`${BASE}/actor-videos/purchase/`, 'POST', status,
-          onErr => service.purchaseVideo({ title: 't', phone_number: '0788' }).subscribe({ error: onErr }));
+    for (const status of [400, 403]) {
+      it(`creating a slot surfaces ${status}`, () => {
+        expectError(`${BASE}/actor-videos/`, 'POST', status,
+          onErr => service.createVideo({ title: 't' }).subscribe({ error: onErr }));
       });
     }
+  });
+
+  describe('membership', () => {
+    it('reads the status and the yearly price, and buys the actor plan', () => {
+      service.getMembership().subscribe();
+      http.expectOne(`${BASE}/membership/`).flush({});
+      service.getMembershipQuote().subscribe();
+      http.expectOne(`${BASE}/pricing/actor_membership/`).flush({ amount: 5000, currency: 'RWF', access_days: 365 });
+      service.purchaseMembership('0788123456').subscribe();
+      expect(http.expectOne(`${BASE}/membership/purchase/`).request.body).toEqual({ plan: 'actor', phone_number: '0788123456' });
+      service.purchaseMembership(null).subscribe();
+      expect(http.expectOne(`${BASE}/membership/purchase/`).request.body).toEqual({ plan: 'actor' });
+    });
 
     it('binds the multipart upload endpoints to the video id', () => {
       const api = service.videoUploadApi(9);

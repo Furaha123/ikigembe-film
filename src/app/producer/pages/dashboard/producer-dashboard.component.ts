@@ -4,12 +4,11 @@ import {
 } from '@angular/core';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { CommonModule } from '@angular/common';
-import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { Subscription } from 'rxjs';
 import {
   ProducerService, ProducerWallet, DashboardMovie, DashboardTransaction,
-  AnalyticsResponse, ProducerWithdrawal, WithdrawalRequest, ProducerMovie,
+  AnalyticsResponse, ProducerMovie, ProducerPayouts,
 } from '../../services/producer.service';
 import { ContractService, ContractStatus } from '../../services/contract.service';
 import { MovieApprovalContractNotificationComponent } from '../contracts/movie-approval-notification/movie-approval-contract-notification.component';
@@ -38,7 +37,7 @@ const MONTHLY_LABELS = ['Dec 25', 'Jan 26', 'Feb 26', 'Mar 26', 'Apr 26', 'May 2
   selector: 'app-producer-dashboard',
   standalone: true,
   imports: [TranslatePipe, 
-    CommonModule, ReactiveFormsModule, RouterLink,
+    CommonModule, RouterLink,
     MovieApprovalContractNotificationComponent,
     ContractStatusWidgetComponent,
   ],
@@ -53,12 +52,11 @@ export class ProducerDashboardComponent implements OnInit, AfterViewInit, OnDest
   private readonly producerService  = inject(ProducerService);
   private readonly contractService  = inject(ContractService);
   private readonly translate        = inject(TranslateService);
-  readonly fb                       = inject(FormBuilder);
   readonly ranges: Range[]         = ['7D', '14D', '28D', '1M', '2M', '3M', '6M', '1Y'];
 
   // ── Server data signals ──────────────────────────────
   wallet            = signal<ProducerWallet | null>(null);
-  recentWithdrawals = signal<ProducerWithdrawal[]>([]);
+  payouts           = signal<ProducerPayouts | null>(null);
   analyticsResponse = signal<AnalyticsResponse | null>(null);
   dashboardMovies   = signal<DashboardMovie[]>([]);
   allTransactions   = signal<DashboardTransaction[]>([]);
@@ -70,10 +68,7 @@ export class ProducerDashboardComponent implements OnInit, AfterViewInit, OnDest
   selectedMetric = signal<MetricKey>('views');
   earningsTab    = signal<EarningsTab>('earnings');
   expandedMovie  = signal<string | null>(null);
-  isSaving       = signal(false);
-  successMsg     = signal('');
   showAllTxns    = signal(false);
-  paymentMethod  = signal<'Bank' | 'MoMo'>('MoMo');
 
   // ── Derived state ────────────────────────────────────
   trendData = computed<TrendPoint[]>(() => {
@@ -116,27 +111,6 @@ export class ProducerDashboardComponent implements OnInit, AfterViewInit, OnDest
     return null;
   });
 
-  withdrawForm = this.fb.group({
-    amount:              [null as number | null, [Validators.required, Validators.min(5000)]],
-    bank_name:           [''],
-    account_number:      [''],
-    account_holder_name: [''],
-    momo_number:         ['', Validators.required],
-    momo_provider:       ['MTN'],
-  });
-
-  withdrawAmount = signal<number>(0);
-
-  /**
-   * The backend deducts exactly `amount` from the balance. It used to show "+30% tax" on top,
-   * which no backend path does. Tax is paid by the platform from its share, never from the producer's.
-   */
-  taxBreakdown = computed(() => {
-    const amount = this.withdrawAmount();
-    if (!amount || amount <= 0) return null;
-    return { amount, totalDeducted: amount };
-  });
-
   private trendChart:       Chart | null = null;
   private earningsChart:    Chart | null = null;
   private movieDetailChart: Chart | null = null;
@@ -149,9 +123,9 @@ export class ProducerDashboardComponent implements OnInit, AfterViewInit, OnDest
       error: (e) => console.error('[Dashboard] wallet error:', e),
     });
 
-    this.producerService.getWithdrawals().subscribe({
-      next: (resp) => this.recentWithdrawals.set(resp.results.slice(0, 3)),
-      error: (e) => console.error('[Dashboard] withdrawals error:', e),
+    this.producerService.getPayouts().subscribe({
+      next: (p) => this.payouts.set(p),
+      error: (e) => console.error('[Dashboard] payouts error:', e),
     });
 
     this.producerService.getDashboardMovies().subscribe({
@@ -178,10 +152,6 @@ export class ProducerDashboardComponent implements OnInit, AfterViewInit, OnDest
   ngAfterViewInit(): void {
     // Load analytics here so the canvas elements are guaranteed to exist
     this.fetchAnalytics(this.selectedRange());
-
-    this.withdrawForm.get('amount')!.valueChanges.subscribe(v => {
-      this.withdrawAmount.set(v ?? 0);
-    });
   }
 
   private fetchAnalytics(range: Range, rebuildMovieDetail = false): void {
@@ -270,67 +240,6 @@ export class ProducerDashboardComponent implements OnInit, AfterViewInit, OnDest
   // ── Transactions ──────────────────────────────────────
   toggleTxns(): void {
     this.showAllTxns.update(v => !v);
-  }
-
-  // ── Payment method ────────────────────────────────────
-  selectMethod(m: 'Bank' | 'MoMo'): void {
-    this.paymentMethod.set(m);
-    const f = this.withdrawForm;
-    if (m === 'Bank') {
-      f.get('bank_name')!.setValidators(Validators.required);
-      f.get('account_number')!.setValidators(Validators.required);
-      f.get('account_holder_name')!.setValidators(Validators.required);
-      f.get('momo_number')!.clearValidators();
-    } else {
-      f.get('momo_number')!.setValidators(Validators.required);
-      f.get('bank_name')!.clearValidators();
-      f.get('account_number')!.clearValidators();
-      f.get('account_holder_name')!.clearValidators();
-    }
-    ['bank_name', 'account_number', 'account_holder_name', 'momo_number']
-      .forEach(n => f.get(n)!.updateValueAndValidity());
-  }
-
-  // ── Withdrawal submit ─────────────────────────────────
-  submitWithdrawal(): void {
-    if (this.withdrawForm.invalid || this.isSaving()) return;
-    this.isSaving.set(true);
-    this.successMsg.set('');
-
-    const v = this.withdrawForm.value;
-    const payload: WithdrawalRequest = this.paymentMethod() === 'Bank'
-      ? {
-          amount:              v.amount!,
-          payment_method:      'Bank',
-          bank_name:           v.bank_name   ?? undefined,
-          account_number:      v.account_number ?? undefined,
-          account_holder_name: v.account_holder_name ?? undefined,
-        }
-      : {
-          amount:         v.amount!,
-          payment_method: 'MoMo',
-          momo_number:    v.momo_number  ?? undefined,
-          momo_provider:  v.momo_provider ?? undefined,
-        };
-
-    this.producerService.requestWithdrawal(payload).subscribe({
-      next: () => {
-        this.isSaving.set(false);
-        this.successMsg.set(this.translate.instant('dashboard.withdraw.successMsg'));
-        this.withdrawForm.reset({ momo_provider: 'MTN' });
-        this.selectMethod(this.paymentMethod());
-        this.producerService.getWallet().subscribe({
-          next: (w) => this.wallet.set(w),
-        });
-        this.producerService.getWithdrawals().subscribe({
-          next: (resp) => this.recentWithdrawals.set(resp.results.slice(0, 3)),
-        });
-      },
-      error: () => {
-        this.isSaving.set(false);
-        this.successMsg.set(this.translate.instant('dashboard.withdraw.errorMsg'));
-      },
-    });
   }
 
   // ── Formatters ────────────────────────────────────────

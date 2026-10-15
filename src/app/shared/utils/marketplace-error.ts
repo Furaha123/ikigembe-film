@@ -1,6 +1,9 @@
 import { HttpErrorResponse } from '@angular/common/http';
 import { MarketplaceAccessError } from '../../core/access/marketplace-access.service';
 import { apiErrorMessage } from './api-error';
+import { entitlementCode } from './entitlement';
+
+export { entitlementCode, type EntitlementCode } from './entitlement';
 
 /**
  * apiErrorMessage() for marketplace pages, plus a friendly message when the
@@ -11,6 +14,10 @@ import { apiErrorMessage } from './api-error';
  */
 export function marketplaceErrorMessage(err: unknown): string | null {
   if (err instanceof MarketplaceAccessError) return 'marketplace.errors.forbidden';
+  const code = entitlementCode(err);
+  if (code === 'membership_required') return 'marketplace.errors.membershipRequired';
+  if (code === 'plan_required') return 'marketplace.errors.planRequired';
   if (err instanceof HttpErrorResponse && err.status === 403) return 'marketplace.errors.forbidden';
   return apiErrorMessage(err);
 }
+

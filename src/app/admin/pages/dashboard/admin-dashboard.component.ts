@@ -11,7 +11,6 @@ import {
   LineController, LineElement, PointElement, Filler,
 } from 'chart.js';
 import { AdminService } from '../../services/admin.service';
-import { AdminMarketplaceService } from '../../services/admin-marketplace.service';
 import type { DashboardOverview, RevenueTrendItem, TransactionHistory } from '../../models/admin.interface';
 import { toLocalDateString } from '../../../shared/utils/local-date';
 
@@ -29,7 +28,6 @@ type ChartTab = 'revenue' | 'commission' | 'producer';
 export class AdminDashboardComponent implements OnInit, AfterViewChecked, OnDestroy {
   private readonly adminService = inject(AdminService);
   private readonly platformId   = inject(PLATFORM_ID);
-  private readonly marketplace  = inject(AdminMarketplaceService);
 
   @ViewChild('trendChart') chartCanvas!: ElementRef<HTMLCanvasElement>;
 
@@ -41,8 +39,6 @@ export class AdminDashboardComponent implements OnInit, AfterViewChecked, OnDest
   loadingTrend    = signal(true);
   loadingTx       = signal(true);
   /** Talent videos waiting for moderation (total of the review queue); null if it couldn't load. */
-  pendingVideos   = signal<number | null>(null);
-  loadingVideos   = signal(true);
 
   activeTab = signal<ChartTab>('revenue');
 
@@ -55,7 +51,7 @@ export class AdminDashboardComponent implements OnInit, AfterViewChecked, OnDest
   producerPayout = computed(() => this.overview()?.financials.producer_revenue   ?? 0);
   revenueToday   = computed(() => this.overview()?.financials.revenue_today      ?? 0);
   revenueMonth   = computed(() => this.overview()?.financials.revenue_this_month ?? 0);
-  pendingCount   = computed(() => this.txHistory()?.pending_withdrawals.length   ?? 0);
+  pendingCount   = computed(() => this.txHistory()?.pending_withdrawals_total ?? this.txHistory()?.pending_withdrawals.length ?? 0);
   recentPayments = computed(() => (this.txHistory()?.payments ?? []).slice(0, 5));
 
   /** Month-over-month % change derived from the last two trend data points. */
@@ -81,16 +77,6 @@ export class AdminDashboardComponent implements OnInit, AfterViewChecked, OnDest
     this.loadOverview();
     this.loadTrend();
     this.loadTransactions();
-    this.loadPendingVideos();
-  }
-
-  private loadPendingVideos(): void {
-    this.subs.push(
-      this.marketplace.listActorVideos('pending_review', 1).subscribe({
-        next: (res) => { this.pendingVideos.set(res.total_results); this.loadingVideos.set(false); },
-        error: ()    => { this.loadingVideos.set(false); },
-      })
-    );
   }
 
   private loadOverview(): void {

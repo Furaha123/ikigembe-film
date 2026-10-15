@@ -197,6 +197,23 @@
                 <div class="doc-row"><dt class="doc-label">{{ 'admin.producers.copyrightCode' | translate }}</dt><dd>{{ docs.profile.copyright_code }}</dd></div>
               }
             </dl>
+            <h4 class="docs-subtitle">{{ 'admin.producers.identityDocument' | translate }}</h4>
+            @if (docs.identity_document; as id) {
+              <div class="doc-row">
+                <span class="doc-label">
+                  {{ 'admin.producers.identitySigned' | translate: {
+                       type: ((id.document_type === 'passport' ? 'admin.contractsPage.typePassport' : 'admin.contractsPage.typeNationalId') | translate),
+                       name: id.signed_name,
+                       date: (id.signed_at | date:'mediumDate')
+                     } }}
+                </span>
+                <button type="button" class="doc-link" (click)="identityContract.set({ id: id.contract_id, name: docsModal()!.producerName })">
+                  {{ 'admin.producers.viewDocument' | translate }}
+                </button>
+              </div>
+            } @else {
+              <p class="doc-missing">{{ 'admin.producers.noIdentity' | translate }}</p>
+            }
             <h4 class="docs-subtitle">{{ 'admin.producers.copyrightDocument' | translate }}</h4>
             @if (docs.copyright_documents.length === 0) {
               <p class="doc-missing">{{ 'admin.producers.noFilms' | translate }}</p>
@@ -221,6 +238,10 @@
         </div>
       </dialog>
     </div>
+  }
+
+  @if (identityContract(); as ic) {
+    <app-identity-document-dialog [contractId]="ic.id" [producerName]="ic.name" (closed)="identityContract.set(null)" />
   }
 
   <!-- Detail panel -->

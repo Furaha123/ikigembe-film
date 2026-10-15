@@ -6,6 +6,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { AuthService, UserProfile, NotificationPreferences } from '../../core/services/auth.service';
 import { PaymentService, PaymentHistoryItem, PaymentReceipt } from '../../core/services/payment.service';
 import { apiErrorMessage } from '../../shared/utils/api-error';
+import { purchaseViewLabel } from '../../shared/utils/purchase-view-status';
 import { HeaderComponent } from '../../core/components/header/header.component';
 
 
@@ -218,6 +219,9 @@ export class ProfileComponent implements OnInit {
   printReceipt(): void {
     if (isPlatformBrowser(this.platformId)) window.print();
   }
+
+  /** What is left of a film purchase (Available / Watching — until … / Used / Expired / Refunded). */
+  readonly viewLabel = purchaseViewLabel;
 
   paymentStatusClass(status: string): string {
     const s = status.toLowerCase();

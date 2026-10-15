@@ -3,6 +3,7 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { Observable, defer, throwError } from 'rxjs';
 import { switchMap, take, tap } from 'rxjs/operators';
 import { AuthService } from '../services/auth.service';
+import { entitlementCode } from '../../shared/utils/entitlement';
 import {
   MarketplaceFeature, MarketplaceFeatureKey, MarketplaceUser,
   can, inactiveNoticeFor, marketplaceHomeFor, marketplaceTabsFor, toRole,
@@ -74,7 +75,7 @@ export class MarketplaceAccessService {
         }
         return send().pipe(tap({
           error: (err: unknown) => {
-            if (isDevMode() && err instanceof HttpErrorResponse && err.status === 403) {
+            if (isDevMode() && err instanceof HttpErrorResponse && err.status === 403 && !entitlementCode(err)) {
               console.error(`[marketplace] 403 on "${feature}" (${err.url}) — the access map and the API disagree`, this.user(), err.error);
             }
           },

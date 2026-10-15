@@ -6,6 +6,7 @@ import { forkJoin, of, Observable } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { TranslatePipe } from '@ngx-translate/core';
 import { AdminMarketplaceService } from '../../services/admin-marketplace.service';
+import { AdminSectionTabsComponent } from '../../shared/components/admin-section-tabs.component';
 import { VideoPlayerComponent } from '../../../shared/components/video-player/video-player.component';
 import {
   ActorVideo, ActorVideoStatus, CastingCall, CastingCallStatus,
@@ -16,23 +17,24 @@ import { ModalBackdropDirective } from '../../../shared/directives/modal-backdro
 type Tab = 'videos' | 'casting';
 
 interface ReasonDialog {
-  kind: 'reject-video' | 'remove-video' | 'remove-call' | 'reject-call';
+  kind: 'remove-video' | 'remove-call';
   id: number;
   title: string;
   required: boolean;
 }
 
+/** Videos go live when the server's upload checks pass; admins only take them down afterwards. */
 const VIDEO_STATUSES: ActorVideoStatus[] = [
-  'pending_review', 'approved', 'rejected', 'removed', 'processing', 'upload_failed', 'pending_upload', 'replaced',
+  'approved', 'removed', 'processing', 'upload_failed', 'pending_upload', 'replaced',
 ];
 
-/** Casting calls waiting for a decision come first. */
-const CALL_STATUSES: (CastingCallStatus | '')[] = ['pending_review', '', 'published', 'rejected', 'draft', 'closed', 'removed'];
+/** Casting calls publish once paid; admins only take them down afterwards. */
+const CALL_STATUSES: (CastingCallStatus | '')[] = ['', 'published', 'draft', 'closed', 'removed'];
 
 @Component({
   selector: 'app-admin-marketplace',
   standalone: true,
-  imports: [ModalBackdropDirective, CommonModule, RouterLink, TranslatePipe, VideoPlayerComponent],
+  imports: [ModalBackdropDirective, CommonModule, RouterLink, TranslatePipe, VideoPlayerComponent, AdminSectionTabsComponent],
   templateUrl: './admin-marketplace.component.html',
   styleUrls: [
     '../movies/admin-movies.component.scss',
@@ -49,7 +51,7 @@ export class AdminMarketplaceComponent implements OnInit {
 
   // ── Videos ────────────────────────────────────────────
   videos        = signal<ActorVideo[]>([]);
-  videoStatus   = signal<ActorVideoStatus>('pending_review');
+  videoStatus   = signal<ActorVideoStatus>('approved');
   videoPage     = signal(1);
   videoPages    = signal(0);
   videoTotal    = signal<number | null>(null);
@@ -77,22 +79,18 @@ export class AdminMarketplaceComponent implements OnInit {
     return (words.length > 1 ? words[0][0] + words[words.length - 1][0] : words[0].slice(0, 2)).toUpperCase();
   }
 
-  kpiPending  = computed(() => this.videoCounts()['pending_review'] ?? null);
-  kpiApproved = computed(() => this.videoCounts()['approved'] ?? null);
-  kpiRejected = computed(() => this.videoCounts()['rejected'] ?? null);
+  kpiApproved   = computed(() => this.videoCounts()['approved'] ?? null);
+  kpiProcessing = computed(() => this.videoCounts()['processing'] ?? null);
+  kpiRemoved    = computed(() => this.videoCounts()['removed'] ?? null);
   kpiTotal    = computed(() => {
     const c = this.videoCounts();
     const vals = Object.values(c) as number[];
     return vals.length ? vals.reduce((a, b) => a + b, 0) : null;
   });
 
-  allClear = computed(() =>
-    !this.countsLoading() && this.kpiPending() === 0
-  );
-
   // ── Casting calls ─────────────────────────────────────
   calls        = signal<CastingCall[]>([]);
-  callStatus   = signal<CastingCallStatus | ''>('pending_review');
+  callStatus   = signal<CastingCallStatus | ''>('');
   callPage     = signal(1);
   callPages    = signal(0);
   callTotal    = signal<number | null>(null);
@@ -111,7 +109,6 @@ export class AdminMarketplaceComponent implements OnInit {
   // ── Shared dialog state ───────────────────────────────
   error          = signal<string | null>(null);
   actionId       = signal<number | null>(null);
-  confirmApprove = signal<ActorVideo | null>(null);
   reasonDialog   = signal<ReasonDialog | null>(null);
   reason         = signal('');
   reasonError    = signal<string | null>(null);
@@ -187,31 +184,11 @@ export class AdminMarketplaceComponent implements OnInit {
     });
   }
 
-  // ── Approve ───────────────────────────────────────────
-  approve(): void {
-    const v = this.confirmApprove();
-    if (!v) return;
-    this.actionId.set(v.id);
-    this.marketplace.approveVideo(v.id).subscribe({
-      next: () => {
-        this.actionId.set(null);
-        this.confirmApprove.set(null);
-        this.loadVideos();
-        this.loadStatusCounts();
-      },
-      error: (err: HttpErrorResponse) => {
-        this.actionId.set(null);
-        this.confirmApprove.set(null);
-        this.fail(err);
-      },
-    });
-  }
-
-  // ── Reject / remove ───────────────────────────────────
+  // ── Remove ───────────────────────────────────
   openReason(kind: ReasonDialog['kind'], id: number, title: string): void {
     this.reason.set('');
     this.reasonError.set(null);
-    this.reasonDialog.set({ kind, id, title, required: kind !== 'remove-video' });
+    this.reasonDialog.set({ kind, id, title, required: kind === 'remove-call' });
   }
 
   confirmReason(): void {
@@ -219,18 +196,16 @@ export class AdminMarketplaceComponent implements OnInit {
     if (!d) return;
     const reason = this.reason().trim();
     if (d.required && !reason) { this.reasonError.set('admin.marketplace.reasonRequired'); return; }
-    const req: Observable<unknown> =
-      d.kind === 'reject-video' ? this.marketplace.rejectVideo(d.id, reason) :
-      d.kind === 'remove-video' ? this.marketplace.removeVideo(d.id, reason || undefined) :
-      d.kind === 'reject-call' ? this.marketplace.rejectCastingCall(d.id, reason) :
-      this.marketplace.removeCastingCall(d.id, reason);
+    const req: Observable<unknown> = d.kind === 'remove-video'
+      ? this.marketplace.removeVideo(d.id, reason || undefined)
+      : this.marketplace.removeCastingCall(d.id, reason);
 
     this.actionId.set(d.id);
     req.subscribe({
       next: () => {
         this.actionId.set(null);
         this.reasonDialog.set(null);
-        if (d.kind === 'remove-call' || d.kind === 'reject-call') {
+        if (d.kind === 'remove-call') {
           this.loadCalls();
         } else {
           this.loadVideos();
@@ -242,16 +217,6 @@ export class AdminMarketplaceComponent implements OnInit {
         const body = err.error as { reason?: string } | null;
         this.reasonError.set(marketplaceErrorMessage(err) ?? body?.reason ?? 'marketplace.errors.actionFailed');
       },
-    });
-  }
-
-  /** Publish a paid casting call awaiting review (the server re-checks payment and deadline). */
-  approveCall(c: CastingCall): void {
-    this.actionId.set(c.id);
-    this.error.set(null);
-    this.marketplace.approveCastingCall(c.id).subscribe({
-      next: () => { this.actionId.set(null); this.loadCalls(); },
-      error: (err: HttpErrorResponse) => { this.actionId.set(null); this.fail(err); },
     });
   }
 
@@ -288,9 +253,7 @@ export class AdminMarketplaceComponent implements OnInit {
 
   statusPillClass(s: ActorVideoStatus, active: ActorVideoStatus): string {
     const base = s === active ? 'pill pill--active' : 'pill';
-    const color = s === 'pending_review' ? 'pill--amber'
-      : s === 'approved'       ? 'pill--green'
-      : s === 'rejected'       ? 'pill--red'
+    const color = s === 'approved' ? 'pill--green'
       : s === 'removed'        ? 'pill--slate'
       : s === 'processing'     ? 'pill--blue'
       : 'pill--gray';
@@ -301,7 +264,7 @@ export class AdminMarketplaceComponent implements OnInit {
     const base = s === active ? 'pill pill--active' : 'pill';
     const color = s === '' ? 'pill--slate'
       : s === 'published' ? 'pill--green'
-      : s === 'removed' || s === 'rejected' ? 'pill--red'
+      : s === 'removed'   ? 'pill--red'
       : s === 'closed'    ? 'pill--slate'
       : 'pill--amber';
     return `${base} ${color}`;

@@ -20,6 +20,7 @@ describe('AdminMovieFormComponent (film upload)', () => {
   let admin: jasmine.SpyObj<AdminService>;
   let movieUpload: jasmine.SpyObj<MovieUploadService>;
   let uploader: jasmine.SpyObj<MultipartUploadService>;
+  let movies: jasmine.SpyObj<MovieService>;
   const videoApi = { id: 'video' } as unknown as MultipartUploadApi;
   const trailerApi = { id: 'trailer' } as unknown as MultipartUploadApi;
 
@@ -53,10 +54,12 @@ describe('AdminMovieFormComponent (film upload)', () => {
     movieUpload.api.and.callFake(field => (field === 'video_file' ? videoApi : trailerApi));
     uploader = jasmine.createSpyObj<MultipartUploadService>('MultipartUploadService', ['upload']);
     uploader.upload.and.callFake((_f, api) => Promise.resolve(api === videoApi ? 'movies/full/abc.mp4' : 'movies/trailers/t.mp4'));
-    const movies = jasmine.createSpyObj<MovieService>('MovieService', ['getMovieDetails']);
+    movies = jasmine.createSpyObj<MovieService>('MovieService', ['getMovieDetails', 'getGenreOptions']);
     movies.getMovieDetails.and.returnValue(of({
       id: 7, title: 'Old', overview: 'o', release_date: '2025-01-01', price: 500, producer_profile: { id: 42, name: 'Aline M.' },
+      genres: ['Drama', 'Western'],
     } as unknown as MovieDetailResponse));
+    movies.getGenreOptions.and.returnValue(of(['Comedy', 'Drama']));
 
     TestBed.configureTestingModule({
       imports: [AdminMovieFormComponent],
@@ -211,5 +214,36 @@ describe('AdminMovieFormComponent (film upload)', () => {
     pick('#f-video', new File(['x'], 'MOVIE.MP4'));
     await settle();
     expect(uploader.upload).toHaveBeenCalledTimes(1);
+  });
+  it('offers the active genres from the API and keeps an inactive genre the film already has', async () => {
+    create('7');
+    await settle();
+    expect(c.genreChoices()).toEqual([
+      { name: 'Comedy', inactive: false }, { name: 'Drama', inactive: false }, { name: 'Western', inactive: true },
+    ]);
+    expect(c.selectedGenres()).toEqual(['Drama', 'Western']);
+    c.toggleGenre('Western');
+    c.toggleGenre('Comedy');
+    expect(JSON.parse(c.buildFormData().get('genres') as string)).toEqual(['Drama', 'Comedy']);
+  });
+
+  it('shows a retry when the genre list fails to load', () => {
+    movies.getGenreOptions.and.returnValue(throwError(() => new HttpErrorResponse({ status: 500 })));
+    create();
+    expect(c.genresError()).toBeTrue();
+    movies.getGenreOptions.and.returnValue(of(['Drama']));
+    c.loadGenreOptions();
+    expect(c.genresError()).toBeFalse();
+    expect(c.genreOptions()).toEqual(['Drama']);
+  });
+
+  it('saves a draft without the video', () => {
+    create();
+    fillRequired();
+    pick('#f-thumbnail', thumb);
+    c.save(true);
+    const fd = admin.createMovie.calls.mostRecent().args[0];
+    expect(fd.get('save_as_draft')).toBe('true');
+    expect(fd.has('video_key')).toBeFalse();
   });
 });

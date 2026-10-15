@@ -1,3 +1,5 @@
+import { LifecycleStatus } from '../../shared/utils/film-status';
+
 export interface DashboardFinancials {
   total_revenue: number;
   producer_revenue: number;
@@ -6,6 +8,12 @@ export interface DashboardFinancials {
   revenue_this_month: number;
   total_paid_to_producers: number;
   total_profit: number;
+  /** Demo mode: the figures above include simulated payments (no money moved). */
+  demo_mode?: boolean;
+  /** Completed payments split into real money and simulated (demo) money. */
+  by_source?: Record<'real' | 'simulated', { film_sales: number; services: number }>;
+  /** All-time provider fees: actual + estimated; unknown fees counted (never zero). */
+  provider_fees?: { actual: number; estimated: number; known_total: number; unknown_payments: number };
 }
 
 export interface DashboardOverview {
@@ -15,7 +23,6 @@ export interface DashboardOverview {
   total_views: number;
   pending_submissions: number;
   actors_with_approved_videos: number;
-  pending_talent_videos: number;
   marketplace_payments_confirmed: number;
   financials: DashboardFinancials;
 }
@@ -73,7 +80,12 @@ export interface FilmSubmissionItem {
   submission_date: string;
   genre: string | null;
   duration_minutes: number | null;
-  status: 'pending_review' | 'pending_admin_review' | 'approved' | 'rejected' | 'approved_pending_contract' | 'changes_requested';
+  status: 'draft' | 'pending_review' | 'pending_admin_review' | 'approved' | 'rejected' | 'approved_pending_contract' | 'changes_requested';
+  /** Server-derived (approval + active flag + release time); see `shared/utils/film-status.ts`. */
+  lifecycle_status?: LifecycleStatus;
+  is_active?: boolean;
+  /** UTC; shown in Kigali time. */
+  release_at?: string | null;
   rejection_reason: string | null;
   thumbnail_url: string | null;
   synopsis?: string | null;
@@ -88,6 +100,16 @@ export interface FilmSubmissionItem {
   copyright_url?: string | null;
 }
 
+/** Result of POST /admin/dashboard/movies/<id>/schedule|publish|unpublish/. */
+export interface FilmLifecycleResult {
+  id: number;
+  lifecycle_status: LifecycleStatus;
+  approval_status: FilmSubmissionItem['status'];
+  is_active: boolean;
+  release_at: string | null;
+  detail: string;
+}
+
 export type HlsStatus = 'not_started' | 'processing' | 'ready' | 'failed';
 
 export interface FilmHlsStatusResponse {
@@ -95,6 +117,23 @@ export interface FilmHlsStatusResponse {
   hls_status: HlsStatus;
   hls_url: string | null;
   hls_error_message: string | null;
+}
+
+export type IdentityDocumentType = 'national_id' | 'passport';
+
+/** GET /admin/dashboard/contracts/<id>/identity-document/ — one audited view of the ID a producer signed with. */
+export interface ContractIdentityDocument {
+  contract_id: number;
+  contract_version: number;
+  producer_id: number;
+  producer_email: string;
+  signed_name: string;
+  signed_at: string;
+  document_type: IdentityDocumentType;
+  format: 'pdf' | 'image';
+  /** Short-lived private link (a credential: keep in component memory only). */
+  url: string;
+  expires_in: number;
 }
 
 export interface ProducerContractItem {
@@ -107,8 +146,13 @@ export interface ProducerContractItem {
   status: 'active' | 'expired';
   signed_at: string;
   expires_at: string;
+  /** Older contracts only (drawn on screen or an uploaded photo). */
   signature_photo_url: string | null;
-  signature_method: 'drawn' | 'photo';
+  signature_method: 'id_document' | 'drawn' | 'photo';
+  /** The ID itself is fetched per view: AdminService.getContractIdentityDocument(). */
+  has_identity_document: boolean;
+  identity_document_type: IdentityDocumentType | '';
+  identity_document_format: 'pdf' | 'image' | null;
   signed_name: string;
   language: 'en' | 'rw' | '';
   terms_version: number | null;
@@ -122,6 +166,16 @@ export type ProducerListStatus = 'ready' | 'incomplete' | 'suspended';
 
 /** GET /admin/dashboard/producers/<id>/documents/ — onboarding details and per-film copyright proofs. */
 export interface ProducerDocuments {
+  /** The ID on the producer's latest contract (no link — fetch it per view), or null. */
+  identity_document: {
+    contract_id: number;
+    contract_version: number;
+    contract_status: 'active' | 'expired';
+    signed_name: string;
+    signed_at: string;
+    document_type: IdentityDocumentType;
+    format: 'pdf' | 'image';
+  } | null;
   profile: {
     studio_name: string; country: string; bio: string; experience: string; address: string; copyright_code: string;
   };
@@ -159,10 +213,16 @@ export interface WithdrawalItem {
   processed_at: string | null;
 }
 
+/** Each list is one page (`?page=`, `?page_size=` ≤ 100, default 50), newest first; `*_total` are full counts. */
 export interface TransactionHistory {
   payments: PaymentItem[];
   withdrawals: WithdrawalItem[];
   pending_withdrawals: WithdrawalItem[];
+  page?: number;
+  page_size?: number;
+  payments_total?: number;
+  withdrawals_total?: number;
+  pending_withdrawals_total?: number;
 }
 
 export interface AdminMovie {

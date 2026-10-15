@@ -4,6 +4,11 @@
     <p>{{ 'withdrawals.subtitle' | translate }}</p>
   </div>
 
+  <p class="retired-note">
+    {{ 'withdrawals.retired' | translate }}
+    <a routerLink="/producer/wallet">{{ 'withdrawals.retiredLink' | translate }}</a>
+  </p>
+
   <!-- Filter tabs -->
   <div class="filter-tabs">
     @for (tab of tabs; track tab) {

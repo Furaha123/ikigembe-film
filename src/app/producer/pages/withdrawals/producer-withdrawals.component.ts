@@ -1,13 +1,15 @@
 import { Component, inject, OnInit, signal, computed } from '@angular/core';
 import { TranslatePipe } from '@ngx-translate/core';
 import { CommonModule } from '@angular/common';
+import { RouterLink } from '@angular/router';
 import { ProducerService, ProducerWithdrawal } from '../../services/producer.service';
 
 type FilterTab = 'All' | 'Pending' | 'Approved' | 'Completed' | 'Rejected';
 
+/** Older withdrawal requests (history only: producers are paid monthly, see the Wallet page). */
 @Component({
   selector: 'app-producer-withdrawals',
-  imports: [TranslatePipe, CommonModule],
+  imports: [TranslatePipe, CommonModule, RouterLink],
   templateUrl: './producer-withdrawals.component.html',
   styleUrl: './producer-withdrawals.component.scss'
 })

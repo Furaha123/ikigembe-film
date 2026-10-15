@@ -21,6 +21,9 @@ export interface UserProfile {
   is_staff: boolean;
   date_joined: string;
   account_status?: string;
+  is_verified?: boolean;
+  /** The email address awaits verification (see AuthService.emailUnverified). */
+  email_verification_required?: boolean;
   producer_setup?: ProducerSetup | null;
   studio_name?: string;
   suspension_reason?: string;
@@ -57,6 +60,9 @@ const CONTRACT_KEY    = 'ikigembe_contract_signed';
 /** Stored by older builds (admin approval); removed on sign-out. */
 const LEGACY_PRODUCER_STATUS_KEY = 'ikigembe_producer_status';
 const ONBOARDING_KEY  = 'ikigembe_onboarded';
+
+/** Where an account with an unverified email address is asked to verify it. */
+export const VERIFY_EMAIL_REQUIRED_URL = '/verify-email-required';
 
 /** Cooldown after a verification email was requested successfully. */
 export const RESEND_COOLDOWN_SECONDS = 60;
@@ -135,6 +141,13 @@ export class AuthService {
   readonly onboardingComplete = signal<boolean>(
     isPlatformBrowser(this.platformId) ? localStorage.getItem(ONBOARDING_KEY) === '1' : false
   );
+
+  /**
+   * The account's email address is unverified (after an email change): the API refuses everything but
+   * profile, email change, password, logout and verification with 403 `email_unverified`. Memory only;
+   * set from the profile and from such a 403 (auth.interceptor.ts).
+   */
+  readonly emailUnverified = signal(false);
 
   /** Producers submit films and use producer services once the profile is complete and the agreement signed. */
   readonly producerReady = computed(() => this.onboardingComplete() && this.contractSigned());
@@ -262,6 +275,7 @@ export class AuthService {
       this.accountStatus.set(normalised);
     }
     if (u) this.setProducerSetup(u.producer_setup);
+    if (u) this.emailUnverified.set(!!u.email_verification_required);
     // The response carried the user, so role and status are already current.
     if (u) this.profileSync = of(undefined);
   }
@@ -309,6 +323,39 @@ export class AuthService {
       this.setAccountStatus(toAccountStatus(profile.account_status), profile.suspension_reason || undefined);
     }
     this.setProducerSetup(profile.producer_setup);
+    if (profile.email) {
+      localStorage.setItem(EMAIL_KEY, profile.email);
+      this.userEmail.set(profile.email);
+    }
+    if (typeof profile.email_verification_required === 'boolean') {
+      this.emailUnverified.set(profile.email_verification_required);
+    }
+  }
+
+  /**
+   * The API refused a request with 403 `email_unverified`: remember it and, the first time, show the
+   * verification prompt (coming back to the current page once verified). A banner covers later pages.
+   */
+  markEmailUnverified(): void {
+    if (!this.isLoggedIn()) return;
+    const first = !this.emailUnverified();
+    this.emailUnverified.set(true);
+    if (!first) return;
+    const here = this.router.url;
+    if (here.startsWith('/verify-email')) return;
+    const back = safeReturnUrl(here);
+    void this.router.navigateByUrl(this.router.createUrlTree([VERIFY_EMAIL_REQUIRED_URL],
+      back && back !== '/' ? { queryParams: { [RETURN_URL_PARAM]: back } } : {}));
+  }
+
+  /**
+   * Changes the account's email address (e.g. fixing a typo). The API marks it unverified and emails a
+   * new link (older links stop working); the session continues, restricted until the link is opened.
+   */
+  changeEmail(email: string): Observable<UserProfile> {
+    return this.http.patch<UserProfile>(`${this.baseUrl}/auth/me/`, { email }).pipe(
+      tap(profile => this.applyProfile(profile)),
+    );
   }
 
   private setProducerSetup(setup: ProducerSetup | null | undefined) {
@@ -449,7 +496,10 @@ export class AuthService {
     return this.http.post(`${this.baseUrl}/auth/reset-password/`, { token, new_password, confirm_password });
   }
 
-  /** Verify an email link's token. The API answers with a new session, so the user is signed in. */
+  /**
+   * Verify an email link's token. The API answers with a session: the current one when this browser is
+   * signed in to the same account (its tokens keep working), otherwise a new one, so the user is signed in.
+   */
   verifyEmail(token: string): Observable<LoginResponse> {
     return this.http.post<LoginResponse>(`${this.baseUrl}/auth/verify-email/`, { token }).pipe(
       tap((res) => this.storeSession(res))
@@ -522,6 +572,7 @@ export class AuthService {
     this.suspensionReason.set('');
     this.onboardingComplete.set(false);
     this.contractSigned.set(false);
+    this.emailUnverified.set(false);
   }
 }
 

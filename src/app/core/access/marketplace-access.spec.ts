@@ -10,7 +10,7 @@ const ALL = MARKETPLACE_FEATURES.map(f => f.key);
 
 /** What each role may do with an active account, mirroring the backend permission classes. */
 const ACTIVE: Record<Role, MarketplaceFeatureKey[]> = {
-  Viewer:   ['casting-calls', 'my-applications', 'actor-profile', 'talent-videos', 'submit-talent', 'apply-casting'],
+  Viewer:   ['casting-calls', 'my-applications', 'actor-profile', 'talent-videos', 'actor-membership', 'submit-talent', 'apply-casting'],
   Producer: ['casting-calls', 'find-actors', 'shortlist', 'post-casting', 'my-casting-calls', 'casting-applications', 'my-access'],
   Admin:    ['moderation'],
 };
@@ -22,7 +22,7 @@ const INACTIVE: Record<Role, MarketplaceFeatureKey[]> = {
 };
 const TABS: Record<Role, Record<AccountStatus, string[]>> = {
   Viewer: {
-    active: ['/casting', '/actor/applications', '/actor/profile', '/actor/videos'],
+    active: ['/casting', '/actor/applications', '/actor/profile', '/actor/videos', '/actor/membership'],
     pending_approval: ['/casting'],
     suspended: ['/casting'],
   },
@@ -67,7 +67,7 @@ describe('marketplace access map', () => {
   }
 
   it('never lets a producer reach the actor-only endpoints, or a viewer the producer ones', () => {
-    for (const key of ['actor-profile', 'talent-videos', 'submit-talent', 'my-applications', 'apply-casting'] as const) {
+    for (const key of ['actor-profile', 'talent-videos', 'actor-membership', 'submit-talent', 'my-applications', 'apply-casting'] as const) {
       expect(can(user('Producer'), key)).withContext(key).toBeFalse();
     }
     for (const key of ['my-casting-calls', 'post-casting', 'casting-applications', 'my-access', 'find-actors', 'shortlist'] as const) {

@@ -54,6 +54,9 @@
           {{ 'admin.monthlyReports.generatedInfo' | translate: { date: (r.generated_at | date:'medium'), by: r.generated_by ?? ('admin.monthlyReports.scheduled' | translate) } }}
         </p>
         @if (d.partial) { <p class="warn">{{ 'admin.monthlyReports.partialInfo' | translate }}</p> }
+        @if (d.simulated) {
+          <p class="warn" role="note"><strong>{{ 'payment.simulated' | translate }}</strong> {{ 'admin.monthlyReports.simulatedInfo' | translate }}</p>
+        }
         @if (!d.finance_period || d.finance_period.status !== 'closed') {
           <p class="muted">{{ 'admin.monthlyReports.periodOpen' | translate }}</p>
         }
@@ -88,6 +91,18 @@
             </tbody>
           </table>
         </div>
+        @if (d.provider_fees; as pf) {
+          <p class="muted">
+            {{ 'admin.fees.totalsLine' | translate: { actual: (pf.actual | number), estimated: (pf.estimated | number), unknown: pf.unknown_payments } }}
+            · {{ 'admin.fees.netAfterKnown' | translate: { net: (pf.net_after_known_fees | number) } }}
+          </p>
+        }
+        @if (d.revenue_by_source; as src) {
+          <p class="muted">
+            {{ 'admin.payments.totals.real' | translate: { paid: (src.real.gross | number), refunded: (src.real.refunded | number), net: (src.real.net | number) } }}
+            · {{ 'admin.payments.totals.simulated' | translate: { paid: (src.simulated.gross | number), refunded: (src.simulated.refunded | number), net: (src.simulated.net | number) } }}
+          </p>
+        }
 
         <h3>{{ 'admin.monthlyReports.views' | translate }}</h3>
         <dl class="facts">
@@ -113,11 +128,13 @@
                 <th scope="col">{{ 'admin.payments.item' | translate }}</th>
                 <th scope="col" class="num">{{ 'admin.monthlyReports.purchases' | translate }}</th>
                 <th scope="col" class="num">{{ 'admin.monthlyReports.plays' | translate }}</th>
+                <th scope="col" class="num">{{ 'admin.monthlyReports.uniqueViewers' | translate }}</th>
+                <th scope="col" class="num">{{ 'admin.monthlyReports.completions' | translate }}</th>
                 <th scope="col" class="num">{{ 'admin.monthlyReports.net' | translate }}</th>
               </tr></thead>
               <tbody>
                 @for (f of d.top_films; track f.movie_id) {
-                  <tr><td>{{ f.title }}</td><td class="num">{{ f.purchases | number }}</td><td class="num">{{ f.plays | number }}</td><td class="num">{{ f.net | number }}</td></tr>
+                  <tr><td>{{ f.title }}</td><td class="num">{{ f.purchases | number }}</td><td class="num">{{ f.plays | number }}</td><td class="num">{{ f.unique_viewers ?? '—' }}</td><td class="num">{{ f.completions ?? '—' }}</td><td class="num">{{ f.net | number }}</td></tr>
                 }
               </tbody>
             </table>
@@ -141,6 +158,18 @@
           <dt>{{ 'admin.monthlyReports.actorSlots' | translate }}</dt><dd>{{ d.actor_uploads.slots_paid | number }}</dd>
           <dt>{{ 'admin.monthlyReports.actorReviewed' | translate }}</dt><dd>{{ d.actor_uploads.approved | number }} / {{ d.actor_uploads.rejected | number }}</dd>
         </dl>
+
+        @if (d.memberships; as ms) {
+          <h3>{{ 'admin.monthlyReports.memberships' | translate }}</h3>
+          <dl class="facts">
+            <dt>{{ 'admin.monthlyReports.planActor' | translate }}</dt>
+            <dd>{{ 'admin.monthlyReports.planCounts' | translate: { paid: (ms.actor.paid | number), active: (ms.actor.active | number) } }}</dd>
+            <dt>{{ 'admin.monthlyReports.planFull' | translate }}</dt>
+            <dd>{{ 'admin.monthlyReports.planCounts' | translate: { paid: (ms.producer_full.paid | number), active: (ms.producer_full.active | number) } }}</dd>
+            <dt>{{ 'admin.monthlyReports.planView' | translate }}</dt>
+            <dd>{{ 'admin.monthlyReports.planCounts' | translate: { paid: (ms.producer_view.paid | number), active: (ms.producer_view.active | number) } }}</dd>
+          </dl>
+        }
 
         <h3>{{ 'admin.monthlyReports.producerServices' | translate }}</h3>
         <dl class="facts">

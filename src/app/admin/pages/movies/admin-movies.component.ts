@@ -3,20 +3,27 @@ import { CommonModule } from '@angular/common';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
-import { Subject, interval } from 'rxjs';
+import { Observable, Subject, interval } from 'rxjs';
 import { switchMap, takeUntil } from 'rxjs/operators';
 import { AdminService } from '../../services/admin.service';
-import { AdminMovie, FilmSubmissionItem } from '../../models/admin.interface';
+import { AdminMovie, FilmLifecycleResult, FilmSubmissionItem } from '../../models/admin.interface';
+import { FilmStatusBadgeComponent } from '../../../shared/components/film-status-badge/film-status-badge.component';
+import { ErrorReferenceComponent } from '../../../shared/components/error-reference/error-reference.component';
+import {
+  kigaliInputToIso, kigaliInputValue, LIFECYCLE_STATUSES, LifecycleStatus, lifecycleFromApproval, lifecycleLabelKey,
+} from '../../../shared/utils/film-status';
+import { apiErrorMessage } from '../../../shared/utils/api-error';
 import { VideoPlayerComponent } from '../../../shared/components/video-player/video-player.component';
 import { RevenueSharesDialogComponent } from '../../shared/components/revenue-shares/revenue-shares-dialog.component';
 import { AdminSectionTabsComponent } from '../../shared/components/admin-section-tabs.component';
 
 import { ModalBackdropDirective } from '../../../shared/directives/modal-backdrop.directive';
 type ActiveTab = 'submissions' | 'catalog';
+type LifecycleAction = 'schedule' | 'publish' | 'unpublish';
 
 @Component({
   selector: 'app-admin-movies',
-  imports: [ModalBackdropDirective, CommonModule, ReactiveFormsModule, TranslatePipe, VideoPlayerComponent, RevenueSharesDialogComponent, AdminSectionTabsComponent],
+  imports: [ModalBackdropDirective, CommonModule, ReactiveFormsModule, TranslatePipe, VideoPlayerComponent, RevenueSharesDialogComponent, AdminSectionTabsComponent, FilmStatusBadgeComponent, ErrorReferenceComponent],
   templateUrl: './admin-movies.component.html',
   styleUrl: './admin-movies.component.scss'
 })
@@ -55,6 +62,18 @@ export class AdminMoviesComponent implements OnInit, OnDestroy {
   pendingCount = computed(() => this.submissions().filter(s => s.status === 'pending_review' || s.status === 'pending_admin_review').length);
 
   selectedSubmission = signal<FilmSubmissionItem | null>(null);
+
+  // ── Publication (lifecycle) ─────────────────────────
+  readonly lifecycleStatuses = LIFECYCLE_STATUSES;
+  readonly lifecycleLabelKey = lifecycleLabelKey;
+  lifecycleFilter  = signal<LifecycleStatus | ''>('');
+  lifecycleDialog  = signal<{ film: FilmSubmissionItem; action: LifecycleAction } | null>(null);
+  lifecycleWhen    = signal('');
+  lifecycleReason  = signal('');
+  lifecycleBusy    = signal(false);
+  lifecycleError   = signal<{ text: string | null; key: string; err: unknown } | null>(null);
+  /** The API's confirmation of the last change ("… is scheduled for 1 Nov 2026 at 20:00 (Kigali time)."). */
+  lifecycleNotice  = signal<string | null>(null);
 
   // ── HLS status polling ───────────────────────────────
   private readonly pollingStop$ = new Subject<void>();
@@ -147,7 +166,7 @@ export class AdminMoviesComponent implements OnInit, OnDestroy {
   loadSubmissions(page = 1) {
     this.submissionsLoading.set(true);
     this.submissionsError.set(false);
-    this.adminService.getFilmSubmissions(page).subscribe({
+    this.adminService.getFilmSubmissions(page, this.lifecycleFilter()).subscribe({
       next: ({ submissions, total_results, total_pages }) => {
         this.submissions.set(submissions);
         this.submissionsPage.set(page);
@@ -170,6 +189,92 @@ export class AdminMoviesComponent implements OnInit, OnDestroy {
 
   nextSubmissionsPage() {
     if (this.submissionsPage() < this.submissionsTotalPages()) this.loadSubmissions(this.submissionsPage() + 1);
+  }
+
+  setLifecycleFilter(value: string) {
+    this.lifecycleFilter.set((LIFECYCLE_STATUSES as readonly string[]).includes(value) ? value as LifecycleStatus : '');
+    this.loadSubmissions(1);
+  }
+
+  /** From the API; rows from an older API fall back to the approval status. */
+  lifecycleOf(s: FilmSubmissionItem): LifecycleStatus {
+    return s.lifecycle_status ?? lifecycleFromApproval(s.status, s.is_active);
+  }
+
+  // The API has the final say (approval, required assets, already released); these only pick the buttons.
+  canPublish(s: FilmSubmissionItem): boolean {
+    return s.status === 'approved' && this.lifecycleOf(s) !== 'published';
+  }
+
+  canSchedule(s: FilmSubmissionItem): boolean {
+    const lc = this.lifecycleOf(s);
+    return s.status === 'approved' && (lc === 'scheduled' || lc === 'unpublished');
+  }
+
+  canUnpublish(s: FilmSubmissionItem): boolean {
+    const lc = this.lifecycleOf(s);
+    return lc === 'scheduled' || lc === 'published';
+  }
+
+  /** Earliest value for the schedule field: now, in Kigali time. */
+  scheduleMin(): string { return kigaliInputValue(new Date()); }
+
+  openLifecycle(film: FilmSubmissionItem, action: LifecycleAction) {
+    this.lifecycleDialog.set({ film, action });
+    this.lifecycleWhen.set(action === 'schedule' && this.lifecycleOf(film) === 'scheduled' ? kigaliInputValue(film.release_at) : '');
+    this.lifecycleReason.set('');
+    this.lifecycleError.set(null);
+  }
+
+  closeLifecycle() {
+    if (this.lifecycleBusy()) return;
+    this.lifecycleDialog.set(null);
+  }
+
+  confirmLifecycle() {
+    const dialog = this.lifecycleDialog();
+    if (!dialog || this.lifecycleBusy()) return;
+    const { film, action } = dialog;
+    let request: Observable<FilmLifecycleResult>;
+    if (action === 'schedule') {
+      const releaseAt = kigaliInputToIso(this.lifecycleWhen());
+      if (!releaseAt) {
+        this.lifecycleError.set({ text: null, key: 'admin.movies.lifecycle.whenRequired', err: null });
+        return;
+      }
+      if (new Date(releaseAt).getTime() <= Date.now()) {
+        this.lifecycleError.set({ text: null, key: 'admin.movies.lifecycle.whenPast', err: null });
+        return;
+      }
+      request = this.adminService.scheduleFilm(film.id, releaseAt);
+    } else if (action === 'publish') {
+      request = this.adminService.publishFilm(film.id);
+    } else {
+      request = this.adminService.unpublishFilm(film.id, this.lifecycleReason().trim());
+    }
+    this.lifecycleBusy.set(true);
+    this.lifecycleError.set(null);
+    request.subscribe({
+      next: (res) => {
+        this.applyLifecycle(res);
+        this.lifecycleNotice.set(res.detail || null);
+        this.lifecycleBusy.set(false);
+        this.lifecycleDialog.set(null);
+      },
+      error: (err) => {
+        this.lifecycleBusy.set(false);
+        this.lifecycleError.set({ text: apiErrorMessage(err), key: 'admin.movies.lifecycle.failed', err });
+      },
+    });
+  }
+
+  private applyLifecycle(res: FilmLifecycleResult) {
+    const patch = (s: FilmSubmissionItem): FilmSubmissionItem => s.id !== res.id ? s : {
+      ...s, lifecycle_status: res.lifecycle_status, status: res.approval_status, is_active: res.is_active, release_at: res.release_at,
+    };
+    this.submissions.update(list => list.map(patch));
+    const sel = this.selectedSubmission();
+    if (sel) this.selectedSubmission.set(patch(sel));
   }
 
   canWatchFilm(s: FilmSubmissionItem): boolean {
@@ -354,22 +459,6 @@ export class AdminMoviesComponent implements OnInit, OnDestroy {
       },
       error: () => this.actionId.set(null),
     });
-  }
-
-  statusLabel(s: FilmSubmissionItem['status']): string {
-    if (s === 'approved') return 'admin.movies.status.approved';
-    if (s === 'rejected') return 'admin.movies.status.rejected';
-    if (s === 'approved_pending_contract') return 'admin.movies.status.pendingContract';
-    if (s === 'changes_requested') return 'admin.movies.status.changesRequested';
-    return 'admin.movies.status.underReview'; // pending_review | pending_admin_review
-  }
-
-  statusClass(s: FilmSubmissionItem['status']): string {
-    if (s === 'approved') return 'badge-approved';
-    if (s === 'rejected') return 'badge-rejected';
-    if (s === 'approved_pending_contract') return 'badge-contract';
-    if (s === 'changes_requested') return 'badge-changes';
-    return 'badge-review';
   }
 
   formatDuration(minutes: number): string {

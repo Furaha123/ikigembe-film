@@ -8,10 +8,24 @@ import { TranslatePipe } from '@ngx-translate/core';
 import { Subject, catchError, debounceTime, distinctUntilChanged, map, of, switchMap } from 'rxjs';
 import { CastingService } from '../../services/casting.service';
 import {
-  ActorGender, ActorSearchAccess, DirectoryActor, DirectoryFilters, Paginated, ShortlistEntry,
+  ActorGender, DirectoryActor, DirectoryFilters, MembershipStatus, Paginated, ShortlistEntry,
 } from '../../../shared/models/marketplace.interface';
 import { RWANDA_PROVINCES } from '../../../shared/models/rwanda-locations';
 import { marketplaceErrorMessage } from '../../../shared/utils/marketplace-error';
+
+/** Directory access as this page uses it: open or not, and until when. */
+export interface DirectoryAccess {
+  active: boolean;
+  expires_at: string | null;
+}
+
+/** A producer plan or an old directory pass opens the directory; it lasts until the later of the two. */
+export function directoryAccessOf(m: MembershipStatus): DirectoryAccess {
+  const ends = [m.producer.plan ? m.producer.expires_at : null, m.producer.legacy_search_until]
+    .filter((d): d is string => !!d)
+    .sort((a, b) => new Date(b).getTime() - new Date(a).getTime());
+  return { active: m.producer.can_view_directory, expires_at: ends[0] ?? null };
+}
 
 type Tab = 'search' | 'shortlist';
 
@@ -78,11 +92,11 @@ export class ActorDirectoryComponent implements OnInit, OnDestroy {
   readonly genders = GENDERS;
   readonly provinces = RWANDA_PROVINCES;
 
-  access        = signal<ActorSearchAccess | null>(null);
+  access        = signal<DirectoryAccess | null>(null);
   accessLoading = signal(true);
-  /** Set when the pass ended mid-session (a 403 from a directory call, or the expiry passed). */
+  /** Set when the plan ended mid-session (a 403 from a directory call, or the expiry passed). */
   expired       = signal(false);
-  /** /producer/actors or /producer/shortlist (both need an active search pass). */
+  /** /producer/actors or /producer/shortlist (both need a producer plan). */
   readonly tab: Tab = this.route.snapshot.data['tab'] === 'shortlist' ? 'shortlist' : 'search';
 
   actors      = signal<DirectoryActor[]>([]);
@@ -149,7 +163,7 @@ export class ActorDirectoryComponent implements OnInit, OnDestroy {
 
   checkAccess(): void {
     this.accessLoading.set(true);
-    this.casting.getSearchAccess().subscribe({
+    this.casting.getMembership().pipe(map(directoryAccessOf)).subscribe({
       next: (a) => {
         this.access.set(a);
         this.accessLoading.set(false);
@@ -214,7 +228,7 @@ export class ActorDirectoryComponent implements OnInit, OnDestroy {
     });
   }
 
-  /** A 403 means the pass is gone (expired mid-session): drop the restricted data and show the renewal path. */
+  /** A 403 means the plan is gone (expired mid-session): drop the restricted data and show the renewal path. */
   private handleError(err: HttpErrorResponse, done?: () => void): void {
     done?.();
     if (err?.status === 403) {

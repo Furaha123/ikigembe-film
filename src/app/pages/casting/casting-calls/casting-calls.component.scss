@@ -128,27 +128,6 @@ $surface-hover: #222;
   white-space: nowrap;
 }
 
-// ── Roles chips ───────────────────────────────────────────────────────────
-// Re-use mk-chips but cap overflow visually.
-.cc-card__roles {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.3rem;
-
-  span {
-    padding: 0.15rem 0.5rem;
-    border-radius: 999px;
-    border: 1px solid $border;
-    font-size: 0.72rem;
-    color: #bbb;
-    background: rgba(#fff, 0.03);
-    max-width: 180px;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-}
-
 // ── Deadline ──────────────────────────────────────────────────────────────
 .cc-card__deadline {
   margin: 0;

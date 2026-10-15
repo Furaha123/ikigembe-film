@@ -39,6 +39,13 @@ export const routes: Routes = [
     loadComponent: () => import('./pages/verify-email/verify-email.component').then(a => a.VerifyEmailComponent)
   },
   {
+    // Signed in, but the API answered 403 email_unverified: resend the link, fix the address or sign out.
+    path: 'verify-email-required',
+    canActivate: [authGuard],
+    loadComponent: () => import('./pages/verify-email/email-verification-required.component')
+      .then(a => a.EmailVerificationRequiredComponent)
+  },
+  {
     path: 'browse',
     canActivate: [authGuard, viewerGuard],
     loadComponent: () => import('./pages/browse/browse.component').then(a => a.BrowseComponent)
@@ -86,6 +93,11 @@ export const routes: Routes = [
         data: marketplaceRoute('submit-talent'),
         canDeactivate: [unsavedChangesGuard],
         loadComponent: () => import('./pages/actor/talent-submit/talent-submit.component').then(a => a.TalentSubmitComponent)
+      },
+      {
+        path: 'membership',
+        data: marketplaceRoute('actor-membership'),
+        loadComponent: () => import('./pages/actor/actor-membership/actor-membership.component').then(a => a.ActorMembershipComponent)
       },
       {
         path: 'applications',

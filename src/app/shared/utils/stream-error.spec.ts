@@ -48,6 +48,19 @@ describe('classifyStreamError', () => {
     expect(d.canBuy).toBeFalse();
   });
 
+  it('503 stream_unavailable → try-again-later message, no buy action', () => {
+    const d = classifyStreamError(new HttpErrorResponse({ status: 503, error: { error: 'x', code: 'stream_unavailable' } }));
+    expect(d.kind).toBe('stream_unavailable');
+    expect(d.key).toBe('viewer.stream.unavailable');
+    expect(d.canBuy).toBeFalse();
+  });
+
+  it('403 device_invalid (after the one retry) → generic error, not a purchase prompt', () => {
+    const d = classifyStreamError(new HttpErrorResponse({ status: 403, error: { error: 'x', code: 'device_invalid' } }));
+    expect(d.kind).toBe('device_invalid');
+    expect(d.canBuy).toBeFalse();
+  });
+
   it('404 → not_found', () => {
     expect(classifyStreamError(httpError(404, 'Movie not found')).kind).toBe('not_found');
   });

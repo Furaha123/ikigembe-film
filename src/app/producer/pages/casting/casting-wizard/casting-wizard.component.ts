@@ -19,7 +19,7 @@ import { DraftStoreService } from '../../../../shared/services/draft-store.servi
 import { ActorGender, CastingCall, CastingCallPayload, ServicePurchase, ServiceQuote } from '../../../../shared/models/marketplace.interface';
 import { marketplaceErrorMessage } from '../../../../shared/utils/marketplace-error';
 import { firstFieldError } from '../../../../shared/utils/api-error';
-import { castingPublicationClass, castingPublicationState } from '../../../../shared/utils/marketplace-status';
+import { castingIsOpen, castingPublicationClass, castingPublicationState } from '../../../../shared/utils/marketplace-status';
 
 export type CastingType = 'specific' | 'various';
 export type CastingWizardStep = 'type' | 'details' | 'roles' | 'poster' | 'review' | 'result';
@@ -71,6 +71,12 @@ export function futureDate(control: AbstractControl<string>): ValidationErrors |
   if (!control.value) return null;
   const t = new Date(control.value).getTime();
   return Number.isFinite(t) && t > Date.now() ? null : { past: true };
+}
+
+/** A published call's deadline only moves later (`datetime-local` strings compare in time order). */
+export function notEarlierThan(original: string) {
+  return (control: AbstractControl<string>): ValidationErrors | null =>
+    control.value && control.value < original ? { earlier: true } : null;
 }
 
 @Component({
@@ -162,6 +168,17 @@ export class CastingWizardComponent implements OnInit, OnDestroy, HasUnsavedChan
     const c = this.call();
     return c ? castingPublicationState(c) : null;
   });
+  /**
+   * Correcting a published, still-open call: changes go live on save with no fee. The server lets its
+   * deadline move later once (`deadline_extended_at`); after that the deadline field is locked.
+   */
+  readonly editingLive = computed(() => {
+    const c = this.call();
+    return !!c && c.status === 'published' && castingIsOpen(c);
+  });
+  readonly deadlineExtended = computed(() => !!this.call()?.deadline_extended_at);
+  /** The deadline as loaded, so an unchanged one isn't sent (and doesn't use up the extension). */
+  originalDeadline = '';
 
   private get draftKey(): string {
     return `casting:${this.callId() ?? 'new'}`;
@@ -188,11 +205,12 @@ export class CastingWizardComponent implements OnInit, OnDestroy, HasUnsavedChan
       next: (c) => {
         this.loading.set(false);
         this.call.set(c);
-        // Drafts and rejected calls are edited; everything else shows its status.
-        if (c.status !== 'draft' && c.status !== 'rejected') {
+        // Drafts, rejected calls and open published calls are edited; everything else shows its status.
+        if (c.status !== 'draft' && c.status !== 'rejected' && !this.editingLive()) {
           this.step.set('result');
           return;
         }
+        this.originalDeadline = toLocalInput(c.deadline_at);
         this.details.patchValue({
           title: c.title,
           description: c.description,
@@ -221,6 +239,7 @@ export class CastingWizardComponent implements OnInit, OnDestroy, HasUnsavedChan
         this.type.set(c.roles.length > 1 ? 'various' : 'specific');
         if (c.poster_url) this.posterPreview.set(c.poster_url);
         this.restoreDraft();
+        if (this.editingLive()) this.applyLiveDeadlineRules();
       },
       error: (err: HttpErrorResponse) => {
         this.loading.set(false);
@@ -262,7 +281,7 @@ export class CastingWizardComponent implements OnInit, OnDestroy, HasUnsavedChan
         break;
       case 'poster':
         this.goTo('review');
-        this.loadQuote();
+        if (!this.editingLive()) this.loadQuote();
         break;
     }
   }
@@ -370,7 +389,7 @@ export class CastingWizardComponent implements OnInit, OnDestroy, HasUnsavedChan
     }
     const payload = this.payload();
     const id = this.callId();
-    const req: Observable<CastingCall> = id ? this.casting.updateCall(id, payload) : this.casting.createCall(payload);
+    const req: Observable<CastingCall> = id ? this.casting.updateCall(id, payload) : this.casting.createCall(payload as CastingCallPayload);
     this.saving.set(true);
     this.saveError.set(null);
     this.savedNotice.set(false);
@@ -398,8 +417,19 @@ export class CastingWizardComponent implements OnInit, OnDestroy, HasUnsavedChan
     });
   }
 
-  /** The fee is already paid (a rejected call being corrected): resubmitting needs no new payment. */
+  /** Saves edits to a published call; they are live at once. */
+  saveLiveChanges(): void {
+    this.saveDraft((call) => {
+      this.originalDeadline = toLocalInput(call.deadline_at);
+      this.goTo('result');
+      this.savedNotice.set(true);
+    });
+  }
+
+  /** The fee is already paid (deadline moved, or a legacy rejected call): publishing needs no new payment. */
   readonly alreadyPaid = computed(() => this.call()?.payment_status === 'Completed');
+  /** The producer's Full plan covers casting calls: publishing needs no payment. */
+  readonly includedInPlan = computed(() => !!this.quote()?.included);
 
   payAndPublish(): void {
     if (this.purchase() || this.saving()) return;
@@ -410,7 +440,11 @@ export class CastingWizardComponent implements OnInit, OnDestroy, HasUnsavedChan
       return;
     }
     if (this.alreadyPaid()) {
-      this.saveDraft((call) => this.sendForReview(call.id));
+      this.saveDraft((call) => this.publishPaid(call.id));
+      return;
+    }
+    if (this.includedInPlan()) {
+      this.saveDraft((call) => this.publishWith(this.casting.publishWithPlan(call.id)));
       return;
     }
     this.saveDraft((call) => {
@@ -431,10 +465,14 @@ export class CastingWizardComponent implements OnInit, OnDestroy, HasUnsavedChan
     this.refreshState();
   }
 
-  private sendForReview(id: number): void {
+  private publishPaid(id: number): void {
+    this.publishWith(this.casting.submitCall(id));
+  }
+
+  private publishWith(request: Observable<CastingCall>): void {
     this.saving.set(true);
     this.saveError.set(null);
-    this.casting.submitCall(id).subscribe({
+    request.subscribe({
       next: (c) => {
         this.saving.set(false);
         this.call.set(c);
@@ -539,6 +577,17 @@ export class CastingWizardComponent implements OnInit, OnDestroy, HasUnsavedChan
     this.details.markAsDirty();
   }
 
+  private applyLiveDeadlineRules(): void {
+    const deadline = this.details.controls.deadline_at;
+    if (this.deadlineExtended()) {
+      deadline.setValue(this.originalDeadline);
+      deadline.disable();
+    } else {
+      deadline.addValidators(notEarlierThan(this.originalDeadline));
+      deadline.updateValueAndValidity();
+    }
+  }
+
   private setRoles(values: string[]): void {
     this.roles.clear();
     for (const v of values.length ? values : ['']) this.roles.push(this.roleControl(v));
@@ -548,15 +597,16 @@ export class CastingWizardComponent implements OnInit, OnDestroy, HasUnsavedChan
     return this.fb.nonNullable.control(value, [Validators.required, Validators.maxLength(500), notBlank]);
   }
 
-  private payload(): CastingCallPayload {
+  private payload(): Partial<CastingCallPayload> {
     const v = this.details.getRawValue();
     const r = this.requirements.getRawValue();
-    const base: CastingCallPayload = {
+    const base: Partial<CastingCallPayload> = {
       title: v.title.trim(),
       description: v.description.trim(),
       roles: this.roles.getRawValue().map(role => role.trim()).filter(Boolean),
-      deadline_at: new Date(v.deadline_at).toISOString(),
     };
+    // A published call's unchanged deadline isn't sent: the server would count a change as the extension.
+    if (!this.editingLive() || v.deadline_at !== this.originalDeadline) base.deadline_at = new Date(v.deadline_at).toISOString();
     if (v.project_type.trim())        base.project_type = v.project_type.trim();
     if (v.genre.trim())               base.genre = v.genre.trim();
     if (v.shooting_location.trim())   base.shooting_location = v.shooting_location.trim();

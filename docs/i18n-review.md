@@ -16,7 +16,7 @@ speaker before launch:
 
 | Area | Keys |
 |---|---|
-| Sign-in, register, password reset | `auth.*` |
+| Sign-in, register, password reset, email verification prompt (`auth.verifyRequired.*`) | `auth.*` |
 | Header, footer, navigation | `header.*`, `footer.*`, `nav.*` |
 | Home, browse, films catalogue, carousel, banner | `home.*`, `browse.*`, `films.*`, `carousel.*`, `banner.*` |
 | Film page, preview, player | `movieDetailPage.*`, `movieDetail.*`, `preview.*`, `viewer.*`, `playerUi.*`, `player.*` |

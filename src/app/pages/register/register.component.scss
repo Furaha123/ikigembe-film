@@ -342,3 +342,14 @@ $shadow:     0 1px 8px rgba(0, 0, 0, 0.95);
   .form-card { max-width: 100%; }
   .field-row { grid-template-columns: 1fr; gap: 0; }
 }
+
+/* -- General form error (server or network failure; field errors sit under their fields) -- */
+.form-error {
+  background: rgba(239, 68, 68, 0.18);
+  border: 1px solid rgba(239, 68, 68, 0.4);
+  color: #ffcece;
+  font-size: 0.875rem;
+  border-radius: 5px;
+  padding: 0.75rem 1rem;
+  margin-bottom: 1rem;
+}

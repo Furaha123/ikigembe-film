@@ -109,10 +109,46 @@
                [attr.aria-label]="'playerUi.volume' | translate"
                (input)="onVolumeChange($event)" />
 
+        <!-- Captions (only when the stream response carries subtitle tracks) -->
+        @if (tracks().length > 0) {
+          <div class="vp-quality-wrap">
+            <button #captionsBtn type="button" class="vp-btn vp-captions-btn"
+                    [class.vp-btn--on]="activeTrack() >= 0"
+                    aria-haspopup="menu"
+                    [attr.aria-expanded]="showCaptionsMenu()"
+                    (click)="toggleCaptionsMenu()"
+                    [title]="'playerUi.captions' | translate">
+              <svg viewBox="0 0 24 24" fill="currentColor">
+                <path d="M19 4H5c-1.11 0-2 .9-2 2v12c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm-8 7H9.5v-.5h-2v3h2V13H11v1c0 .55-.45 1-1 1H7c-.55 0-1-.45-1-1v-4c0-.55.45-1 1-1h3c.55 0 1 .45 1 1v1zm7 0h-1.5v-.5h-2v3h2V13H18v1c0 .55-.45 1-1 1h-3c-.55 0-1-.45-1-1v-4c0-.55.45-1 1-1h3c.55 0 1 .45 1 1v1z"/>
+              </svg>
+            </button>
+            @if (showCaptionsMenu()) {
+              <div class="vp-quality-menu vp-menu vp-captions-menu" role="menu" [attr.aria-label]="'playerUi.captions' | translate">
+                <button type="button" role="menuitemradio"
+                        [attr.aria-checked]="activeTrack() === -1"
+                        [class.active]="activeTrack() === -1"
+                        (click)="setCaption(-1)">
+                  {{ 'playerUi.captionsOff' | translate }}
+                </button>
+                @for (t of tracks(); track t.id; let i = $index) {
+                  <button type="button" role="menuitemradio"
+                          [attr.aria-checked]="activeTrack() === i"
+                          [class.active]="activeTrack() === i"
+                          (click)="setCaption(i)">
+                    {{ t.language_name }}
+                  </button>
+                }
+              </div>
+            }
+          </div>
+        }
+
         <!-- Quality picker (HLS only) -->
         @if (qualityLevels().length > 0) {
-          <div class="vp-quality-wrap" tabindex="-1" (click)="$event.stopPropagation()" (keydown)="$event.stopPropagation()">
-            <button class="vp-btn vp-quality-btn"
+          <div class="vp-quality-wrap">
+            <button #qualityBtn type="button" class="vp-btn vp-quality-btn"
+                    aria-haspopup="menu"
+                    [attr.aria-expanded]="showQualityMenu()"
                     (click)="toggleQualityMenu()"
                     [title]="'playerUi.quality' | translate: { label: (currentQualityLabel() | translate) }">
               <span class="vp-quality-chip">
@@ -123,9 +159,10 @@
               </span>
             </button>
             @if (showQualityMenu()) {
-              <div class="vp-quality-menu" role="menu">
+              <div class="vp-quality-menu vp-menu" role="menu" [attr.aria-label]="'playerUi.qualityMenu' | translate">
                 @for (level of qualityLevels(); track level.index) {
-                  <button role="menuitem"
+                  <button type="button" role="menuitemradio"
+                          [attr.aria-checked]="currentQuality() === level.index"
                           [class.active]="currentQuality() === level.index"
                           (click)="setQuality(level.index)">
                     @if (level.index === -1) {
@@ -163,8 +200,14 @@
   </div>
 
   <!-- Big center play button when paused -->
-  @if (!playing() && !srcError()) {
-    <button class="vp-center-play" (click)="togglePlay()" [attr.aria-label]="'playerUi.play' | translate">
+  @if (loading() && !srcError()) {
+    <!-- Loading / buffering -->
+    <div class="vp-spinner" role="status">
+      <span class="vp-spinner__ring" aria-hidden="true"></span>
+      <span class="vp-sr-only">{{ 'playerUi.loading' | translate }}</span>
+    </div>
+  } @else if (!playing() && !srcError()) {
+    <button type="button" class="vp-center-play" (click)="togglePlay()" [attr.aria-label]="'playerUi.play' | translate">
       <svg viewBox="0 0 24 24" fill="currentColor">
         <path d="M8 5v14l11-7z"/>
       </svg>
@@ -173,11 +216,12 @@
 
   <!-- Source error state -->
   @if (srcError()) {
-    <div class="vp-error" role="alert">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="48" height="48">
+    <div class="vp-error" role="alert" [attr.data-kind]="errorKind()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="48" height="48" aria-hidden="true">
         <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
       </svg>
-      <p>{{ 'player.error' | translate }}</p>
+      <p>{{ errorKey() | translate }}</p>
+      <button type="button" class="vp-retry" (click)="retry()">{{ 'playerUi.retry' | translate }}</button>
     </div>
   }
 </div>

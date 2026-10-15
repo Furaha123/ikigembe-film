@@ -4,6 +4,7 @@ import { Observable, map } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { MovieUploadField, MultipartUploadApi } from '../../shared/models/upload.interface';
 import { MovieUploadService } from '../../shared/services/movie-upload.service';
+import { LifecycleStatus } from '../../shared/utils/film-status';
 
 export type AnalyticsRange = '7d' | '28d' | '90d' | '365d' | 'lifetime';
 export type AnalyticsPeriod = 'daily' | 'weekly' | 'monthly';
@@ -36,6 +37,8 @@ export interface ProducerWallet {
   platform_commission: number;
   total_earnings: number;
   wallet_balance: number;
+  /** Demo mode: simulated sales included in the amounts (no money moved). */
+  simulated_gross_revenue?: number;
   pending_withdrawals: number;
   total_withdrawn: number;
   producer_share_percentage: number;
@@ -54,7 +57,11 @@ export interface ProducerMovie {
   is_active: boolean;
   has_free_preview: boolean;
   hls_status: 'not_started' | 'processing' | 'ready' | 'failed';
-  approval_status: 'pending_review' | 'approved' | 'rejected' | 'approved_pending_contract' | 'changes_requested';
+  approval_status: 'draft' | 'pending_review' | 'approved' | 'rejected' | 'approved_pending_contract' | 'changes_requested';
+  /** Server-derived: draft, in review, …, scheduled, published, unpublished (`shared/utils/film-status.ts`). */
+  lifecycle_status?: LifecycleStatus;
+  /** UTC; shown in Kigali time. */
+  release_at?: string | null;
   rejection_reason: string | null;
   changes_requested_note: string | null;
   created_at: string;
@@ -139,14 +146,61 @@ export interface ProducerWithdrawalPage {
   results: ProducerWithdrawal[];
 }
 
-export interface WithdrawalRequest {
+// ── Monthly payouts (GET /producer/payouts/) ───────────
+// Producers are paid once a month from their closed statements; withdrawal requests are retired
+// (the API answers 410 `monthly_payouts`), older ones stay listed as history.
+
+export type PayoutMethod = 'mobile_money' | 'bank';
+
+/** Where the producer is paid. Bank accounts outside Rwanda need a SWIFT/BIC code. */
+export interface PayoutAccount {
+  method: PayoutMethod;
+  account_holder_name: string;
+  /** ISO 3166-1 alpha-2, e.g. RW. */
+  country: string;
+  mobile_number: string;
+  mobile_network: string;
+  bank_name: string;
+  /** Account number or IBAN. */
+  account_number: string;
+  swift_code: string;
+  updated_at?: string;
+}
+
+export type PayoutStatus = 'pending' | 'processing' | 'paid' | 'failed';
+
+export interface ProducerPayout {
+  id: number;
+  /** The month whose close prepared it. */
+  period: string;
+  /** Every month it settles (earlier ones were carried over). */
+  months: string[];
+  earned: number;
+  /** Already paid through older withdrawals. */
+  withdrawal_offset: number;
   amount: number;
-  payment_method: 'Bank' | 'MoMo';
-  bank_name?: string | null;
-  account_number?: string | null;
-  account_holder_name?: string | null;
-  momo_number?: string | null;
-  momo_provider?: string | null;
+  status: PayoutStatus;
+  provider: string | null;
+  reference: string | null;
+  failure_reason: string | null;
+  sent_at: string | null;
+  paid_at: string | null;
+  created_at: string;
+}
+
+export interface PayoutSchedule {
+  /** Day of the month on which the previous month is closed and paid. */
+  day: number;
+  minimum: number;
+  next_date: string;
+}
+
+export interface ProducerPayouts {
+  schedule: PayoutSchedule;
+  account: PayoutAccount | null;
+  /** Closed months not in a payout yet (below the minimum, or on hold). */
+  carried_over: number;
+  results: ProducerPayout[];
 }
 
 // ── Report interfaces ──────────────────────────────────
@@ -262,8 +316,12 @@ export class ProducerService {
     );
   }
 
-  requestWithdrawal(payload: WithdrawalRequest): Observable<ProducerWithdrawal> {
-    return this.http.post<ProducerWithdrawal>(`${BASE}/producer/dashboard/withdrawals/`, payload);
+  getPayouts(): Observable<ProducerPayouts> {
+    return this.http.get<ProducerPayouts>(`${BASE}/producer/payouts/`);
+  }
+
+  savePayoutAccount(account: PayoutAccount): Observable<PayoutAccount> {
+    return this.http.put<PayoutAccount>(`${BASE}/producer/payouts/account/`, account);
   }
 
   getTransactions(page = 1): Observable<DashboardTransactionResponse> {

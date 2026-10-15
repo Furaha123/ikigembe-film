@@ -312,6 +312,9 @@ $ctrl-bg: rgba(0, 0, 0, 0.72);
   background: rgba(0,0,0,0.75);
   color: rgba(255,255,255,0.7);
   gap: 0.75rem;
+  z-index: 10;
+  padding: 0 1rem;
+  text-align: center;
 
   p {
     font-size: 0.9rem;
@@ -330,3 +333,54 @@ $ctrl-bg: rgba(0, 0, 0, 0.72);
   text-shadow: 0 0 2px rgba(0, 0, 0, 0.6);
   transition: top 1.5s ease, left 1.5s ease;
 }
+
+// ── Loading / buffering ───────────────────────────────
+.vp-spinner {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  z-index: 5;
+
+  &__ring {
+    display: block;
+    width: 52px;
+    height: 52px;
+    border: 4px solid rgba(255, 255, 255, 0.25);
+    border-top-color: $accent;
+    border-radius: 50%;
+    animation: vp-spin 0.9s linear infinite;
+  }
+}
+
+@keyframes vp-spin { to { transform: rotate(360deg); } }
+
+@media (prefers-reduced-motion: reduce) {
+  .vp-spinner__ring { animation-duration: 2.4s; }
+}
+
+.vp-sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+.vp-retry {
+  margin-top: 0.25rem;
+  padding: 0.5rem 1.25rem;
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff;
+  font: inherit;
+  font-size: 0.9rem;
+  cursor: pointer;
+
+  &:hover, &:focus-visible { background: rgba(255, 255, 255, 0.2); }
+}
+
+.vp-btn--on { color: $accent; }

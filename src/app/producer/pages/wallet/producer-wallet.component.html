@@ -10,19 +10,23 @@
       @for (i of [1,2,3,4]; track i) { <div class="stat-skeleton"></div> }
     </div>
   } @else if (wallet()) {
+    @if (wallet()!.simulated_gross_revenue) {
+      <p class="simulated-note" role="note"><strong>{{ 'payment.simulated' | translate }}</strong>
+        {{ 'producer.wallet.simulatedNote' | translate: { amount: formatCurrency(wallet()!.simulated_gross_revenue!) } }}</p>
+    }
     <div class="stats-grid">
       <div class="stat-card balance">
         <div class="stat-icon">
-          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M21 18v1c0 1.1-.9 2-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14c1.1 0 2 .9 2 2v1h-9a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h9zm-9-2h10V8H12v8zm4-2.5a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3z"/></svg>
+          <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M21 18v1c0 1.1-.9 2-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14c1.1 0 2 .9 2 2v1h-9a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h9zm-9-2h10V8H12v8zm4-2.5a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3z"/></svg>
         </div>
         <div class="stat-body">
           <span class="stat-value">{{ formatCurrency(wallet()!.wallet_balance) }}</span>
-          <span class="stat-label">{{ 'wallet.available' | translate }}</span>
+          <span class="stat-label">{{ 'wallet.notPaidYet' | translate }}</span>
         </div>
       </div>
       <div class="stat-card earnings">
         <div class="stat-icon">
-          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M16 6l2.29 2.29-4.88 4.88-4-4L2 16.59 3.41 18l6-6 4 4 6.3-6.29L22 12V6h-6z"/></svg>
+          <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M16 6l2.29 2.29-4.88 4.88-4-4L2 16.59 3.41 18l6-6 4 4 6.3-6.29L22 12V6h-6z"/></svg>
         </div>
         <div class="stat-body">
           <span class="stat-value">{{ formatCurrency(wallet()!.total_earnings) }}</span>
@@ -31,20 +35,20 @@
       </div>
       <div class="stat-card withdrawn">
         <div class="stat-icon">
-          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M11.8 10.9c-2.27-.59-3-1.2-3-2.15 0-1.09 1.01-1.85 2.7-1.85 1.78 0 2.44.85 2.5 2.1h2.21c-.07-1.72-1.12-3.3-3.21-3.81V3h-3v2.16c-1.94.42-3.5 1.68-3.5 3.61 0 2.31 1.91 3.46 4.7 4.13 2.5.6 3 1.48 3 2.41 0 .69-.49 1.79-2.7 1.79-2.06 0-2.87-.92-2.98-2.1h-2.2c.12 2.19 1.76 3.42 3.68 3.83V21h3v-2.15c1.95-.37 3.5-1.5 3.5-3.55 0-2.84-2.43-3.81-4.7-4.4z"/></svg>
+          <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M11.8 10.9c-2.27-.59-3-1.2-3-2.15 0-1.09 1.01-1.85 2.7-1.85 1.78 0 2.44.85 2.5 2.1h2.21c-.07-1.72-1.12-3.3-3.21-3.81V3h-3v2.16c-1.94.42-3.5 1.68-3.5 3.61 0 2.31 1.91 3.46 4.7 4.13 2.5.6 3 1.48 3 2.41 0 .69-.49 1.79-2.7 1.79-2.06 0-2.87-.92-2.98-2.1h-2.2c.12 2.19 1.76 3.42 3.68 3.83V21h3v-2.15c1.95-.37 3.5-1.5 3.5-3.55 0-2.84-2.43-3.81-4.7-4.4z"/></svg>
         </div>
         <div class="stat-body">
           <span class="stat-value">{{ formatCurrency(wallet()!.total_withdrawn) }}</span>
-          <span class="stat-label">{{ 'wallet.totalWithdrawn' | translate }}</span>
+          <span class="stat-label">{{ 'wallet.totalPaidOut' | translate }}</span>
         </div>
       </div>
       <div class="stat-card pending">
         <div class="stat-icon">
-          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>
+          <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11zM7 10h5v5H7z"/></svg>
         </div>
         <div class="stat-body">
-          <span class="stat-value">{{ formatCurrency(wallet()!.pending_withdrawals) }}</span>
-          <span class="stat-label">{{ 'wallet.pending' | translate }}</span>
+          <span class="stat-value">{{ payouts() ? (payouts()!.schedule.next_date | date:'mediumDate') : '—' }}</span>
+          <span class="stat-label">{{ 'wallet.nextPayout' | translate }}</span>
         </div>
       </div>
     </div>
@@ -56,105 +60,165 @@
     }
   }
 
-  <!-- Withdrawal form -->
-  <div class="form-card">
-    <h2 class="form-title">{{ 'wallet.form.title' | translate }}</h2>
-    <p class="form-sub">{{ 'wallet.form.subtitle' | translate }}</p>
+  @if (loadError()) {
+    <div class="alert error" role="alert">{{ loadError() | translate }}</div>
+  }
 
-    @if (successMsg()) {
-      <div class="alert success">
-        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
-        {{ successMsg()! | translate }}
-      </div>
-    }
-    @if (apiError()) {
-      <div class="alert error">
-        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg>
-        {{ apiError()! | translate }}
-      </div>
-    }
+  @if (payouts(); as p) {
+    <!-- How monthly payouts work -->
+    <section class="form-card schedule-card" aria-labelledby="pw-schedule">
+      <h2 class="form-title" id="pw-schedule">{{ 'wallet.payouts.scheduleTitle' | translate }}</h2>
+      <p class="form-sub">{{ 'wallet.payouts.scheduleText' | translate: { day: p.schedule.day, minimum: (p.schedule.minimum | number) } }}</p>
+      @if (p.carried_over > 0) {
+        <p class="carried">{{ 'wallet.payouts.carried' | translate: { amount: (p.carried_over | number) } }}</p>
+      }
+    </section>
 
-    <form [formGroup]="form" (ngSubmit)="submit()">
-      <!-- Amount -->
-      <div class="field">
-        <label for="pw-amount">{{ 'wallet.form.amount' | translate }}</label>
-        <input id="pw-amount" type="number" formControlName="amount" placeholder="e.g. 50000" min="1" />
-        @if (form.get('amount')?.touched && form.get('amount')?.hasError('required')) {
-          <span class="field-error">{{ 'wallet.form.amountRequired' | translate }}</span>
+    <!-- Payout details -->
+    <section class="form-card" aria-labelledby="pw-account">
+      <h2 class="form-title" id="pw-account">{{ 'wallet.payouts.accountTitle' | translate }}</h2>
+      <p class="form-sub">{{ 'wallet.payouts.accountSubtitle' | translate }}</p>
+
+      <div aria-live="polite">
+        @if (successMsg()) {
+          <div class="alert success" role="status">
+            <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+            {{ successMsg() | translate }}
+          </div>
+        }
+        @if (apiError()) {
+          <div class="alert error" role="alert">
+            <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg>
+            {{ apiError() | translate }}
+          </div>
         }
       </div>
 
-      <!-- Payout invoice preview -->
-      @if (taxBreakdown()) {
-        <div class="invoice-preview">
-          <div class="invoice-header">
-            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6zm-1 7V3.5L18.5 9H13z"/></svg>
-            {{ 'wallet.form.summary' | translate }}
-          </div>
-          <div class="invoice-row">
-            <span class="inv-label">{{ 'wallet.form.summaryAmount' | translate }}</span>
-            <span class="inv-val">RWF {{ taxBreakdown()!.amount | number }}</span>
-          </div>
-          <div class="invoice-divider"></div>
-          <div class="invoice-row total">
-            <span class="inv-label-total">{{ 'wallet.form.summaryTotal' | translate }}</span>
-            <span class="inv-val-total">RWF {{ taxBreakdown()!.totalDeducted | number }}</span>
-          </div>
-          <p class="inv-label">{{ 'wallet.form.taxNote' | translate }}</p>
-        </div>
-      }
-
-      <!-- Payment method toggle -->
-      <div class="field">
-        <span class="field-label">{{ 'dashboard.withdraw.method' | translate }}</span>
-        <div class="method-tabs">
-          <button type="button" class="method-tab" [class.active]="isBank()" (click)="setMethod('Bank')">
-            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M4 10v7h3v-7H4zm6 0v7h3v-7h-3zM2 22h19v-3H2v3zm14-12v7h3v-7h-3zM11.5 1L2 6v2h19V6l-9.5-5z"/></svg>
-            {{ 'wallet.form.bankTransfer' | translate }}
-          </button>
-          <button type="button" class="method-tab" [class.active]="!isBank()" (click)="setMethod('MoMo')">
-            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M17 1.01L7 1c-1.1 0-2 .9-2 2v18c0 1.1.9 2 2 2h10c1.1 0 2-.9 2-2V3c0-1.1-.9-1.99-2-1.99zM17 19H7V5h10v14z"/></svg>
-            {{ 'wallet.form.mobileMoney' | translate }}
-          </button>
-        </div>
-      </div>
-
-      <!-- Bank fields -->
-      @if (isBank()) {
-        <div class="field">
-          <label for="pw-bank-name">{{ 'wallet.form.bankName' | translate }}</label>
-          <input id="pw-bank-name" type="text" formControlName="bank_name" [placeholder]="'producerUi.wallet.bankPlaceholder' | translate" />
-        </div>
-        <div class="field">
-          <label for="pw-account-number">{{ 'wallet.form.accountNumber' | translate }}</label>
-          <input id="pw-account-number" type="text" formControlName="account_number" placeholder="e.g. 1234567890" />
-        </div>
-        <div class="field">
-          <label for="pw-account-holder">{{ 'wallet.form.accountHolder' | translate }}</label>
-          <input id="pw-account-holder" type="text" formControlName="account_holder_name" [placeholder]="'producerUi.wallet.holderPlaceholder' | translate" />
-        </div>
+      @if (!editing() && account(); as a) {
+        <dl class="account-summary">
+          <dt>{{ 'wallet.payouts.form.method' | translate }}</dt>
+          <dd>{{ (a.method === 'bank' ? 'wallet.form.bankTransfer' : 'wallet.form.mobileMoney') | translate }}</dd>
+          <dt>{{ 'wallet.payouts.form.sendTo' | translate }}</dt>
+          <dd>{{ accountSummary(a) }}</dd>
+          <dt>{{ 'wallet.form.accountHolder' | translate }}</dt>
+          <dd>{{ a.account_holder_name }}</dd>
+          <dt>{{ 'wallet.payouts.form.country' | translate }}</dt>
+          <dd>{{ countryName(a.country) }}</dd>
+        </dl>
+        <button type="button" class="submit-btn secondary" (click)="edit()">{{ 'wallet.payouts.form.change' | translate }}</button>
       } @else {
-        <div class="field">
-          <label for="pw-momo-number">{{ 'wallet.form.momoNumber' | translate }}</label>
-          <input id="pw-momo-number" type="text" formControlName="momo_number" [placeholder]="'producerUi.wallet.momoPlaceholder' | translate" />
-        </div>
-        <div class="field">
-          <label for="pw-momo-provider">{{ 'wallet.form.momoProvider' | translate }}</label>
-          <select id="pw-momo-provider" formControlName="momo_provider">
-            <option value="">{{ 'wallet.form.selectProvider' | translate }}</option>
-            <option value="MTN">{{ 'wallet.form.mtn' | translate }}</option>
-            <option value="Airtel">{{ 'wallet.form.airtel' | translate }}</option>
-          </select>
+        @if (!account()) {
+          <p class="carried">{{ 'wallet.payouts.noAccount' | translate }}</p>
+        }
+        <form [formGroup]="form" (ngSubmit)="save()" novalidate>
+          <div class="field">
+            <span class="field-label" id="pw-method-label">{{ 'wallet.payouts.form.method' | translate }}</span>
+            <div class="method-tabs" role="group" aria-labelledby="pw-method-label">
+              <button type="button" class="method-tab" [class.active]="!isBank()" [attr.aria-pressed]="!isBank()" (click)="setMethod('mobile_money')">
+                <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17 1.01L7 1c-1.1 0-2 .9-2 2v18c0 1.1.9 2 2 2h10c1.1 0 2-.9 2-2V3c0-1.1-.9-1.99-2-1.99zM17 19H7V5h10v14z"/></svg>
+                {{ 'wallet.form.mobileMoney' | translate }}
+              </button>
+              <button type="button" class="method-tab" [class.active]="isBank()" [attr.aria-pressed]="isBank()" (click)="setMethod('bank')">
+                <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M4 10v7h3v-7H4zm6 0v7h3v-7h-3zM2 22h19v-3H2v3zm14-12v7h3v-7h-3zM11.5 1L2 6v2h19V6l-9.5-5z"/></svg>
+                {{ 'wallet.form.bankTransfer' | translate }}
+              </button>
+            </div>
+          </div>
+
+          <div class="field">
+            <label for="pw-country">{{ 'wallet.payouts.form.country' | translate }}</label>
+            <select id="pw-country" formControlName="country">
+              @for (c of countries; track c.code) { <option [value]="c.code">{{ c.name }}</option> }
+            </select>
+          </div>
+
+          <div class="field">
+            <label for="pw-holder">{{ 'wallet.form.accountHolder' | translate }}</label>
+            <input id="pw-holder" type="text" formControlName="account_holder_name" autocomplete="name"
+                   [placeholder]="'producerUi.wallet.holderPlaceholder' | translate" />
+            @if (invalid('account_holder_name')) { <span class="field-error">{{ 'wallet.payouts.form.required' | translate }}</span> }
+          </div>
+
+          @if (isBank()) {
+            <div class="field">
+              <label for="pw-bank-name">{{ 'wallet.form.bankName' | translate }}</label>
+              <input id="pw-bank-name" type="text" formControlName="bank_name" [placeholder]="'producerUi.wallet.bankPlaceholder' | translate" />
+            </div>
+            <div class="field">
+              <label for="pw-account-number">{{ 'wallet.payouts.form.accountNumber' | translate }}</label>
+              <input id="pw-account-number" type="text" formControlName="account_number" autocomplete="off" spellcheck="false" />
+            </div>
+            <div class="field">
+              <label for="pw-swift">{{ 'wallet.payouts.form.swift' | translate }}
+                @if (!needsSwift()) { <span class="optional">({{ 'wallet.payouts.form.optional' | translate }})</span> }
+              </label>
+              <input id="pw-swift" type="text" formControlName="swift_code" maxlength="11" autocomplete="off" spellcheck="false" />
+              <span class="field-hint">{{ 'wallet.payouts.form.swiftHint' | translate }}</span>
+            </div>
+          } @else {
+            <div class="field">
+              <label for="pw-momo-number">{{ 'wallet.payouts.form.mobileNumber' | translate }}</label>
+              <input id="pw-momo-number" type="tel" formControlName="mobile_number" autocomplete="tel" placeholder="+250 78X XXX XXX" />
+              <span class="field-hint">{{ 'wallet.payouts.form.mobileHint' | translate }}</span>
+            </div>
+            <div class="field">
+              <label for="pw-momo-network">{{ 'wallet.payouts.form.network' | translate }}</label>
+              <input id="pw-momo-network" type="text" formControlName="mobile_network" list="pw-networks" placeholder="MTN" />
+              <datalist id="pw-networks">
+                <option value="MTN"></option><option value="Airtel"></option><option value="M-Pesa"></option>
+                <option value="Orange Money"></option><option value="Vodacom"></option>
+              </datalist>
+            </div>
+          }
+
+          <div class="form-actions">
+            @if (account()) {
+              <button type="button" class="submit-btn secondary" (click)="cancelEdit()">{{ 'admin.payments.cancel' | translate }}</button>
+            }
+            <button type="submit" class="submit-btn" [disabled]="isSaving()" [attr.aria-busy]="isSaving()">
+              @if (isSaving()) { <span class="spinner"></span> }
+              {{ 'wallet.payouts.form.save' | translate }}
+            </button>
+          </div>
+        </form>
+      }
+    </section>
+
+    <!-- Payout history -->
+    <section class="form-card" aria-labelledby="pw-history">
+      <h2 class="form-title" id="pw-history">{{ 'wallet.payouts.historyTitle' | translate }}</h2>
+      @if (p.results.length === 0) {
+        <p class="form-sub">{{ 'wallet.payouts.empty' | translate }}</p>
+      } @else {
+        <div class="table-wrap">
+          <table class="payout-table">
+            <thead><tr>
+              <th scope="col">{{ 'wallet.payouts.table.months' | translate }}</th>
+              <th scope="col" class="num">{{ 'wallet.payouts.table.amount' | translate }}</th>
+              <th scope="col">{{ 'wallet.payouts.table.status' | translate }}</th>
+              <th scope="col">{{ 'wallet.payouts.table.reference' | translate }}</th>
+            </tr></thead>
+            <tbody>
+              @for (row of p.results; track row.id) {
+                <tr>
+                  <td>{{ row.months.join(', ') || row.period }}</td>
+                  <td class="num">
+                    RWF {{ row.amount | number }}
+                    @if (row.withdrawal_offset > 0) {
+                      <span class="muted block">{{ 'wallet.payouts.offset' | translate: { amount: (row.withdrawal_offset | number) } }}</span>
+                    }
+                  </td>
+                  <td>
+                    <span class="badge" [ngClass]="row.status">{{ 'wallet.payouts.status.' + row.status | translate }}</span>
+                    @if (row.status === 'paid' && row.paid_at) { <span class="muted block">{{ row.paid_at | date:'mediumDate' }}</span> }
+                  </td>
+                  <td class="muted">{{ row.reference ?? '—' }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
         </div>
       }
-
-      <button type="submit" class="submit-btn" [disabled]="isSaving() || form.invalid">
-        @if (isSaving()) {
-          <span class="spinner"></span>{{ 'wallet.form.submitting' | translate }}
-        } @else {
-          {{ 'wallet.form.submitBtn' | translate }}
-        }
-      </button>
-    </form>
-  </div>
+    </section>
+  }
 </div>

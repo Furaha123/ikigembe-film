@@ -27,7 +27,9 @@
         <tbody>
           @for (r of rows(); track r.id) {
             <tr>
-              <td>{{ r.period }}</td>
+              <td>{{ r.period }}
+                @if (r.simulated) { <span class="status-badge status-pending" [title]="'payment.simulatedHint' | translate">{{ 'payment.simulated' | translate }}</span> }
+              </td>
               <td class="num">RWF {{ r.gross | number }}</td>
               <td class="num"><strong>RWF {{ r.amount | number }}</strong></td>
               <td>
@@ -38,7 +40,10 @@
                   <span class="status-badge status-pending">{{ 'producerUi.statements.unpaid' | translate }}</span>
                 }
               </td>
-              <td><button type="button" class="btn ghost small" (click)="open(r)">{{ 'admin.payments.open' | translate }}</button></td>
+              <td>
+                <button type="button" class="btn ghost small" (click)="open(r)">{{ 'admin.payments.open' | translate }}</button>
+                <button type="button" class="btn ghost small" (click)="downloadCsv(r)">{{ 'producer.statements.downloadCsv' | translate }}</button>
+              </td>
             </tr>
           }
         </tbody>

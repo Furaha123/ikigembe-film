@@ -7,6 +7,36 @@ $surface-2: #232327;
 $line: rgba(255, 255, 255, 0.08);
 $muted: #a1a1aa;
 
+.apps-header {
+  margin-bottom: 1.5rem;
+  padding-bottom: 1.25rem;
+  border-bottom: 1px solid $line;
+
+  h1 {
+    margin-top: 0.6rem;
+    font-size: clamp(1.45rem, 3vw, 1.9rem);
+    font-weight: 800;
+    letter-spacing: -0.01em;
+    color: #fafafa;
+    overflow-wrap: anywhere;
+  }
+  p { margin-top: 0.35rem; font-size: 0.95rem; color: $muted; }
+
+  &__back {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    color: $muted;
+    font-size: 0.85rem;
+    font-weight: 500;
+    text-decoration: none;
+    transition: color 0.18s;
+
+    &:hover { color: $gold; }
+    &:focus-visible { outline: 2px solid $gold; outline-offset: 3px; border-radius: 4px; }
+  }
+}
+
 .app-card {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(240px, 300px);
@@ -54,24 +84,6 @@ $muted: #a1a1aa;
       overflow-wrap: anywhere;
     }
     p { margin: 0.15rem 0 0; font-size: 0.8rem; color: $muted; }
-  }
-
-  // Pill with a status dot; the colours come from the shared .mk-badge--* modifiers.
-  &__badge {
-    flex-shrink: 0;
-    display: inline-flex;
-    align-items: center;
-    gap: 0.4rem;
-    padding: 0.25rem 0.7rem;
-    border: 1px solid color-mix(in srgb, currentColor 30%, transparent);
-
-    &::before {
-      content: '';
-      width: 6px;
-      height: 6px;
-      border-radius: 50%;
-      background: currentColor;
-    }
   }
 
   &__note {
@@ -156,13 +168,6 @@ $muted: #a1a1aa;
     white-space: nowrap;
   }
 
-  &__status {
-    margin-top: auto;
-    padding-top: 0.4rem;
-
-    select { width: 100%; min-height: 44px; background: #0f0f11; cursor: pointer; }
-    select:disabled { opacity: 0.6; cursor: progress; }
-  }
 }
 
 @media (max-width: 720px) {
@@ -178,3 +183,5 @@ $muted: #a1a1aa;
     }
   }
 }
+
+.apps-count { margin: 0 0 0.75rem; font-size: 0.85rem; }

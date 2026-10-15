@@ -3,24 +3,40 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import {
-  ActorSearchAccess, ApplicationStatus, CastingApplication, CastingCall, CastingCallPayload,
-  DirectoryActor, DirectoryActorDetail, DirectoryFilters, Paginated, ServicePurchaseAccepted, ShortlistEntry, ServiceQuote,
+  CastingApplication, CastingCall, CastingCallPayload, DirectoryActor, DirectoryActorDetail, DirectoryFilters,
+  MembershipStatus, Paginated, ProducerPlan, ServicePurchaseAccepted, ShortlistEntry, ServiceQuote,
 } from '../../shared/models/marketplace.interface';
 import { MarketplaceAccessService } from '../../core/access/marketplace-access.service';
 
 const BASE = `${environment.apiUrl}/marketplace`;
 
 /**
- * Producer side of the marketplace: casting calls and the paid actor directory.
+ * Producer side of the marketplace: casting calls, the yearly producer plans and the actor directory.
  * Every call goes through the access map (see ActorMarketplaceService).
+ * Plans: Full (directory + unlimited casting calls) or View-only (directory; each call pays the fee).
+ * Without a plan a producer can still post calls at the per-call fee.
  */
 @Injectable({ providedIn: 'root' })
 export class CastingService {
   private readonly http = inject(HttpClient);
   private readonly access = inject(MarketplaceAccessService);
 
-  getQuote(purpose: 'actor_search' | 'casting_announcement'): Observable<ServiceQuote> {
-    return this.access.request(purpose === 'actor_search' ? 'find-actors' : 'my-casting-calls', () => this.http.get<ServiceQuote>(`${BASE}/pricing/${purpose}/`));
+  /** Yearly plan price (`access_days` 365) or the per-call fee (`included` while a Full plan covers it). */
+  getQuote(service: 'producer_full_plan' | 'producer_view_plan' | 'casting_announcement'): Observable<ServiceQuote> {
+    return this.access.request(service === 'casting_announcement' ? 'my-casting-calls' : 'my-access',
+      () => this.http.get<ServiceQuote>(`${BASE}/pricing/${service}/`));
+  }
+
+  // ── Yearly plans ──────────────────────────────────────────────────────
+
+  getMembership(): Observable<MembershipStatus> {
+    return this.access.request('my-access', () => this.http.get<MembershipStatus>(`${BASE}/membership/`));
+  }
+
+  /** Buying the plan you hold adds a year after the current one; 409 while a payment is pending. */
+  purchasePlan(plan: ProducerPlan, phoneNumber: string | null): Observable<ServicePurchaseAccepted> {
+    return this.access.request('my-access', () => this.http.post<ServicePurchaseAccepted>(
+      `${BASE}/membership/purchase/`, phoneNumber ? { plan, phone_number: phoneNumber } : { plan }));
   }
 
   // ── Casting calls ─────────────────────────────────────────────────────
@@ -56,12 +72,17 @@ export class CastingService {
     return this.access.request('my-casting-calls', () => this.http.delete<CastingCall>(`${BASE}/casting-calls/${id}/poster/`));
   }
 
-  /** Pays the announcement fee; once paid the call waits for admin review (never published by payment alone). */
+  /** Pays the per-call fee; the server publishes the call once the payment is confirmed (no admin approval). */
   purchaseCall(id: number, phoneNumber: string | null): Observable<ServicePurchaseAccepted> {
     return this.access.request('my-casting-calls', () => this.http.post<ServicePurchaseAccepted>(`${BASE}/casting-calls/${id}/purchase/`, phoneNumber ? { phone_number: phoneNumber } : {}));
   }
 
-  /** Sends a paid draft or a rejected call (after edits) back to admin review — no second payment. */
+  /** Publishes a draft covered by the Full plan (same endpoint as the fee: the server answers 200 with the call). */
+  publishWithPlan(id: number): Observable<CastingCall> {
+    return this.access.request('my-casting-calls', () => this.http.post<CastingCall>(`${BASE}/casting-calls/${id}/purchase/`, {}));
+  }
+
+  /** Publishes a paid call that isn't live yet (e.g. after moving a passed deadline) — no second payment. */
   submitCall(id: number): Observable<CastingCall> {
     return this.access.request('my-casting-calls', () => this.http.post<CastingCall>(`${BASE}/casting-calls/${id}/submit/`, {}));
   }
@@ -74,19 +95,7 @@ export class CastingService {
     return this.access.request('my-casting-calls', () => this.http.get<CastingApplication[]>(`${BASE}/casting-calls/${callId}/applications/`));
   }
 
-  setApplicationStatus(applicationId: number, status: ApplicationStatus): Observable<CastingApplication> {
-    return this.access.request('my-casting-calls', () => this.http.patch<CastingApplication>(`${BASE}/applications/${applicationId}/`, { status }));
-  }
-
-  // ── Actor directory (time-boxed paid pass; 403 without it) ────────────
-
-  purchaseSearch(phoneNumber: string | null): Observable<ServicePurchaseAccepted> {
-    return this.access.request('find-actors', () => this.http.post<ServicePurchaseAccepted>(`${BASE}/actor-search/purchase/`, phoneNumber ? { phone_number: phoneNumber } : {}));
-  }
-
-  getSearchAccess(): Observable<ActorSearchAccess> {
-    return this.access.request('find-actors', () => this.http.get<ActorSearchAccess>(`${BASE}/actor-search/access/`));
-  }
+  // ── Actor directory (needs a producer plan; 403 `plan_required` without one) ──
 
   searchActors(filters: DirectoryFilters = {}): Observable<Paginated<DirectoryActor>> {
     let params = new HttpParams();

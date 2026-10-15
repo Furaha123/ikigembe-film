@@ -50,52 +50,61 @@
   } @else {
     <form [formGroup]="form" (ngSubmit)="save()" novalidate>
 
-      <!-- Actor video upload fees -->
+      <!-- Actor membership (yearly) -->
       <section class="ms-section">
         <h2 class="ms-section__title">
           <span class="ms-section__icon" aria-hidden="true">🎬</span>
-          {{ 'admin.marketplaceSettings.sectionActorVideos' | translate }}
+          {{ 'admin.marketplaceSettings.sectionActorMembership' | translate }}
         </h2>
-        <p class="ms-section__desc">{{ 'admin.marketplaceSettings.sectionActorVideosDesc' | translate }}</p>
+        <p class="ms-section__desc">{{ 'admin.marketplaceSettings.sectionActorMembershipDesc' | translate }}</p>
 
         <div class="ms-fields">
-          <div class="ms-field" [class.ms-field--error]="fieldError('actor_video_fee_under_30')">
-            <label class="ms-label" for="fee-under30">
-              {{ 'admin.marketplaceSettings.feeUnder30' | translate }}
+          <div class="ms-field" [class.ms-field--error]="fieldError('actor_membership_fee')">
+            <label class="ms-label" for="fee-actor">
+              {{ 'admin.marketplaceSettings.feeActorMembership' | translate }}
               <span class="ms-label__unit">RWF</span>
             </label>
-            <input
-              id="fee-under30"
-              class="ms-input"
-              type="number"
-              min="1"
-              formControlName="actor_video_fee_under_30"
-            />
-            @if (fieldError('actor_video_fee_under_30')) {
-              <span class="ms-error">{{ 'admin.marketplaceSettings.feeMin' | translate }}</span>
-            }
-          </div>
-
-          <div class="ms-field" [class.ms-field--error]="fieldError('actor_video_fee_30_plus')">
-            <label class="ms-label" for="fee-30plus">
-              {{ 'admin.marketplaceSettings.fee30Plus' | translate }}
-              <span class="ms-label__unit">RWF</span>
-            </label>
-            <input
-              id="fee-30plus"
-              class="ms-input"
-              type="number"
-              min="1"
-              formControlName="actor_video_fee_30_plus"
-            />
-            @if (fieldError('actor_video_fee_30_plus')) {
+            <input id="fee-actor" class="ms-input" type="number" min="1" formControlName="actor_membership_fee" />
+            @if (fieldError('actor_membership_fee')) {
               <span class="ms-error">{{ 'admin.marketplaceSettings.feeMin' | translate }}</span>
             }
           </div>
         </div>
       </section>
 
-      <!-- Casting announcement fee -->
+      <!-- Producer plans (yearly) -->
+      <section class="ms-section">
+        <h2 class="ms-section__title">
+          <span class="ms-section__icon" aria-hidden="true">🔍</span>
+          {{ 'admin.marketplaceSettings.sectionProducerPlans' | translate }}
+        </h2>
+        <p class="ms-section__desc">{{ 'admin.marketplaceSettings.sectionProducerPlansDesc' | translate }}</p>
+
+        <div class="ms-fields">
+          <div class="ms-field" [class.ms-field--error]="fieldError('producer_full_plan_fee')">
+            <label class="ms-label" for="fee-full">
+              {{ 'admin.marketplaceSettings.feeFullPlan' | translate }}
+              <span class="ms-label__unit">RWF</span>
+            </label>
+            <input id="fee-full" class="ms-input" type="number" min="1" formControlName="producer_full_plan_fee" />
+            @if (fieldError('producer_full_plan_fee')) {
+              <span class="ms-error">{{ 'admin.marketplaceSettings.feeMin' | translate }}</span>
+            }
+          </div>
+          <div class="ms-field" [class.ms-field--error]="fieldError('producer_view_plan_fee')">
+            <label class="ms-label" for="fee-view">
+              {{ 'admin.marketplaceSettings.feeViewPlan' | translate }}
+              <span class="ms-label__unit">RWF</span>
+            </label>
+            <input id="fee-view" class="ms-input" type="number" min="1" formControlName="producer_view_plan_fee" />
+            @if (fieldError('producer_view_plan_fee')) {
+              <span class="ms-error">{{ 'admin.marketplaceSettings.feeMin' | translate }}</span>
+            }
+          </div>
+        </div>
+      </section>
+
+      <!-- Casting call fee (per call, without the Full plan) -->
       <section class="ms-section">
         <h2 class="ms-section__title">
           <span class="ms-section__icon" aria-hidden="true">📢</span>
@@ -109,60 +118,9 @@
               {{ 'admin.marketplaceSettings.feeCasting' | translate }}
               <span class="ms-label__unit">RWF</span>
             </label>
-            <input
-              id="fee-casting"
-              class="ms-input"
-              type="number"
-              min="1"
-              formControlName="casting_announcement_fee"
-            />
+            <input id="fee-casting" class="ms-input" type="number" min="1" formControlName="casting_announcement_fee" />
             @if (fieldError('casting_announcement_fee')) {
               <span class="ms-error">{{ 'admin.marketplaceSettings.feeMin' | translate }}</span>
-            }
-          </div>
-        </div>
-      </section>
-
-      <!-- Actor directory search -->
-      <section class="ms-section">
-        <h2 class="ms-section__title">
-          <span class="ms-section__icon" aria-hidden="true">🔍</span>
-          {{ 'admin.marketplaceSettings.sectionSearch' | translate }}
-        </h2>
-        <p class="ms-section__desc">{{ 'admin.marketplaceSettings.sectionSearchDesc' | translate }}</p>
-
-        <div class="ms-fields">
-          <div class="ms-field" [class.ms-field--error]="fieldError('actor_search_fee')">
-            <label class="ms-label" for="fee-search">
-              {{ 'admin.marketplaceSettings.feeSearch' | translate }}
-              <span class="ms-label__unit">RWF</span>
-            </label>
-            <input
-              id="fee-search"
-              class="ms-input"
-              type="number"
-              min="1"
-              formControlName="actor_search_fee"
-            />
-            @if (fieldError('actor_search_fee')) {
-              <span class="ms-error">{{ 'admin.marketplaceSettings.feeMin' | translate }}</span>
-            }
-          </div>
-
-          <div class="ms-field" [class.ms-field--error]="fieldError('actor_search_access_days')">
-            <label class="ms-label" for="access-days">
-              {{ 'admin.marketplaceSettings.accessDays' | translate }}
-              <span class="ms-label__unit">{{ 'admin.marketplaceSettings.days' | translate }}</span>
-            </label>
-            <input
-              id="access-days"
-              class="ms-input"
-              type="number"
-              min="1"
-              formControlName="actor_search_access_days"
-            />
-            @if (fieldError('actor_search_access_days')) {
-              <span class="ms-error">{{ 'admin.marketplaceSettings.daysMin' | translate }}</span>
             }
           </div>
         </div>

@@ -1,0 +1,67 @@
+<button #trigger type="button" class="report-link" (click)="open()" aria-haspopup="dialog">
+  <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor" aria-hidden="true">
+    <path d="M14.4 6 14 4H5v17h2v-7h5.6l.4 2h7V6z"/>
+  </svg>
+  {{ 'abuse.button' | translate }}
+</button>
+
+@if (isOpen()) {
+  <div class="report-overlay" appModalBackdrop (dismiss)="close()">
+    <div #card class="report-card" role="dialog" aria-modal="true" aria-labelledby="report-title"
+         tabindex="-1" (keydown)="trapFocus($event)">
+      <header class="report-head">
+        <h2 id="report-title">{{ 'abuse.title' | translate: { name: label } }}</h2>
+        <button type="button" class="icon-btn" (click)="close()" [attr.aria-label]="'abuse.close' | translate">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"
+               stroke-linecap="round" aria-hidden="true">
+            <path d="M6 6l12 12M18 6 6 18"/>
+          </svg>
+        </button>
+      </header>
+
+      @if (!auth.isLoggedIn()) {
+        <p class="lead">{{ 'abuse.signInFirst' | translate }}</p>
+        <div class="actions">
+          <button type="button" class="btn ghost" (click)="close()">{{ 'abuse.cancel' | translate }}</button>
+          <a class="btn" routerLink="/login" [queryParams]="loginParams()" (click)="close()">{{ 'abuse.signIn' | translate }}</a>
+        </div>
+      } @else if (done()) {
+        <div class="success" role="status">
+          <span class="success-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="2.5"
+                 stroke-linecap="round" stroke-linejoin="round">
+              <path d="M5 12.5 10 17.5 19 7"/>
+            </svg>
+          </span>
+          <h3>{{ (done() === 'already' ? 'abuse.alreadyTitle' : 'abuse.sentTitle') | translate }}</h3>
+          <p>{{ (done() === 'already' ? 'abuse.already' : 'abuse.thanks') | translate }}</p>
+          <button #doneBtn type="button" class="btn wide" (click)="close()">{{ 'abuse.done' | translate }}</button>
+        </div>
+      } @else {
+        <form (ngSubmit)="submit()">
+          <fieldset>
+            <legend>{{ 'abuse.reason' | translate }}</legend>
+            <div class="choices">
+              @for (c of categories; track c) {
+                <label class="choice" [class.selected]="category === c">
+                  <input type="radio" name="category" [value]="c" [(ngModel)]="category" required />
+                  <span>{{ 'abuse.category.' + c | translate }}</span>
+                </label>
+              }
+            </div>
+          </fieldset>
+          <label class="field" for="report-details">{{ 'abuse.details' | translate }}</label>
+          <textarea id="report-details" name="details" rows="3" maxlength="1000" [(ngModel)]="details"></textarea>
+          <p class="hint">{{ 'abuse.reviewNote' | translate }}</p>
+          @if (error()) { <p class="error" role="alert">{{ error() }}</p> }
+          <div class="actions">
+            <button type="button" class="btn ghost" (click)="close()">{{ 'abuse.cancel' | translate }}</button>
+            <button type="submit" class="btn" [disabled]="!category || sending()" [attr.aria-busy]="sending()">
+              {{ (sending() ? 'abuse.sending' : 'abuse.send') | translate }}
+            </button>
+          </div>
+        </form>
+      }
+    </div>
+  </div>
+}

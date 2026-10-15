@@ -21,7 +21,7 @@ describe('MarketplaceNavComponent', () => {
   };
 
   it('shows viewers the actor tabs', () => {
-    expect(render(marketplaceUser('Viewer')).links).toEqual(['/casting', '/actor/applications', '/actor/profile', '/actor/videos']);
+    expect(render(marketplaceUser('Viewer')).links).toEqual(['/casting', '/actor/applications', '/actor/profile', '/actor/videos', '/actor/membership']);
   });
 
   it('shows producers the producer tabs', () => {

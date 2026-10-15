@@ -2,6 +2,7 @@ import { Routes } from '@angular/router';
 import { adminGuard } from './guards/admin.guard';
 import { marketplaceGuard, marketplaceRoute } from '../core/access/marketplace.guard';
 import { AdminLayoutComponent } from './layout/admin-layout.component';
+import { unsavedChangesGuard } from '../core/guards/unsaved-changes.guard';
 
 export const adminRoutes: Routes = [
   {
@@ -35,6 +36,10 @@ export const adminRoutes: Routes = [
         loadComponent: () => import('./pages/transcodes/admin-transcodes.component').then(m => m.AdminTranscodesComponent),
       },
       {
+        path: 'genres',
+        loadComponent: () => import('./pages/genres/admin-genres.component').then(m => m.AdminGenresComponent),
+      },
+      {
         path: 'platform-settings',
         loadComponent: () => import('./pages/platform-settings/admin-platform-settings.component').then(m => m.AdminPlatformSettingsComponent),
       },
@@ -43,8 +48,24 @@ export const adminRoutes: Routes = [
         loadComponent: () => import('./pages/finance/admin-finance.component').then(m => m.AdminFinanceComponent),
       },
       {
+        path: 'payouts',
+        loadComponent: () => import('./pages/payouts/admin-payouts.component').then(m => m.AdminPayoutsComponent),
+      },
+      {
         path: 'audit-log',
         loadComponent: () => import('./pages/audit-log/admin-audit-log.component').then(m => m.AdminAuditLogComponent),
+      },
+      {
+        path: 'diagnostics',
+        loadComponent: () => import('./pages/diagnostics/admin-diagnostics.component').then(m => m.AdminDiagnosticsComponent),
+      },
+      {
+        path: 'usage',
+        loadComponent: () => import('./pages/usage/admin-usage.component').then(m => m.AdminUsageComponent),
+      },
+      {
+        path: 'email-outbox',
+        loadComponent: () => import('./pages/email-outbox/admin-email-outbox.component').then(m => m.AdminEmailOutboxComponent),
       },
       {
         path: 'producers',
@@ -80,10 +101,21 @@ export const adminRoutes: Routes = [
         loadComponent: () => import('./pages/cms/admin-cms-ads.component').then(m => m.AdminCmsAdsComponent),
       },
       {
+        path: 'homepage',
+        canDeactivate: [unsavedChangesGuard],
+        loadComponent: () => import('./pages/homepage/admin-homepage.component').then(m => m.AdminHomepageComponent),
+      },
+      {
         path: 'marketplace',
         canActivate: [marketplaceGuard],
         data: marketplaceRoute('moderation'),
         loadComponent: () => import('./pages/marketplace/admin-marketplace.component').then(m => m.AdminMarketplaceComponent),
+      },
+      {
+        path: 'marketplace/members',
+        canActivate: [marketplaceGuard],
+        data: marketplaceRoute('moderation'),
+        loadComponent: () => import('./pages/marketplace-members/admin-marketplace-members.component').then(m => m.AdminMarketplaceMembersComponent),
       },
       {
         path: 'marketplace-settings',

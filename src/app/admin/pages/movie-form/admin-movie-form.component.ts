@@ -82,6 +82,18 @@ export class AdminMovieFormComponent implements OnInit, OnDestroy {
   /** Translation keys for missing required files. */
   filesError = signal<{ thumbnail?: string; video?: string; backdrop?: string }>({});
 
+  // ── Genres (admin-managed vocabulary from the API) ───────────────────
+  genreOptions  = signal<string[]>([]);
+  genresError   = signal(false);
+  selectedGenres = signal<string[]>([]);
+  /** The film's genres that are no longer active: kept unless unticked, never offered to others. */
+  private readonly filmGenres = signal<string[]>([]);
+  readonly genreChoices = computed(() => {
+    const active = this.genreOptions();
+    const kept = this.filmGenres().filter(g => !active.some(a => a.toLowerCase() === g.toLowerCase()));
+    return [...active.map(name => ({ name, inactive: false })), ...kept.map(name => ({ name, inactive: true }))];
+  });
+
   uploading = computed(() => this.video().uploading || this.trailer().uploading);
 
   private readonly controllers: Partial<Record<VideoField, AbortController>> = {};
@@ -93,7 +105,6 @@ export class AdminMovieFormComponent implements OnInit, OnDestroy {
     release_time: ['00:00'],   // Kigali time; the film is purchasable/streamable from this moment
     price:        [DEFAULT_FILM_PRICE, [Validators.required, Validators.min(1)]],
     cast:         [''],
-    genres:       [''],
     director:     [''],
     writer:       [''],
     original_language: [''],
@@ -102,6 +113,7 @@ export class AdminMovieFormComponent implements OnInit, OnDestroy {
   });
 
   ngOnInit() {
+    this.loadGenreOptions();
     this.adminService.getProducers().subscribe({
       next: (data) => {
         const list = data as ProducerItem[] | { results?: ProducerItem[] };
@@ -140,14 +152,34 @@ export class AdminMovieFormComponent implements OnInit, OnDestroy {
           director:     movie.director ?? '',
           writer:       movie.writer ?? '',
           original_language: movie.original_language ?? '',
-          genres:       list(movie.genres),
           producer:     movie.producer_profile?.id ? String(movie.producer_profile.id) : '',
           is_active:    movie.is_active ?? true,
         });
+        const genres = Array.isArray(movie.genres)
+          ? movie.genres
+          : (movie.genres ?? '').split(',').map(g => g.trim()).filter(Boolean);
+        this.filmGenres.set(genres);
+        this.selectedGenres.set(genres);
         this.isLoadingMovie.set(false);
       },
       error: () => this.isLoadingMovie.set(false),
     });
+  }
+
+  loadGenreOptions() {
+    this.genresError.set(false);
+    this.movieService.getGenreOptions().subscribe({
+      next: names => this.genreOptions.set(names),
+      error: () => this.genresError.set(true),
+    });
+  }
+
+  isGenreSelected(name: string): boolean {
+    return this.selectedGenres().includes(name);
+  }
+
+  toggleGenre(name: string) {
+    this.selectedGenres.update(list => list.includes(name) ? list.filter(g => g !== name) : [...list, name]);
   }
 
   // ── Images (sent as files) ──────────────────────────────────────────────
@@ -218,14 +250,15 @@ export class AdminMovieFormComponent implements OnInit, OnDestroy {
   }
 
   // ── Submit ─────────────────────────────────────────────────────────────
-  save() {
+  /** `asDraft` (create only): saved as a draft — not live, the video may come later. */
+  save(asDraft = false) {
     if (this.form.invalid) { this.form.markAllAsTouched(); return; }
     if (this.uploading()) { this.saveError.set('admin.movieForm.errors.waitForUpload'); return; }
 
     if (!this.isEditMode()) {
       const errors: { thumbnail?: string; video?: string } = {};
       if (!this.thumbnailFile()) errors.thumbnail = 'admin.movieForm.errors.thumbnailRequired';
-      if (!this.video().key)     errors.video = 'admin.movieForm.errors.videoRequired';
+      if (!this.video().key && !asDraft) errors.video = 'admin.movieForm.errors.videoRequired';
       if (Object.keys(errors).length) { this.filesError.set(errors); return; }
     }
 
@@ -233,6 +266,7 @@ export class AdminMovieFormComponent implements OnInit, OnDestroy {
     this.saveError.set(null);
 
     const fd = this.buildFormData();
+    if (asDraft && !this.isEditMode()) fd.append('save_as_draft', 'true');
     const request$ = this.isEditMode()
       ? this.adminService.updateMovie(this.editId()!, fd)
       : this.adminService.createMovie(fd);
@@ -266,7 +300,7 @@ export class AdminMovieFormComponent implements OnInit, OnDestroy {
     fd.append('director', v.director?.trim() ?? '');
     fd.append('writer', v.writer?.trim() ?? '');
     fd.append('original_language', v.original_language ?? '');
-    if (v.genres?.trim()) fd.append('genres', list(v.genres));
+    fd.append('genres', JSON.stringify(this.selectedGenres()));
 
     // Link the film to the producer's account (earnings, dashboard) and keep the display name.
     const producer = this.producers().find(p => String(p.id) === String(v.producer ?? ''));

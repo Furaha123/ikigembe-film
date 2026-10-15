@@ -258,6 +258,7 @@ $muted:   #888;
 .doc-label   { font-size: 0.875rem; color: $text; font-weight: 500; }
 .doc-link    { color: $gold; font-size: 0.82rem; text-decoration: none; font-weight: 600; &:hover { text-decoration: underline; } }
 .doc-missing { color: $muted; font-size: 0.82rem; }
+button.doc-link { background: none; border: 0; padding: 0; cursor: pointer; font-family: inherit; }
 
 /* ── Modal textarea ── */
 .modal-textarea {

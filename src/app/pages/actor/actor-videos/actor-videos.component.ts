@@ -62,8 +62,15 @@ export class ActorVideosComponent implements OnInit, OnDestroy {
 
   private controllers = new Map<number, AbortController>();
 
+  /** The yearly actor membership is active (null while unknown): new videos and uploads need it. */
+  member = signal<boolean | null>(null);
+
   ngOnInit(): void {
     this.load();
+    this.marketplace.getMembership().subscribe({
+      next: (m) => this.member.set(m.actor.active),
+      error: () => this.member.set(null),
+    });
   }
 
   ngOnDestroy(): void {
@@ -89,9 +96,9 @@ export class ActorVideosComponent implements OnInit, OnDestroy {
     });
   }
 
-  /** Paid slot waiting for a file: the first upload, or a free retry after a failed server check. */
+  /** Slot waiting for a file: the first upload, or a retry after a failed server check (the server's `can_upload` decides). */
   canUpload(v: ActorVideo): boolean {
-    return v.can_upload ?? ((v.status === 'pending_upload' || v.status === 'upload_failed') && v.payment_status === 'Completed');
+    return v.can_upload ?? ((v.status === 'pending_upload' || v.status === 'upload_failed') && v.payment_status !== 'Pending' && v.payment_status !== 'Failed');
   }
 
   /** Deletable once nothing is in flight (not while the server checks it or a fee payment is pending). */

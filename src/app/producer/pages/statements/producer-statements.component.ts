@@ -1,5 +1,5 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, OnInit, PLATFORM_ID, inject, signal } from '@angular/core';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 import { TranslatePipe } from '@ngx-translate/core';
 import { environment } from '../../../../environments/environment';
@@ -13,6 +13,8 @@ interface StatementRow {
   payout_status: 'unpaid' | 'paid';
   payout_reference: string | null;
   paid_at: string | null;
+  /** The period includes demo-mode payments (no money moved). */
+  simulated?: boolean;
 }
 
 interface StatementDetail extends StatementRow {
@@ -31,6 +33,7 @@ const BASE = `${environment.apiUrl}/producer/statements`;
 })
 export class ProducerStatementsComponent implements OnInit {
   private readonly http = inject(HttpClient);
+  private readonly platformId = inject(PLATFORM_ID);
 
   rows = signal<StatementRow[]>([]);
   detail = signal<StatementDetail | null>(null);
@@ -47,6 +50,22 @@ export class ProducerStatementsComponent implements OnInit {
   open(row: StatementRow): void {
     this.http.get<StatementDetail>(`${BASE}/${row.id}/`).subscribe({
       next: (d) => this.detail.set(d),
+      error: (err: unknown) => this.error.set(apiErrorMessage(err) ?? 'producerUi.statements.loadFailed'),
+    });
+  }
+
+  /** The same statement as CSV (own statements only; the API checks). */
+  downloadCsv(row: StatementRow): void {
+    if (!isPlatformBrowser(this.platformId)) return;
+    this.http.get(`${BASE}/${row.id}/statement.csv`, { responseType: 'blob' }).subscribe({
+      next: (blob) => {
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `statement-${row.period}.csv`;
+        a.click();
+        URL.revokeObjectURL(url);
+      },
       error: (err: unknown) => this.error.set(apiErrorMessage(err) ?? 'producerUi.statements.loadFailed'),
     });
   }
