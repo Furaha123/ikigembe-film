@@ -1,0 +1,162 @@
+<div class="admin-page">
+  <div class="page-header">
+    <div>
+      <h1>Email outbox</h1>
+      <p>Every email the platform queued: account links, receipts, moderation and casting updates, reminders.</p>
+    </div>
+  </div>
+
+  @if (data()?.delivery_mode === 'captured') {
+    <p class="demo-notice" role="note">
+      <strong>Demo mode: emails are not delivered.</strong>
+      No email provider is configured, so messages are captured here instead of being sent.
+      Opening a verification or password-reset email is recorded in the audit log.
+    </p>
+  }
+
+  <form class="filters" role="search" (ngSubmit)="search()">
+    <label class="field grow">
+      <span>Recipient</span>
+      <input type="search" name="recipient" [(ngModel)]="filters.recipient" placeholder="Email contains…" />
+    </label>
+    <label class="field">
+      <span>Type</span>
+      <select name="message_type" [(ngModel)]="filters.message_type">
+        <option value="">Any</option>
+        @for (t of data()?.message_types ?? []; track t.value) { <option [value]="t.value">{{ t.label }}</option> }
+      </select>
+    </label>
+    <label class="field">
+      <span>Status</span>
+      <select name="status" [(ngModel)]="filters.status">
+        <option value="">Any</option>
+        @for (s of statuses; track s) { <option [value]="s">{{ statusLabels[s] }}</option> }
+      </select>
+    </label>
+    <label class="field">
+      <span>From</span>
+      <input type="date" name="date_from" [(ngModel)]="filters.date_from" />
+    </label>
+    <label class="field">
+      <span>To</span>
+      <input type="date" name="date_to" [(ngModel)]="filters.date_to" />
+    </label>
+    <div class="filter-actions">
+      <button type="submit" class="btn">Apply</button>
+      <button type="button" class="btn ghost" (click)="reset()">Reset</button>
+    </div>
+  </form>
+
+  <div aria-live="polite">
+    @if (error()) {
+      <p class="error" role="alert">{{ error() }} <button type="button" class="link" (click)="load()">Retry</button></p>
+    }
+  </div>
+
+  @if (loading() && !data()) {
+    <div class="table-skeleton" aria-hidden="true">@for (i of [1,2,3,4,5]; track i) { <div class="row-skeleton"></div> }</div>
+  } @else if (data()) {
+    @let d = data()!;
+    <p class="totals">{{ d.total_results }} {{ d.total_results === 1 ? 'email' : 'emails' }}</p>
+    @if (d.results.length === 0) {
+      <div class="empty-state">No emails match these filters.</div>
+    } @else {
+      <div class="table-wrap" [class.is-loading]="loading()">
+        <table class="ledger">
+          <thead>
+            <tr>
+              <th scope="col">Queued</th>
+              <th scope="col">Recipient</th>
+              <th scope="col">Subject</th>
+              <th scope="col">Type</th>
+              <th scope="col">Status</th>
+              <th scope="col"><span class="sr-only">Actions</span></th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (m of d.results; track m.id) {
+              <tr>
+                <td class="muted">{{ m.created_at | date:'d MMM y, HH:mm' }}</td>
+                <td class="mono">{{ m.to }}</td>
+                <td><span class="cell-title">{{ m.subject }}</span></td>
+                <td>{{ m.message_type_label }}</td>
+                <td>
+                  <span class="status-badge" [ngClass]="'outbox-' + m.status">{{ statusLabels[m.status] }}</span>
+                  @if (m.status === 'failed' && m.last_error) { <span class="muted block">{{ m.last_error }}</span> }
+                </td>
+                <td><button type="button" class="link" (click)="open(m.id)">Preview</button></td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+      @if (d.total_pages > 1) {
+        <nav class="pager" aria-label="Pagination">
+          <button type="button" class="btn ghost" [disabled]="d.page <= 1" (click)="search(d.page - 1)">Previous</button>
+          <span>{{ d.page }} / {{ d.total_pages }}</span>
+          <button type="button" class="btn ghost" [disabled]="d.page >= d.total_pages" (click)="search(d.page + 1)">Next</button>
+        </nav>
+      }
+    }
+  }
+</div>
+
+@if (openId() !== null) {
+  <div class="drawer-overlay" appModalBackdrop (dismiss)="close()">
+    <aside class="drawer outbox-drawer" role="dialog" aria-modal="true" aria-labelledby="outbox-title">
+      <header class="drawer-header">
+        <h2 id="outbox-title">Email preview</h2>
+        <button type="button" class="btn ghost small" (click)="close()">Close</button>
+      </header>
+
+      @if (messageLoading()) {
+        <p class="muted" role="status">Loading…</p>
+      } @else if (messageError()) {
+        <p class="error" role="alert">{{ messageError() }}</p>
+        <button type="button" class="btn ghost" (click)="loadMessage()">Retry</button>
+      } @else if (message()) {
+        @let m = message()!;
+        <dl class="facts">
+          <dt>To</dt><dd class="mono">{{ m.to }}</dd>
+          <dt>Subject</dt><dd>{{ m.subject }}</dd>
+          <dt>Type</dt><dd>{{ m.message_type_label }}</dd>
+          <dt>Status</dt>
+          <dd><span class="status-badge" [ngClass]="'outbox-' + m.status">{{ statusLabels[m.status] }}</span></dd>
+          <dt>Queued</dt><dd>{{ m.created_at | date:'medium' }}</dd>
+          @if (m.sent_at) { <dt>Sent</dt><dd>{{ m.sent_at | date:'medium' }}</dd> }
+          @if (m.related_type) { <dt>About</dt><dd>{{ m.related_type }} #{{ m.related_id }}</dd> }
+          @if (m.last_error) { <dt>Last error</dt><dd class="error">{{ m.last_error }}</dd> }
+        </dl>
+
+        @if (m.status === 'captured') {
+          <p class="demo-notice small">Captured for demo — this email was not delivered to {{ m.to }}.</p>
+        }
+        @if (isAccountLink(m.message_type)) {
+          <p class="warn">This email holds a single-use account link. Opening it was recorded in the audit log.</p>
+        }
+
+        @if (links().length) {
+          <h3>Links</h3>
+          <ul class="outbox-links">
+            @for (link of links(); track link) {
+              <li><a [href]="link" target="_blank" rel="noopener noreferrer" class="mono">{{ link }}</a></li>
+            }
+          </ul>
+        }
+
+        <div class="view-toggle" role="group" aria-label="Body format">
+          <button type="button" class="btn ghost small" [class.active]="view() === 'text'" [attr.aria-pressed]="view() === 'text'"
+                  (click)="view.set('text')">Text</button>
+          <button type="button" class="btn ghost small" [class.active]="view() === 'html'" [attr.aria-pressed]="view() === 'html'"
+                  [disabled]="!m.html" (click)="view.set('html')">HTML</button>
+        </div>
+
+        @if (view() === 'html' && m.html) {
+          <iframe #htmlFrame class="html-frame" title="HTML body of the email" sandbox="" referrerpolicy="no-referrer"></iframe>
+        } @else {
+          <pre class="detail-json plain-body">{{ m.plain }}</pre>
+        }
+      }
+    </aside>
+  </div>
+}

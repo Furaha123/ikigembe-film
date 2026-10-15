@@ -49,6 +49,8 @@ export class MovieDetailComponent implements OnInit, OnDestroy {
   moreFromProducer = signal<IVideoContent[]>([]);
   videoSrc         = signal<string>('');   // trailer only
   playback         = signal<PlaybackSource | null>(null); // full movie, from /stream/ — never persisted
+  /** Saved position (GET /progress/) the full movie resumes from; 0 = from the start. */
+  startAt          = signal(0);
   isPlaying        = signal(false);
   showPaymentModal = signal(false);
   purchased        = signal(false);
@@ -139,6 +141,7 @@ export class MovieDetailComponent implements OnInit, OnDestroy {
     if (!trailerUrl) return;
     this.progressMovieId = null;
     this.playback.set(null);
+    this.startAt.set(0);
     this.videoSrc.set(trailerUrl);
     this.isPlaying.set(true);
     this.analytics.track('trailer_play', { movie_id: this.movie()?.id, props: { source: 'detail' } });
@@ -185,10 +188,15 @@ export class MovieDetailComponent implements OnInit, OnDestroy {
     if (!id || this.streamLoading()) return;
     this.streamLoading.set(true);
     this.streamError.set(null);
-    this.movieService.getStream(id).subscribe({
-      next: (res) => {
+    forkJoin({
+      res: this.movieService.getStream(id),
+      // Resume point; never blocks playback.
+      progress: this.movieService.getProgress(id).pipe(catchError(() => of(null))),
+    }).subscribe({
+      next: ({ res, progress }) => {
         this.streamLoading.set(false);
         this.progressMovieId = id;
+        this.startAt.set(resumePosition(progress));
         this.playback.set(toPlaybackSource(res));
         this.isPlaying.set(true);
       },
@@ -233,6 +241,7 @@ export class MovieDetailComponent implements OnInit, OnDestroy {
   private resetPlayer() {
     this.isPlaying.set(false);
     this.playback.set(null);
+    this.startAt.set(0);
   }
 
   goToMovie(id: number) {
@@ -261,4 +270,13 @@ export class MovieDetailComponent implements OnInit, OnDestroy {
   getRatingPercent(vote: number): number {
     return Math.round(vote * 10);
   }
+}
+
+/** Where to resume: nothing for a finished film, a few seconds in, or the last moments. */
+export function resumePosition(p: { progress_seconds?: number; duration_seconds?: number; completed?: boolean } | null): number {
+  const at = Math.floor(p?.progress_seconds ?? 0);
+  const duration = p?.duration_seconds ?? 0;
+  if (!p || p.completed || at < 10) return 0;
+  if (duration > 0 && at >= duration - 30) return 0;
+  return at;
 }

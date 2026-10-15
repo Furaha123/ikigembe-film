@@ -203,11 +203,26 @@
           <label for="f-cast">{{ 'admin.movieForm.cast' | translate }} <span class="hint">{{ 'admin.movieForm.commaSeparated' | translate }}</span></label>
           <input id="f-cast" type="text" formControlName="cast" [placeholder]="'admin.movieForm.castPlaceholder' | translate" />
         </div>
-        <div class="field">
-          <label for="f-genres">{{ 'admin.movieForm.genres' | translate }} <span class="hint">{{ 'admin.movieForm.commaSeparated' | translate }}</span></label>
-          <input id="f-genres" type="text" formControlName="genres" [placeholder]="'admin.movieForm.genresPlaceholder' | translate" />
-        </div>
       </div>
+      <fieldset class="field genre-picker">
+        <legend>{{ 'admin.movieForm.genres' | translate }} <span class="hint">{{ 'admin.movieForm.genresHint' | translate }}</span></legend>
+        @if (genresError()) {
+          <p class="field-error" role="alert">
+            {{ 'admin.movieForm.genresLoadError' | translate }}
+            <button type="button" class="link-btn" (click)="loadGenreOptions()">{{ 'admin.movieForm.retry' | translate }}</button>
+          </p>
+        }
+        <div class="genre-chips">
+          @for (g of genreChoices(); track g.name) {
+            <button type="button" class="genre-chip" [class.selected]="isGenreSelected(g.name)" [class.inactive]="g.inactive"
+                    [attr.aria-pressed]="isGenreSelected(g.name)" (click)="toggleGenre(g.name)">
+              {{ g.name }}@if (g.inactive) { <span class="hint">({{ 'admin.movieForm.genreInactive' | translate }})</span> }
+            </button>
+          } @empty {
+            @if (!genresError()) { <span class="hint">{{ 'admin.movieForm.noGenres' | translate }}</span> }
+          }
+        </div>
+      </fieldset>
     </section>
 
     <!-- ─── Settings ─── -->
@@ -237,6 +252,11 @@
     <!-- ─── Actions ─── -->
     <div class="form-actions">
       <button type="button" class="btn neutral" (click)="cancel()" [disabled]="isSaving()">{{ 'admin.movieForm.cancel' | translate }}</button>
+      @if (!isEditMode()) {
+        <button type="button" class="btn neutral" (click)="save(true)" [disabled]="isSaving() || uploading()">
+          {{ 'admin.movieForm.saveDraft' | translate }}
+        </button>
+      }
       <button type="submit" class="btn gold" [disabled]="isSaving() || uploading()">
         {{ (isSaving() ? 'admin.movieForm.saving' : uploading() ? 'admin.movieForm.waitUpload' : (isEditMode() ? 'admin.movieForm.saveChanges' : 'admin.movieForm.publish')) | translate }}
       </button>

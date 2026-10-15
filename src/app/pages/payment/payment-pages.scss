@@ -58,6 +58,9 @@
   .dc-btn { width: 100%; margin-top: 0.6rem; color: #1d2433; border-color: #c4ccd8; }
   .dc-btn--primary { background: #1f6feb; border-color: #1f6feb; color: #fff; }
   .dc-btn--quiet { color: #4a5568; border-color: transparent; }
+  .dc-scenarios { margin: 1rem 0 0; padding: 0.5rem 0.75rem 0.75rem; border: 1px dashed #c4ccd8; border-radius: 6px;
+    legend { padding: 0 0.35rem; font-size: 0.8rem; color: #4a5568; }
+    .dc-btn { border-color: #c4ccd8; } }
   .dc-error { color: #c0392b; }
 }
 .dc-merchant { color: #4a5568; font-size: 0.85rem; }

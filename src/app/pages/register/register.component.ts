@@ -9,6 +9,8 @@ import { RETURN_URL_PARAM } from '../../shared/utils/safe-redirect';
 import { AuthService, RegisterErrors, resendCooldownLabel } from '../../core/services/auth.service';
 import { SeoService } from '../../core/services/seo.service';
 import { TranslatePipe } from '@ngx-translate/core';
+import { apiErrorMessage, apiErrorReference } from '../../shared/utils/api-error';
+import { ErrorReferenceComponent } from '../../shared/components/error-reference/error-reference.component';
 
 /** The Google Identity Services global (loaded by a script tag), as far as this page uses it. */
 interface GoogleIdentity {
@@ -24,7 +26,7 @@ const GOOGLE_CLIENT_ID = '315063576340-dokh369lnriqdpermiha2iesqrm097dp.apps.goo
 
 @Component({
   selector: 'app-register',
-  imports: [ReactiveFormsModule, CommonModule, RouterLink, TranslatePipe],
+  imports: [ReactiveFormsModule, CommonModule, RouterLink, TranslatePipe, ErrorReferenceComponent],
   templateUrl: './register.component.html',
   styleUrl: './register.component.scss'
 })
@@ -57,6 +59,8 @@ export class RegisterComponent implements OnInit, AfterViewInit, OnDestroy {
   isLoading     = signal(false);
   googleLoading = signal(false);
   serverErrors  = signal<RegisterErrors>({});
+  /** A failure that isn't a field error (server or network): message (or translation key) and reference. */
+  formError     = signal<{ text: string | null; ref: string | null } | null>(null);
   showPassword  = signal(false);
   showConfirm   = signal(false);
 
@@ -96,6 +100,7 @@ export class RegisterComponent implements OnInit, AfterViewInit, OnDestroy {
 
     this.isLoading.set(true);
     this.serverErrors.set({});
+    this.formError.set(null);
 
     const val = this.form.value as {
       first_name: string; last_name: string;
@@ -112,7 +117,7 @@ export class RegisterComponent implements OnInit, AfterViewInit, OnDestroy {
       },
       error: (err) => {
         this.isLoading.set(false);
-        if (err.status === 400 && err.error) this.serverErrors.set(err.error);
+        this.showError(err);
       }
     });
   }
@@ -184,9 +189,17 @@ export class RegisterComponent implements OnInit, AfterViewInit, OnDestroy {
       },
       error: (err) => {
         this.googleLoading.set(false);
-        if (err.status === 400 && err.error) this.serverErrors.set(err.error);
+        this.showError(err);
       }
     });
+  }
+
+  private showError(err: { status?: number; error?: unknown }): void {
+    if (err.status === 400 && err.error && typeof err.error === 'object') {
+      this.serverErrors.set(err.error as RegisterErrors);
+      return;
+    }
+    this.formError.set({ text: apiErrorMessage(err), ref: apiErrorReference(err) });
   }
 
   static passwordMatchValidator(control: AbstractControl): ValidationErrors | null {

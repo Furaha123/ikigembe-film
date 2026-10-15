@@ -271,6 +271,15 @@
                     <span class="ph-badge" [class]="paymentStatusClass(p.status)">
                       {{ p.status }}
                     </span>
+                    @if (viewLabel(p); as v) {
+                      <span class="ph-view" [class]="'ph-view ph-view--' + v.tone" data-test="view-status">
+                        @if (v.until) {
+                          {{ v.key | translate: { time: (v.until | date:'short') } }}
+                        } @else {
+                          {{ v.key | translate }}
+                        }
+                      </span>
+                    }
                   </td>
                   <td class="ph-muted">{{ p.created_at | date:'mediumDate' }}</td>
                   <td>
@@ -297,6 +306,9 @@
   <div class="receipt-overlay" appModalBackdrop (dismiss)="receipt.set(null)">
     <div class="receipt-dialog" role="dialog" aria-modal="true" aria-labelledby="receipt-title">
       <h2 id="receipt-title">{{ 'payments.receipt.title' | translate }}</h2>
+      @if (r.simulated) {
+        <p class="receipt-simulated" role="note"><strong>{{ 'payment.simulated' | translate }}</strong> {{ 'payment.simulatedHint' | translate }}</p>
+      }
       <dl class="receipt-rows">
         <dt>{{ 'payments.receipt.reference' | translate }}</dt><dd class="receipt-ref">{{ r.reference }}</dd>
         <dt>{{ 'payments.history.item' | translate }}</dt><dd>{{ r.item }}</dd>

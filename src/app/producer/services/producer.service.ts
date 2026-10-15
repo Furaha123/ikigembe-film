@@ -4,6 +4,7 @@ import { Observable, map } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { MovieUploadField, MultipartUploadApi } from '../../shared/models/upload.interface';
 import { MovieUploadService } from '../../shared/services/movie-upload.service';
+import { LifecycleStatus } from '../../shared/utils/film-status';
 
 export type AnalyticsRange = '7d' | '28d' | '90d' | '365d' | 'lifetime';
 export type AnalyticsPeriod = 'daily' | 'weekly' | 'monthly';
@@ -36,6 +37,8 @@ export interface ProducerWallet {
   platform_commission: number;
   total_earnings: number;
   wallet_balance: number;
+  /** Demo mode: simulated sales included in the amounts (no money moved). */
+  simulated_gross_revenue?: number;
   pending_withdrawals: number;
   total_withdrawn: number;
   producer_share_percentage: number;
@@ -54,7 +57,11 @@ export interface ProducerMovie {
   is_active: boolean;
   has_free_preview: boolean;
   hls_status: 'not_started' | 'processing' | 'ready' | 'failed';
-  approval_status: 'pending_review' | 'approved' | 'rejected' | 'approved_pending_contract' | 'changes_requested';
+  approval_status: 'draft' | 'pending_review' | 'approved' | 'rejected' | 'approved_pending_contract' | 'changes_requested';
+  /** Server-derived: draft, in review, …, scheduled, published, unpublished (`shared/utils/film-status.ts`). */
+  lifecycle_status?: LifecycleStatus;
+  /** UTC; shown in Kigali time. */
+  release_at?: string | null;
   rejection_reason: string | null;
   changes_requested_note: string | null;
   created_at: string;

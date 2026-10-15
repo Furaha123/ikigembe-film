@@ -17,6 +17,8 @@ export const FILMS = {
   released: 'E2E Released Film',
   comingSoon: 'E2E Coming Soon Film',
   refunded: 'E2E Refund Film',
+  // Approved, not live, with a poster: only film-publication.spec.ts changes it.
+  unpublished: 'E2E Unpublished Film',
 } as const;
 
 /** Signs in through the real form and waits until the app has left /login. */

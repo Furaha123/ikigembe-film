@@ -12,6 +12,21 @@
     </a>
   </div>
 
+  <!-- ── Real and simulated (demo) money, never mixed silently ── -->
+  @if (overview()?.financials?.by_source; as src) {
+    <div class="money-source" role="note" [class.money-source--demo]="overview()?.financials?.demo_mode">
+      @if (overview()?.financials?.demo_mode) {
+        <strong class="money-source__flag">{{ 'payment.simulated' | translate }}</strong>
+        <span>{{ 'admin.dashboard.money.demoNote' | translate }}</span>
+      }
+      <span>{{ 'admin.dashboard.money.real' | translate: { films: fmt(src.real.film_sales), services: fmt(src.real.services) } }}</span>
+      <span>{{ 'admin.dashboard.money.simulated' | translate: { films: fmt(src.simulated.film_sales), services: fmt(src.simulated.services) } }}</span>
+      @if (overview()?.financials?.provider_fees; as pf) {
+        <span>{{ 'admin.fees.totalsLine' | translate: { actual: fmt(pf.actual), estimated: fmt(pf.estimated), unknown: pf.unknown_payments } }}</span>
+      }
+    </div>
+  }
+
   <!-- ── KPI cards (click to switch chart) ── -->
   <div class="kpi-row">
 

@@ -67,7 +67,7 @@ export class AdminLayoutComponent implements OnInit, OnDestroy {
       labelKey: 'admin.nav.content',
       path: '/admin/movies',
       icon: 'movies',
-      activePaths: ['/admin/movies', '/admin/film-requests', '/admin/transcodes', '/admin/cms'],
+      activePaths: ['/admin/movies', '/admin/film-requests', '/admin/transcodes', '/admin/genres', '/admin/cms', '/admin/homepage'],
       showBadge: true,
     },
     {
@@ -99,6 +99,24 @@ export class AdminLayoutComponent implements OnInit, OnDestroy {
       path: '/admin/audit-log',
       icon: 'reports',
       activePaths: ['/admin/audit-log'],
+    },
+    {
+      labelKey: 'admin.nav.emailOutbox',
+      path: '/admin/email-outbox',
+      icon: 'mail',
+      activePaths: ['/admin/email-outbox'],
+    },
+    {
+      labelKey: 'admin.nav.diagnostics',
+      path: '/admin/diagnostics',
+      icon: 'pulse',
+      activePaths: ['/admin/diagnostics'],
+    },
+    {
+      labelKey: 'admin.nav.usage',
+      path: '/admin/usage',
+      icon: 'pulse',
+      activePaths: ['/admin/usage'],
     },
     {
       labelKey: 'admin.nav.settings',

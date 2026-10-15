@@ -34,7 +34,7 @@ export interface PaymentInitiatePayload {
 }
 
 export type PaymentGateway = 'pawapay' | 'dpo' | 'demo';
-export type PaymentFailureReason = 'declined' | 'expired' | 'cancelled' | 'gateway_error';
+export type PaymentFailureReason = 'declined' | 'expired' | 'cancelled' | 'gateway_error' | 'demo_disabled';
 
 /** GET /payments/config/: how this backend collects payments. */
 export interface PaymentConfig {
@@ -105,6 +105,25 @@ export interface PaymentHistoryItem {
   currency: string;
   status: string;
   created_at: string;
+  /**
+   * Movie purchases only (null otherwise, and for pending/failed payments): what is left of the
+   * purchase under the pay-per-view policy. `in_progress` = first played, the resume window is open
+   * until `window_ends_at`. With the single-device policy off, completed purchases are `available`.
+   */
+  view_status?: PurchaseViewStatus | null;
+  first_played_at?: string | null;
+  window_ends_at?: string | null;
+}
+
+export type PurchaseViewStatus = 'available' | 'in_progress' | 'used' | 'expired' | 'refunded';
+
+/** GET /payments/history/ — newest first, paged (page_size ≤ 100, default 100). */
+export interface PaymentHistoryPage {
+  count: number;
+  results: PaymentHistoryItem[];
+  page?: number;
+  page_size?: number;
+  total_pages?: number;
 }
 
 /** GET /payments/<deposit_id>/receipt/ — owner (or admin) only. */
@@ -124,6 +143,22 @@ export interface PaymentReceipt {
   completed_at: string | null;
   date: string;
   refunded_amount: number;
+  /** Demo mode: no money moved. Shown as SIMULATED. */
+  simulated?: boolean;
+}
+
+/** Demo payment scenarios (backend apps/payments/demo.py). */
+export const DEMO_OUTCOMES = ['paid', 'declined', 'cancelled', 'expired', 'pending', 'delayed', 'duplicate'] as const;
+export type DemoOutcome = typeof DEMO_OUTCOMES[number];
+
+export interface DemoOutcomeResponse {
+  status: PaymentStatus;
+  failure_reason: PaymentFailureReason | null;
+  simulated: true;
+  /** Whether this call changed the payment (false for the repeated confirmation of `duplicate`). */
+  applied: boolean;
+  duplicate_applied?: boolean;
+  settles_at?: string | null;
 }
 
 const PURCHASED_KEY = 'purchased_movies';
@@ -148,9 +183,12 @@ export class PaymentService {
       `${environment.apiUrl}/payments/${encodeURIComponent(depositId)}/cancel/`, {});
   }
 
-  /** Demo mode only: the stand-in for DPO's page pays or declines. */
-  demoCheckout(depositId: string, outcome: 'paid' | 'declined'): Observable<{ status: PaymentStatus }> {
-    return this.http.post<{ status: PaymentStatus }>(
+  /**
+   * Demo mode only: choose how a Pending demo payment ends. The server applies it through the same
+   * confirmation path a real provider uses; it refuses anything but the buyer's own Pending demo payment.
+   */
+  demoCheckout(depositId: string, outcome: DemoOutcome): Observable<DemoOutcomeResponse> {
+    return this.http.post<DemoOutcomeResponse>(
       `${environment.apiUrl}/payments/${encodeURIComponent(depositId)}/demo-checkout/`, { outcome });
   }
 
@@ -257,10 +295,9 @@ export class PaymentService {
     } catch { /* storage unavailable: resuming after a reload just won't happen */ }
   }
 
-  getHistory(): Observable<{ count: number; results: PaymentHistoryItem[] }> {
-    return this.http.get<{ count: number; results: PaymentHistoryItem[] }>(
-      `${environment.apiUrl}/payments/history/`
-    );
+  getHistory(page = 1): Observable<PaymentHistoryPage> {
+    const options = page > 1 ? { params: { page: String(page) } } : {};
+    return this.http.get<PaymentHistoryPage>(`${environment.apiUrl}/payments/history/`, options);
   }
 
   getReceipt(depositId: string): Observable<PaymentReceipt> {

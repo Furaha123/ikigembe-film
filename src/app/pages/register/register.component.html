@@ -157,6 +157,13 @@
             }
           </div>
 
+          @if (formError(); as fe) {
+            <div class="form-error" role="alert">
+              {{ fe.text ?? ('auth.common.genericError' | translate) }}
+              <app-error-reference [reference]="fe.ref" />
+            </div>
+          }
+
           <button type="submit" class="submit-btn" [disabled]="isLoading()">
             @if (isLoading()) {
               <span class="spinner"></span>{{ 'auth.register.submitting' | translate }}

@@ -46,6 +46,13 @@
       <section class="refund-form" aria-labelledby="fin-title">
         <div class="row-between">
           <h2 id="fin-title">{{ p.label }} — {{ 'admin.finance.status.' + p.status | translate }}</h2>
+          @if (p.simulated) {
+            <p class="warn" role="note"><strong>{{ 'payment.simulated' | translate }}</strong> {{ 'admin.finance.simulatedPeriod' | translate }}</p>
+          }
+          @if (p.provider_fees; as pf) {
+            <p class="muted">{{ 'admin.fees.totalsLine' | translate: { actual: (pf.actual | number), estimated: (pf.estimated | number), unknown: pf.unknown_payments } }}
+              · {{ 'admin.fees.borneByPlatform' | translate }}</p>
+          }
           <div class="drawer-actions">
             @if (p.status === 'closed') {
               <button type="button" class="btn ghost" (click)="downloadCsv()">{{ 'admin.finance.exportCsv' | translate }}</button>
@@ -136,4 +143,5 @@
       }
     }
   }
+  <app-provider-fee-rules />
 </div>

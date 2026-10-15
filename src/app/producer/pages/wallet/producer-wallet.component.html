@@ -10,6 +10,10 @@
       @for (i of [1,2,3,4]; track i) { <div class="stat-skeleton"></div> }
     </div>
   } @else if (wallet()) {
+    @if (wallet()!.simulated_gross_revenue) {
+      <p class="simulated-note" role="note"><strong>{{ 'payment.simulated' | translate }}</strong>
+        {{ 'producer.wallet.simulatedNote' | translate: { amount: formatCurrency(wallet()!.simulated_gross_revenue!) } }}</p>
+    }
     <div class="stats-grid">
       <div class="stat-card balance">
         <div class="stat-icon">

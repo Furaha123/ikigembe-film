@@ -1,0 +1,153 @@
+<div class="admin-page">
+  <app-admin-section-tabs [tabs]="[
+    { labelKey: 'admin.nav.movies', path: '/admin/movies', exact: true },
+    { labelKey: 'admin.nav.filmRequests', path: '/admin/film-requests', exact: true },
+    { labelKey: 'admin.nav.transcodes', path: '/admin/transcodes', exact: true },
+    { labelKey: 'admin.nav.genres', path: '/admin/genres', exact: true },
+    { labelKey: 'admin.nav.cms', path: '/admin/cms/pages' }
+  ]" ariaLabel="admin.nav.content" />
+  <div class="page-header">
+    <div>
+      <h1>Genres</h1>
+      <p>The genres films can be tagged with. Renaming updates every film; deactivating hides a genre from the
+        catalog filter and the film forms (films keep it); only unused genres can be deleted.</p>
+    </div>
+  </div>
+
+  <form class="genre-create" (ngSubmit)="create()">
+    <label class="field grow" for="genre-new-name">
+      <span>New genre</span>
+      <input id="genre-new-name" type="text" name="newName" maxlength="60" [(ngModel)]="newName" placeholder="e.g. Documentary" />
+    </label>
+    <label class="field" for="genre-new-order">
+      <span>Order (optional)</span>
+      <input id="genre-new-order" type="number" name="newSortOrder" min="0" [(ngModel)]="newSortOrder" />
+    </label>
+    <div class="filter-actions">
+      <button type="submit" class="btn" [disabled]="creating()">{{ creating() ? 'Adding…' : 'Add genre' }}</button>
+    </div>
+  </form>
+  <div aria-live="polite">
+    @if (createError()) { <p class="error" role="alert">{{ createError() }}</p> }
+    @if (notice()) { <p class="success" role="status">{{ notice() }}</p> }
+  </div>
+
+  <form class="filters" role="search" (ngSubmit)="search()">
+    <label class="field grow" for="genre-q">
+      <span>Search</span>
+      <input id="genre-q" type="search" name="q" [(ngModel)]="q" placeholder="Name contains…" />
+    </label>
+    <label class="field" for="genre-status">
+      <span>Status</span>
+      <select id="genre-status" name="status" [(ngModel)]="status">
+        <option value="">All</option>
+        <option value="active">Active</option>
+        <option value="inactive">Inactive</option>
+      </select>
+    </label>
+    <div class="filter-actions">
+      <button type="submit" class="btn">Apply</button>
+      <button type="button" class="btn ghost" (click)="reset()">Reset</button>
+    </div>
+  </form>
+
+  <div aria-live="polite">
+    @if (error()) {
+      <p class="error" role="alert">{{ error() }} <button type="button" class="link" (click)="load()">Retry</button></p>
+    }
+  </div>
+
+  @if (loading() && !data()) {
+    <div class="table-skeleton" aria-hidden="true">@for (i of [1,2,3,4]; track i) { <div class="row-skeleton"></div> }</div>
+  } @else if (data()) {
+    @let d = data()!;
+    <p class="totals">{{ d.total_results }} {{ d.total_results === 1 ? 'genre' : 'genres' }}</p>
+    @if (d.results.length === 0) {
+      <div class="empty-state">No genres match these filters.</div>
+    } @else {
+      <div class="table-wrap" [class.is-loading]="loading()">
+        <table class="ledger">
+          <thead>
+            <tr>
+              <th scope="col">Name</th>
+              <th scope="col">Status</th>
+              <th scope="col" class="num">Films</th>
+              <th scope="col" class="num">Order</th>
+              <th scope="col"><span class="sr-only">Actions</span></th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (g of d.results; track g.id) {
+              <tr>
+                <td><span class="cell-title">{{ g.name }}</span> <span class="muted block mono">{{ g.slug }}</span></td>
+                <td>
+                  <span class="status-badge" [class.genre-active]="g.is_active" [class.genre-inactive]="!g.is_active">
+                    {{ g.is_active ? 'Active' : 'Inactive' }}
+                  </span>
+                </td>
+                <td class="num">{{ g.film_count }}</td>
+                <td class="num">{{ g.sort_order }}</td>
+                <td>
+                  <div class="genre-actions">
+                    @if (confirmDeleteId() === g.id) {
+                      <span class="warn">Delete "{{ g.name }}"?</span>
+                      <button type="button" class="btn danger small" [disabled]="busyId() === g.id" (click)="delete(g)">Delete</button>
+                      <button type="button" class="btn ghost small" (click)="cancelDelete()">Cancel</button>
+                    } @else {
+                      <button type="button" class="btn ghost small" (click)="openEdit(g)">Edit</button>
+                      <button type="button" class="btn ghost small" [disabled]="busyId() === g.id" (click)="toggleActive(g)">
+                        {{ g.is_active ? 'Deactivate' : 'Activate' }}
+                      </button>
+                      <button type="button" class="btn danger small" [disabled]="busyId() === g.id"
+                              [attr.title]="g.film_count ? 'Used by films: deactivate it instead' : null"
+                              (click)="askDelete(g)">Delete</button>
+                    }
+                  </div>
+                  @if (rowError()?.id === g.id) {
+                    <span class="error block" role="alert">{{ rowError()!.message }}</span>
+                  }
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+      @if (d.total_pages > 1) {
+        <nav class="pager" aria-label="Pagination">
+          <button type="button" class="btn ghost" [disabled]="d.page <= 1" (click)="search(d.page - 1)">Previous</button>
+          <span>{{ d.page }} / {{ d.total_pages }}</span>
+          <button type="button" class="btn ghost" [disabled]="d.page >= d.total_pages" (click)="search(d.page + 1)">Next</button>
+        </nav>
+      }
+    }
+  }
+</div>
+
+@if (editing()) {
+  <div class="drawer-overlay" appModalBackdrop (dismiss)="closeEdit()">
+    <aside class="drawer genre-drawer" role="dialog" aria-modal="true" aria-labelledby="genre-edit-title">
+      <header class="drawer-header">
+        <h2 id="genre-edit-title">Edit genre</h2>
+        <button type="button" class="btn ghost small" (click)="closeEdit()">Close</button>
+      </header>
+      <form class="genre-edit" (ngSubmit)="saveEdit()">
+        <label class="field" for="genre-edit-name">
+          <span>Name</span>
+          <input id="genre-edit-name" type="text" name="editName" maxlength="60" [(ngModel)]="editName" />
+        </label>
+        @if (editing()!.film_count && editName.trim() !== editing()!.name) {
+          <p class="warn">This renames the genre on {{ editing()!.film_count }} film{{ editing()!.film_count === 1 ? '' : 's' }}.</p>
+        }
+        <label class="field" for="genre-edit-order">
+          <span>Order</span>
+          <input id="genre-edit-order" type="number" name="editSortOrder" min="0" [(ngModel)]="editSortOrder" />
+        </label>
+        @if (editError()) { <p class="error" role="alert">{{ editError() }}</p> }
+        <div class="drawer-actions">
+          <button type="submit" class="btn" [disabled]="saving()">{{ saving() ? 'Saving…' : 'Save' }}</button>
+          <button type="button" class="btn ghost" (click)="closeEdit()">Cancel</button>
+        </div>
+      </form>
+    </aside>
+  </div>
+}

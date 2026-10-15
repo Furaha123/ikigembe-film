@@ -129,6 +129,19 @@
             </div>
             <span class="pm-field__hint" id="pm-phone-hint">MTN: 078 / 079 &nbsp;·&nbsp; Airtel: 072 / 073</span>
           </div>
+          @if (demo()) {
+            <!-- Demo only: choose how the simulated payment ends (the server refuses this outside demo mode) -->
+            <div class="pm-field">
+              <label class="pm-field__label" for="pm-demo-outcome">{{ 'paymentModal.demo.scenarioLabel' | translate }}</label>
+              <select id="pm-demo-outcome" class="pm-field__input pm-field__select" [value]="demoOutcome()"
+                      (change)="onDemoOutcome($event)" [disabled]="loading()">
+                <option value="auto">{{ 'paymentModal.demo.scenario.auto' | translate }}</option>
+                @for (o of demoOutcomes; track o) {
+                  <option [value]="o">{{ 'demoCheckout.outcome.' + o | translate }}</option>
+                }
+              </select>
+            </div>
+          }
         } @else if (config()) {
           <p class="pm-label">{{ 'paymentModal.hostedLabel' | translate }}</p>
           <p class="pm-hosted-hint">{{ 'paymentModal.hostedHint' | translate }}</p>

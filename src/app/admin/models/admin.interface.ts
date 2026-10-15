@@ -1,3 +1,5 @@
+import { LifecycleStatus } from '../../shared/utils/film-status';
+
 export interface DashboardFinancials {
   total_revenue: number;
   producer_revenue: number;
@@ -6,6 +8,12 @@ export interface DashboardFinancials {
   revenue_this_month: number;
   total_paid_to_producers: number;
   total_profit: number;
+  /** Demo mode: the figures above include simulated payments (no money moved). */
+  demo_mode?: boolean;
+  /** Completed payments split into real money and simulated (demo) money. */
+  by_source?: Record<'real' | 'simulated', { film_sales: number; services: number }>;
+  /** All-time provider fees: actual + estimated; unknown fees counted (never zero). */
+  provider_fees?: { actual: number; estimated: number; known_total: number; unknown_payments: number };
 }
 
 export interface DashboardOverview {
@@ -72,7 +80,12 @@ export interface FilmSubmissionItem {
   submission_date: string;
   genre: string | null;
   duration_minutes: number | null;
-  status: 'pending_review' | 'pending_admin_review' | 'approved' | 'rejected' | 'approved_pending_contract' | 'changes_requested';
+  status: 'draft' | 'pending_review' | 'pending_admin_review' | 'approved' | 'rejected' | 'approved_pending_contract' | 'changes_requested';
+  /** Server-derived (approval + active flag + release time); see `shared/utils/film-status.ts`. */
+  lifecycle_status?: LifecycleStatus;
+  is_active?: boolean;
+  /** UTC; shown in Kigali time. */
+  release_at?: string | null;
   rejection_reason: string | null;
   thumbnail_url: string | null;
   synopsis?: string | null;
@@ -85,6 +98,16 @@ export interface FilmSubmissionItem {
   trailer_url?: string | null;
   free_preview?: boolean;
   copyright_url?: string | null;
+}
+
+/** Result of POST /admin/dashboard/movies/<id>/schedule|publish|unpublish/. */
+export interface FilmLifecycleResult {
+  id: number;
+  lifecycle_status: LifecycleStatus;
+  approval_status: FilmSubmissionItem['status'];
+  is_active: boolean;
+  release_at: string | null;
+  detail: string;
 }
 
 export type HlsStatus = 'not_started' | 'processing' | 'ready' | 'failed';
@@ -190,10 +213,16 @@ export interface WithdrawalItem {
   processed_at: string | null;
 }
 
+/** Each list is one page (`?page=`, `?page_size=` ≤ 100, default 50), newest first; `*_total` are full counts. */
 export interface TransactionHistory {
   payments: PaymentItem[];
   withdrawals: WithdrawalItem[];
   pending_withdrawals: WithdrawalItem[];
+  page?: number;
+  page_size?: number;
+  payments_total?: number;
+  withdrawals_total?: number;
+  pending_withdrawals_total?: number;
 }
 
 export interface AdminMovie {

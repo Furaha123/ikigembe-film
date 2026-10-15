@@ -51,7 +51,7 @@ export class AdminDashboardComponent implements OnInit, AfterViewChecked, OnDest
   producerPayout = computed(() => this.overview()?.financials.producer_revenue   ?? 0);
   revenueToday   = computed(() => this.overview()?.financials.revenue_today      ?? 0);
   revenueMonth   = computed(() => this.overview()?.financials.revenue_this_month ?? 0);
-  pendingCount   = computed(() => this.txHistory()?.pending_withdrawals.length   ?? 0);
+  pendingCount   = computed(() => this.txHistory()?.pending_withdrawals_total ?? this.txHistory()?.pending_withdrawals.length ?? 0);
   recentPayments = computed(() => (this.txHistory()?.payments ?? []).slice(0, 5));
 
   /** Month-over-month % change derived from the last two trend data points. */

@@ -58,12 +58,16 @@
 
     <!-- Actions -->
     <div class="banner-actions">
-      <button class="btn-play" (click)="play()">
-        <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-          <path d="M8 5v14l11-7z"/>
-        </svg>
-        {{ 'banner.play' | translate }}
-      </button>
+      @if (comingSoon()) {
+        <span class="meta-chip banner-soon">{{ 'home.hero.comingSoon' | translate }}</span>
+      } @else {
+        <button class="btn-play" (click)="play()">
+          <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+            <path d="M8 5v14l11-7z"/>
+          </svg>
+          {{ 'banner.play' | translate }}
+        </button>
+      }
       <button class="btn-info" (click)="moreInfo()">
         <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
           <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/>

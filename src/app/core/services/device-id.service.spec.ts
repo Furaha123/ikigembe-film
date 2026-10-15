@@ -1,62 +1,108 @@
-import { PLATFORM_ID } from '@angular/core';
+import { PLATFORM_ID, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
-import { DEVICE_ID_KEY, DeviceIdService } from './device-id.service';
+import { provideHttpClient } from '@angular/common/http';
+import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
+import { environment } from '../../../environments/environment';
+import { AuthService } from './auth.service';
+import { DEVICE_ID_KEY, DEVICE_KEY, DeviceIdService } from './device-id.service';
 
-const UUID_V4 = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/;
+const DEVICE_URL = `${environment.apiUrl}/movies/device/`;
 
 describe('DeviceIdService', () => {
+  let http: HttpTestingController;
+  const email = signal('buyer@example.com');
+
   const create = (platform: 'browser' | 'server' = 'browser') => {
     TestBed.resetTestingModule();
-    TestBed.configureTestingModule({ providers: [{ provide: PLATFORM_ID, useValue: platform }] });
+    TestBed.configureTestingModule({
+      providers: [
+        provideHttpClient(), provideHttpClientTesting(),
+        { provide: PLATFORM_ID, useValue: platform },
+        { provide: AuthService, useValue: { userEmail: email, userName: signal('') } },
+      ],
+    });
+    http = TestBed.inject(HttpTestingController);
     return TestBed.inject(DeviceIdService);
   };
 
-  beforeEach(() => localStorage.removeItem(DEVICE_ID_KEY));
-  afterEach(() => localStorage.removeItem(DEVICE_ID_KEY));
+  const clear = () => { localStorage.removeItem(DEVICE_ID_KEY); localStorage.removeItem(DEVICE_KEY); };
+  beforeEach(() => { clear(); email.set('buyer@example.com'); });
+  afterEach(() => { http.verify(); clear(); });
 
-  it('creates a UUID once and persists it under ikigembe_device_id', () => {
-    const id = create().getId();
-    expect(id).toMatch(UUID_V4);
-    expect(localStorage.getItem(DEVICE_ID_KEY)).toBe(id);
-  });
-
-  it('returns the same id on every call', () => {
+  it('asks the API once, stores the signed id for this user and reuses it', () => {
     const service = create();
-    const spy = spyOn(crypto, 'randomUUID').and.callThrough();
-    const first = service.getId();
-    expect(service.getId()).toBe(first);
-    expect(service.getId()).toBe(first);
-    expect(spy).toHaveBeenCalledTimes(1);
+    let id: string | null = null;
+    service.getId().subscribe(v => (id = v));
+    const req = http.expectOne(DEVICE_URL);
+    expect(req.request.method).toBe('POST');
+    expect(req.request.body).toEqual({});
+    req.flush({ device_id: 'abc:sig', enforced: true });
+
+    expect(id as string | null).toBe('abc:sig');
+    expect(JSON.parse(localStorage.getItem(DEVICE_KEY)!)).toEqual({ user: 'buyer@example.com', id: 'abc:sig' });
+
+    service.getId().subscribe(v => (id = v));
+    http.expectNone(DEVICE_URL);
+    expect(id as string | null).toBe('abc:sig');
   });
 
-  it('reuses a persisted id across app sessions', () => {
-    localStorage.setItem(DEVICE_ID_KEY, 'existing-device-id');
-    expect(create().getId()).toBe('existing-device-id');
+  it('reuses a stored id after a reload', () => {
+    localStorage.setItem(DEVICE_KEY, JSON.stringify({ user: 'buyer@example.com', id: 'stored:sig' }));
+    let id: string | null = null;
+    create().getId().subscribe(v => (id = v));
+    http.expectNone(DEVICE_URL);
+    expect(id as string | null).toBe('stored:sig');
   });
 
-  it('falls back to getRandomValues when randomUUID is unavailable', () => {
-    Object.defineProperty(crypto, 'randomUUID', { value: undefined, configurable: true });
-    try {
-      expect(create().getId()).toMatch(UUID_V4);
-    } finally {
-      delete (crypto as { randomUUID?: unknown }).randomUUID; // restore the prototype method
-    }
+  it('requests a new id when another account signs in', () => {
+    localStorage.setItem(DEVICE_KEY, JSON.stringify({ user: 'someone@example.com', id: 'other:sig' }));
+    let id: string | null = null;
+    create().getId().subscribe(v => (id = v));
+    http.expectOne(DEVICE_URL).flush({ device_id: 'mine:sig', enforced: false });
+    expect(id as string | null).toBe('mine:sig');
   });
 
-  it('is SSR-safe: returns null and never touches storage on the server', () => {
-    const get = spyOn(Storage.prototype, 'getItem').and.callThrough();
-    const set = spyOn(Storage.prototype, 'setItem').and.callThrough();
-    expect(create('server').getId()).toBeNull();
-    expect(get).not.toHaveBeenCalled();
-    expect(set).not.toHaveBeenCalled();
+  it('sends the old browser UUID as legacy_id and never deletes it', () => {
+    localStorage.setItem(DEVICE_ID_KEY, '0b8f6d2e-1c3a-4e5f-9a7b-123456789abc');
+    create().getId().subscribe();
+    const req = http.expectOne(DEVICE_URL);
+    expect(req.request.body).toEqual({ legacy_id: '0b8f6d2e-1c3a-4e5f-9a7b-123456789abc' });
+    req.flush({ device_id: 'wrapped:sig', enforced: true });
+    expect(localStorage.getItem(DEVICE_ID_KEY)).toBe('0b8f6d2e-1c3a-4e5f-9a7b-123456789abc');
   });
 
-  it('still returns a stable id when storage is blocked', () => {
-    spyOn(Storage.prototype, 'getItem').and.throwError('SecurityError');
-    spyOn(Storage.prototype, 'setItem').and.throwError('SecurityError');
+  it('shares one in-flight request between concurrent callers', () => {
     const service = create();
-    const id = service.getId();
-    expect(id).toMatch(UUID_V4);
-    expect(service.getId()).toBe(id);
+    const ids: (string | null)[] = [];
+    service.getId().subscribe(v => ids.push(v));
+    service.getId().subscribe(v => ids.push(v));
+    http.expectOne(DEVICE_URL).flush({ device_id: 'one:sig', enforced: true });
+    expect(ids).toEqual(['one:sig', 'one:sig']);
+  });
+
+  it('reset() forgets the id so the next call asks again', () => {
+    const service = create();
+    service.getId().subscribe();
+    http.expectOne(DEVICE_URL).flush({ device_id: 'old:sig', enforced: true });
+    service.reset();
+    expect(localStorage.getItem(DEVICE_KEY)).toBeNull();
+    let id: string | null = null;
+    service.getId().subscribe(v => (id = v));
+    http.expectOne(DEVICE_URL).flush({ device_id: 'new:sig', enforced: true });
+    expect(id as string | null).toBe('new:sig');
+  });
+
+  it('yields null when the API refuses (the stream call then shows its usual error)', () => {
+    let id: string | null | undefined;
+    create().getId().subscribe(v => (id = v));
+    http.expectOne(DEVICE_URL).flush({}, { status: 500, statusText: 'Server Error' });
+    expect(id).toBeNull();
+  });
+
+  it('returns null on the server without any request', () => {
+    let id: string | null | undefined;
+    create('server').getId().subscribe(v => (id = v));
+    http.expectNone(DEVICE_URL);
+    expect(id).toBeNull();
   });
 });

@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { TranslatePipe } from '@ngx-translate/core';
-import { PaymentService, PaymentStatusResponse } from '../../core/services/payment.service';
+import { DemoOutcome, PaymentService, PaymentStatusResponse } from '../../core/services/payment.service';
 import { SeoService } from '../../core/services/seo.service';
 import { DEPOSIT_ID } from './payment-return.component';
 
@@ -44,6 +44,15 @@ import { DEPOSIT_ID } from './payment-return.component';
               {{ 'demoCheckout.pay' | translate: { amount: (s.amount | number) } }}
             </button>
             <button type="button" class="dc-btn" (click)="finish('declined')" [disabled]="busy()">{{ 'demoCheckout.decline' | translate }}</button>
+
+            <fieldset class="dc-scenarios">
+              <legend>{{ 'demoCheckout.scenarios' | translate }}</legend>
+              @for (o of otherOutcomes; track o) {
+                <button type="button" class="dc-btn dc-btn--quiet" (click)="finish(o)" [disabled]="busy()">
+                  {{ 'demoCheckout.outcome.' + o | translate }}
+                </button>
+              }
+            </fieldset>
             <button type="button" class="dc-btn dc-btn--quiet" (click)="backToSite()" [disabled]="busy()">{{ 'demoCheckout.abandon' | translate }}</button>
           }
         } @else if (invalid()) {
@@ -67,6 +76,8 @@ export class DemoCheckoutComponent implements OnInit {
   readonly invalid = signal(false);
   readonly busy = signal(false);
   readonly error = signal('');
+  /** Further scenarios, so every way a real payment can end can be shown (backend apps/payments/demo.py). */
+  readonly otherOutcomes: DemoOutcome[] = ['pending', 'delayed', 'duplicate', 'expired', 'cancelled'];
   private depositId = '';
 
   ngOnInit() {
@@ -80,7 +91,7 @@ export class DemoCheckoutComponent implements OnInit {
     });
   }
 
-  finish(outcome: 'paid' | 'declined') {
+  finish(outcome: DemoOutcome) {
     if (this.busy()) return;
     this.busy.set(true);
     this.error.set('');

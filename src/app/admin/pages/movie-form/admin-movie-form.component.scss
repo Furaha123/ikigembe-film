@@ -324,3 +324,43 @@ $muted:   #888;
   clip: rect(0 0 0 0);
   white-space: nowrap;
 }
+
+/* ── Genre picker (active genres from the API) ── */
+.genre-picker {
+  border: none;
+  padding: 0;
+  margin: 1rem 0 0;
+
+  legend {
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: $muted;
+    margin-bottom: 0.5rem;
+  }
+}
+
+.genre-chips { display: flex; flex-wrap: wrap; gap: 0.45rem; }
+
+.genre-chip {
+  background: #111;
+  border: 1px solid $border;
+  border-radius: 999px;
+  padding: 0.35rem 0.85rem;
+  color: $text;
+  font-size: 0.8rem;
+  cursor: pointer;
+
+  &.selected { border-color: $gold; color: $gold; background: rgba(197, 162, 83, 0.1); }
+  &.inactive { border-style: dashed; }
+  &:focus-visible { outline: 2px solid $gold; outline-offset: 2px; }
+}
+
+.link-btn {
+  background: none;
+  border: none;
+  color: $gold;
+  text-decoration: underline;
+  cursor: pointer;
+  font: inherit;
+  padding: 0;
+}

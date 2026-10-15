@@ -28,7 +28,27 @@
           <dd>{{ 'admin.payments.benefitKind.' + d.benefit.kind | translate }}: {{ d.benefit.label }} — {{ d.benefit.state }}</dd>
         }
         <dt>{{ 'admin.payments.refunded' | translate }}</dt><dd>RWF {{ d.refunded_amount | number }}</dd>
+        @if (d.provider_fee?.basis; as basis) {
+          <dt>{{ 'admin.fees.fee' | translate }}</dt>
+          <dd>
+            <span class="status-badge" [class.status-completed]="basis === 'actual'" [class.status-pending]="basis !== 'actual'">{{ 'admin.fees.basis.' + basis | translate }}</span>
+            @if (d.provider_fee!.amount !== null) { RWF {{ d.provider_fee!.amount | number }} } @else { {{ 'admin.fees.unknownAmount' | translate }} }
+            @if (d.provider_fee!.returned) { · {{ 'admin.fees.returned' | translate: { amount: (d.provider_fee!.returned | number) } }} }
+            @if (d.simulated) { · <strong>{{ 'payment.simulated' | translate }}</strong> }
+          </dd>
+        }
       </dl>
+
+      @if (d.provider_fee_entries?.length) {
+        <h3>{{ 'admin.fees.history' | translate }}</h3>
+        <ul class="fee-history">
+          @for (e of d.provider_fee_entries; track e.id) {
+            <li>{{ 'admin.fees.kind.' + e.kind | translate }} · {{ 'admin.fees.basis.' + e.basis | translate }} ·
+              @if (e.amount !== null) { RWF {{ e.amount | number }} } @else { {{ 'admin.fees.unknownAmount' | translate }} }
+              · {{ e.source }} @if (e.reference) { · {{ e.reference }} } · {{ e.booked_at | date:'medium' }}</li>
+          }
+        </ul>
+      }
 
       <div aria-live="polite">
         @if (notice()) { <p class="success" role="status">{{ notice() }}</p> }
@@ -39,10 +59,37 @@
         @if (d.status === 'Pending') {
           <button type="button" class="btn" (click)="recheck()" [disabled]="busy()">{{ 'admin.payments.recheck' | translate }}</button>
         }
+        @if ((d.status === 'Completed' || d.status === 'Refunded') && !feeOpen()) {
+          <button type="button" class="btn" (click)="feeOpen.set(true)">{{ 'admin.fees.recordActual' | translate }}</button>
+        }
         @if (d.status === 'Completed' && d.refundable_amount > 0 && d.refund_state !== 'in_progress' && !refundOpen()) {
           <button type="button" class="btn danger" (click)="refundOpen.set(true)">{{ 'admin.payments.refundAction' | translate }}</button>
         }
       </div>
+
+      @if (feeOpen()) {
+        <form class="refund-form" (ngSubmit)="submitFee()">
+          <h3>{{ 'admin.fees.recordActual' | translate }}</h3>
+          <p class="muted">{{ 'admin.fees.recordHint' | translate }}</p>
+          <label for="fee-amount">{{ 'admin.fees.amountLabel' | translate }}</label>
+          <input id="fee-amount" name="feeAmount" type="number" min="0" [max]="d.amount" step="1" [(ngModel)]="feeAmount" required />
+          <label for="fee-ref">{{ 'admin.fees.referenceLabel' | translate }}</label>
+          <input id="fee-ref" name="feeRef" type="text" maxlength="120" [(ngModel)]="feeReference" />
+          @if (d.refunds.length) {
+            <label for="fee-refund">{{ 'admin.fees.refundLabel' | translate }}</label>
+            <select id="fee-refund" name="feeRefund" [(ngModel)]="feeRefundId">
+              <option [ngValue]="null">{{ 'admin.fees.collectionFee' | translate }}</option>
+              @for (r of d.refunds; track r.id) {
+                @if (r.status === 'completed') { <option [ngValue]="r.id">{{ 'admin.fees.returnedOn' | translate: { amount: (r.amount | number) } }}</option> }
+              }
+            </select>
+          }
+          <div class="drawer-actions">
+            <button type="submit" class="btn" [disabled]="busy() || feeAmount === null">{{ 'admin.fees.save' | translate }}</button>
+            <button type="button" class="btn ghost" (click)="feeOpen.set(false)">{{ 'admin.payments.cancel' | translate }}</button>
+          </div>
+        </form>
+      }
 
       @if (refundOpen()) {
         <form class="refund-form" (ngSubmit)="submitRefund()">

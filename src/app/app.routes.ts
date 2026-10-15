@@ -39,6 +39,13 @@ export const routes: Routes = [
     loadComponent: () => import('./pages/verify-email/verify-email.component').then(a => a.VerifyEmailComponent)
   },
   {
+    // Signed in, but the API answered 403 email_unverified: resend the link, fix the address or sign out.
+    path: 'verify-email-required',
+    canActivate: [authGuard],
+    loadComponent: () => import('./pages/verify-email/email-verification-required.component')
+      .then(a => a.EmailVerificationRequiredComponent)
+  },
+  {
     path: 'browse',
     canActivate: [authGuard, viewerGuard],
     loadComponent: () => import('./pages/browse/browse.component').then(a => a.BrowseComponent)

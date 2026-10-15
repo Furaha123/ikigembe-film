@@ -247,6 +247,7 @@
           [src]="videoSrc()"
           [source]="playback()"
           [refreshSource]="playback() ? refreshStream : null"
+          [startAt]="playback() ? startAt() : 0"
           [poster]="movie.thumbnail_url"
           accentColor="#c9a84c"
           [autoplay]="true"

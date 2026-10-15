@@ -1,0 +1,170 @@
+<div class="admin-page">
+  <div class="page-header">
+    <div>
+      <h1>{{ 'admin.diagnostics.title' | translate }}</h1>
+      <p>{{ 'admin.diagnostics.subtitle' | translate }}</p>
+      @if (data(); as d) {
+        <p class="version">
+          {{ 'admin.diagnostics.version' | translate: { version: d.version ?? '—' } }} ·
+          {{ 'admin.diagnostics.generatedAt' | translate: { time: (d.generated_at | date: 'medium') } }}
+        </p>
+      }
+    </div>
+    <div class="header-actions">
+      <button type="button" class="btn ghost" (click)="load()" [disabled]="loading()">
+        {{ 'admin.diagnostics.refresh' | translate }}
+      </button>
+    </div>
+  </div>
+
+  <div aria-live="polite">
+    @if (loadError(); as e) {
+      <p class="error" role="alert">
+        {{ e.text }}
+        <button type="button" class="link" (click)="load()">{{ 'admin.payments.retry' | translate }}</button>
+      </p>
+      <app-error-reference [reference]="e.ref" />
+    }
+    @if (runMessage(); as m) {
+      <div class="run-message" [class.success]="m.ok" [class.error]="!m.ok" role="status">
+        {{ m.text }}
+        <app-error-reference [reference]="m.ref" />
+      </div>
+    }
+  </div>
+
+  @if (loading() && !data()) {
+    <div class="table-skeleton" aria-hidden="true">@for (i of [1, 2, 3, 4]; track i) { <div class="row-skeleton"></div> }</div>
+  } @else if (data()) {
+    @let d = data()!;
+    <div class="cards">
+      <section class="card">
+        <h2>{{ 'admin.diagnostics.stalePayments' | translate: { minutes: d.payments.pending_older_than_minutes } }}</h2>
+        <span class="big" [class.alert]="d.payments.pending_stale > 0">{{ d.payments.pending_stale }}</span>
+      </section>
+      <section class="card">
+        <h2>{{ 'admin.diagnostics.transcodes' | translate }}</h2>
+        <ul>
+          <li><span>{{ 'admin.diagnostics.transcodesProcessing' | translate }}</span><strong>{{ d.transcodes.processing }}</strong></li>
+          <li><span>{{ 'admin.diagnostics.transcodesStuck' | translate }}</span><strong>{{ d.transcodes.stuck }}</strong></li>
+          <li><span>{{ 'admin.diagnostics.transcodesFailed' | translate }}</span><strong>{{ d.transcodes.failed }}</strong></li>
+        </ul>
+      </section>
+      <section class="card">
+        <h2>{{ 'admin.diagnostics.outbox' | translate }}</h2>
+        <ul>
+          @for (row of outboxEntries(d); track row.status) {
+            <li><span>{{ row.status }}</span><strong>{{ row.count }}</strong></li>
+          } @empty {
+            <li>{{ 'admin.diagnostics.outboxEmpty' | translate }}</li>
+          }
+        </ul>
+      </section>
+    </div>
+
+    <h2 class="section">{{ 'admin.diagnostics.jobs' | translate }}</h2>
+    <div class="table-wrap" [class.is-loading]="loading()">
+      <table class="ledger">
+        <thead>
+          <tr>
+            <th scope="col">{{ 'admin.diagnostics.job' | translate }}</th>
+            <th scope="col">{{ 'admin.diagnostics.lastRun' | translate }}</th>
+            <th scope="col">{{ 'admin.diagnostics.nextDue' | translate }}</th>
+            <th scope="col">{{ 'admin.diagnostics.lastError' | translate }}</th>
+            <th scope="col"><span class="visually-hidden">{{ 'admin.diagnostics.actions' | translate }}</span></th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (job of d.jobs; track job.name) {
+            <tr>
+              <td>
+                <span class="cell-title mono">{{ job.name }}</span>
+                <span class="block muted">{{ job.description }}</span>
+                <span class="block muted">{{ interval(job.interval_seconds) }}</span>
+              </td>
+              <td>
+                @if (job.last_run; as run) {
+                  <span [class]="'status-badge ' + statusClass(run.status)">{{ 'admin.diagnostics.status.' + run.status | translate }}</span>
+                  <span class="block muted">{{ run.started_at | date: 'short' }} · {{ run.duration_ms ?? 0 }} ms</span>
+                  <span class="block muted">
+                    {{ 'admin.diagnostics.trigger.' + run.triggered_by | translate }}
+                    @if (run.attempts > 1) { · {{ 'admin.diagnostics.attempts' | translate: { n: run.attempts } }} }
+                  </span>
+                } @else {
+                  <span class="muted">{{ 'admin.diagnostics.never' | translate }}</span>
+                }
+                @if (job.running) { <span class="block warn">{{ 'admin.diagnostics.runningNow' | translate }}</span> }
+              </td>
+              <td>
+                @if (job.due) {
+                  <span class="warn">{{ 'admin.diagnostics.dueNow' | translate }}</span>
+                } @else {
+                  {{ job.next_due_at | date: 'short' }}
+                }
+              </td>
+              <td>
+                @if (job.last_error) {
+                  <span class="job-error">{{ job.last_error }}</span>
+                  <span class="block muted">{{ job.last_error_at | date: 'short' }}</span>
+                } @else {
+                  <span class="muted">—</span>
+                }
+              </td>
+              <td>
+                <button type="button" class="btn" (click)="runNow(job.name)"
+                        [disabled]="runningJob() !== null || job.running"
+                        [attr.aria-label]="'admin.diagnostics.runNowLabel' | translate: { job: job.name }">
+                  {{ (runningJob() === job.name ? 'admin.diagnostics.running' : 'admin.diagnostics.runNow') | translate }}
+                </button>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+
+    <h2 class="section">{{ 'admin.diagnostics.flags' | translate }}</h2>
+    <dl class="flags">
+      @for (key of flagOrder; track key) {
+        <div [class.flag-warn]="flagWarning(d, key)">
+          <dt>{{ 'admin.diagnostics.flag.' + key | translate }}</dt>
+          <dd>{{ flagValue(d, key) }}</dd>
+        </div>
+      }
+    </dl>
+
+    <h2 class="section">{{ 'admin.diagnostics.recentRuns' | translate }}</h2>
+    @if (d.recent_runs.length === 0) {
+      <div class="empty-state">{{ 'admin.diagnostics.noRuns' | translate }}</div>
+    } @else {
+      <div class="table-wrap">
+        <table class="ledger">
+          <thead>
+            <tr>
+              <th scope="col">{{ 'admin.diagnostics.job' | translate }}</th>
+              <th scope="col">{{ 'admin.diagnostics.started' | translate }}</th>
+              <th scope="col">{{ 'admin.diagnostics.result' | translate }}</th>
+              <th scope="col">{{ 'admin.diagnostics.output' | translate }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (run of d.recent_runs; track run.id) {
+              <tr>
+                <td class="mono">{{ run.name }}</td>
+                <td>
+                  {{ run.started_at | date: 'short' }}
+                  <span class="block muted">{{ 'admin.diagnostics.trigger.' + run.triggered_by | translate }}</span>
+                </td>
+                <td>
+                  <span [class]="'status-badge ' + statusClass(run.status)">{{ 'admin.diagnostics.status.' + run.status | translate }}</span>
+                  <span class="block muted">{{ run.duration_ms ?? 0 }} ms</span>
+                </td>
+                <td class="mono">{{ run.error || run.summary.output || '—' }}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+  }
+</div>

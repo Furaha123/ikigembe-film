@@ -30,6 +30,10 @@ export interface FinancePeriod {
   totals: Partial<Record<AllocationParty | 'gross' | 'entries', number>>;
   closed_at: string | null;
   closed_by: string | null;
+  /** The period's money includes demo-mode payments (no money moved). */
+  simulated?: boolean;
+  /** Provider fees booked in the period (closed: snapshot). Unknown fees are counted, never zero. */
+  provider_fees?: { actual: number; estimated: number; known_total: number; unknown_payments: number };
   /** When this month's payouts were prepared (on close). */
   payouts_prepared_at?: string | null;
   allocations?: AllocationRow[];
@@ -132,7 +136,16 @@ export interface MonthlyReportData {
   finance_period: { status: 'open' | 'closed'; closed_at: string | null } | null;
   revenue: MonthlyRevenueRow[];
   revenue_totals: Omit<MonthlyRevenueRow, 'category' | 'label'>;
-  top_films: { movie_id: number; title: string; purchases: number; net: number; plays: number }[];
+  top_films: { movie_id: number; title: string; purchases: number; net: number; plays: number;
+               /** Schema 3+: distinct accounts that started it, and completed views (>= 90 %). */
+               unique_viewers?: number; completions?: number }[];
+  /** Schema 3+: any amount here is demo money (no money moved). */
+  simulated?: boolean;
+  /** Schema 4+: provider fees and net after known fees (platform bears fees). */
+  provider_fees?: { actual: number; estimated: number; known_total: number; unknown_payments: number;
+                    net_sales: number; net_after_known_fees: number;
+                    simulated: { known_total: number; unknown_payments: number } };
+  revenue_by_source?: Record<'real' | 'simulated', { gross: number; refunded: number; net: number }>;
   views: { playback_starts: number; playback_completions: number; trailer_plays: number; page_views: number;
            checkouts_opened: number; tracking_since: string | null };
   users: { new_by_role: Record<string, number>; total_by_role: Record<string, number>; new_total: number; total: number };

@@ -1,4 +1,5 @@
 import { TestBed } from '@angular/core/testing';
+import { Observable, of } from 'rxjs';
 import { HttpErrorResponse, provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { environment } from '../../../environments/environment';
@@ -13,13 +14,15 @@ describe('MovieService', () => {
   let service: MovieService;
   let http: HttpTestingController;
   let deviceId: string | null;
+  let device: { getId: () => Observable<string | null>; reset: jasmine.Spy };
 
   beforeEach(() => {
     deviceId = 'device-abc';
+    device = { getId: () => of(deviceId), reset: jasmine.createSpy('reset').and.callFake(() => { deviceId = 'device-new'; }) };
     TestBed.configureTestingModule({
       providers: [
         MovieService, provideHttpClient(), provideHttpClientTesting(),
-        { provide: DeviceIdService, useValue: { getId: () => deviceId } },
+        { provide: DeviceIdService, useValue: device },
       ],
     });
     service = TestBed.inject(MovieService);
@@ -52,6 +55,40 @@ describe('MovieService', () => {
 
       expect(error?.status).toBe(403);
       expect(error?.error).toEqual({ error: 'Purchase required to stream this movie.' });
+    });
+
+    it('on 403 device_invalid gets a new device id and retries exactly once', () => {
+      let result: StreamResponse | undefined;
+      service.getStream(12).subscribe(r => (result = r));
+
+      const first = http.expectOne(STREAM_URL);
+      expect(first.request.headers.get('X-Device-Id')).toBe('device-abc');
+      first.flush({ error: 'Invalid device.', code: 'device_invalid' }, { status: 403, statusText: 'Forbidden' });
+
+      expect(device.reset).toHaveBeenCalledTimes(1);
+      const second = http.expectOne(STREAM_URL);
+      expect(second.request.headers.get('X-Device-Id')).toBe('device-new');
+      second.flush(makeStreamResponse());
+      expect(result).toBeDefined();
+    });
+
+    it('does not loop when the retry is refused as device_invalid again', () => {
+      let error: HttpErrorResponse | undefined;
+      service.getStream(12).subscribe({ error: e => (error = e) });
+      const refuse = () => http.expectOne(STREAM_URL).flush(
+        { error: 'Invalid device.', code: 'device_invalid' }, { status: 403, statusText: 'Forbidden' });
+      refuse();
+      refuse();
+      http.expectNone(STREAM_URL);
+      expect(error?.status).toBe(403);
+      expect(device.reset).toHaveBeenCalledTimes(1);
+    });
+
+    it('does not retry other 403 refusals', () => {
+      service.getStream(12).subscribe({ error: () => undefined });
+      http.expectOne(STREAM_URL).flush({ error: 'x', code: 'other_device' }, { status: 403, statusText: 'Forbidden' });
+      http.expectNone(STREAM_URL);
+      expect(device.reset).not.toHaveBeenCalled();
     });
 
     it('surfaces 404 movie not found', () => {
@@ -91,6 +128,17 @@ describe('MovieService', () => {
       const req = http.expectOne(STREAM_URL);
       expect(req.request.headers.has('X-Device-Id')).toBeFalse();
       req.flush(makeStreamResponse());
+    });
+  });
+
+  describe('getGenreOptions()', () => {
+    it('asks for every active genre and returns the names', () => {
+      let names: string[] = [];
+      service.getGenreOptions().subscribe(n => (names = n));
+      const req = http.expectOne(r => r.url === `${environment.apiUrl}/movies/genres/`);
+      expect(req.request.params.get('include_empty')).toBe('1');
+      req.flush({ results: [{ name: 'Drama', slug: 'drama', count: 2 }, { name: 'Horror', slug: 'horror', count: 0 }], languages: [] });
+      expect(names).toEqual(['Drama', 'Horror']);
     });
   });
 

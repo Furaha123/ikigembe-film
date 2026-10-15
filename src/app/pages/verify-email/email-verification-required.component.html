@@ -1,0 +1,78 @@
+<div class="auth-layout">
+  <div class="brand-panel">
+    <img src="/assets/auth.bg.jpg" alt="" class="brand-bg" aria-hidden="true" />
+    <div class="brand-overlay"></div>
+    <div class="brand-inner">
+      <img src="/assets/ikigembe.log.png" alt="Ikigembe" class="brand-logo" />
+      <h2 class="brand-headline">{{ 'auth.brand.headlineLine1' | translate }}<br/>{{ 'auth.brand.headlineLine2' | translate }}</h2>
+      <p class="brand-sub">{{ 'auth.brand.sub' | translate }}</p>
+    </div>
+  </div>
+
+  <main class="form-panel">
+    <div class="form-inner">
+      <img src="/assets/ikigembe.log.png" alt="Ikigembe" class="form-logo" />
+
+      <div class="status-state verify-required">
+        <div class="status-icon error-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <path d="M4 4h16v16H4z" /><path d="M4 6l8 7 8-7" />
+          </svg>
+        </div>
+        <h1>{{ 'auth.verifyRequired.title' | translate }}</h1>
+        <p>{{ 'auth.verifyRequired.body' | translate }}</p>
+        @if (auth.userEmail()) {
+          <p class="email">{{ auth.userEmail() }}</p>
+        }
+        @if (emailChanged()) {
+          <p class="resend-success" role="status">{{ 'auth.verifyRequired.emailChanged' | translate }}</p>
+        }
+        @if (resendSuccess()) {
+          <p class="resend-success" role="status">{{ 'auth.verifyEmail.resendSuccess' | translate }}</p>
+        }
+        @if (resendError()) {
+          <p class="resend-err" role="alert">{{ resendError()! | translate }}</p>
+        }
+        @if (stillUnverified()) {
+          <p class="resend-err" role="alert">{{ 'auth.verifyRequired.stillUnverified' | translate }}</p>
+        }
+
+        <div class="actions">
+          <button type="button" class="submit-btn" [disabled]="checking()" (click)="checkAgain()">
+            {{ 'auth.verifyRequired.checkAgain' | translate }}
+          </button>
+          <button type="button" class="resend-btn"
+                  [disabled]="!auth.userEmail() || isResending() || resendCooldown() > 0"
+                  (click)="resend()">
+            @if (isResending()) {
+              <span class="btn-spinner"></span> {{ 'auth.common.sending' | translate }}
+            } @else if (resendCooldown() > 0) {
+              {{ cooldownLabel(resendCooldown()).key | translate: { n: cooldownLabel(resendCooldown()).n } }}
+            } @else {
+              {{ 'auth.verifyEmail.sendNewLink' | translate }}
+            }
+          </button>
+
+          @if (editing()) {
+            <form (ngSubmit)="saveEmail()">
+              <label for="verify-required-email">{{ 'auth.verifyRequired.newEmailLabel' | translate }}</label>
+              <input id="verify-required-email" name="email" class="resend-input" type="email" autocomplete="email" required
+                     [ngModel]="newEmail()" (ngModelChange)="newEmail.set($event)" />
+              @if (emailError()) {
+                <p class="resend-err" role="alert">{{ emailError()! | translate }}</p>
+              }
+              <button type="submit" class="resend-btn" [disabled]="!newEmail().trim() || savingEmail()">
+                {{ 'auth.verifyRequired.saveEmail' | translate }}
+              </button>
+              <button type="button" class="link-btn" (click)="editing.set(false)">{{ 'auth.verifyRequired.cancel' | translate }}</button>
+            </form>
+          } @else {
+            <button type="button" class="link-btn" (click)="startEditing()">{{ 'auth.verifyRequired.changeEmail' | translate }}</button>
+          }
+
+          <button type="button" class="link-btn" (click)="signOut()">{{ 'auth.verifyRequired.signOut' | translate }}</button>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>

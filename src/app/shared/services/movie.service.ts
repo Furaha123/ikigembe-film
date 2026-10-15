@@ -1,5 +1,6 @@
 import { Injectable, inject } from '@angular/core';
-import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
+import { HttpClient, HttpErrorResponse, HttpHeaders, HttpParams } from '@angular/common/http';
+import { Observable, catchError, map, switchMap, throwError } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { DeviceIdService } from '../../core/services/device-id.service';
 import {
@@ -71,6 +72,15 @@ export class MovieService {
     return this.http.get<GenresResponse>(`${this.baseUrl}/genres/`);
   }
 
+  /**
+   * Names of every active genre (including ones no film uses yet) for film editors' pickers.
+   * The API refuses inactive or unknown genres on film writes; a film may keep an inactive genre it has.
+   */
+  getGenreOptions(): Observable<string[]> {
+    const params = new HttpParams().set('include_empty', '1');
+    return this.http.get<GenresResponse>(`${this.baseUrl}/genres/`, { params }).pipe(map(r => r.results.map(g => g.name)));
+  }
+
   /** Listed films sharing a genre (released first); never the film itself or unpublished films. */
   getRelatedMovies(id: number) {
     return this.http.get<{ results: IVideoContent[] }>(`${this.baseUrl}/${id}/related/`);
@@ -94,15 +104,36 @@ export class MovieService {
 
   /**
    * Entitlement-checked playback URLs. Increments the film's view counter on every
-   * call, so request it once per playback session (plus one retry on token expiry).
-   * Sends `X-Device-Id` (this endpoint only) for the single-device view policy.
-   * Errors: 400 missing device id, 403 `{ error }` not entitled / view used /
-   * another device, 404 movie not found — see classifyStreamError().
+   * accepted call, so request it once per playback session (plus one retry on token expiry).
+   * Sends the server-issued `X-Device-Id` (this endpoint only, DeviceIdService) for the
+   * single-device view policy; a 403 `device_invalid` fetches a new id and retries once
+   * (refused calls never count a view).
+   * Errors: 400 missing device id, 403 `{ error, code }` not entitled / view used /
+   * another device, 404 movie not found, 503 `stream_unavailable` — see classifyStreamError().
    */
-  getStream(id: number) {
-    const deviceId = this.deviceId.getId();
-    const headers = deviceId ? new HttpHeaders({ 'X-Device-Id': deviceId }) : undefined;
-    return this.http.get<StreamResponse>(`${this.baseUrl}/${id}/stream/`, { headers });
+  getStream(id: number): Observable<StreamResponse> {
+    const request = () => this.deviceId.getId().pipe(
+      switchMap(deviceId => {
+        const headers = deviceId ? new HttpHeaders({ 'X-Device-Id': deviceId }) : undefined;
+        return this.http.get<StreamResponse>(`${this.baseUrl}/${id}/stream/`, { headers });
+      }),
+    );
+    return request().pipe(
+      catchError(err => {
+        // The stored id isn't signed for this account (or the secret rotated): get a new one, retry once.
+        if (err instanceof HttpErrorResponse && err.status === 403
+            && (err.error as { code?: unknown } | null)?.code === 'device_invalid') {
+          this.deviceId.reset();
+          return request();
+        }
+        return throwError(() => err);
+      }),
+    );
+  }
+
+  /** Saved resume point (`progress_seconds: 0` when there is none). */
+  getProgress(movieId: number) {
+    return this.http.get<WatchProgressResponse>(this.progressUrl(movieId));
   }
 
   progressUrl(movieId: number): string {

@@ -11,6 +11,7 @@ import { uploadErrorMessage } from '../../../shared/utils/upload-error';
 import { apiErrorMessage } from '../../../shared/utils/api-error';
 
 import { ModalBackdropDirective } from '../../../shared/directives/modal-backdrop.directive';
+import { FilmStatusBadgeComponent } from '../../../shared/components/film-status-badge/film-status-badge.component';
 type SortCol = 'title' | 'views' | 'price' | 'release_date' | 'created_at';
 type StatusTab = 'all' | 'live' | 'pending' | 'rejected';
 
@@ -23,7 +24,7 @@ const ALL_GENRES = [
 
 @Component({
   selector: 'app-producer-movies',
-  imports: [ModalBackdropDirective, TranslatePipe, CommonModule, FormsModule, ReactiveFormsModule],
+  imports: [ModalBackdropDirective, TranslatePipe, CommonModule, FormsModule, ReactiveFormsModule, FilmStatusBadgeComponent],
   templateUrl: './producer-movies.component.html',
   styleUrl: './producer-movies.component.scss',
 })

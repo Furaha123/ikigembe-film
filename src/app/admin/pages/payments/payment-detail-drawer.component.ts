@@ -33,6 +33,10 @@ export class PaymentDetailDrawerComponent implements OnChanges {
   notice = signal<string | null>(null);
 
   refundOpen = signal(false);
+  feeOpen = signal(false);
+  feeAmount: number | null = null;
+  feeReference = '';
+  feeRefundId: number | null = null;
   refundAmount = 0;
   refundReason = '';
   refundMethod: RefundMethod = 'manual';
@@ -59,6 +63,19 @@ export class PaymentDetailDrawerComponent implements OnChanges {
         this.loading.set(false);
         this.error.set(apiErrorMessage(err) ?? this.translate.instant('admin.payments.loadFailed'));
       },
+    });
+  }
+
+  submitFee(): void {
+    if (this.feeAmount === null || this.feeAmount < 0) return;
+    const body: { amount: number; reference?: string; refund_id?: number } = { amount: Math.round(this.feeAmount) };
+    if (this.feeReference.trim()) body.reference = this.feeReference.trim();
+    if (this.feeRefundId !== null) body.refund_id = this.feeRefundId;
+    this.run(this.payments.recordFee(this.paymentId, body), 'admin.fees.saved', () => {
+      this.feeOpen.set(false);
+      this.feeAmount = null;
+      this.feeReference = '';
+      this.feeRefundId = null;
     });
   }
 

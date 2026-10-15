@@ -12,6 +12,7 @@ import { TranslatePipe } from '@ngx-translate/core';
     <nav class="tabs" [attr.aria-label]="'admin.cms.title' | translate">
       <a class="tab" routerLink="/admin/cms/pages" routerLinkActive="active">{{ 'admin.cms.tabPages' | translate }}</a>
       <a class="tab" routerLink="/admin/cms/ads" routerLinkActive="active">{{ 'admin.cms.tabAds' | translate }}</a>
+      <a class="tab" routerLink="/admin/homepage" routerLinkActive="active">{{ 'admin.cms.tabHomepage' | translate }}</a>
     </nav>
   `,
 })

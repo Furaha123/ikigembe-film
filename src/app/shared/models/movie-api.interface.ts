@@ -169,6 +169,7 @@ export interface CatalogPage {
 }
 
 export interface GenresResponse {
-  results: { name: string; count: number }[];
+  /** Active genres only (admin-managed); `count` = listed films carrying it. */
+  results: { name: string; slug?: string; count: number }[];
   languages: { code: string; name: string }[];
 }

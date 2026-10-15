@@ -6,7 +6,8 @@ import { RETURN_URL_PARAM } from '../../shared/utils/safe-redirect';
 import { AuthService } from '../../core/services/auth.service';
 import { SeoService } from '../../core/services/seo.service';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
-import { apiErrorMessage } from '../../shared/utils/api-error';
+import { apiErrorMessage, apiErrorReference } from '../../shared/utils/api-error';
+import { ErrorReferenceComponent } from '../../shared/components/error-reference/error-reference.component';
 
 /** The Google Identity Services global (loaded by a script tag), as far as this page uses it. */
 interface GoogleIdentity {
@@ -29,7 +30,7 @@ interface LoginErrors {
 
 @Component({
   selector: 'app-login',
-  imports: [ReactiveFormsModule, CommonModule, RouterLink, TranslatePipe],
+  imports: [ReactiveFormsModule, CommonModule, RouterLink, TranslatePipe, ErrorReferenceComponent],
   templateUrl: './login.component.html',
   styleUrl: './login.component.scss'
 })
@@ -54,6 +55,8 @@ export class LoginComponent implements AfterViewInit, OnInit {
   isLoading = signal(false);
   googleLoading = signal(false);
   serverErrors = signal<LoginErrors>({});
+  /** Support reference of the last failed request (X-Request-ID). */
+  errorRef = signal<string | null>(null);
   showPassword = signal(false);
 
   get identifier() { return this.form.get('identifier'); }
@@ -109,9 +112,10 @@ export class LoginComponent implements AfterViewInit, OnInit {
       },
       error: (err) => {
         this.googleLoading.set(false);
-        if (err.status === 400 && err.error) {
-          this.serverErrors.set(err.error);
-        }
+        this.errorRef.set(apiErrorReference(err));
+        this.serverErrors.set(err.status === 400 && err.error
+          ? err.error
+          : { detail: apiErrorMessage(err) ?? this.translate.instant('auth.login.failed') });
       }
     });
   }
@@ -124,6 +128,7 @@ export class LoginComponent implements AfterViewInit, OnInit {
 
     this.isLoading.set(true);
     this.serverErrors.set({});
+    this.errorRef.set(null);
 
     const { identifier, password } = this.form.value as { identifier: string; password: string };
 
@@ -134,6 +139,7 @@ export class LoginComponent implements AfterViewInit, OnInit {
       },
       error: (err) => {
         this.isLoading.set(false);
+        this.errorRef.set(apiErrorReference(err));
         this.serverErrors.set(err.status === 400 && err.error
           ? err.error
           : err.status === 429

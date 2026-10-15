@@ -170,6 +170,41 @@ describe('authInterceptor + AuthService tokens', () => {
     expect(navigate).not.toHaveBeenCalled();
   });
 
+  it('a 403 email_unverified shows the verification prompt once and still fails the request', async () => {
+    setUp();
+    await signIn();
+
+    let error: HttpErrorResponse | undefined;
+    http.post(`${api}/payments/initiate/`, {}).subscribe({ error: (e: HttpErrorResponse) => (error = e) });
+    backend.expectOne(`${api}/payments/initiate/`)
+      .flush({ error: 'Verify your email address', code: 'email_unverified' }, { status: 403, statusText: 'Forbidden' });
+    await settle();
+
+    expect(error?.status).toBe(403);
+    expect(auth.emailUnverified()).toBeTrue();
+    expect(auth.isLoggedIn()).toBeTrue();
+    backend.expectNone(refreshUrl);
+    expect(navigate).toHaveBeenCalledTimes(1);
+    expect(String(navigate.calls.mostRecent().args[0])).toBe('/verify-email-required');
+
+    http.get(`${api}/auth/inbox/`).subscribe({ error: () => undefined });
+    backend.expectOne(`${api}/auth/inbox/`)
+      .flush({ code: 'email_unverified' }, { status: 403, statusText: 'Forbidden' });
+    await settle();
+    expect(navigate).toHaveBeenCalledTimes(1);   // the banner covers later refusals
+  });
+
+  it('other 403s leave the verification state alone', async () => {
+    setUp();
+    await signIn();
+    http.get(`${api}/marketplace/profile/`).subscribe({ error: () => undefined });
+    backend.expectOne(`${api}/marketplace/profile/`)
+      .flush({ code: 'membership_required' }, { status: 403, statusText: 'Forbidden' });
+    await settle();
+    expect(auth.emailUnverified()).toBeFalse();
+    expect(navigate).not.toHaveBeenCalled();
+  });
+
   it('logout asks the API to revoke the cookie and clears the local session', async () => {
     setUp();
     await signIn();

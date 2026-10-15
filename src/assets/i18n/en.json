@@ -574,7 +574,8 @@
       "notFound": "This movie is no longer available.",
       "buyAgain": "Buy again — RWF {{price}}",
       "buyAgainShort": "Buy again",
-      "notReleased": "This film is not released yet. You can watch it from its release date."
+      "notReleased": "This film is not released yet. You can watch it from its release date.",
+      "unavailable": "This film can't be played right now. Please try again later."
     }
   },
   "payments": {
@@ -599,6 +600,14 @@
       "refunded": "Refunded",
       "print": "Print",
       "loadFailed": "We could not load this receipt. Please try again."
+    },
+    "viewStatus": {
+      "available": "Available to watch",
+      "watching": "Watching — until {{time}}",
+      "watchingNoTime": "Watching",
+      "used": "View used",
+      "expired": "Viewing window ended",
+      "refunded": "Refunded"
     }
   },
   "marketplace": {
@@ -1309,7 +1318,8 @@
         "browse_inline": "Browse — between rows",
         "movie_detail": "Movie detail",
         "sidebar": "Sidebar"
-      }
+      },
+      "tabHomepage": "Home page"
     },
     "movieForm": {
       "back": "Movies",
@@ -1373,7 +1383,12 @@
       },
       "releaseTime": "Release time (Kigali)",
       "releaseTimeHint": "Before this moment the film is \"coming soon\": trailer only, no purchase or playback.",
-      "priceHint": "Default Frw 1,000. Only admins can change a film's price; buyers are always charged this amount."
+      "priceHint": "Default Frw 1,000. Only admins can change a film's price; buyers are always charged this amount.",
+      "genresHint": "Pick one or more. Manage the list under Genres.",
+      "genresLoadError": "Couldn’t load the genre list.",
+      "genreInactive": "inactive",
+      "noGenres": "No genres yet. Add them under Genres.",
+      "saveDraft": "Save as draft"
     },
     "nav": {
       "dashboard": "Dashboard",
@@ -1391,6 +1406,7 @@
       "settings": "Settings",
       "payments": "Payments",
       "auditLog": "Audit log",
+      "emailOutbox": "Email outbox",
       "transcodes": "Transcoding",
       "platformSettings": "Platform",
       "marketplaceSettings": "Marketplace fees",
@@ -1400,7 +1416,10 @@
       "abuseReports": "Abuse reports",
       "marketplaceModeration": "Moderation",
       "marketplaceMembers": "Members",
-      "payouts": "Producer payouts"
+      "payouts": "Producer payouts",
+      "diagnostics": "Diagnostics",
+      "usage": "Usage estimates",
+      "genres": "Genres"
     },
     "layout": {
       "browseHomepage": "Browse Homepage",
@@ -1768,7 +1787,31 @@
         "viewCopyright": "View Copyright Document",
         "requestChanges": "Request Changes"
       },
-      "closePlayer": "Close player"
+      "closePlayer": "Close player",
+      "lifecycle": {
+        "filterLabel": "Status",
+        "filterAll": "All films",
+        "dismiss": "Dismiss",
+        "publish": "Publish now",
+        "schedule": "Schedule…",
+        "reschedule": "Reschedule…",
+        "unpublish": "Unpublish…",
+        "publishTitle": "Publish this film now?",
+        "scheduleTitle": "Schedule the release",
+        "unpublishTitle": "Unpublish this film?",
+        "publishHint": "Viewers can buy and watch it straight away. A scheduled release moves to now.",
+        "scheduleHint": "Until then the film shows as coming soon: details and trailer only, no buying or playing.",
+        "unpublishHint": "Viewers can no longer find, buy or play it. It stays approved, so you can publish it again later. The producer is notified.",
+        "whenLabel": "Release date and time (Kigali time)",
+        "reasonLabel": "Reason (optional, kept in the audit log)",
+        "whenRequired": "Choose a release date and time.",
+        "whenPast": "The release time must be in the future. Use Publish now to release it today.",
+        "failed": "The change couldn’t be saved. Try again.",
+        "working": "Saving…",
+        "publishConfirm": "Publish now",
+        "scheduleConfirm": "Schedule",
+        "unpublishConfirm": "Unpublish"
+      }
     },
     "dashboard": {
       "title": "Dashboard",
@@ -1827,6 +1870,11 @@
         "uploadSub": "Add new content to the platform",
         "reports": "Full Reports",
         "reportsSub": "Revenue, top movies, user growth"
+      },
+      "money": {
+        "demoNote": "Demo mode: the totals below include simulated payments.",
+        "real": "Real money: films {{films}} · services {{services}}",
+        "simulated": "Simulated (no money moved): films {{films}} · services {{services}}"
       }
     },
     "reports": {
@@ -2071,7 +2119,11 @@
       "reasonRequired": "Please give a reason.",
       "referenceRequired": "Enter the transfer reference.",
       "amountRange": "Enter an amount between 1 and {{max}} RWF.",
-      "actionFailed": "That did not work. Please try again."
+      "actionFailed": "That did not work. Please try again.",
+      "totals": {
+        "real": "Real money: paid {{paid}} · refunded {{refunded}} · net {{net}}",
+        "simulated": "Simulated (demo): paid {{paid}} · refunded {{refunded}} · net {{net}}"
+      }
     },
     "audit": {
       "title": "Audit log",
@@ -2208,7 +2260,8 @@
       "paidOut": "Paid out ({{ref}}) on {{date}}",
       "openPayouts": "Open payouts for this month",
       "inPayout": "In payout #{{id}}",
-      "carriedOver": "Carried over (below the minimum or on hold)"
+      "carriedOver": "Carried over (below the minimum or on hold)",
+      "simulatedPeriod": "Includes simulated (demo) payments"
     },
     "monthlyReports": {
       "tab": "Monthly reports",
@@ -2257,7 +2310,10 @@
       "planActor": "Actor memberships",
       "planFull": "Producer Full plans",
       "planView": "Producer View-only plans",
-      "planCounts": "{{paid}} bought · {{active}} active"
+      "planCounts": "{{paid}} bought · {{active}} active",
+      "simulatedInfo": "This month includes demo payments: no money moved. Real and simulated totals are shown apart.",
+      "uniqueViewers": "Unique viewers",
+      "completions": "Completed views"
     },
     "abuse": {
       "title": "Abuse reports",
@@ -2386,6 +2442,267 @@
       "loadFailed": "Couldn't load the identity document.",
       "retry": "Get a new link",
       "close": "Close"
+    },
+    "diagnostics": {
+      "title": "Diagnostics",
+      "subtitle": "Background jobs, queues and configuration. Jobs run from the scheduled tick; use Run now to run one at once.",
+      "version": "Version {{version}}",
+      "generatedAt": "checked {{time}}",
+      "refresh": "Refresh",
+      "loadFailed": "Could not load diagnostics.",
+      "stalePayments": "Payments pending > {{minutes}} min",
+      "transcodes": "Transcodes",
+      "transcodesProcessing": "Processing",
+      "transcodesStuck": "Stuck",
+      "transcodesFailed": "Failed",
+      "outbox": "Email outbox",
+      "outboxEmpty": "No emails yet",
+      "jobs": "Background jobs",
+      "job": "Job",
+      "lastRun": "Last run",
+      "nextDue": "Next due",
+      "lastError": "Last error",
+      "actions": "Actions",
+      "never": "Never run",
+      "runningNow": "Running now",
+      "dueNow": "Due now",
+      "attempts": "attempt {{n}}",
+      "runNow": "Run now",
+      "running": "Running…",
+      "runNowLabel": "Run {{job}} now",
+      "runSucceeded": "{{job}} finished in {{ms}} ms.",
+      "runFailed": "{{job}} failed: {{error}}",
+      "runError": "The job could not be started.",
+      "everyMinutes": "every {{n}} min",
+      "everyHours": "every {{n}} h",
+      "flags": "Configuration",
+      "recentRuns": "Recent runs",
+      "noRuns": "No runs recorded yet.",
+      "started": "Started",
+      "result": "Result",
+      "output": "Output / error",
+      "yes": "Yes",
+      "no": "No",
+      "status": {
+        "queued": "Queued",
+        "running": "Running",
+        "succeeded": "Succeeded",
+        "failed": "Failed"
+      },
+      "trigger": {
+        "schedule": "Schedule",
+        "admin": "Run now (admin)",
+        "tick": "External tick",
+        "command": "Command"
+      },
+      "flag": {
+        "debug": "Debug mode",
+        "payment_demo_mode": "Demo payments",
+        "payment_gateway": "Payment gateway",
+        "payment_provider_configured": "Payment provider keys set",
+        "payout_provider": "Payout provider",
+        "email_backend": "Email backend",
+        "email_delivery": "Email delivery",
+        "enforce_single_device_view": "One view on one device",
+        "private_bucket_configured": "Private media bucket set",
+        "hls_encryption": "HLS encryption",
+        "playback_watermark": "Playback watermark",
+        "shared_cache": "Shared cache",
+        "ops_tick_configured": "External tick configured",
+        "opportunistic_tick": "Opportunistic tick"
+      }
+    },
+    "fees": {
+      "fee": "Provider fee",
+      "basis": {
+        "actual": "Actual",
+        "estimated": "Estimated",
+        "unknown": "Unknown"
+      },
+      "unknownAmount": "amount unknown (not counted as zero)",
+      "returned": "RWF {{amount}} returned on refund",
+      "history": "Provider fee history",
+      "kind": {
+        "charge": "Fee charged",
+        "adjustment": "Corrected to actual",
+        "returned": "Returned on refund"
+      },
+      "recordActual": "Record actual fee",
+      "recordHint": "Enter the fee from the provider's statement. A correction is added; earlier entries and closed periods are kept.",
+      "amountLabel": "Fee (RWF)",
+      "referenceLabel": "Statement reference (optional)",
+      "refundLabel": "This amount is",
+      "collectionFee": "the fee charged for the payment",
+      "returnedOn": "a fee the provider returned on the RWF {{amount}} refund",
+      "save": "Save fee",
+      "saved": "Provider fee recorded.",
+      "totalsLine": "Provider fees: actual RWF {{actual}} · estimated RWF {{estimated}} · {{unknown}} payment(s) with unknown fee",
+      "netAfterKnown": "net after known fees RWF {{net}} (unknown fees excluded)",
+      "borneByPlatform": "Fees are borne by the platform; producer shares are computed on the gross price.",
+      "rulesTitle": "Provider fee rules",
+      "rulesHint": "Live gateways: a rule gives ESTIMATED fees until the actual fee is recorded from the provider's statement. Demo: the rule is the simulated provider's fee. Without a rule a fee is UNKNOWN, never zero. New rules apply from their start; recorded fees never change.",
+      "rounding": "Rounding: {{rule}}",
+      "noRules": "No fee rules yet: every fee is unknown.",
+      "gateway": "Provider",
+      "gatewayLabel": {
+        "demo": "Demo (simulated)",
+        "pawapay": "PawaPay",
+        "dpo": "DPO"
+      },
+      "returnsOnRefund": "returns its fee on refunds",
+      "fixed": "Fixed RWF",
+      "from": "Applies from",
+      "source": "Source",
+      "percentLabel": "Percentage of the payment (0–20)",
+      "fixedLabel": "Fixed amount per payment (RWF)",
+      "sourceLabel": "Where these numbers come from",
+      "sourcePlaceholder": "e.g. merchant agreement of 2026-10-01",
+      "addRule": "Add rule (applies from now)",
+      "ruleSaved": "Rule added. It applies to payments completed from now on."
+    },
+    "usage": {
+      "title": "Usage estimates",
+      "subtitle": "Hosting usage for Cloudflare R2, Supabase and Render, estimated from our own data.",
+      "bannerTitle": "Estimates — not provider invoices or exact billing.",
+      "bannerText": "The app cannot see most provider meters. Figures marked Estimated rely on your assumptions; Unknown means the app cannot measure it. Check the provider dashboards before paying or upgrading.",
+      "refresh": "Refresh estimates",
+      "refreshing": "Refreshing…",
+      "refreshed": "Estimates refreshed.",
+      "refreshFailed": "The refresh failed: {{error}}",
+      "refreshError": "Could not refresh the estimates.",
+      "loadFailed": "Could not load the usage estimates.",
+      "period": "Period (Kigali month)",
+      "lastUpdate": "Last update",
+      "never": "Never refreshed",
+      "objects": "Stored objects",
+      "objectsChecked": "{{heads}} checked in the last run · {{pending}} still to check",
+      "stale": "These estimates are more than a day and a half old. Refresh them for current figures.",
+      "noSnapshot": "No estimate yet. Press Refresh estimates (the daily job also creates one).",
+      "storageUnavailable": "Storage was not reachable in the last run, so object sizes were not measured.",
+      "headErrors": "{{n}} size checks failed in the last run; they will be retried.",
+      "lastRunFailed": "The last refresh failed: {{error}}",
+      "metric": "Metric",
+      "value": "Value",
+      "kind": "Kind",
+      "allowance": "Allowance and billable",
+      "notes": "Assumptions and missing data",
+      "source": "Source: {{source}}",
+      "unknown": "Unknown",
+      "kinds": {
+        "measured": "Measured",
+        "estimated": "Estimated",
+        "unknown": "Unknown"
+      },
+      "unit": {
+        "requests": "requests",
+        "rows": "rows",
+        "hours": "hours"
+      },
+      "billing": {
+        "unknownUsage": "Unknown usage — billable amount unknown",
+        "notConfigured": "Allowance not configured",
+        "ofAllowance": "{{usage}} of {{allowance}} {{unit}} ({{percent}} %)",
+        "billable": "Billable: {{value}} {{unit}}",
+        "cost": "≈ {{cost}} {{currency}} (estimate)",
+        "over": "Over the allowance",
+        "nearLimit": "Near the allowance",
+        "asOf": "Allowance as of {{date}} · {{source}}"
+      },
+      "form": {
+        "title": "Allowances, prices and assumptions",
+        "intro": "Nothing is preset. Copy allowances and prices from each provider's current pricing page and note the date and source. Add a new row when pricing changes; the latest dated row applies.",
+        "threshold": "Warn at this % of an allowance",
+        "bitrates": "Average delivered bitrate per rendition",
+        "bitratesHint": "Audio + video, in kbps. Used to estimate HLS storage (all renditions) and streaming delivery (highest rendition, an upper bound). Leave empty if unsure: those figures then stay unknown.",
+        "notSet": "Not set",
+        "encoderTarget": "Encoder target: {{kbps}} kbps",
+        "addRendition": "Other rendition name",
+        "add": "Add",
+        "allowances": "Allowances and prices",
+        "allowancesHint": "Allowance and price are in the unit shown under the metric (1 GB = 10^9 bytes). \"Price per\" is how many units the price covers, e.g. 1000000 for a price per million requests.",
+        "noAllowances": "No allowance entered: billable amounts show as not configured.",
+        "allowanceCol": "Allowance",
+        "price": "Price",
+        "pricePer": "Price per (units)",
+        "currency": "Currency",
+        "asOf": "As of",
+        "sourceCol": "Source",
+        "actions": "Actions",
+        "unit": "Unit: {{unit}}",
+        "remove": "Remove",
+        "removeRow": "Remove row {{row}}",
+        "addAllowance": "Add allowance row",
+        "save": "Save settings",
+        "saving": "Saving…",
+        "saved": "Settings saved.",
+        "saveFailed": "Could not save the settings.",
+        "thresholdInvalid": "The warning threshold must be a whole number from 1 to 100.",
+        "bitrateInvalid": "The bitrate for {{name}} must be a whole number above 0.",
+        "rowIncomplete": "Row {{row}}: choose a metric and give the date and the source.",
+        "rowEmpty": "Row {{row}}: enter an allowance, a price, or both.",
+        "rowNumber": "Row {{row}}: allowance, price and price per must be numbers (use a dot for decimals).",
+        "rowCurrency": "Row {{row}}: give the price's currency as a 3-letter code (e.g. USD)."
+      }
+    },
+    "homepage": {
+      "subtitle": "Edit the public home page as a draft, preview it, then publish.",
+      "loading": "Loading the home page…",
+      "loadFailed": "Could not load the home page settings.",
+      "liveSince": "Live version published {{date}} by {{by}}.",
+      "neverPublished": "Nothing published yet: visitors see the built-in home page.",
+      "unsaved": "Unsaved changes",
+      "hero": "Hero",
+      "heroTitle": "Headline",
+      "heroDescription": "Description",
+      "defaultHint": "Leave empty for the built-in, translated text",
+      "ctaLabel": "Button label",
+      "ctaLink": "Button link",
+      "ctaHint": "An app page (/films, /register, /actors-casting, /movie/<id>, /pages/<slug>) or an https:// link to an allowed site. Empty = the built-in sign-up button.",
+      "ctaLinkInvalid": "Use an app page starting with / or an https:// link.",
+      "ctaBoth": "Give the button both a label and a link, or leave both empty.",
+      "featured": "Featured film",
+      "featuredAutomatic": "Automatic: the featured released film, else the most watched one.",
+      "useAutomatic": "Use automatic",
+      "filmUnlisted": "This film is no longer published. Choose another film or use automatic before publishing.",
+      "searchFilm": "Find a published film",
+      "searchHint": "Type at least 2 letters. Films that aren't released yet show as coming soon (trailer only).",
+      "searching": "Searching…",
+      "noFilms": "No published film matches.",
+      "image": "Hero image",
+      "imageFromFilm": "No image uploaded: the featured film's backdrop is used.",
+      "uploadImage": "Upload an image",
+      "imageHint": "JPG, PNG or WebP, 5 MB or less, at least 200 px a side. Saved to the draft at once.",
+      "uploading": "Uploading…",
+      "removeImage": "Remove image",
+      "imageType": "Choose a JPG, PNG or WebP image.",
+      "imageSize": "The image must be 5 MB or smaller.",
+      "imageSaved": "Image saved to the draft.",
+      "imageRemoved": "Image removed from the draft.",
+      "sectionsTitle": "Sections",
+      "sectionsHint": "Order and visibility. Empty sections (e.g. no coming-soon films) are skipped automatically.",
+      "guestsOnly": "Guests only",
+      "moveUp": "Move {{name}} up",
+      "moveDown": "Move {{name}} down",
+      "customTitle": "Custom heading (optional)",
+      "adHint": "Shows the live ad campaign for this placement, if any (manage them under Ads).",
+      "sections": {
+        "adHomeHero": "Sponsor slot (home hero)",
+        "adHomeBanner": "Sponsor slot (home banner)"
+      },
+      "saveDraft": "Save draft",
+      "saved": "Draft saved. Visitors still see the published version.",
+      "publish": "Publish",
+      "publishing": "Publishing…",
+      "published": "Published. The home page now shows this version.",
+      "discard": "Discard draft",
+      "discardConfirm": "Discard the draft and go back to the published version?",
+      "discarded": "Draft reset to the published version.",
+      "saveFailed": "Could not save. Try again.",
+      "fixErrors": "Fix the highlighted fields first.",
+      "preview": "Preview (draft)",
+      "previewAs": "Preview as",
+      "asGuest": "Guest",
+      "asViewer": "Signed-in viewer"
     }
   },
   "cms": {
@@ -2563,6 +2880,21 @@
       "backToRegister": "Back to Register",
       "successSignedInBody": "Your account is now active and you're signed in.",
       "continue": "Continue"
+    },
+    "verifyRequired": {
+      "title": "Verify your email address",
+      "body": "Your email address isn't verified yet. Open the link we sent to the address below to keep using Ikigembe. Until then, purchases, watching and other features are paused.",
+      "checkAgain": "I've verified, continue",
+      "stillUnverified": "Not verified yet. Open the link in the email, then try again.",
+      "changeEmail": "Wrong address? Change email",
+      "newEmailLabel": "New email address",
+      "saveEmail": "Save and send link",
+      "cancel": "Cancel",
+      "emailChanged": "Email updated. We sent a new verification link to it.",
+      "changeFailed": "Couldn't change the email address. Please try again.",
+      "signOut": "Sign out",
+      "banner": "Verify your email address to keep using Ikigembe.",
+      "bannerLink": "Verify now"
     }
   },
   "preview": {
@@ -2871,7 +3203,11 @@
       "text": "No money is charged and no phone prompt is sent. It confirms by itself after a few seconds. Use a number ending in 0000 to see a declined payment.",
       "simulating": "Simulating Mobile Money approval...",
       "noCharge": "No money was charged.",
-      "textRedirect": "No money is charged. You'll see a demo payment page instead of DPO's, where you can choose to pay or decline."
+      "textRedirect": "No money is charged. You'll see a demo payment page instead of DPO's, where you can choose to pay or decline.",
+      "scenarioLabel": "Demo outcome",
+      "scenario": {
+        "auto": "Automatic (succeeds; numbers ending 0000 are declined)"
+      }
     },
     "hostedLabel": "Secure payment",
     "hostedHint": "You'll continue to DPO's secure payment page to pay with Mobile Money or card, then come back here automatically.",
@@ -2899,7 +3235,17 @@
     "quality": "Quality: {{label}}",
     "auto": "Auto",
     "fullscreen": "Fullscreen",
-    "exitFullscreen": "Exit fullscreen"
+    "exitFullscreen": "Exit fullscreen",
+    "captions": "Subtitles",
+    "captionsOff": "Off",
+    "qualityMenu": "Video quality",
+    "loading": "Loading video…",
+    "retry": "Try again",
+    "errors": {
+      "network": "Connection problem. Check your internet connection and try again.",
+      "denied": "Your playback session has expired or was refused. Try again to continue.",
+      "media": "This video could not be played."
+    }
   },
   "datePicker": {
     "days": {
@@ -3223,6 +3569,16 @@
       "movie": "Film",
       "actor_membership": "Actor membership (1 year)",
       "producer_plan": "Producer plan (1 year)"
+    },
+    "scenarios": "Other outcomes to simulate",
+    "outcome": {
+      "paid": "Payment succeeds",
+      "declined": "Payment is declined",
+      "cancelled": "Buyer cancels",
+      "expired": "Payment expires",
+      "pending": "Stays pending (no answer from the provider)",
+      "delayed": "Confirmation arrives late (about 30 s)",
+      "duplicate": "Confirmation arrives twice"
     }
   },
   "share": {
@@ -3263,7 +3619,8 @@
       "text": "Watch new Rwandan and African films online. Trailers are free, and you pay only for the films you choose. No subscription.",
       "cta": "Get started",
       "fineprint": "Creating an account is free. Pay with Mobile Money.",
-      "featured": "Featured"
+      "featured": "Featured",
+      "comingSoon": "Coming soon"
     },
     "genresTitle": "Browse by genre",
     "why": {
@@ -3291,6 +3648,14 @@
       "creators": "Do you make films or act?",
       "producers": "Publish your films",
       "actors": "Actors & casting"
+    },
+    "preview": {
+      "adSlot": "Sponsor slot ({{placement}}) — shows a live ad when one is running"
+    },
+    "actorsCasting": {
+      "title": "Actors & casting",
+      "text": "Actors show their talent to Rwandan producers, and producers find their cast for new films.",
+      "link": "Discover actors & casting"
     }
   },
   "films": {
@@ -3390,5 +3755,35 @@
       "spam": "Spam or misleading",
       "other": "Other"
     }
+  },
+  "demoBanner": {
+    "label": "Demo",
+    "text": "Payments are simulated. No real money is collected."
+  },
+  "payment": {
+    "simulated": "SIMULATED",
+    "simulatedHint": "Demo payment: no money moved."
+  },
+  "producer": {
+    "wallet": {
+      "simulatedNote": "Includes {{amount}} of simulated (demo) sales — no money moved."
+    },
+    "statements": {
+      "downloadCsv": "Download CSV"
+    }
+  },
+  "support": {
+    "reference": "Reference:"
+  },
+  "filmStatus": {
+    "draft": "Draft",
+    "inReview": "In review",
+    "awaitingContract": "Awaiting contract",
+    "changesRequested": "Changes requested",
+    "rejected": "Rejected",
+    "unpublished": "Unpublished",
+    "scheduled": "Scheduled",
+    "published": "Published",
+    "kigaliTime": "{{date}} (Kigali time)"
   }
 }

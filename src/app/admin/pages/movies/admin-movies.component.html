@@ -3,6 +3,7 @@
     { labelKey: 'admin.nav.movies', path: '/admin/movies', exact: true },
     { labelKey: 'admin.nav.filmRequests', path: '/admin/film-requests', exact: true },
     { labelKey: 'admin.nav.transcodes', path: '/admin/transcodes', exact: true },
+    { labelKey: 'admin.nav.genres', path: '/admin/genres', exact: true },
     { labelKey: 'admin.nav.cms', path: '/admin/cms/pages' }
   ]" ariaLabel="'admin.nav.content'" />
   <div class="page-header">
@@ -31,6 +32,22 @@
 
   <!-- ── Submissions Tab ── -->
   @if (activeTab() === 'submissions') {
+    <div class="lifecycle-bar">
+      <label for="am-lifecycle-filter">{{ 'admin.movies.lifecycle.filterLabel' | translate }}</label>
+      <select id="am-lifecycle-filter" class="lifecycle-select" [value]="lifecycleFilter()"
+              (change)="setLifecycleFilter($any($event.target).value)">
+        <option value="">{{ 'admin.movies.lifecycle.filterAll' | translate }}</option>
+        @for (st of lifecycleStatuses; track st) {
+          <option [value]="st">{{ lifecycleLabelKey(st) | translate }}</option>
+        }
+      </select>
+    </div>
+    @if (lifecycleNotice(); as notice) {
+      <div class="lifecycle-notice" role="status">
+        <span>{{ notice }}</span>
+        <button type="button" class="link-btn" (click)="lifecycleNotice.set(null)">{{ 'admin.movies.lifecycle.dismiss' | translate }}</button>
+      </div>
+    }
     @if (submissionsLoading()) {
       <div class="table-skeleton">
         @for (i of [1,2,3,4]; track i) { <div class="row-skeleton"></div> }
@@ -65,7 +82,7 @@
                 <td class="muted">{{ formatDuration(s.duration_minutes ?? 0) }}</td>
                 <td class="muted">{{ s.submission_date | date:'d MMM yyyy' }}</td>
                 <td>
-                  <span class="badge" [class]="statusClass(s.status)">{{ statusLabel(s.status) | translate }}</span>
+                  <app-film-status-badge [status]="lifecycleOf(s)" [releaseAt]="s.release_at" />
                 </td>
                 <td class="actions" (click)="$event.stopPropagation()">
                   @if (s.status === 'pending_review' || s.status === 'pending_admin_review') {
@@ -76,6 +93,17 @@
                   }
                   @if (s.status === 'pending_review' || s.status === 'pending_admin_review' || s.status === 'changes_requested') {
                     <button class="action-btn changes" (click)="openRequestChanges(s); $event.stopPropagation()">{{ 'admin.movies.changes' | translate }}</button>
+                  }
+                  @if (canPublish(s)) {
+                    <button class="action-btn approve" (click)="openLifecycle(s, 'publish')">{{ 'admin.movies.lifecycle.publish' | translate }}</button>
+                  }
+                  @if (canSchedule(s)) {
+                    <button class="action-btn neutral" (click)="openLifecycle(s, 'schedule')">
+                      {{ (lifecycleOf(s) === 'scheduled' ? 'admin.movies.lifecycle.reschedule' : 'admin.movies.lifecycle.schedule') | translate }}
+                    </button>
+                  }
+                  @if (canUnpublish(s)) {
+                    <button class="action-btn reject" (click)="openLifecycle(s, 'unpublish')">{{ 'admin.movies.lifecycle.unpublish' | translate }}</button>
                   }
                   <button class="action-btn danger" (click)="openRemoveConfirm(s.id)">{{ 'admin.movies.remove' | translate }}</button>
                 </td>
@@ -180,6 +208,44 @@
     </div>
   }
 
+  <!-- Publish / schedule / unpublish -->
+  @if (lifecycleDialog(); as d) {
+    <div class="overlay" appModalBackdrop (dismiss)="closeLifecycle()">
+      <div class="dialog" tabindex="-1" role="dialog" aria-modal="true" aria-labelledby="am-lifecycle-title">
+        <h3 id="am-lifecycle-title">{{ ('admin.movies.lifecycle.' + d.action + 'Title') | translate }}</h3>
+        <p><strong>{{ d.film.title }}</strong></p>
+        <p class="dialog-hint">{{ ('admin.movies.lifecycle.' + d.action + 'Hint') | translate }}</p>
+        @if (d.action === 'schedule') {
+          <div class="field">
+            <label for="am-lifecycle-when">{{ 'admin.movies.lifecycle.whenLabel' | translate }}</label>
+            <input id="am-lifecycle-when" type="datetime-local" class="dialog-input" [min]="scheduleMin()"
+                   [value]="lifecycleWhen()" (input)="lifecycleWhen.set($any($event.target).value)" />
+          </div>
+        }
+        @if (d.action === 'unpublish') {
+          <div class="field">
+            <label for="am-lifecycle-reason">{{ 'admin.movies.lifecycle.reasonLabel' | translate }}</label>
+            <textarea id="am-lifecycle-reason" rows="3" maxlength="500" class="dialog-textarea" [value]="lifecycleReason()"
+                      (input)="lifecycleReason.set($any($event.target).value)"></textarea>
+          </div>
+        }
+        @if (lifecycleError(); as e) {
+          <p class="field-error" role="alert">
+            {{ e.text ?? (e.key | translate) }}
+            <app-error-reference [error]="e.err" />
+          </p>
+        }
+        <div class="dialog-actions">
+          <button class="action-btn neutral" (click)="closeLifecycle()" [disabled]="lifecycleBusy()">{{ 'marketplace.common.cancel' | translate }}</button>
+          <button class="action-btn" [class.approve]="d.action !== 'unpublish'" [class.danger]="d.action === 'unpublish'"
+                  (click)="confirmLifecycle()" [disabled]="lifecycleBusy()">
+            {{ (lifecycleBusy() ? 'admin.movies.lifecycle.working' : 'admin.movies.lifecycle.' + d.action + 'Confirm') | translate }}
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+
   <!-- Remove film confirm -->
   @if (removeConfirmId() !== null) {
     <div class="overlay" appModalBackdrop (dismiss)="cancelRemove()">
@@ -252,7 +318,7 @@
             <div class="detail-row"><span class="detail-label">{{ 'admin.movies.detail.duration' | translate }}</span><span class="detail-value">{{ formatDuration(s.duration_minutes ?? 0) }}</span></div>
             <div class="detail-row"><span class="detail-label">{{ 'admin.movies.detail.submitted' | translate }}</span><span class="detail-value">{{ s.submission_date | date:'d MMM yyyy' }}</span></div>
             <div class="detail-row"><span class="detail-label">{{ 'admin.movies.detail.status' | translate }}</span>
-              <span class="badge" [class]="statusClass(s.status)">{{ statusLabel(s.status) | translate }}</span>
+              <app-film-status-badge [status]="lifecycleOf(s)" [releaseAt]="s.release_at" />
             </div>
             @if (s.free_preview !== undefined) {
               <div class="detail-row"><span class="detail-label">{{ 'admin.movies.detail.freePreview' | translate }}</span><span class="detail-value">{{ (s.free_preview ? 'admin.movies.detail.yes' : 'admin.movies.detail.no') | translate }}</span></div>

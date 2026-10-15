@@ -33,6 +33,7 @@ class PlayerStubComponent implements OnDestroy {
   @Input() accentColor = '';
   @Input() autoplay = false;
   @Input() showCloseButton = false;
+  @Input() startAt = 0;
   @Output() closed = new EventEmitter<void>();
   @Output() progressUpdate = new EventEmitter<PlaybackProgress>();
   /** Like the real player: the final 'close' report is emitted from ngOnDestroy. */
@@ -85,7 +86,8 @@ describe('MovieDetailComponent (viewer playback)', () => {
   beforeEach(() => {
     loggedIn.set(true);
     movieService = jasmine.createSpyObj<MovieService>('MovieService',
-      ['getMovieDetails', 'getRelatedMovies', 'getMoviesByProducer', 'getStream']);
+      ['getMovieDetails', 'getRelatedMovies', 'getMoviesByProducer', 'getStream', 'getProgress']);
+    movieService.getProgress.and.returnValue(of({ movie: 12, progress_seconds: 0, duration_seconds: 0, completed: false, last_watched_at: null }));
     movieService.getRelatedMovies.and.returnValue(of({ results: [] }));
     watchProgress = jasmine.createSpyObj<WatchProgressService>('WatchProgressService', ['report']);
     watchProgress.report.and.resolveTo();
@@ -203,6 +205,37 @@ describe('MovieDetailComponent (viewer playback)', () => {
     expect(player()?.source?.fallbackSrc).toBe(stream.fallback_url);
     expect(player()?.src).not.toBe(SIGNED_DETAIL_URL);
     expect(player()?.refreshSource).toEqual(jasmine.any(Function));
+  });
+
+  it('resumes the full movie from the saved progress', async () => {
+    movieService.getStream.and.returnValue(of(makeStreamResponse()));
+    movieService.getProgress.and.returnValue(of({ movie: 12, progress_seconds: 1234, duration_seconds: 6000, completed: false, last_watched_at: null }));
+    await open(movieDetails({ has_purchased: true }));
+
+    watchButton().click();
+    harness.detectChanges();
+
+    expect(movieService.getProgress).toHaveBeenCalledOnceWith(12);
+    expect(player()?.startAt).toBe(1234);
+  });
+
+  it('starts from the beginning when the film was finished or progress is unavailable', async () => {
+    movieService.getStream.and.returnValue(of(makeStreamResponse()));
+    movieService.getProgress.and.returnValue(of({ movie: 12, progress_seconds: 5900, duration_seconds: 6000, completed: true, last_watched_at: null }));
+    await open(movieDetails({ has_purchased: true }));
+    watchButton().click();
+    harness.detectChanges();
+    expect(player()?.startAt).toBe(0);
+  });
+
+  it('still plays when the progress request fails', async () => {
+    movieService.getStream.and.returnValue(of(makeStreamResponse()));
+    movieService.getProgress.and.returnValue(throwError(() => new HttpErrorResponse({ status: 500 })));
+    await open(movieDetails({ has_purchased: true }));
+    watchButton().click();
+    harness.detectChanges();
+    expect(player()?.source).not.toBeNull();
+    expect(player()?.startAt).toBe(0);
   });
 
   it('on 403 shows the backend message and offers the buy button again', async () => {

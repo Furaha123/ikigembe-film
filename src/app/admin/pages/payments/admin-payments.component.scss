@@ -226,3 +226,6 @@ $green:   #4caf7a;
   white-space: pre-wrap;
   word-break: break-word;
 }
+
+.totals-source { flex-basis: 100%; font-size: 0.8rem; color: #b5b5b5; }
+.totals-source--sim strong { color: #f5c518; margin-right: 0.25rem; }

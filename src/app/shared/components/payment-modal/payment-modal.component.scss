@@ -173,6 +173,17 @@ $muted:  #b3b3b3;
     font-size: 0.75rem;
     color: $muted;
   }
+
+  // Demo scenario picker
+  &__select {
+    border: 1px solid $border;
+    border-radius: 8px;
+    background: #1b1b1b;
+    margin-top: 0;
+    &:focus-visible { border-color: $gold; }
+  }
+
+  & + & { margin-top: 0.85rem; }
 }
 
 // Error

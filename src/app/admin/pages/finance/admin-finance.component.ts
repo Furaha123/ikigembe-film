@@ -1,3 +1,4 @@
+import { ProviderFeeRulesComponent } from './provider-fee-rules.component';
 import { Component, OnInit, PLATFORM_ID, computed, inject, signal } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -16,7 +17,7 @@ const PARTIES: AllocationParty[] = ['tax', 'operations', 'producer', 'partner', 
 @Component({
   selector: 'app-admin-finance',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink, TranslatePipe, AdminSectionTabsComponent],
+  imports: [CommonModule, FormsModule, RouterLink, TranslatePipe, AdminSectionTabsComponent, ProviderFeeRulesComponent],
   templateUrl: './admin-finance.component.html',
   styleUrl: '../payments/admin-payments.component.scss',
 })

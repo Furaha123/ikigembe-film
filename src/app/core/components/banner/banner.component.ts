@@ -24,6 +24,8 @@ export class BannerComponent {
   releaseDate     = input<string>('');
   durationMinutes = input<number>(0);
   movieRating     = input<number>(0);
+  /** Not released yet: show "Coming soon" and the trailer only, never a play action. */
+  comingSoon      = input<boolean>(false);
 
   // ── Computed ────────────────────────────────────────
   isMuted  = signal(true);

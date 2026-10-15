@@ -83,6 +83,24 @@ Audit references (from the gap audit in the session that created this file):
 
 _Newest first. Each entry: date, phase, changed files, checks and results, next task._
 
+### 2026-10-15 — Genres, drafts, film lifecycle (resumed after an interrupted session)
+- Backend (done, uncommitted): admin genres (`apps/movies/admin_genres.py`, `genres.py`), save as draft, lifecycle `lifecycle_status` + admin schedule/publish/unpublish (`admin_lifecycle.py`, `lifecycle.py`), migration movies 0026.
+- Frontend: `/admin/genres`, genre picker + "Save as draft" on the admin film form, `FilmStatusBadgeComponent` + `shared/utils/film-status.ts`. Fixed on resume: spec syntax error, `TranslateModule` in two specs, 15 missing i18n keys (`filmStatus.*`, `admin.nav.genres`, film-form genre/draft keys).
+- Then built the publication UI: `/admin/movies` Submissions tab has a lifecycle filter (`?lifecycle=`), `FilmStatusBadgeComponent` in rows and the detail panel, and Publish now / Schedule… (Kigali `datetime-local`) / Unpublish… (optional reason) dialogs showing the API's refusal (`AdminService.publishFilm|scheduleFilm|unpublishFilm`). Producer film list shows the badge too. Specs: `admin-movies.component.spec.ts` (new), service + `film-status` helpers; E2E `film-publication.spec.ts`: filter, badge, refused publish (no poster), and schedule → publish → unpublish on a new seed film `E2E Unpublished Film` (backend `seed_e2e`: approved, not live, placeholder poster/video keys — nothing is fetched; E2E never uses real R2).
+- Checks: BE 751 OK, migrations clean; FE lint 0, 675 unit OK, build clean, i18n OK, e2e typecheck OK, E2E 12/12.
+- Next: deploy to the free stack and run the hosted checks in `docs/demo-readiness.md` §2; transcode demo media locally and upload.
+
+### 2026-10-14 — Demo readiness (free infrastructure)
+- Full write-up: `docs/demo-readiness.md` (checklist, commands, walkthrough, runbook, simulated list, production checklist).
+- Payments: demo scenarios (`apps/payments/demo.py`), one open charge per item, atomic grant + ledger, demo payments fail once demo mode is off; `LedgerEntry.simulated` + real/simulated split everywhere money shows; SIMULATED receipts/reports; producer statement CSV; Kigali day boundaries on the admin overview.
+- Email: DB outbox with types and `captured` status (`EMAIL_DELIVERY`), admin preview `/admin/email-outbox` (audited for account emails).
+- Ops: request ids, JSON logs with redaction, error `code`/`request_id`, `/api/health/`, `/api/ready/`, `apps/ops` jobs (JobRun/JobLock, `run_jobs`, tick endpoint, Run now), `/admin/diagnostics`, start-up config checks.
+- Playback: URLs only from `/stream/`, server-signed device id, device+session-bound HLS token, atomic binding, server-side duration, history `view_status`; player buffering/retry/captions/keyboard/resume.
+- Demo data: `seed_demo`, `make_demo_media`; unsafe seeds guarded. Admin film create/update/delete audit-logged; sold films can't be deleted.
+- Migrations: payments 0010, finance 0004, users 0039–0040, movies 0025, ops 0001.
+- Checks: BE 645 OK, migrations clean; FE lint 0, 604 unit OK, build clean, i18n OK, E2E 10/10.
+- Next: deploy to the free stack and run the hosted checks in `docs/demo-readiness.md` §2; transcode demo media locally and upload.
+
 ### 2026-10-09 — Platform pays the tax; one source for the split
 - Allocation: partners share the gross; tax comes out of the platform share; close blocked if tax > platform share (names the film). Statement == wallet at any tax rate.
 - Removed the editable `operations_percent` setting (migration platform_settings 0002): the wallet used a fixed 70 % while statements used the setting, so a change would have desynced them. Standard split = `DEFAULT_PRODUCER_PERCENT` (agreement v1: 70/30).

@@ -8,6 +8,8 @@ export type StreamDenialKind =
   | 'other_device'        // 403, single-device policy: purchase is bound to another device
   | 'device_id_missing'   // 400, X-Device-Id header absent — a client bug
   | 'not_released'        // 403, the film is coming soon (no view is used)
+  | 'device_invalid'      // 403, device id not signed for this account (getStream already retried once)
+  | 'stream_unavailable'  // 503, encrypted film whose HLS isn't ready — try again later
   | 'not_found'           // 404
   | 'unknown';
 
@@ -43,7 +45,14 @@ export function classifyStreamError(err: unknown): StreamDenial {
   if (code === 'not_released') {
     return { kind: 'not_released', text: null, key: 'viewer.stream.notReleased', canBuy: false };
   }
+  if (code === 'stream_unavailable' || status === 503) {
+    return { kind: 'stream_unavailable', text: null, key: 'viewer.stream.unavailable', canBuy: false };
+  }
   if (status === 403) {
+    if (code === 'device_invalid') {
+      // MovieService.getStream() already fetched a new device id and retried once.
+      return { kind: 'device_invalid', text: null, key: 'viewer.stream.failed', canBuy: false };
+    }
     if (code === 'view_used' || lower.includes(VIEW_USED_MSG)) {
       return { kind: 'view_used', text: message, key: 'viewer.stream.viewUsed', canBuy: true };
     }

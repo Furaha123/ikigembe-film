@@ -1,0 +1,223 @@
+<div class="admin-page">
+  <div class="page-header">
+    <div>
+      <h1>{{ 'admin.usage.title' | translate }}</h1>
+      <p>{{ 'admin.usage.subtitle' | translate }}</p>
+    </div>
+    <div class="header-actions">
+      <button type="button" class="btn" (click)="refresh()" [disabled]="refreshing() || data()?.refreshing">
+        {{ (refreshing() || data()?.refreshing ? 'admin.usage.refreshing' : 'admin.usage.refresh') | translate }}
+      </button>
+    </div>
+  </div>
+
+  <div class="estimate-banner" role="note">
+    <strong>{{ 'admin.usage.bannerTitle' | translate }}</strong>
+    {{ 'admin.usage.bannerText' | translate }}
+  </div>
+
+  <div aria-live="polite">
+    @if (loadError(); as e) {
+      <p class="error" role="alert">
+        {{ e.text }}
+        <button type="button" class="link" (click)="load()">{{ 'admin.payments.retry' | translate }}</button>
+      </p>
+      <app-error-reference [reference]="e.ref" />
+    }
+    @if (refreshMessage(); as m) {
+      <div class="run-message" [class.success]="m.ok" [class.error]="!m.ok" role="status">
+        {{ m.text }}
+        <app-error-reference [reference]="m.ref" />
+      </div>
+    }
+  </div>
+
+  @if (loading() && !data()) {
+    <div class="table-skeleton" aria-hidden="true">@for (i of [1, 2, 3]; track i) { <div class="row-skeleton"></div> }</div>
+  } @else if (data()) {
+    @let d = data()!;
+    <dl class="facts-row">
+      @if (d.snapshot; as s) {
+        <div>
+          <dt>{{ 'admin.usage.period' | translate }}</dt>
+          <dd>{{ s.period_start | date: 'mediumDate' }} – {{ s.period_end | date: 'mediumDate' }}</dd>
+        </div>
+        <div>
+          <dt>{{ 'admin.usage.lastUpdate' | translate }}</dt>
+          <dd>{{ s.computed_at | date: 'medium' }}</dd>
+        </div>
+        <div>
+          <dt>{{ 'admin.usage.objects' | translate }}</dt>
+          <dd>
+            {{ 'admin.usage.objectsChecked' | translate: { heads: s.measurement.heads ?? 0, pending: s.measurement.pending ?? 0 } }}
+          </dd>
+        </div>
+      } @else {
+        <div><dt>{{ 'admin.usage.lastUpdate' | translate }}</dt><dd>{{ 'admin.usage.never' | translate }}</dd></div>
+      }
+    </dl>
+    @if (d.stale) {
+      <p class="warn" role="status">{{ (d.snapshot ? 'admin.usage.stale' : 'admin.usage.noSnapshot') | translate }}</p>
+    }
+    @if (d.snapshot?.measurement?.storage_unavailable) {
+      <p class="warn">{{ 'admin.usage.storageUnavailable' | translate }}</p>
+    } @else if (d.snapshot?.measurement?.errors) {
+      <p class="warn">{{ 'admin.usage.headErrors' | translate: { n: d.snapshot?.measurement?.errors } }}</p>
+    }
+    @if (d.last_run?.status === 'failed') {
+      <p class="error">{{ 'admin.usage.lastRunFailed' | translate: { error: d.last_run?.error } }}</p>
+    }
+
+    @for (p of d.providers; track p.provider) {
+      <h2 class="section">{{ p.label }}</h2>
+      <div class="table-wrap">
+        <table class="ledger usage-table">
+          <thead>
+            <tr>
+              <th scope="col">{{ 'admin.usage.metric' | translate }}</th>
+              <th scope="col" class="num">{{ 'admin.usage.value' | translate }}</th>
+              <th scope="col">{{ 'admin.usage.kind' | translate }}</th>
+              <th scope="col">{{ 'admin.usage.allowance' | translate }}</th>
+              <th scope="col">{{ 'admin.usage.notes' | translate }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (m of p.metrics; track m.key) {
+              <tr [class.row-warning]="isWarning(m.billing)">
+                <td>
+                  <span class="cell-title">{{ m.label }}</span>
+                  <span class="block muted">{{ 'admin.usage.source' | translate: { source: m.source } }}</span>
+                </td>
+                <td class="num" [class.muted]="m.kind === 'unknown'">{{ formatValue(m) }}</td>
+                <td>
+                  <span [class]="'status-badge ' + kindClass(m.kind)">{{ 'admin.usage.kinds.' + m.kind | translate }}</span>
+                </td>
+                <td>
+                  <span [class.warn]="isWarning(m.billing)">{{ billingLabel(m.billing) }}</span>
+                  @if (m.billing.billable !== null && m.billing.billable !== undefined) {
+                    <span class="block">{{ 'admin.usage.billing.billable' | translate: { value: m.billing.billable, unit: m.billing.billing_unit } }}</span>
+                  }
+                  @if (m.billing.estimated_cost) {
+                    <span class="block">{{ 'admin.usage.billing.cost' | translate: { cost: m.billing.estimated_cost, currency: m.billing.currency } }}</span>
+                  }
+                  @if (isWarning(m.billing)) {
+                    <span class="block warn">{{ (m.billing.status === 'over' ? 'admin.usage.billing.over' : 'admin.usage.billing.nearLimit') | translate }}</span>
+                  }
+                  @if (m.billing.entry; as e) {
+                    <span class="block muted">{{ 'admin.usage.billing.asOf' | translate: { date: e.as_of, source: e.source } }}</span>
+                  }
+                </td>
+                <td class="notes">
+                  {{ m.notes }}
+                  @if (m.tables?.length) {
+                    <ul class="table-rows">
+                      @for (t of m.tables; track t.table) {
+                        <li><span>{{ t.table }}</span><strong>{{ t.rows === null ? ('admin.usage.unknown' | translate) : t.rows }}</strong></li>
+                      }
+                    </ul>
+                  }
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+
+    <h2 class="section">{{ 'admin.usage.form.title' | translate }}</h2>
+    <p class="muted">{{ 'admin.usage.form.intro' | translate }}</p>
+    <form class="usage-form" (ngSubmit)="save()">
+      <div class="field">
+        <label for="usage-threshold">{{ 'admin.usage.form.threshold' | translate }}</label>
+        <input id="usage-threshold" name="threshold" type="number" min="1" max="100" step="1" [(ngModel)]="threshold" />
+      </div>
+
+      <h3>{{ 'admin.usage.form.bitrates' | translate }}</h3>
+      <p class="muted">{{ 'admin.usage.form.bitratesHint' | translate }}</p>
+      <div class="bitrates">
+        @for (b of bitrates; track b.name; let i = $index) {
+          <div class="field">
+            <label [for]="'usage-bitrate-' + i">{{ b.name }} (kbps)</label>
+            <input [id]="'usage-bitrate-' + i" [name]="'bitrate-' + i" type="number" min="1" step="1" [(ngModel)]="b.kbps"
+                   [placeholder]="'admin.usage.form.notSet' | translate" />
+            @if (b.hint) { <span class="block muted">{{ 'admin.usage.form.encoderTarget' | translate: { kbps: b.hint } }}</span> }
+          </div>
+        }
+        <div class="field">
+          <label for="usage-new-rendition">{{ 'admin.usage.form.addRendition' | translate }}</label>
+          <div class="inline">
+            <input id="usage-new-rendition" name="newRendition" type="text" maxlength="20" [(ngModel)]="newRendition" />
+            <button type="button" class="btn ghost" (click)="addRendition()">{{ 'admin.usage.form.add' | translate }}</button>
+          </div>
+        </div>
+      </div>
+
+      <h3>{{ 'admin.usage.form.allowances' | translate }}</h3>
+      <p class="muted">{{ 'admin.usage.form.allowancesHint' | translate }}</p>
+      @if (allowances.length === 0) {
+        <div class="empty-state">{{ 'admin.usage.form.noAllowances' | translate }}</div>
+      } @else {
+        <div class="table-wrap">
+          <table class="ledger allowance-table">
+            <thead>
+              <tr>
+                <th scope="col">{{ 'admin.usage.metric' | translate }}</th>
+                <th scope="col">{{ 'admin.usage.form.allowanceCol' | translate }}</th>
+                <th scope="col">{{ 'admin.usage.form.price' | translate }}</th>
+                <th scope="col">{{ 'admin.usage.form.pricePer' | translate }}</th>
+                <th scope="col">{{ 'admin.usage.form.currency' | translate }}</th>
+                <th scope="col">{{ 'admin.usage.form.asOf' | translate }}</th>
+                <th scope="col">{{ 'admin.usage.form.sourceCol' | translate }}</th>
+                <th scope="col"><span class="visually-hidden">{{ 'admin.usage.form.actions' | translate }}</span></th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (a of allowances; track $index; let i = $index) {
+                <tr>
+                  <td>
+                    <select [name]="'metric-' + i" [(ngModel)]="a.metric" [attr.aria-label]="'admin.usage.metric' | translate">
+                      @for (m of d.billable_metrics; track m.key) {
+                        <option [value]="m.key">{{ m.provider }} · {{ m.label }}</option>
+                      }
+                    </select>
+                    <span class="block muted">{{ 'admin.usage.form.unit' | translate: { unit: billingUnit(a.metric) } }}</span>
+                  </td>
+                  <td><input [name]="'allowance-' + i" type="text" inputmode="decimal" [(ngModel)]="a.allowance"
+                             [attr.aria-label]="'admin.usage.form.allowanceCol' | translate" /></td>
+                  <td><input [name]="'price-' + i" type="text" inputmode="decimal" [(ngModel)]="a.price"
+                             [attr.aria-label]="'admin.usage.form.price' | translate" /></td>
+                  <td><input [name]="'priceper-' + i" type="text" inputmode="decimal" [(ngModel)]="a.price_per" placeholder="1"
+                             [attr.aria-label]="'admin.usage.form.pricePer' | translate" /></td>
+                  <td><input [name]="'currency-' + i" type="text" maxlength="3" class="short" [(ngModel)]="a.currency"
+                             [attr.aria-label]="'admin.usage.form.currency' | translate" /></td>
+                  <td><input [name]="'asof-' + i" type="date" [(ngModel)]="a.as_of"
+                             [attr.aria-label]="'admin.usage.form.asOf' | translate" /></td>
+                  <td><input [name]="'source-' + i" type="text" maxlength="200" [(ngModel)]="a.source"
+                             [attr.aria-label]="'admin.usage.form.sourceCol' | translate" /></td>
+                  <td>
+                    <button type="button" class="btn ghost" (click)="removeAllowance(i)"
+                            [attr.aria-label]="'admin.usage.form.removeRow' | translate: { row: i + 1 }">
+                      {{ 'admin.usage.form.remove' | translate }}
+                    </button>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      }
+      <div class="form-actions">
+        <button type="button" class="btn ghost" (click)="addAllowance()">{{ 'admin.usage.form.addAllowance' | translate }}</button>
+        <button type="submit" class="btn" [disabled]="saving()">
+          {{ (saving() ? 'admin.usage.form.saving' : 'admin.usage.form.save') | translate }}
+        </button>
+      </div>
+      <div aria-live="polite">
+        @if (saveMessage(); as m) {
+          <p [class.success]="m.ok" [class.error]="!m.ok" [attr.role]="m.ok ? 'status' : 'alert'">{{ m.text }}</p>
+          <app-error-reference [reference]="m.ref" />
+        }
+      </div>
+    </form>
+  }
+</div>

@@ -3,6 +3,8 @@ import { AbstractControl, FormBuilder, ReactiveFormsModule, ValidationErrors, Va
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
 import { TranslatePipe } from '@ngx-translate/core';
+import { apiErrorReference } from '../../shared/utils/api-error';
+import { ErrorReferenceComponent } from '../../shared/components/error-reference/error-reference.component';
 
 interface ResetErrors {
   non_field_errors?: string[];
@@ -13,7 +15,7 @@ interface ResetErrors {
 
 @Component({
   selector: 'app-reset-password',
-  imports: [ReactiveFormsModule, RouterLink, TranslatePipe],
+  imports: [ReactiveFormsModule, RouterLink, TranslatePipe, ErrorReferenceComponent],
   templateUrl: './reset-password.component.html',
   styleUrl: './reset-password.component.scss'
 })
@@ -29,6 +31,7 @@ export class ResetPasswordComponent implements OnInit {
   showPassword = signal(false);
   showConfirm = signal(false);
   serverErrors = signal<ResetErrors>({});
+  errorRef = signal<string | null>(null);
 
   form = this.fb.group({
     new_password: ['', [Validators.required, Validators.minLength(8)]],
@@ -60,6 +63,7 @@ export class ResetPasswordComponent implements OnInit {
     }
     this.isLoading.set(true);
     this.serverErrors.set({});
+    this.errorRef.set(null);
 
     const { new_password, confirm_password } = this.form.value as { new_password: string; confirm_password: string };
 
@@ -70,6 +74,7 @@ export class ResetPasswordComponent implements OnInit {
       },
       error: (err) => {
         this.isLoading.set(false);
+        this.errorRef.set(apiErrorReference(err));
         if (err.status === 400 && err.error) {
           this.serverErrors.set(err.error);
         } else {

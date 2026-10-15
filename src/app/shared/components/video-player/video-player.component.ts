@@ -1,6 +1,6 @@
 import {
   Component, Input, Output, EventEmitter,
-  ViewChild, ElementRef, HostListener,
+  ViewChild, ElementRef,
   signal, computed, OnDestroy, OnChanges, SimpleChanges,
   PLATFORM_ID, inject, AfterViewInit,
 } from '@angular/core';
@@ -14,6 +14,12 @@ const WATERMARK_MOVE_MS = 30_000;
 
 /** Translation key for the adaptive quality option; level labels (e.g. 1080p) pass through the pipe unchanged. */
 const AUTO_QUALITY_LABEL = 'playerUi.auto';
+
+/** Why playback stopped: decides the message (network vs expired/denied vs the file itself). */
+export type PlayerErrorKind = 'network' | 'denied' | 'media';
+
+const VOLUME_STEP = 0.1;
+const SEEK_STEP = 10;
 
 interface QualityLevel {
   index: number; // -1 = auto
@@ -48,8 +54,12 @@ export class VideoPlayerComponent implements AfterViewInit, OnChanges, OnDestroy
   @Output() progressUpdate = new EventEmitter<PlaybackProgress>();
   @Output() videoEnded     = new EventEmitter<void>();
   @Output() closed         = new EventEmitter<void>();
+  /** The viewer pressed Retry in the error state (the player reloads the source itself too). */
+  @Output() retried        = new EventEmitter<void>();
 
   @ViewChild('videoEl') videoRef!: ElementRef<HTMLVideoElement>;
+  @ViewChild('qualityBtn') qualityBtnRef?: ElementRef<HTMLButtonElement>;
+  @ViewChild('captionsBtn') captionsBtnRef?: ElementRef<HTMLButtonElement>;
 
   private readonly platformId = inject(PLATFORM_ID);
   private hideTimer: ReturnType<typeof setTimeout> | null = null;
@@ -77,7 +87,15 @@ export class VideoPlayerComponent implements AfterViewInit, OnChanges, OnDestroy
   showControls = signal(true);
   buffered    = signal(0);
   srcError    = signal(false);
+  /** Set with srcError: which message the error state shows. */
+  errorKind   = signal<PlayerErrorKind>('media');
+  /** Spinner: from attaching a source until it can play, and while buffering (waiting/stalled). */
+  loading     = signal(false);
   tracks      = signal<SubtitleTrack[]>([]);
+  /** Index into tracks() of the caption shown, -1 = off. */
+  activeTrack = signal(-1);
+  showCaptionsMenu = signal(false);
+  private lastTrack = 0;
 
   // HLS quality
   qualityLevels  = signal<QualityLevel[]>([]);
@@ -89,6 +107,13 @@ export class VideoPlayerComponent implements AfterViewInit, OnChanges, OnDestroy
   );
   currentTimeStr = computed(() => this.formatTime(this.currentTime()));
   durationStr    = computed(() => this.formatTime(this.duration()));
+  errorKey = computed(() => {
+    switch (this.errorKind()) {
+      case 'network': return 'playerUi.errors.network';
+      case 'denied':  return 'playerUi.errors.denied';
+      default:        return 'playerUi.errors.media';
+    }
+  });
   currentQualityLabel = computed(() => {
     const q = this.currentQuality();
     if (q === -1) return AUTO_QUALITY_LABEL;
@@ -142,13 +167,6 @@ export class VideoPlayerComponent implements AfterViewInit, OnChanges, OnDestroy
     this.progressUpdate.emit({ position: v.currentTime, duration: v.duration, reason });
   }
 
-  @HostListener('document:keydown', ['$event'])
-  onDocumentKey(e: KeyboardEvent) {
-    if (!this.viewReady) return;
-    const tag = (e.target as HTMLElement)?.tagName?.toLowerCase();
-    if (tag === 'input' || tag === 'textarea') return;
-  }
-
   // ── Source attachment ─────────────────────────────────
 
   /** A new source from the parent resets the one-shot refresh/fallback budget. */
@@ -168,8 +186,13 @@ export class VideoPlayerComponent implements AfterViewInit, OnChanges, OnDestroy
 
     this.resetPlayerState();
     this.active = source;
-    this.tracks.set((source?.subtitles ?? []).filter(t => !!t.url));
+    const tracks = (source?.subtitles ?? []).filter(t => !!t.url);
+    this.tracks.set(tracks);
+    const def = tracks.findIndex(t => t.is_default);
+    this.activeTrack.set(def);
+    this.lastTrack = Math.max(def, 0);
     if (!source) return;
+    this.loading.set(true);
 
     const v   = this.video;
     const src = useFallback && source.fallbackSrc ? source.fallbackSrc : source.src;
@@ -195,28 +218,30 @@ export class VideoPlayerComponent implements AfterViewInit, OnChanges, OnDestroy
               .reverse(),
           ];
           this.qualityLevels.set(levels);
-          if (this.autoplay) v.play().catch(() => { /* autoplay refused: the viewer presses play */ });
+          if (this.autoplay) this.startPlayback();
         });
 
         this.hls.on(Hls.Events.ERROR, (_evt, data) => {
           if (!data.fatal) return;
-          const expired = data.type === Hls.ErrorTypes.NETWORK_ERROR && data.response?.code === 403;
-          this.recover(expired);
+          const network = data.type === Hls.ErrorTypes.NETWORK_ERROR;
+          // 403 from the proxy/key endpoint: token expired, device mismatch or a newer session took over.
+          const expired = network && (data.response?.code === 403 || data.response?.code === 401);
+          this.recover(expired, expired ? 'denied' : network ? 'network' : 'media');
         });
 
       } else if (v.canPlayType('application/vnd.apple.mpegurl')) {
         // Safari native HLS — the tokenised URL works unchanged
         v.src = src;
-        if (this.autoplay) v.play().catch(() => { /* autoplay refused: the viewer presses play */ });
+        if (this.autoplay) this.startPlayback();
       } else if (source.fallbackSrc) {
         this.attachSource(source, true);
       } else {
-        this.srcError.set(true);
+        this.fail('media');
       }
     } else {
       v.src = src;
       if (this.autoplay) {
-        v.addEventListener('canplay', () => v.play().catch(() => { /* autoplay refused: the viewer presses play */ }), { once: true });
+        v.addEventListener('canplay', () => this.startPlayback(), { once: true });
       }
     }
   }
@@ -226,9 +251,9 @@ export class VideoPlayerComponent implements AfterViewInit, OnChanges, OnDestroy
    * isn't visible) means the signed URL/token may have expired: re-request the
    * source once and resume. Otherwise fall back to the MP4 once. Then give up.
    */
-  private recover(maybeExpired: boolean): void {
+  private recover(maybeExpired: boolean, kind: PlayerErrorKind = maybeExpired ? 'denied' : 'media'): void {
     const source = this.active;
-    if (!source) { this.fail(); return; }
+    if (!source) { this.fail(kind); return; }
     const at = this.video?.currentTime || this.resumeAt;
 
     if (maybeExpired && this.refreshSource && !this.refreshUsed) {
@@ -236,7 +261,7 @@ export class VideoPlayerComponent implements AfterViewInit, OnChanges, OnDestroy
       this.destroyHls();
       this.refreshSub = this.refreshSource().subscribe({
         next: fresh => { this.resumeAt = at; this.attachSource(fresh); },
-        error: () => this.fail(),
+        error: () => this.fail('denied'),
       });
       return;
     }
@@ -246,13 +271,55 @@ export class VideoPlayerComponent implements AfterViewInit, OnChanges, OnDestroy
       this.attachSource(source, true);
       return;
     }
-    this.fail();
+    this.fail(kind);
   }
 
-  private fail(): void {
+  private fail(kind: PlayerErrorKind): void {
     this.destroyHls();
+    const offline = typeof navigator !== 'undefined' && navigator.onLine === false;
+    this.errorKind.set(offline ? 'network' : kind);
     this.srcError.set(true);
+    this.loading.set(false);
     this.playing.set(false);
+  }
+
+  /**
+   * Retry button in the error state: a fresh source from the parent when it can give one
+   * (one /stream/ call per click), else the same source again. Resumes where playback stopped.
+   */
+  retry(): void {
+    const at = this.video?.currentTime || this.resumeAt;
+    this.retried.emit();
+    this.refreshSub?.unsubscribe();
+    this.fallbackUsed = false;
+    if (this.refreshSource && this.source) {
+      this.refreshUsed = true; // this click used the refresh; another 403 shows the error again
+      this.srcError.set(false);
+      this.loading.set(true);
+      this.refreshSub = this.refreshSource().subscribe({
+        next: fresh => { this.resumeAt = at; this.attachSource(fresh); },
+        error: () => this.fail('denied'),
+      });
+      return;
+    }
+    this.refreshUsed = false;
+    this.attachSource(this.active);
+    this.resumeAt = at;
+  }
+
+  /** play(); a refused autoplay (NotAllowedError) or an interrupted play (AbortError) just leaves the play button. */
+  private startPlayback(): void {
+    const attempt = this.video.play();
+    if (!attempt || typeof attempt.catch !== 'function') return;
+    attempt.catch((err: unknown) => {
+      const name = (err as { name?: string } | null)?.name;
+      this.playing.set(false);
+      if (name === 'NotAllowedError' || name === 'AbortError') {
+        this.loading.set(false);
+        return;
+      }
+      this.fail('media');
+    });
   }
 
   private destroyHls(): void {
@@ -285,9 +352,11 @@ export class VideoPlayerComponent implements AfterViewInit, OnChanges, OnDestroy
     this.duration.set(0);
     this.buffered.set(0);
     this.srcError.set(false);
+    this.loading.set(false);
     this.qualityLevels.set([]);
     this.currentQuality.set(-1);
     this.showQualityMenu.set(false);
+    this.showCaptionsMenu.set(false);
     this.stopProgressTimer();
     if (this.videoRef?.nativeElement) {
       this.video.removeAttribute('src');
@@ -299,14 +368,78 @@ export class VideoPlayerComponent implements AfterViewInit, OnChanges, OnDestroy
 
   setQuality(index: number): void {
     this.currentQuality.set(index);
-    this.showQualityMenu.set(false);
+    this.closeMenus(true);
     if (this.hls) {
       this.hls.currentLevel = index;
     }
   }
 
   toggleQualityMenu(): void {
-    this.showQualityMenu.update(v => !v);
+    const open = !this.showQualityMenu();
+    this.showCaptionsMenu.set(false);
+    this.showQualityMenu.set(open);
+    if (open) this.focusMenu('.vp-quality-menu');
+  }
+
+  // ── Captions ──────────────────────────────────────────
+
+  toggleCaptionsMenu(): void {
+    const open = !this.showCaptionsMenu();
+    this.showQualityMenu.set(false);
+    this.showCaptionsMenu.set(open);
+    if (open) this.focusMenu('.vp-captions-menu');
+  }
+
+  /** Show track `index` (-1 = off) by switching the <track> modes. */
+  setCaption(index: number, closeMenu = true): void {
+    this.activeTrack.set(index);
+    if (index >= 0) this.lastTrack = index;
+    this.applyTrackModes();
+    if (closeMenu) this.closeMenus(true);
+  }
+
+  /** The C key: off <-> the last caption used (or the default one). */
+  toggleCaptions(): void {
+    if (!this.tracks().length) return;
+    this.setCaption(this.activeTrack() >= 0 ? -1 : Math.min(this.lastTrack, this.tracks().length - 1), false);
+  }
+
+  private applyTrackModes(): void {
+    const list = this.videoRef?.nativeElement?.textTracks;
+    if (!list) return;
+    const active = this.activeTrack();
+    for (let i = 0; i < list.length; i++) {
+      list[i].mode = i === active ? 'showing' : 'disabled';
+    }
+  }
+
+  // ── Menus ─────────────────────────────────────────────
+
+  get menuOpen(): boolean { return this.showQualityMenu() || this.showCaptionsMenu(); }
+
+  /** Close any open menu; `returnFocus` puts focus back on the button that opened it. */
+  closeMenus(returnFocus = false): void {
+    const btn = this.showQualityMenu() ? this.qualityBtnRef : this.showCaptionsMenu() ? this.captionsBtnRef : undefined;
+    this.showQualityMenu.set(false);
+    this.showCaptionsMenu.set(false);
+    if (returnFocus) btn?.nativeElement.focus();
+  }
+
+  /** Focus the checked item of a menu once it has rendered. */
+  private focusMenu(selector: string): void {
+    setTimeout(() => {
+      const menu = this.videoRef?.nativeElement?.closest('.vp-wrapper')?.querySelector(selector);
+      const item = menu?.querySelector<HTMLElement>('[aria-checked="true"]') ?? menu?.querySelector<HTMLElement>('button');
+      item?.focus();
+    });
+  }
+
+  /** Arrow keys move between a menu's items. */
+  private moveMenuFocus(menu: Element, delta: number): void {
+    const items = Array.from(menu.querySelectorAll<HTMLElement>('button'));
+    if (!items.length) return;
+    const at = items.indexOf(document.activeElement as HTMLElement);
+    items[(at + delta + items.length) % items.length].focus();
   }
 
   // ── Video event wiring ────────────────────────────────
@@ -316,6 +449,7 @@ export class VideoPlayerComponent implements AfterViewInit, OnChanges, OnDestroy
 
     v.addEventListener('loadedmetadata', () => {
       this.duration.set(v.duration);
+      this.applyTrackModes();
       const seekTo = this.resumeAt > 0 ? this.resumeAt : this.startAt;
       if (seekTo > 0) v.currentTime = seekTo;
       this.resumeAt = 0;
@@ -329,6 +463,12 @@ export class VideoPlayerComponent implements AfterViewInit, OnChanges, OnDestroy
     });
 
     v.addEventListener('play',  () => { this.playing.set(true);  this.startProgressTimer(); });
+    for (const evt of ['waiting', 'stalled']) {
+      v.addEventListener(evt, () => { if (this.active && !this.srcError()) this.loading.set(true); });
+    }
+    for (const evt of ['canplay', 'playing', 'loadeddata']) {
+      v.addEventListener(evt, () => this.loading.set(false));
+    }
     v.addEventListener('pause', () => {
       this.playing.set(false);
       this.stopProgressTimer();
@@ -343,7 +483,9 @@ export class VideoPlayerComponent implements AfterViewInit, OnChanges, OnDestroy
     v.addEventListener('error', () => {
       // hls.js handles its own errors; ignore the error from clearing `src` on reset
       if (this.hls || !this.active || !v.getAttribute('src')) return;
-      this.recover(true);
+      // The element hides the HTTP status: an expired URL can surface as any code, so the refresh is tried first.
+      const code = v.error?.code;
+      this.recover(true, code === 2 /* MEDIA_ERR_NETWORK */ ? 'network' : code === 3 /* DECODE */ ? 'media' : 'denied');
     });
     v.addEventListener('volumechange', () => {
       this.muted.set(v.muted);
@@ -358,18 +500,26 @@ export class VideoPlayerComponent implements AfterViewInit, OnChanges, OnDestroy
   // ── Playback controls ─────────────────────────────────
 
   togglePlay() {
+    if (this.srcError()) return;
     if (this.video.paused) {
-      this.video.play().catch(() => {
-        this.srcError.set(true);
-        this.playing.set(false);
-      });
+      this.startPlayback();
     } else {
       this.video.pause();
     }
   }
 
-  rewind()   { this.video.currentTime = Math.max(0, this.video.currentTime - 10); }
-  forward()  { this.video.currentTime = Math.min(this.video.duration, this.video.currentTime + 10); }
+  rewind()   { this.video.currentTime = Math.max(0, this.video.currentTime - SEEK_STEP); }
+  forward()  {
+    const end = Number.isFinite(this.video.duration) ? this.video.duration : this.video.currentTime + SEEK_STEP;
+    this.video.currentTime = Math.min(end, this.video.currentTime + SEEK_STEP);
+  }
+
+  private nudgeVolume(delta: number) {
+    const val = Math.round(Math.min(1, Math.max(0, this.video.volume + delta)) * 100) / 100;
+    this.video.volume = val;
+    this.video.muted = val === 0;
+    this.volume.set(val);
+  }
   toggleMute() { this.video.muted = !this.video.muted; }
 
   onVolumeChange(e: Event) {
@@ -405,7 +555,7 @@ export class VideoPlayerComponent implements AfterViewInit, OnChanges, OnDestroy
     this.hideTimer = setTimeout(() => {
       if (this.playing()) {
         this.showControls.set(false);
-        this.showQualityMenu.set(false);
+        this.closeMenus();
       }
     }, 3000);
   }
@@ -413,16 +563,44 @@ export class VideoPlayerComponent implements AfterViewInit, OnChanges, OnDestroy
   onMouseLeave() {
     if (this.playing()) {
       this.showControls.set(false);
-      this.showQualityMenu.set(false);
+      this.closeMenus();
     }
   }
 
+  /**
+   * Shortcuts while the player has focus: space/k play-pause, left/right seek 10 s, up/down volume,
+   * m mute, f fullscreen, c captions. Escape closes an open menu with preventDefault(), so a
+   * surrounding dialog stays open; with no menu open Escape is left to the dialog.
+   */
   onKeyDown(e: KeyboardEvent) {
-    if (e.code === 'Space')      { e.preventDefault(); this.togglePlay(); }
-    else if (e.code === 'ArrowLeft')  { e.preventDefault(); this.rewind(); }
-    else if (e.code === 'ArrowRight') { e.preventDefault(); this.forward(); }
-    else if (e.code === 'KeyM')       { this.toggleMute(); }
-    else if (e.code === 'KeyF')       { this.toggleFullscreen(); }
+    if (e.defaultPrevented || e.ctrlKey || e.metaKey || e.altKey) return;
+    const target = e.target as HTMLElement | null;
+    const menu = target?.closest?.('.vp-menu');
+    if (e.key === 'Escape') {
+      if (this.menuOpen) { e.preventDefault(); this.closeMenus(true); }
+      return;
+    }
+    if (menu) {
+      if (e.key === 'ArrowDown') { e.preventDefault(); this.moveMenuFocus(menu, 1); }
+      else if (e.key === 'ArrowUp') { e.preventDefault(); this.moveMenuFocus(menu, -1); }
+      return; // Enter/Space activate the focused item natively
+    }
+    const tag = target?.tagName;
+    // Buttons and sliders handle their own Space/Enter/arrow keys.
+    if (tag === 'BUTTON' && (e.key === ' ' || e.key === 'Enter')) return;
+    if (tag === 'INPUT' && e.key.startsWith('Arrow')) return;
+    if (this.srcError()) return;
+
+    switch (e.key) {
+      case ' ': case 'k': case 'K': e.preventDefault(); this.togglePlay(); break;
+      case 'ArrowLeft':  e.preventDefault(); this.rewind(); break;
+      case 'ArrowRight': e.preventDefault(); this.forward(); break;
+      case 'ArrowUp':    e.preventDefault(); this.nudgeVolume(VOLUME_STEP); break;
+      case 'ArrowDown':  e.preventDefault(); this.nudgeVolume(-VOLUME_STEP); break;
+      case 'm': case 'M': this.toggleMute(); break;
+      case 'f': case 'F': this.toggleFullscreen(); break;
+      case 'c': case 'C': this.toggleCaptions(); break;
+    }
   }
 
   onProgressKeyDown(e: KeyboardEvent) {
